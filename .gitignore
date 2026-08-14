@@ -31,3 +31,6 @@ yarn-error.log*
 
 # test
 /coverage
+
+# local runtime data (fixture journeys) — never committed
+/data/runtime/

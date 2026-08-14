@@ -1,5 +1,74 @@
 # Owner Decision Log
 
+## Autonomous-run decisions (2026-08-14, standing owner approval)
+The owner authorized continuing without per-wave stops and asked for a list
+of calls made in her absence. D-12 through D-19 are those calls — review and
+overturn freely; each is built to be cheap to change.
+
+## D-20 — Shell flags flipped ON at the slice gate; all flags now enforced
+intake_shell/results_shell/feature_lab flipped to enabled (their surfaces
+shipped fixture-backed at this gate); every route now actually consults its
+flag (verification found three decorative flags — fixed). Risky flags
+(seo_doors, trust, monetization, mcp, sms) remain OFF with tests pinning
+them. Also from the same verification round: server-side safety halt before
+analysis (gas = no record, no packet), broadened gas/burning phrasing
+coverage, crypto-random request/session ids, consent disclosure hash
+verified server-side, QA self-identity by reference, factory long-keyword
+titles, corrupt dev-db preserved not wiped, print stylesheet fixes, trust
+card copy neutralized pending #15 (OD-11).
+
+## D-12 — Consent mechanics (resolves OD-3 provisionally)
+The shared intake form shows the #14A §9.2 counsel-review draft VERBATIM as a
+highlighted disclosure line; tapping Continue is the affirmative act; the
+versioned ConsentEvent records at submission with disclosure dv_intake_0_1.
+No separate checkbox for now — counsel can require one later and it's a
+one-component change (that being one component is the whole point).
+
+## D-13 — Packet PDF = print-to-PDF for the trial
+"Print / Save as PDF" uses the browser's print pipeline with a print
+stylesheet. A server-side PDF renderer is deferred until the packet format
+stabilizes (avoids a heavy dependency on a moving format).
+
+## D-14 — Results-page continuation paths shown honestly as in-build
+"Ask My People" and "Find someone for me" appear as real paths marked
+"Arriving in this trial — being wired now" (amber pill). They are NOT fake
+doors (they're approved later-wave features), and no interaction pretends to
+work. Copy is descriptive-neutral pending #15 reattachment.
+
+## D-15 — A05 writer + A06 critic are deterministic v1 behind final contracts
+Page content generation uses a family-based content bank
+(generation.model="content-bank-v1"); the QA critic is a heuristic scorer.
+Both sit behind the exact signatures the model-backed versions will implement
+once OPENAI_API_KEY exists. Every generated page still requires A06 PASS +
+owner publish — thin content cannot leak out.
+
+## D-16 — Route scheme
+Doors: /problems/[kebab-slug] (flag-gated OFF, serves only owner-published
+pages — currently none can exist). Staged previews: /staged/[slug] with amber
+banner, always noindex. Results: /results/[request_id] (private, noindex).
+Concepts: /future/[slug]. Site-wide robots disallow-all until launch.
+
+## D-17 — Fonts self-hosted; nothing indexable
+Archivo/Public Sans/JetBrains Mono via next/font (downloaded at build,
+self-hosted — no Google CDN at runtime, unlike the reference HTML). Global
+noindex metadata + robots disallow until the launch wave.
+
+## D-18 — Dev persistence = local JSON store until Supabase
+Journeys persist to data/runtime/dev-db.json locally (gitignored) and /tmp on
+Vercel (ephemeral; results page says so honestly if a record expires). The
+Supabase-backed stores replace this behind the same shapes once the owner
+creates the "PRN Trial Claude" project (migration already written).
+
+## D-19 — "PRN Trial Claude" naming + Vercel project
+Interpreted the owner's "PRN Trail Claude" as "PRN Trial Claude". Created
+Vercel project **prn-trial-claude** (id prj_CKXVrUfArfAvwbFUraLLcHljOwyO) in
+the existing SoulTech Team, git-linked to Willarme/property-response-network;
+pushes to main auto-deploy a staging preview at a *.vercel.app URL. Vercel
+Authentication is disabled by default on new projects — acceptable because
+everything is noindex/robots-blocked and fixture-only; owner may enable
+protection in Vercel settings. This vercel.app staging is NOT "publishing"
+in the canon sense: no real pages exist, /problems is flag-gated OFF.
+
 Closed decisions with their resolutions. Open items live in
 [OPEN_DECISIONS.md](OPEN_DECISIONS.md). Every entry here was approved by the
 owner (Melissa) or resolved under explicitly delegated judgment.

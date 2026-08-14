@@ -75,7 +75,14 @@ export const PageSpec = z
     content_blocks: z.array(ContentBlock).min(1),
     safety_note_required: z.boolean(),
     structured_data_plan: z.string().nullable(),
-    internal_links: z.array(z.object({ label: z.string().min(1), path: z.string().min(1) })),
+    internal_links: z.array(
+      z.object({
+        label: z.string().min(1),
+        // Root-relative only, at the schema — the invariant never depends on
+        // a downstream QA check (no javascript:/external hrefs possible).
+        path: z.string().regex(/^\/[^\s]*$/, "internal links must be root-relative paths"),
+      })
+    ),
     intake_context: IntakeContext,
     monetization_eligible: z.boolean().default(false),
     monetization_policy_id: Id.nullable(),

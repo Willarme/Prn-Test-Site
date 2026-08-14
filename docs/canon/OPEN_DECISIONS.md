@@ -6,6 +6,10 @@ come up, newest first. When decided, entries move to DECISIONS.md.
 
 ## Open
 
+- **OD-11 — Trust-adjacent card copy pending #15.** The results page's "Ask
+  My People" / "Find someone for me" card bodies use deliberately
+  descriptive-neutral wording. When #15 is reattached, replace with the
+  approved Trust wording (buttons: OD-2).
 - **OD-10 — Autonomy graduation is a process gate, not a machine gate.**
   `autonomy_stage` can be set to T2 by one CLI command; #23 §1.5's "measured
   promotion gate" evidence (20-50 clean QA candidates, defect rates) is not

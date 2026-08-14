@@ -52,13 +52,15 @@ export function classifyIntentPrnSide(
 export function inferProblemFamily(keyword: string, clusterLabel: string | null): string | null {
   const haystack = `${keyword} ${clusterLabel ?? ""}`.toLowerCase();
   // Word-boundary matching so "waterproofing" never classifies as "roof".
+  // Order matters: specific trades before generic water words, so "roof leak"
+  // is roofing and "dishwasher leaking" is appliance — not generic plumbing.
   const families: Array<[string, RegExp]> = [
-    ["hvac", /\b(hvac|ac|air condition\w*|furnace|heat pump|thermostat)\b/],
-    ["plumbing", /\b(plumb\w*|pipe|drain|faucet|toilet|water heater|sump)\b/],
+    ["hvac", /\b(hvac|ac|a\/c|air condition\w*|furnace|heat pump|thermostat|not cooling|not heating)\b/],
     ["electrical", /\b(electric\w*|outlet|breaker|wiring|panel)\b/],
     ["roofing", /\b(roof|shingle|gutter)\b/],
-    ["appliance", /\b(appliance|washer|dryer|dishwasher|refrigerator|fridge|oven|stove)\b/],
-    ["water_damage", /\b(flood\w*|water damage|ceiling leak|basement water)\b/],
+    ["appliance", /\b(appliance|washer|washing machine|dryer|dishwasher|refrigerator|fridge|oven|stove)\b/],
+    ["water_damage", /\b(flood\w*|water damage|standing water|basement water)\b/],
+    ["plumbing", /\b(plumb\w*|pipe|drain|faucet|toilet|water heater|hot water tank|sump|shower\w*|bathtub|tub|leak\w*|drip\w*)\b/],
   ];
   for (const [family, pattern] of families) {
     if (pattern.test(haystack)) return family;

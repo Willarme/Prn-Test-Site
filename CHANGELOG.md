@@ -1,5 +1,38 @@
 # Changelog
 
+## Door Waves 2-7 — vertical slice complete, fixture-backed (2026-08-14)
+
+- Design system ported from the approved visual reference (asphalt/concrete/
+  pink dispatch-console language) as globals.css tokens + components; fonts
+  self-hosted via next/font (D-17).
+- Door Wave 2: one shared IntentPageView template rendering any PageSpec via
+  a constrained markdown-lite renderer (no raw HTML path), plus the ONE
+  handcrafted excellent sample page (/staged/ac-not-turning-on).
+- Door Wave 3 (A05): compilePageSpec/buildCandidatePages — approved NEW
+  opportunities -> typed PageSpecs via deterministic family content banks
+  (model writer swaps in behind the same contract, D-15).
+- Door Wave 4 (A06): deterministic checks first (duplicates, intent overlap/
+  doorway rule, thin content, placeholders, unsupported claims, attribution
+  mismatch, safety-block presence) then heuristic critic; deterministic FAIL
+  never reaches the critic; PASS -> owner publish queue (no publish runtime
+  exists — nothing can go public).
+- Wave 5: shared StartRequestForm + /start + central intake API — versioned
+  consent (verbatim §9.2 draft, D-12), deterministic pre-analysis safety gate
+  (gas halts intake with approved copy), IntakeSession attribution
+  (prior-not-truth), EventEnvelopes for the full funnel.
+- Wave 6: results page — JobPacket hero with approved value framing (no
+  guarantees), print-to-PDF (D-13), copy-summary, three continuation paths
+  (two honestly marked in-build, D-14), Future Feature Lab (4 concept pages
+  with honest not-live status + measured interest).
+- Wave 7 (fixture): FixtureProblemAnalyzer + FixtureJobPacketBuilder behind
+  the production capability contracts — customer words beat door hints,
+  inference labeled, unknowns listed, deterministic.
+- Verified live in-browser: door -> form -> consent -> ProblemRecord ->
+  JobPacket -> results, end to end.
+- Vercel project prn-trial-claude created (SoulTech Team), git-linked;
+  staging deploys on push (D-19). Suite: 164 tests / 22 files + production
+  next build clean.
+
 ## Door Wave 1 — A04 Search Opportunity engine (2026-08-14)
 
 - Seed importer: workbook -> 119 rows -> 96 deduped SearchOpportunity records

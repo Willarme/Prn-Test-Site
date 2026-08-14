@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_FLAGS, FeatureFlag } from "@/platform/flags";
+import { DEFAULT_FLAGS, FeatureFlag, flagEnabled } from "@/platform/flags";
 
 describe("feature flags", () => {
   it("every flag parses against the FeatureFlag contract", () => {
@@ -13,16 +13,25 @@ describe("feature flags", () => {
     expect(new Set(keys).size).toBe(keys.length);
   });
 
-  it("ships EVERYTHING off at Wave 0 — flags flip only at wave gates with owner approval", () => {
-    for (const flag of DEFAULT_FLAGS) {
-      expect(flag.enabled, `${flag.flag_key} must be off`).toBe(false);
+  it("keeps every RISKY surface off until its wave gate", () => {
+    for (const key of [
+      "seo_doors_enabled",
+      "trust_enabled",
+      "monetization_enabled",
+      "mcp_enabled",
+      "sms_enabled",
+    ]) {
+      expect(flagEnabled(key), `${key} must be off`).toBe(false);
     }
   });
 
-  it("keeps the risky surfaces behind flags at all", () => {
-    const keys = DEFAULT_FLAGS.map((f) => f.flag_key);
-    for (const required of ["seo_doors_enabled", "monetization_enabled", "sms_enabled", "mcp_enabled"]) {
-      expect(keys).toContain(required);
+  it("every enabled flag cites the gate decision that flipped it", () => {
+    for (const flag of DEFAULT_FLAGS.filter((f) => f.enabled)) {
+      expect(flag.decision_ref, `${flag.flag_key} needs a decision_ref`).not.toBeNull();
     }
+  });
+
+  it("flagEnabled is safe on unknown keys", () => {
+    expect(flagEnabled("does_not_exist")).toBe(false);
   });
 });

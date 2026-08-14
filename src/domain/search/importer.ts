@@ -76,14 +76,8 @@ export function slugify(keyword: string): string {
     .replace(/^_+|_+$/g, "");
 }
 
-/** Stable short hash so punctuation-variant keywords can never share an ID. */
-export function shortHash(input: string): string {
-  let hash = 0;
-  for (let i = 0; i < input.length; i++) {
-    hash = (hash * 31 + input.charCodeAt(i)) | 0;
-  }
-  return (hash >>> 0).toString(16).padStart(8, "0");
-}
+import { shortHash } from "@/domain/shared/hash";
+export { shortHash };
 
 export function importSeedRows(file: SeedFile, importedAt: string): SearchOpportunity[] {
   const byKeyword = new Map<string, SeedRow[]>();
