@@ -6,6 +6,15 @@ come up, newest first. When decided, entries move to DECISIONS.md.
 
 ## Open
 
+- **OD-10 — Autonomy graduation is a process gate, not a machine gate.**
+  `autonomy_stage` can be set to T2 by one CLI command; #23 §1.5's "measured
+  promotion gate" evidence (20-50 clean QA candidates, defect rates) is not
+  yet machine-checked. Acceptable while no publish runtime exists; revisit at
+  the A06/publish wave.
+- **OD-9 — City dataset for county expansion (D-10).** The fixture city index
+  covers Allen County IN + Franklin County OH for tests. Before local pages
+  activate, vendor a real places-by-county dataset (recommendation: US Census
+  gazetteer) and map DataForSEO location codes for state/county/city targets.
 - **OD-8 — Trial brand/domain name.** No production domain is owned yet. The
   repo is `property-response-network`. Needed before Search Console
   verification and launch waves — not before.

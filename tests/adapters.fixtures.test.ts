@@ -7,10 +7,11 @@ import { FIXTURE_KEYWORD_ROWS } from "@/platform/adapters/fixtures/seo-fixtures"
 describe("FixtureSeoDataAdapter honors the SeoDataAdapter contract", () => {
   const adapter = new FixtureSeoDataAdapter();
 
-  it("returns keyword ideas from seed rows", async () => {
-    const ideas = await adapter.discoverIdeas(["home problems"], { mode: "national", country: "US" });
-    expect(ideas.length).toBe(FIXTURE_KEYWORD_ROWS.length);
-    expect(ideas.map((i) => i.keyword)).toContain("ac not turning on");
+  it("returns keyword ideas from seed rows with a cost envelope", async () => {
+    const result = await adapter.discoverIdeas(["home problems"], { mode: "national", country: "US" });
+    expect(result.ideas.length).toBe(FIXTURE_KEYWORD_ROWS.length);
+    expect(result.ideas.map((i) => i.keyword)).toContain("ac not turning on");
+    expect(result.vendor_cost_usd).toBe(0);
   });
 
   it("returns metric snapshots that parse against the domain contract", async () => {
@@ -36,9 +37,12 @@ describe("FixtureSeoDataAdapter honors the SeoDataAdapter contract", () => {
   });
 
   it("classifies tool vs problem intent from seed clusters", async () => {
-    const intents = await adapter.getSearchIntent(["concrete slab calculator", "ac not turning on"]);
-    expect(intents.find((i) => i.keyword === "concrete slab calculator")!.intent_type).toBe("tool");
-    expect(intents.find((i) => i.keyword === "ac not turning on")!.intent_type).toBe("problem");
+    const { classifications } = await adapter.getSearchIntent([
+      "concrete slab calculator",
+      "ac not turning on",
+    ]);
+    expect(classifications.find((i) => i.keyword === "concrete slab calculator")!.intent_type).toBe("tool");
+    expect(classifications.find((i) => i.keyword === "ac not turning on")!.intent_type).toBe("problem");
   });
 });
 

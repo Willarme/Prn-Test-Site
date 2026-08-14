@@ -1,9 +1,10 @@
 import { z } from "zod";
 
 /**
- * Wave 0 ID contract: any non-empty string so fixtures stay readable
- * (e.g. "so_ac_not_turning_on"). Wave 1 database migrations enforce UUIDs;
- * PRN IDs are always canonical — vendor IDs are secondary (#14A §7.2, kit 03).
+ * ID contract: any non-empty string so identifiers stay readable
+ * (e.g. "so_seed_ac_not_turning_on_h1a2b3c4"). Uniqueness is enforced by the
+ * stores/database key constraints, not by format. PRN IDs are always
+ * canonical — vendor IDs are secondary (#14A §7.2, kit 03).
  */
 export const Id = z.string().min(1);
 
@@ -47,6 +48,13 @@ export const GeographyScope = z.discriminatedUnion("mode", [
     counties: z
       .array(z.object({ state: z.string().length(2), county: z.string().min(1) }))
       .min(1),
+  }),
+  z.object({
+    mode: z.literal("city"),
+    country: z.string().length(2).default("US"),
+    state: z.string().length(2),
+    county: z.string().min(1),
+    city: z.string().min(1),
   }),
 ]);
 export type GeographyScope = z.infer<typeof GeographyScope>;

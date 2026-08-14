@@ -67,6 +67,33 @@ money amounts must be finite; tests added for the PUBLISHED-only-from-QA_PASS
 property, IntakeContext schema shape (doors-not-brains), all-flags-off, kit
 name parity, and T1 non-graduation.
 
+## D-10 — Geography plan: nationwide vs local with per-type quotas — 2026-08-14 (owner decision)
+The admin page-creator control is a GeographyPlan: national on/off with a
+pages-per-period quota, plus multiple local entries (state, optional county),
+each with its own quota. Selecting a county AUTOMATICALLY expands coverage to
+EVERY city in that county (cities share the entry's quota pool) — full local
+SEO candidate coverage with zero manual city entry. DOORWAY GUARD: expansion
+creates candidates, not pages; scoring, distinctness, A06 QA and the owner
+publish gate still decide what exists (#23 §0.2, #14A §15.3). Implemented in
+`src/domain/search/geography-plan.ts` + `SeoFactoryPolicy.geography_plan`
+(replaces the single geography_scope field of D-3). Local target EXECUTION
+(vendor geo mapping + real city index) lands at the local-pages wave; until
+then local targets are counted and reported as deferred.
+
+## D-11 — Wave 1 adversarial verification fixes — 2026-08-14 (delegated judgment)
+Three-reviewer pass (canon PASS / correctness FAIL with 2 blockers / tests
+PASS) — all findings fixed same day: candidates now MERGE with existing
+records BEFORE scoring (seed metrics and the owner's rubric prior survive
+enrichment); batch processing is score-ordered and only page-worthy records
+absorb MERGEs (vendor list order can no longer starve an intent family);
+every vendor call records a UsageCostEvent and the budget brake also fires
+mid-run; DataForSEO task-level errors raise instead of silently emptying;
+metric snapshots persist (provenance chain intact); idempotency periods
+derive from the policy cadence; budget-stopped runs do not consume the
+idempotency slot; negation-aware keyword matching ("won't turn on" merges
+with "not turning on" but stays distinct from "won't turn off"); golden
+policy-value tests prevent silent threshold edits.
+
 ## D-7 — Existing owner accounts — 2026-08-14 (owner decision)
 Use the owner's existing GitHub (Willarme), Vercel and Supabase accounts
 rather than creating new ones. All credentials remain owner-held; the coding

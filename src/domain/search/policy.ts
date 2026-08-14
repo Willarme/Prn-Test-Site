@@ -1,12 +1,12 @@
 import { z } from "zod";
 import {
   Cadence,
-  GeographyScope,
   Id,
   IsoDateTime,
   SchemaVersion,
   UsdAmount,
 } from "@/domain/shared/primitives";
+import { GeographyPlan, plannedPagesPerPeriod } from "@/domain/search/geography-plan";
 
 export const PublishMode = z.enum(["OWNER_APPROVAL", "LOW_RISK_AUTO"]);
 export const AutonomyStage = z.enum(["T0", "T1", "T2", "T3"]);
@@ -27,8 +27,13 @@ export const SeoFactoryPolicy = z
     policy_id: Id,
     schema_version: SchemaVersion,
     version: z.number().int().positive(),
-    /** Owner Decision D-3: national | state | county admin control. */
-    geography_scope: GeographyScope,
+    /**
+     * Owner Decisions D-3 + D-10: nationwide vs local page targets with
+     * per-type quotas; local entries take state (+ optional county); county
+     * entries auto-expand to every city in the county as CANDIDATES (the
+     * quality gates still decide which pages exist — doorway guard).
+     */
+    geography_plan: GeographyPlan,
     allowed_categories: z.array(z.string()),
     discovery_scan_cadence: Cadence,
     search_console_ingest_cadence: Cadence,
@@ -61,6 +66,14 @@ export const SeoFactoryPolicy = z
         path: ["max_new_pages_per_period"],
       });
     }
+    if (plannedPagesPerPeriod(p.geography_plan) > p.max_new_pages_per_period) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message:
+          "the geography plan's combined per-type quotas exceed the hard max pages per period",
+        path: ["geography_plan"],
+      });
+    }
     const graduated = p.autonomy_stage === "T2" || p.autonomy_stage === "T3";
     if (p.publish_mode === "LOW_RISK_AUTO" && !graduated) {
       ctx.addIssue({
@@ -87,7 +100,10 @@ export const TRIAL_DEFAULT_SEO_FACTORY_POLICY: SeoFactoryPolicy = SeoFactoryPoli
   policy_id: "seo_factory_policy_default",
   schema_version: "1.0.0",
   version: 1,
-  geography_scope: { mode: "national", country: "US" },
+  geography_plan: {
+    national: { enabled: true, target_pages_per_period: 25 },
+    locals: [],
+  },
   allowed_categories: [
     "plumbing",
     "hvac",

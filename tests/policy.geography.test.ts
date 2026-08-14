@@ -33,8 +33,9 @@ describe("GeographyScope (Owner Decision D-3)", () => {
 });
 
 describe("SeoFactoryPolicy trial defaults", () => {
-  it("defaults to national geography (D-3)", () => {
-    expect(TRIAL_DEFAULT_SEO_FACTORY_POLICY.geography_scope.mode).toBe("national");
+  it("defaults to a national-only geography plan (D-3/D-10)", () => {
+    expect(TRIAL_DEFAULT_SEO_FACTORY_POLICY.geography_plan.national.enabled).toBe(true);
+    expect(TRIAL_DEFAULT_SEO_FACTORY_POLICY.geography_plan.locals).toEqual([]);
   });
 
   it("keeps the owner publish gate ON at trial autonomy stages", () => {
@@ -86,10 +87,16 @@ describe("SeoFactoryPolicy trial defaults", () => {
     expect(r.success).toBe(false);
   });
 
-  it("supports state/county admin selection (D-3 control)", () => {
+  it("supports mixed national + local selection with per-type quotas (D-10 control)", () => {
     const r = SeoFactoryPolicy.safeParse({
       ...TRIAL_DEFAULT_SEO_FACTORY_POLICY,
-      geography_scope: { mode: "state", country: "US", states: ["IN"] },
+      geography_plan: {
+        national: { enabled: true, target_pages_per_period: 20 },
+        locals: [
+          { local_target_id: "lt_allen", state: "IN", county: "Allen", target_pages_per_period: 10 },
+          { local_target_id: "lt_ohio", state: "OH", county: null, target_pages_per_period: 5 },
+        ],
+      },
     });
     expect(r.success).toBe(true);
   });

@@ -1,0 +1,47 @@
+{
+  "policy_id": "seo_factory_policy_default",
+  "schema_version": "1.0.0",
+  "version": 4,
+  "geography_plan": {
+    "national": {
+      "enabled": true,
+      "target_pages_per_period": 25
+    },
+    "locals": []
+  },
+  "allowed_categories": [
+    "plumbing",
+    "hvac",
+    "electrical",
+    "roofing",
+    "appliance",
+    "water_damage",
+    "general_home_problem"
+  ],
+  "discovery_scan_cadence": "weekly",
+  "search_console_ingest_cadence": "daily",
+  "target_qualified_pages_per_period": 25,
+  "max_new_pages_per_period": 40,
+  "min_opportunity_score": 70,
+  "min_search_volume": null,
+  "max_keyword_difficulty": null,
+  "min_intent_distinctness": "high",
+  "min_user_value_score": null,
+  "max_external_seo_spend_usd_month": 25,
+  "max_page_ai_spend_usd_month": 25,
+  "serp_depth": 10,
+  "include_trend_data": true,
+  "allow_refresh_existing": false,
+  "publish_mode": "OWNER_APPROVAL",
+  "human_approval_required": true,
+  "daily_publish_cap": 10,
+  "autonomy_stage": "T0",
+  "freshness_policy": {
+    "evergreen": 180,
+    "seasonal": 90,
+    "local": 120,
+    "safety": 60,
+    "volatile": 30
+  },
+  "effective_from": "2026-08-14T00:00:00Z"
+}
