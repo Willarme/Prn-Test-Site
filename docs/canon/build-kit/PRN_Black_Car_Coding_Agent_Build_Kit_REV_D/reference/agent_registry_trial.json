@@ -1,0 +1,77 @@
+[
+  {
+    "id": "A01",
+    "name": "Customer Problem Intelligence",
+    "stage": "LIVE"
+  },
+  {
+    "id": "A02",
+    "name": "Customer Value / Job Packet",
+    "stage": "LIVE"
+  },
+  {
+    "id": "A03",
+    "name": "SmartQuote Intelligence",
+    "stage": "TEST_ONLY"
+  },
+  {
+    "id": "A04",
+    "name": "Search Opportunity",
+    "stage": "LIVE"
+  },
+  {
+    "id": "A05",
+    "name": "Intent-Door Page Factory",
+    "stage": "LIVE"
+  },
+  {
+    "id": "A06",
+    "name": "Page Quality & Release",
+    "stage": "LIVE"
+  },
+  {
+    "id": "A07",
+    "name": "Company Health & Bottleneck",
+    "stage": "LIVE"
+  },
+  {
+    "id": "A08",
+    "name": "Metric & Event Steward",
+    "stage": "LIVE"
+  },
+  {
+    "id": "A09",
+    "name": "Data Quality & Reconciliation",
+    "stage": "LIVE"
+  },
+  {
+    "id": "A10",
+    "name": "Lean / 80:20",
+    "stage": "LIVE"
+  },
+  {
+    "id": "A14",
+    "name": "Trust Intake",
+    "stage": "LIVE"
+  },
+  {
+    "id": "A15",
+    "name": "Trust Integrity & Freshness",
+    "stage": "LITE_LIVE"
+  },
+  {
+    "id": "A25",
+    "name": "Strategic Intelligence / Post-App Horizon Watch",
+    "stage": "MINIMAL_LIVE"
+  },
+  {
+    "id": "A36",
+    "name": "AI-Native Readiness & Interface Steward",
+    "stage": "SKELETON_LIVE"
+  },
+  {
+    "id": "A27",
+    "name": "Experiment & Evaluation",
+    "stage": "HARNESS_NOW"
+  }
+]

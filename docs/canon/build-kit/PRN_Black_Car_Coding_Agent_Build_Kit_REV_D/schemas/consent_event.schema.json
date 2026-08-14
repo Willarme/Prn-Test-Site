@@ -1,0 +1,59 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "consent_event_id",
+    "scope",
+    "action",
+    "disclosure_version_id",
+    "occurred_at"
+  ],
+  "properties": {
+    "consent_event_id": {
+      "type": "string"
+    },
+    "person_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "guest_session_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "problem_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "scope": {
+      "type": "string"
+    },
+    "action": {
+      "enum": [
+        "GRANT",
+        "REVOKE",
+        "RENEW"
+      ]
+    },
+    "disclosure_version_id": {
+      "type": "string"
+    },
+    "surface": {
+      "type": "string"
+    },
+    "trace_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "occurred_at": {
+      "type": "string"
+    }
+  }
+}

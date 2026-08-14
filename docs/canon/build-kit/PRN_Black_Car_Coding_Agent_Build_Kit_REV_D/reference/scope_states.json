@@ -1,0 +1,33 @@
+{
+  "LIVE": [
+    "problem_analyzer",
+    "job_packet",
+    "customer_lite",
+    "trust_v1",
+    "provider_entity_resolution",
+    "provider_recommendation_lite",
+    "page_factory",
+    "feature_lab",
+    "admin_lite",
+    "machine_api",
+    "mcp_safe_test"
+  ],
+  "TEST_DOOR": [
+    "diy_packet",
+    "smartquote",
+    "provider_tracking",
+    "full_property_dashboard",
+    "tool_cloud",
+    "big_company_pricing"
+  ],
+  "FUTURE_DISABLED": [
+    "provider_dispatch",
+    "provider_live_status",
+    "scheduling",
+    "quote_acceptance",
+    "payments",
+    "purchasing",
+    "tool_rental_transaction",
+    "customer_outcome_followup"
+  ]
+}

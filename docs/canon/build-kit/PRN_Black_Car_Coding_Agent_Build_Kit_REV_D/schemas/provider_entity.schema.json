@@ -1,0 +1,58 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "provider_id",
+    "entity_kind",
+    "canonical_name",
+    "status"
+  ],
+  "properties": {
+    "provider_id": {
+      "type": "string"
+    },
+    "entity_kind": {
+      "enum": [
+        "organization",
+        "branch",
+        "individual"
+      ]
+    },
+    "parent_provider_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "canonical_name": {
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "candidate",
+        "active",
+        "review",
+        "quarantined",
+        "retired"
+      ]
+    },
+    "phone_e164": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "website_domain": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "aliases": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

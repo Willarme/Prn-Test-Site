@@ -1,0 +1,61 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "trust_response_id",
+    "trust_request_id",
+    "provider_input_mode",
+    "submitted_at"
+  ],
+  "properties": {
+    "trust_response_id": {
+      "type": "string"
+    },
+    "trust_request_id": {
+      "type": "string"
+    },
+    "provider_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "provider_input_mode": {
+      "enum": [
+        "autocomplete",
+        "manual",
+        "none"
+      ]
+    },
+    "raw_provider_text": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "personally_used": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "would_use_again": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "display_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "display_as_friend": {
+      "type": "boolean"
+    },
+    "submitted_at": {
+      "type": "string"
+    }
+  }
+}

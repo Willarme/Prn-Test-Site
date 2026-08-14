@@ -1,0 +1,76 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "problem_id",
+    "schema_version",
+    "status",
+    "source_channel",
+    "created_at"
+  ],
+  "properties": {
+    "problem_id": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "draft",
+        "clarifying",
+        "packet_ready",
+        "closed"
+      ]
+    },
+    "source_channel": {
+      "enum": [
+        "web",
+        "api",
+        "mcp",
+        "admin",
+        "import"
+      ]
+    },
+    "problem_summary": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "service_category": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "safety_state": {
+      "enum": [
+        "normal",
+        "review",
+        "urgent"
+      ]
+    },
+    "evidence_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "claim_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  }
+}

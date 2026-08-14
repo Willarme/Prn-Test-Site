@@ -1,0 +1,78 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "outcome_record_id",
+    "problem_id",
+    "status"
+  ],
+  "properties": {
+    "outcome_record_id": {
+      "type": "string"
+    },
+    "problem_id": {
+      "type": "string"
+    },
+    "actual_provider_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "actual_issue_found": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "actual_repair_performed": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "parts_used": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "actual_price": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "provider_correction": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "satisfaction": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "resolved_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "evidence_source": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "status": {
+      "enum": [
+        "reserved",
+        "captured",
+        "verified"
+      ]
+    }
+  }
+}
