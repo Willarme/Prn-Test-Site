@@ -161,7 +161,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     }
   });
 
-  return NextResponse.json({
+  const res = NextResponse.json({
     request_id: requestId,
     safety:
       problem.safety_state === "normal"
@@ -172,4 +172,24 @@ export async function POST(request: Request): Promise<NextResponse> {
             intake_may_continue: true,
           },
   });
+
+  // STAGING STOPGAP (D-21): until the database is connected, serverless
+  // instances don't share the runtime store, so the results page also reads
+  // the journey from the tester's OWN browser cookie (httpOnly; only that
+  // browser can see it — not shareable). Removed when Supabase lands.
+  if (process.env.VERCEL) {
+    const payload = Buffer.from(
+      JSON.stringify({ request_id: requestId, problem, evidence, packet })
+    ).toString("base64url");
+    if (payload.length < 3800) {
+      res.cookies.set("prn_last_journey", payload, {
+        httpOnly: true,
+        sameSite: "lax",
+        secure: true,
+        maxAge: 60 * 60 * 24 * 7,
+        path: "/results",
+      });
+    }
+  }
+  return res;
 }

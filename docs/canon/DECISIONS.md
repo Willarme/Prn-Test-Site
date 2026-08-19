@@ -5,6 +5,27 @@ The owner authorized continuing without per-wave stops and asked for a list
 of calls made in her absence. D-12 through D-19 are those calls — review and
 overturn freely; each is built to be cheap to change.
 
+## D-21 — Owner Admin dashboard now, not at Wave 8; staging stopgaps
+The owner could not test anything without visibility, so Admin/Company OS
+Lite's door-machine slice (#14A §17: Search/Opportunities, Pages incl.
+publish/rollback, Controls, Requests, Audit) was pulled forward. Access model:
+no ADMIN_PASSWORD → read-only preview (fixture data, noindex); ADMIN_PASSWORD
+set → owner sign-in cookie unlocks publish + policy edits (audited). Owner
+publish is the ONLY path to PUBLISHED; public serving remains behind the
+seo_doors master switch until launch. Two staging stopgaps until Supabase:
+(a) the results page can read the journey from the tester's own httpOnly
+cookie so the flow completes on Vercel (not shareable, only that browser);
+(b) policy edits on Vercel persist to /tmp (ephemeral). Both are labeled in
+the UI and removed when the database lands.
+
+## D-22 — Committed factory portfolio
+`npm run factory` runs A04 scoring → A05 build → A06 QA over the seed
+research and commits the result (data/factory/*.json) so staging + Admin show
+a real page portfolio with no database. Doors are built ONLY for
+problem-intent keywords (D-3); tool/calculator opportunities stay listed
+for a later product line. A test pins the committed output to a fresh
+evaluation so it can't drift silently.
+
 ## D-20 — Shell flags flipped ON at the slice gate; all flags now enforced
 intake_shell/results_shell/feature_lab flipped to enabled (their surfaces
 shipped fixture-backed at this gate); every route now actually consults its

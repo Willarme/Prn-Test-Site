@@ -1,5 +1,23 @@
 # Changelog
 
+## Owner Admin dashboard + committed factory portfolio (2026-08-14)
+
+- /admin (Company OS Lite, door-machine slice pulled forward — D-21):
+  Overview cockpit, Search opportunities (all 96 scored/recommended), Pages
+  (QA state/reasons, preview links, owner Approve & publish / Unpublish),
+  Page-creator controls (national vs local with per-type quotas; county →
+  all-cities coverage; thresholds; cadence; budgets; categories — validated
+  by the same policy contract, refused with reasons), Requests (journeys +
+  owner audit trail). Access: read-only preview until ADMIN_PASSWORD; owner
+  sign-in cookie unlocks mutations. Public serving stays behind master switch.
+- `npm run factory` — deterministic A04→A05→A06 over seed research, committed
+  to data/factory/*.json (staging + Admin need no database) — D-22.
+- Home page trial navigator (staging is private): admin, /start, concepts,
+  every staged door with QA badge.
+- Staging stopgaps (labeled, removed with Supabase): results page reads the
+  journey from the tester's own httpOnly cookie; policy edits persist to /tmp.
+- Owner publish is the only path to PUBLISHED; audited.
+
 ## Door Waves 2-7 — vertical slice complete, fixture-backed (2026-08-14)
 
 - Design system ported from the approved visual reference (asphalt/concrete/

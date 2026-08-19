@@ -1,4 +1,5 @@
-import { readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { dirname } from "node:path";
 import { SeoFactoryPolicy, TRIAL_DEFAULT_SEO_FACTORY_POLICY } from "@/domain/search/policy";
 import type { PolicyStore } from "@/platform/stores/interfaces";
 
@@ -12,22 +13,31 @@ import type { PolicyStore } from "@/platform/stores/interfaces";
 export class FilePolicyStore implements PolicyStore {
   constructor(private readonly filePath: string) {}
 
+  /** On Vercel the repo file is read-only; runtime edits live in /tmp (ephemeral). */
+  private overridePath(): string | null {
+    return process.env.VERCEL ? "/tmp/prn-runtime/seo-factory-policy.json" : null;
+  }
+
   async getActive(): Promise<SeoFactoryPolicy> {
-    try {
-      const raw = await readFile(this.filePath, "utf-8");
-      return SeoFactoryPolicy.parse(JSON.parse(raw));
-    } catch (err) {
-      if ((err as NodeJS.ErrnoException).code === "ENOENT") {
-        return TRIAL_DEFAULT_SEO_FACTORY_POLICY;
+    const candidates = [this.overridePath(), this.filePath].filter((p): p is string => p !== null);
+    for (const path of candidates) {
+      try {
+        const raw = await readFile(path, "utf-8");
+        return SeoFactoryPolicy.parse(JSON.parse(raw));
+      } catch (err) {
+        if ((err as NodeJS.ErrnoException).code === "ENOENT") continue;
+        throw err;
       }
-      throw err;
     }
+    return TRIAL_DEFAULT_SEO_FACTORY_POLICY;
   }
 
   async save(policy: SeoFactoryPolicy): Promise<void> {
     // Validation on save: an invalid policy (e.g. auto-publish before T2)
     // can never be persisted, no matter who edits the file.
     const valid = SeoFactoryPolicy.parse(policy);
-    await writeFile(this.filePath, JSON.stringify(valid, null, 2) + "\n", "utf-8");
+    const target = this.overridePath() ?? this.filePath;
+    await mkdir(dirname(target), { recursive: true });
+    await writeFile(target, JSON.stringify(valid, null, 2) + "\n", "utf-8");
   }
 }

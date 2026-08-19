@@ -1,0 +1,47 @@
+{
+  "generated_at": "2026-08-14T18:00:00Z",
+  "results": [
+    {
+      "page_spec_id": "ps_ac_blowing_warm_air_v1",
+      "state": "PASS",
+      "reasons": [],
+      "user_value_score": 80,
+      "critic_ran": true
+    },
+    {
+      "page_spec_id": "ps_furnace_blowing_cold_air_v1",
+      "state": "PASS",
+      "reasons": [],
+      "user_value_score": 80,
+      "critic_ran": true
+    },
+    {
+      "page_spec_id": "ps_ac_freezing_up_v1",
+      "state": "PASS",
+      "reasons": [],
+      "user_value_score": 80,
+      "critic_ran": true
+    },
+    {
+      "page_spec_id": "ps_why_is_my_ac_not_cooling_v1",
+      "state": "PASS",
+      "reasons": [],
+      "user_value_score": 80,
+      "critic_ran": true
+    },
+    {
+      "page_spec_id": "ps_furnace_not_working_v1",
+      "state": "PASS",
+      "reasons": [],
+      "user_value_score": 80,
+      "critic_ran": true
+    },
+    {
+      "page_spec_id": "ps_furnace_short_cycling_v1",
+      "state": "PASS",
+      "reasons": [],
+      "user_value_score": 80,
+      "critic_ran": true
+    }
+  ]
+}

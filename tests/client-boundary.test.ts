@@ -60,6 +60,20 @@ describe("client/server boundary", () => {
     }
   });
 
+  it("only owner-admin API routes can mutate publish state or policy", () => {
+    const mutators = allSrc.filter((f) => {
+      const c = readFileSync(f, "utf-8");
+      return /published_page_ids\s*=|admin_audit\.push|store\.save\(|policyStore\(\)\.save/.test(c);
+    });
+    for (const file of mutators) {
+      const normalized = file.replace(/\\/g, "/");
+      expect(
+        normalized.includes("/app/api/admin/") || normalized.includes("/platform/stores/"),
+        `${normalized} mutates owner state outside the admin API`
+      ).toBe(true);
+    }
+  });
+
   it("page/layout server components render from domain contracts, never vendor adapters", () => {
     const pageFiles = allSrc.filter((f) => /app[\\/].*(page|layout)\.tsx$/.test(f));
     for (const file of pageFiles) {

@@ -1,0 +1,570 @@
+{
+  "generated_at": "2026-08-14T18:00:00Z",
+  "specs": [
+    {
+      "page_spec_id": "ps_ac_blowing_warm_air_v1",
+      "schema_version": "1.0.0",
+      "page_id": "page_ac_blowing_warm_air_296c449d",
+      "version": 1,
+      "status": "STAGED",
+      "intent_id": "intent_ac_blowing_warm_air",
+      "intent_cluster_id": "ic_ac_blowing_warm_air",
+      "search_opportunity_id": "so_seed_ac_blowing_warm_air_296c449d",
+      "primary_query": "ac blowing warm air",
+      "supporting_queries": [],
+      "problem_family": "hvac",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "canonical_path": "/problems/ac-blowing-warm-air",
+      "title": "Ac Blowing Warm Air: What It Can Mean and What to Check",
+      "meta_description": "ac blowing warm air — what it can mean, the few things that are safe to check yourself, what not to do, and when it becomes urgent.",
+      "h1": "Ac blowing warm air",
+      "hero": {
+        "headline": "Ac blowing warm air?",
+        "subheadline": "What this usually involves, what's safe to check, and one organized next step."
+      },
+      "content_blocks": [
+        {
+          "block_id": "blk_intent_answer",
+          "kind": "intent_answer",
+          "heading": "What this usually means",
+          "body_md": "\"ac blowing warm air\" is a classic heating-and-cooling complaint pattern, and it usually traces to power, controls, airflow, or a component a technician can test quickly. The thermostat, a tripped breaker, a clogged filter, or a safety switch each produce symptoms that look identical from the hallway. A clear description of what the system does — and doesn't do — narrows it fast.",
+          "source_fact_bundle_ids": []
+        },
+        {
+          "block_id": "blk_safe_checks",
+          "kind": "safe_checks",
+          "heading": "Safe things to check first",
+          "body_md": "- Thermostat: display on, correct mode, set point past room temperature; fresh batteries if it uses them.\n- Breaker panel: look for a tripped HVAC/air-handler breaker; reset it ONCE at most.\n- Filter: if it's gray and matted, replace it — a starved system can shut itself down.",
+          "source_fact_bundle_ids": []
+        },
+        {
+          "block_id": "blk_do_not",
+          "kind": "do_not_do",
+          "heading": "What not to do",
+          "body_md": "- Don't keep resetting a breaker that re-trips.\n- Don't open the outdoor unit or its electrical compartment — capacitors hold a charge even unplugged.",
+          "source_fact_bundle_ids": []
+        },
+        {
+          "block_id": "blk_urgency",
+          "kind": "when_urgency_changes",
+          "heading": "When this becomes urgent",
+          "body_md": "Urgent if there's a burning or electrical smell, visible sparking, or a breaker that immediately re-trips — and prioritize on dangerous-heat or hard-freeze days for anyone heat- or cold-sensitive in the home.",
+          "source_fact_bundle_ids": []
+        },
+        {
+          "block_id": "blk_who",
+          "kind": "who_handles_it",
+          "heading": "Who typically handles this",
+          "body_md": "HVAC technicians handle this. If the trail leads to the breaker panel itself, it may cross into electrician territory — your packet helps route it right the first time.",
+          "source_fact_bundle_ids": []
+        }
+      ],
+      "safety_note_required": true,
+      "structured_data_plan": null,
+      "internal_links": [],
+      "intake_context": {
+        "page_id": "page_ac_blowing_warm_air_296c449d",
+        "intent_cluster_id": "ic_ac_blowing_warm_air",
+        "search_opportunity_id": "so_seed_ac_blowing_warm_air_296c449d",
+        "problem_family_hint": "hvac"
+      },
+      "monetization_eligible": false,
+      "monetization_policy_id": null,
+      "user_value_score": 80,
+      "indexed": true,
+      "noindex_reason": null,
+      "template_id": "tpl_intent_page",
+      "template_version": "1.0.0",
+      "experiment": {
+        "experiment_id": null,
+        "variant": null
+      },
+      "generation": {
+        "model": "content-bank-v1",
+        "prompt_id": null,
+        "prompt_version": null
+      },
+      "qa": {
+        "state": "PASS",
+        "reasons": []
+      },
+      "source_fact_bundle_ids": [],
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "page_spec_id": "ps_furnace_blowing_cold_air_v1",
+      "schema_version": "1.0.0",
+      "page_id": "page_furnace_blowing_cold_air_710b6b06",
+      "version": 1,
+      "status": "STAGED",
+      "intent_id": "intent_furnace_blowing_cold_air",
+      "intent_cluster_id": "ic_furnace_blowing_cold_air",
+      "search_opportunity_id": "so_seed_furnace_blowing_cold_air_710b6b06",
+      "primary_query": "furnace blowing cold air",
+      "supporting_queries": [],
+      "problem_family": "hvac",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "canonical_path": "/problems/furnace-blowing-cold-air",
+      "title": "Furnace Blowing Cold Air: What It Can Mean and What to Check",
+      "meta_description": "furnace blowing cold air — what it can mean, the few things that are safe to check yourself, what not to do, and when it becomes urgent.",
+      "h1": "Furnace blowing cold air",
+      "hero": {
+        "headline": "Furnace blowing cold air?",
+        "subheadline": "What this usually involves, what's safe to check, and one organized next step."
+      },
+      "content_blocks": [
+        {
+          "block_id": "blk_intent_answer",
+          "kind": "intent_answer",
+          "heading": "What this usually means",
+          "body_md": "\"furnace blowing cold air\" is a classic heating-and-cooling complaint pattern, and it usually traces to power, controls, airflow, or a component a technician can test quickly. The thermostat, a tripped breaker, a clogged filter, or a safety switch each produce symptoms that look identical from the hallway. A clear description of what the system does — and doesn't do — narrows it fast.",
+          "source_fact_bundle_ids": []
+        },
+        {
+          "block_id": "blk_safe_checks",
+          "kind": "safe_checks",
+          "heading": "Safe things to check first",
+          "body_md": "- Thermostat: display on, correct mode, set point past room temperature; fresh batteries if it uses them.\n- Breaker panel: look for a tripped HVAC/air-handler breaker; reset it ONCE at most.\n- Filter: if it's gray and matted, replace it — a starved system can shut itself down.",
+          "source_fact_bundle_ids": []
+        },
+        {
+          "block_id": "blk_do_not",
+          "kind": "do_not_do",
+          "heading": "What not to do",
+          "body_md": "- Don't keep resetting a breaker that re-trips.\n- Don't open the outdoor unit or its electrical compartment — capacitors hold a charge even unplugged.",
+          "source_fact_bundle_ids": []
+        },
+        {
+          "block_id": "blk_urgency",
+          "kind": "when_urgency_changes",
+          "heading": "When this becomes urgent",
+          "body_md": "Urgent if there's a burning or electrical smell, visible sparking, or a breaker that immediately re-trips — and prioritize on dangerous-heat or hard-freeze days for anyone heat- or cold-sensitive in the home.",
+          "source_fact_bundle_ids": []
+        },
+        {
+          "block_id": "blk_who",
+          "kind": "who_handles_it",
+          "heading": "Who typically handles this",
+          "body_md": "HVAC technicians handle this. If the trail leads to the breaker panel itself, it may cross into electrician territory — your packet helps route it right the first time.",
+          "source_fact_bundle_ids": []
+        }
+      ],
+      "safety_note_required": true,
+      "structured_data_plan": null,
+      "internal_links": [],
+      "intake_context": {
+        "page_id": "page_furnace_blowing_cold_air_710b6b06",
+        "intent_cluster_id": "ic_furnace_blowing_cold_air",
+        "search_opportunity_id": "so_seed_furnace_blowing_cold_air_710b6b06",
+        "problem_family_hint": "hvac"
+      },
+      "monetization_eligible": false,
+      "monetization_policy_id": null,
+      "user_value_score": 80,
+      "indexed": true,
+      "noindex_reason": null,
+      "template_id": "tpl_intent_page",
+      "template_version": "1.0.0",
+      "experiment": {
+        "experiment_id": null,
+        "variant": null
+      },
+      "generation": {
+        "model": "content-bank-v1",
+        "prompt_id": null,
+        "prompt_version": null
+      },
+      "qa": {
+        "state": "PASS",
+        "reasons": []
+      },
+      "source_fact_bundle_ids": [],
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "page_spec_id": "ps_ac_freezing_up_v1",
+      "schema_version": "1.0.0",
+      "page_id": "page_ac_freezing_up_4db635a9",
+      "version": 1,
+      "status": "STAGED",
+      "intent_id": "intent_ac_freezing_up",
+      "intent_cluster_id": "ic_ac_freezing_up",
+      "search_opportunity_id": "so_seed_ac_freezing_up_4db635a9",
+      "primary_query": "ac freezing up",
+      "supporting_queries": [],
+      "problem_family": "hvac",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "canonical_path": "/problems/ac-freezing-up",
+      "title": "Ac Freezing Up: What It Can Mean and What to Check",
+      "meta_description": "ac freezing up — what it can mean, the few things that are safe to check yourself, what not to do, and when it becomes urgent.",
+      "h1": "Ac freezing up",
+      "hero": {
+        "headline": "Ac freezing up?",
+        "subheadline": "What this usually involves, what's safe to check, and one organized next step."
+      },
+      "content_blocks": [
+        {
+          "block_id": "blk_intent_answer",
+          "kind": "intent_answer",
+          "heading": "What this usually means",
+          "body_md": "\"ac freezing up\" is a classic heating-and-cooling complaint pattern, and it usually traces to power, controls, airflow, or a component a technician can test quickly. The thermostat, a tripped breaker, a clogged filter, or a safety switch each produce symptoms that look identical from the hallway. A clear description of what the system does — and doesn't do — narrows it fast.",
+          "source_fact_bundle_ids": []
+        },
+        {
+          "block_id": "blk_safe_checks",
+          "kind": "safe_checks",
+          "heading": "Safe things to check first",
+          "body_md": "- Thermostat: display on, correct mode, set point past room temperature; fresh batteries if it uses them.\n- Breaker panel: look for a tripped HVAC/air-handler breaker; reset it ONCE at most.\n- Filter: if it's gray and matted, replace it — a starved system can shut itself down.",
+          "source_fact_bundle_ids": []
+        },
+        {
+          "block_id": "blk_do_not",
+          "kind": "do_not_do",
+          "heading": "What not to do",
+          "body_md": "- Don't keep resetting a breaker that re-trips.\n- Don't open the outdoor unit or its electrical compartment — capacitors hold a charge even unplugged.",
+          "source_fact_bundle_ids": []
+        },
+        {
+          "block_id": "blk_urgency",
+          "kind": "when_urgency_changes",
+          "heading": "When this becomes urgent",
+          "body_md": "Urgent if there's a burning or electrical smell, visible sparking, or a breaker that immediately re-trips — and prioritize on dangerous-heat or hard-freeze days for anyone heat- or cold-sensitive in the home.",
+          "source_fact_bundle_ids": []
+        },
+        {
+          "block_id": "blk_who",
+          "kind": "who_handles_it",
+          "heading": "Who typically handles this",
+          "body_md": "HVAC technicians handle this. If the trail leads to the breaker panel itself, it may cross into electrician territory — your packet helps route it right the first time.",
+          "source_fact_bundle_ids": []
+        }
+      ],
+      "safety_note_required": true,
+      "structured_data_plan": null,
+      "internal_links": [],
+      "intake_context": {
+        "page_id": "page_ac_freezing_up_4db635a9",
+        "intent_cluster_id": "ic_ac_freezing_up",
+        "search_opportunity_id": "so_seed_ac_freezing_up_4db635a9",
+        "problem_family_hint": "hvac"
+      },
+      "monetization_eligible": false,
+      "monetization_policy_id": null,
+      "user_value_score": 80,
+      "indexed": true,
+      "noindex_reason": null,
+      "template_id": "tpl_intent_page",
+      "template_version": "1.0.0",
+      "experiment": {
+        "experiment_id": null,
+        "variant": null
+      },
+      "generation": {
+        "model": "content-bank-v1",
+        "prompt_id": null,
+        "prompt_version": null
+      },
+      "qa": {
+        "state": "PASS",
+        "reasons": []
+      },
+      "source_fact_bundle_ids": [],
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "page_spec_id": "ps_why_is_my_ac_not_cooling_v1",
+      "schema_version": "1.0.0",
+      "page_id": "page_why_is_my_ac_not_cooling_abfd6984",
+      "version": 1,
+      "status": "STAGED",
+      "intent_id": "intent_why_is_my_ac_not_cooling",
+      "intent_cluster_id": "ic_why_is_my_ac_not_cooling",
+      "search_opportunity_id": "so_seed_why_is_my_ac_not_cooling_abfd6984",
+      "primary_query": "why is my ac not cooling",
+      "supporting_queries": [],
+      "problem_family": "hvac",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "canonical_path": "/problems/why-is-my-ac-not-cooling",
+      "title": "Why Is My Ac Not Cooling: What It Can Mean and What to Check",
+      "meta_description": "why is my ac not cooling — what it can mean, the few things that are safe to check yourself, what not to do, and when it becomes urgent.",
+      "h1": "Why is my ac not cooling",
+      "hero": {
+        "headline": "Why is my ac not cooling?",
+        "subheadline": "What this usually involves, what's safe to check, and one organized next step."
+      },
+      "content_blocks": [
+        {
+          "block_id": "blk_intent_answer",
+          "kind": "intent_answer",
+          "heading": "What this usually means",
+          "body_md": "\"why is my ac not cooling\" is a classic heating-and-cooling complaint pattern, and it usually traces to power, controls, airflow, or a component a technician can test quickly. The thermostat, a tripped breaker, a clogged filter, or a safety switch each produce symptoms that look identical from the hallway. A clear description of what the system does — and doesn't do — narrows it fast.",
+          "source_fact_bundle_ids": []
+        },
+        {
+          "block_id": "blk_safe_checks",
+          "kind": "safe_checks",
+          "heading": "Safe things to check first",
+          "body_md": "- Thermostat: display on, correct mode, set point past room temperature; fresh batteries if it uses them.\n- Breaker panel: look for a tripped HVAC/air-handler breaker; reset it ONCE at most.\n- Filter: if it's gray and matted, replace it — a starved system can shut itself down.",
+          "source_fact_bundle_ids": []
+        },
+        {
+          "block_id": "blk_do_not",
+          "kind": "do_not_do",
+          "heading": "What not to do",
+          "body_md": "- Don't keep resetting a breaker that re-trips.\n- Don't open the outdoor unit or its electrical compartment — capacitors hold a charge even unplugged.",
+          "source_fact_bundle_ids": []
+        },
+        {
+          "block_id": "blk_urgency",
+          "kind": "when_urgency_changes",
+          "heading": "When this becomes urgent",
+          "body_md": "Urgent if there's a burning or electrical smell, visible sparking, or a breaker that immediately re-trips — and prioritize on dangerous-heat or hard-freeze days for anyone heat- or cold-sensitive in the home.",
+          "source_fact_bundle_ids": []
+        },
+        {
+          "block_id": "blk_who",
+          "kind": "who_handles_it",
+          "heading": "Who typically handles this",
+          "body_md": "HVAC technicians handle this. If the trail leads to the breaker panel itself, it may cross into electrician territory — your packet helps route it right the first time.",
+          "source_fact_bundle_ids": []
+        }
+      ],
+      "safety_note_required": true,
+      "structured_data_plan": null,
+      "internal_links": [],
+      "intake_context": {
+        "page_id": "page_why_is_my_ac_not_cooling_abfd6984",
+        "intent_cluster_id": "ic_why_is_my_ac_not_cooling",
+        "search_opportunity_id": "so_seed_why_is_my_ac_not_cooling_abfd6984",
+        "problem_family_hint": "hvac"
+      },
+      "monetization_eligible": false,
+      "monetization_policy_id": null,
+      "user_value_score": 80,
+      "indexed": true,
+      "noindex_reason": null,
+      "template_id": "tpl_intent_page",
+      "template_version": "1.0.0",
+      "experiment": {
+        "experiment_id": null,
+        "variant": null
+      },
+      "generation": {
+        "model": "content-bank-v1",
+        "prompt_id": null,
+        "prompt_version": null
+      },
+      "qa": {
+        "state": "PASS",
+        "reasons": []
+      },
+      "source_fact_bundle_ids": [],
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "page_spec_id": "ps_furnace_not_working_v1",
+      "schema_version": "1.0.0",
+      "page_id": "page_furnace_not_working_81dce41c",
+      "version": 1,
+      "status": "STAGED",
+      "intent_id": "intent_furnace_not_working",
+      "intent_cluster_id": "ic_furnace_not_working",
+      "search_opportunity_id": "so_seed_furnace_not_working_81dce41c",
+      "primary_query": "furnace not working",
+      "supporting_queries": [],
+      "problem_family": "hvac",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "canonical_path": "/problems/furnace-not-working",
+      "title": "Furnace Not Working: What It Can Mean and What to Check",
+      "meta_description": "furnace not working — what it can mean, the few things that are safe to check yourself, what not to do, and when it becomes urgent.",
+      "h1": "Furnace not working",
+      "hero": {
+        "headline": "Furnace not working?",
+        "subheadline": "What this usually involves, what's safe to check, and one organized next step."
+      },
+      "content_blocks": [
+        {
+          "block_id": "blk_intent_answer",
+          "kind": "intent_answer",
+          "heading": "What this usually means",
+          "body_md": "\"furnace not working\" is a classic heating-and-cooling complaint pattern, and it usually traces to power, controls, airflow, or a component a technician can test quickly. The thermostat, a tripped breaker, a clogged filter, or a safety switch each produce symptoms that look identical from the hallway. A clear description of what the system does — and doesn't do — narrows it fast.",
+          "source_fact_bundle_ids": []
+        },
+        {
+          "block_id": "blk_safe_checks",
+          "kind": "safe_checks",
+          "heading": "Safe things to check first",
+          "body_md": "- Thermostat: display on, correct mode, set point past room temperature; fresh batteries if it uses them.\n- Breaker panel: look for a tripped HVAC/air-handler breaker; reset it ONCE at most.\n- Filter: if it's gray and matted, replace it — a starved system can shut itself down.",
+          "source_fact_bundle_ids": []
+        },
+        {
+          "block_id": "blk_do_not",
+          "kind": "do_not_do",
+          "heading": "What not to do",
+          "body_md": "- Don't keep resetting a breaker that re-trips.\n- Don't open the outdoor unit or its electrical compartment — capacitors hold a charge even unplugged.",
+          "source_fact_bundle_ids": []
+        },
+        {
+          "block_id": "blk_urgency",
+          "kind": "when_urgency_changes",
+          "heading": "When this becomes urgent",
+          "body_md": "Urgent if there's a burning or electrical smell, visible sparking, or a breaker that immediately re-trips — and prioritize on dangerous-heat or hard-freeze days for anyone heat- or cold-sensitive in the home.",
+          "source_fact_bundle_ids": []
+        },
+        {
+          "block_id": "blk_who",
+          "kind": "who_handles_it",
+          "heading": "Who typically handles this",
+          "body_md": "HVAC technicians handle this. If the trail leads to the breaker panel itself, it may cross into electrician territory — your packet helps route it right the first time.",
+          "source_fact_bundle_ids": []
+        }
+      ],
+      "safety_note_required": true,
+      "structured_data_plan": null,
+      "internal_links": [],
+      "intake_context": {
+        "page_id": "page_furnace_not_working_81dce41c",
+        "intent_cluster_id": "ic_furnace_not_working",
+        "search_opportunity_id": "so_seed_furnace_not_working_81dce41c",
+        "problem_family_hint": "hvac"
+      },
+      "monetization_eligible": false,
+      "monetization_policy_id": null,
+      "user_value_score": 80,
+      "indexed": true,
+      "noindex_reason": null,
+      "template_id": "tpl_intent_page",
+      "template_version": "1.0.0",
+      "experiment": {
+        "experiment_id": null,
+        "variant": null
+      },
+      "generation": {
+        "model": "content-bank-v1",
+        "prompt_id": null,
+        "prompt_version": null
+      },
+      "qa": {
+        "state": "PASS",
+        "reasons": []
+      },
+      "source_fact_bundle_ids": [],
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "page_spec_id": "ps_furnace_short_cycling_v1",
+      "schema_version": "1.0.0",
+      "page_id": "page_furnace_short_cycling_7abd7fb7",
+      "version": 1,
+      "status": "STAGED",
+      "intent_id": "intent_furnace_short_cycling",
+      "intent_cluster_id": "ic_furnace_short_cycling",
+      "search_opportunity_id": "so_seed_furnace_short_cycling_7abd7fb7",
+      "primary_query": "furnace short cycling",
+      "supporting_queries": [],
+      "problem_family": "hvac",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "canonical_path": "/problems/furnace-short-cycling",
+      "title": "Furnace Short Cycling: What It Can Mean and What to Check",
+      "meta_description": "furnace short cycling — what it can mean, the few things that are safe to check yourself, what not to do, and when it becomes urgent.",
+      "h1": "Furnace short cycling",
+      "hero": {
+        "headline": "Furnace short cycling?",
+        "subheadline": "What this usually involves, what's safe to check, and one organized next step."
+      },
+      "content_blocks": [
+        {
+          "block_id": "blk_intent_answer",
+          "kind": "intent_answer",
+          "heading": "What this usually means",
+          "body_md": "\"furnace short cycling\" is a classic heating-and-cooling complaint pattern, and it usually traces to power, controls, airflow, or a component a technician can test quickly. The thermostat, a tripped breaker, a clogged filter, or a safety switch each produce symptoms that look identical from the hallway. A clear description of what the system does — and doesn't do — narrows it fast.",
+          "source_fact_bundle_ids": []
+        },
+        {
+          "block_id": "blk_safe_checks",
+          "kind": "safe_checks",
+          "heading": "Safe things to check first",
+          "body_md": "- Thermostat: display on, correct mode, set point past room temperature; fresh batteries if it uses them.\n- Breaker panel: look for a tripped HVAC/air-handler breaker; reset it ONCE at most.\n- Filter: if it's gray and matted, replace it — a starved system can shut itself down.",
+          "source_fact_bundle_ids": []
+        },
+        {
+          "block_id": "blk_do_not",
+          "kind": "do_not_do",
+          "heading": "What not to do",
+          "body_md": "- Don't keep resetting a breaker that re-trips.\n- Don't open the outdoor unit or its electrical compartment — capacitors hold a charge even unplugged.",
+          "source_fact_bundle_ids": []
+        },
+        {
+          "block_id": "blk_urgency",
+          "kind": "when_urgency_changes",
+          "heading": "When this becomes urgent",
+          "body_md": "Urgent if there's a burning or electrical smell, visible sparking, or a breaker that immediately re-trips — and prioritize on dangerous-heat or hard-freeze days for anyone heat- or cold-sensitive in the home.",
+          "source_fact_bundle_ids": []
+        },
+        {
+          "block_id": "blk_who",
+          "kind": "who_handles_it",
+          "heading": "Who typically handles this",
+          "body_md": "HVAC technicians handle this. If the trail leads to the breaker panel itself, it may cross into electrician territory — your packet helps route it right the first time.",
+          "source_fact_bundle_ids": []
+        }
+      ],
+      "safety_note_required": true,
+      "structured_data_plan": null,
+      "internal_links": [],
+      "intake_context": {
+        "page_id": "page_furnace_short_cycling_7abd7fb7",
+        "intent_cluster_id": "ic_furnace_short_cycling",
+        "search_opportunity_id": "so_seed_furnace_short_cycling_7abd7fb7",
+        "problem_family_hint": "hvac"
+      },
+      "monetization_eligible": false,
+      "monetization_policy_id": null,
+      "user_value_score": 80,
+      "indexed": true,
+      "noindex_reason": null,
+      "template_id": "tpl_intent_page",
+      "template_version": "1.0.0",
+      "experiment": {
+        "experiment_id": null,
+        "variant": null
+      },
+      "generation": {
+        "model": "content-bank-v1",
+        "prompt_id": null,
+        "prompt_version": null
+      },
+      "qa": {
+        "state": "PASS",
+        "reasons": []
+      },
+      "source_fact_bundle_ids": [],
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    }
+  ],
+  "skipped": []
+}

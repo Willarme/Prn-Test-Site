@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { FEATURE_CONCEPTS } from "@/domain/feature-lab/concepts";
@@ -21,11 +22,34 @@ export default async function ResultsPage({
   const { request_id } = await params;
   const db = readDevDb();
   const session = db.intake_sessions.find((s) => s.request_id === request_id);
-  const problem = session
+  let problem = session
     ? db.problems.find((p) => p.intake_session_id === session.intake_session_id)
     : undefined;
-  const packet = problem ? db.packets.find((k) => k.problem_id === problem.problem_id) : null;
-  if (!session || !problem || !packet) {
+  const problemId = problem?.problem_id;
+  let packet = problemId ? db.packets.find((k) => k.problem_id === problemId) : null;
+  let fromCookie = false;
+  if (!packet) {
+    // Staging stopgap (D-21): journey carried in the tester's own browser.
+    const jar = await cookies();
+    const raw = jar.get("prn_last_journey")?.value;
+    if (raw) {
+      try {
+        const j = JSON.parse(Buffer.from(raw, "base64url").toString("utf-8")) as {
+          request_id: string;
+          problem: typeof problem;
+          packet: NonNullable<typeof packet>;
+        };
+        if (j.request_id === request_id) {
+          problem = j.problem;
+          packet = j.packet;
+          fromCookie = true;
+        }
+      } catch {
+        /* ignore malformed cookie */
+      }
+    }
+  }
+  if ((!session && !fromCookie) || !problem || !packet) {
     // Staging preview uses ephemeral storage until Supabase is wired — be
     // honest instead of a bare 404 when a record didn't survive a cold start.
     if (process.env.VERCEL) {
@@ -73,6 +97,7 @@ export default async function ResultsPage({
           </p>
           <p className="mono" style={{ color: "var(--on-dark-faint)", marginTop: 12 }}>
             Packet {packet.job_packet_id} · v{packet.packet_version} · engine: {packet.engine}
+            {fromCookie ? " · staging: shown from this browser only" : ""}
           </p>
         </div>
       </section>

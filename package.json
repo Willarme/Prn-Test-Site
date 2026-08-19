@@ -13,6 +13,7 @@
     "test:watch": "vitest",
     "check": "npm run lint && npm run typecheck && npm run test",
     "policy": "tsx tools/policy.ts",
+    "factory": "tsx tools/run-factory.ts",
     "seed:convert": "python tools/convert-seed-xlsx.py"
   },
   "dependencies": {

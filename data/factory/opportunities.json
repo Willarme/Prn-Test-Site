@@ -1,0 +1,3820 @@
+{
+  "generated_at": "2026-08-14T18:00:00Z",
+  "summary": {
+    "total": 96,
+    "by_recommendation": {
+      "NEW": 11,
+      "WATCH": 78,
+      "REJECT": 3,
+      "MERGE": 4
+    },
+    "by_intent": {
+      "problem": 20,
+      "tool": 59,
+      "unknown": 17
+    },
+    "needs_enrichment": 58
+  },
+  "opportunities": [
+    {
+      "search_opportunity_id": "so_seed_ac_blowing_warm_air_296c449d",
+      "schema_version": "1.0.0",
+      "keyword": "ac blowing warm air",
+      "intent_cluster_id": null,
+      "cluster_label": "HVAC",
+      "problem_family_hint": "hvac",
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": 1700,
+      "keyword_difficulty": 0,
+      "cpc_usd": null,
+      "intent_type": "problem",
+      "opportunity_score": 83.8,
+      "score_components": {
+        "demand": 53.840815356304574,
+        "winnability": 100,
+        "intent_fit": 100,
+        "seed_prior": 84,
+        "scoring_version_1": 1,
+        "seed_manual_score": 84
+      },
+      "recommendation": "NEW",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "Public SEO dataset — verify in Ahrefs",
+        "source_url": "https://seobrothers.com/guides/hvac-seo/",
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Trial - Problem Intent + Trial - Ahrefs Queue); geography assumed US-national; metrics require vendor validation. Seed evidence — tier: A — Research/Build | SERP examples: https://www.carrier.com/us/en/residential/hvac-resources/air-conditioners/why-is-my-ac-blowing-hot-air/ ; https://www.reddit.com/r/hvacadvice/comments/1509b6i/hvac_blowing_warm_air/ ; https://downeastheating.com/blog/ac-blowing-warm-air-heres-what-to-do"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": "2026-08-10T00:00:00Z",
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_furnace_blowing_cold_air_710b6b06",
+      "schema_version": "1.0.0",
+      "keyword": "furnace blowing cold air",
+      "intent_cluster_id": null,
+      "cluster_label": "HVAC",
+      "problem_family_hint": "hvac",
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": 2700,
+      "keyword_difficulty": 2,
+      "cpc_usd": null,
+      "intent_type": "problem",
+      "opportunity_score": 83.6,
+      "score_components": {
+        "demand": 57.18939606931646,
+        "winnability": 96,
+        "intent_fit": 100,
+        "seed_prior": 84,
+        "scoring_version_1": 1,
+        "seed_manual_score": 84
+      },
+      "recommendation": "NEW",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "Public SEO dataset — verify in Ahrefs",
+        "source_url": "https://seobrothers.com/guides/hvac-seo/",
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Trial - Problem Intent + Trial - Ahrefs Queue); geography assumed US-national; metrics require vendor validation. Seed evidence — tier: A — Research/Build | SERP examples: https://www.reddit.com/r/hvacadvice/comments/183l0eo/furnace_is_blowing_cold_air/ ; https://www.bryant.com/en/us/products/gas-furnaces/blowing-cold-air/ ; https://mcnallyhvac.com/tips-advice/why-is-my-furnace-blowing-cold-air/"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": "2026-08-10T00:00:00Z",
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_ac_not_turning_on_c390a8c5",
+      "schema_version": "1.0.0",
+      "keyword": "ac not turning on",
+      "intent_cluster_id": null,
+      "cluster_label": "HVAC",
+      "problem_family_hint": "hvac",
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": 3300,
+      "keyword_difficulty": 3,
+      "cpc_usd": null,
+      "intent_type": "problem",
+      "opportunity_score": 83.4,
+      "score_components": {
+        "demand": 58.641898997964795,
+        "winnability": 94,
+        "intent_fit": 100,
+        "seed_prior": 84,
+        "scoring_version_1": 1,
+        "seed_manual_score": 84
+      },
+      "recommendation": "NEW",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "Public SEO dataset — verify in Ahrefs",
+        "source_url": "https://seobrothers.com/guides/hvac-seo/",
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Trial - Problem Intent + Trial - Ahrefs Queue); geography assumed US-national; metrics require vendor validation. Seed evidence — tier: A — Research/Build | SERP examples: https://www.reddit.com/r/Home/comments/13nejt8/where_to_start_with_ac_not_turning_on_im_posting/ ; https://www.carrier.com/us/en/residential/hvac-resources/air-conditioners/ac-unit-not-turning-on/ ; https://www.trane.com/residential/en/resources/troubleshooting/air-conditioners/ac-not-turning-on/"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": "2026-08-10T00:00:00Z",
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_ac_freezing_up_4db635a9",
+      "schema_version": "1.0.0",
+      "keyword": "ac freezing up",
+      "intent_cluster_id": null,
+      "cluster_label": "HVAC",
+      "problem_family_hint": "hvac",
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": 2000,
+      "keyword_difficulty": 2,
+      "cpc_usd": null,
+      "intent_type": "problem",
+      "opportunity_score": 82.9,
+      "score_components": {
+        "demand": 55.01716659439969,
+        "winnability": 96,
+        "intent_fit": 100,
+        "seed_prior": 84,
+        "scoring_version_1": 1,
+        "seed_manual_score": 84
+      },
+      "recommendation": "NEW",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "Public SEO dataset — verify in Ahrefs",
+        "source_url": "https://seobrothers.com/guides/hvac-seo/",
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Trial - Problem Intent + Trial - Ahrefs Queue); geography assumed US-national; metrics require vendor validation. Seed evidence — tier: A — Research/Build | SERP examples: https://www.reddit.com/r/hvacadvice/comments/1db6up4/air_conditioning_system_frozen_over/ ; https://www.petro.com/resource-center/why-ac-freezing-up ; https://www.aireserv.com/about/blog/why-is-my-air-conditioner-frozen-and-how-do-i-fi/"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": "2026-08-10T00:00:00Z",
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_why_is_my_ac_not_cooling_abfd6984",
+      "schema_version": "1.0.0",
+      "keyword": "why is my ac not cooling",
+      "intent_cluster_id": null,
+      "cluster_label": "HVAC",
+      "problem_family_hint": "hvac",
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": 1300,
+      "keyword_difficulty": 1,
+      "cpc_usd": null,
+      "intent_type": "problem",
+      "opportunity_score": 82.6,
+      "score_components": {
+        "demand": 51.89905587178062,
+        "winnability": 98,
+        "intent_fit": 100,
+        "seed_prior": 84,
+        "scoring_version_1": 1,
+        "seed_manual_score": 84
+      },
+      "recommendation": "NEW",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "Public SEO dataset — verify in Ahrefs",
+        "source_url": "https://seobrothers.com/guides/hvac-seo/",
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Trial - Problem Intent + Trial - Ahrefs Queue); geography assumed US-national; metrics require vendor validation. Seed evidence — tier: A — Research/Build | SERP examples: https://www.hometips.com/repair-fix/central-air-conditioner.html"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": "2026-08-10T00:00:00Z",
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_furnace_not_working_81dce41c",
+      "schema_version": "1.0.0",
+      "keyword": "furnace not working",
+      "intent_cluster_id": null,
+      "cluster_label": "HVAC",
+      "problem_family_hint": "hvac",
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": 1500,
+      "keyword_difficulty": 1,
+      "cpc_usd": null,
+      "intent_type": "problem",
+      "opportunity_score": 82.1,
+      "score_components": {
+        "demand": 52.93485431759469,
+        "winnability": 98,
+        "intent_fit": 100,
+        "seed_prior": 79,
+        "scoring_version_1": 1,
+        "seed_manual_score": 79
+      },
+      "recommendation": "NEW",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "Public SEO dataset — verify in Ahrefs",
+        "source_url": "https://seobrothers.com/guides/hvac-seo/",
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Trial - Problem Intent); geography assumed US-national; metrics require vendor validation. Seed evidence — tier: B — Validate | SERP examples: https://www.carrier.com/us/en/residential/hvac-resources/furnaces/"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": "2026-08-10T00:00:00Z",
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_furnace_short_cycling_7abd7fb7",
+      "schema_version": "1.0.0",
+      "keyword": "furnace short cycling",
+      "intent_cluster_id": null,
+      "cluster_label": "HVAC",
+      "problem_family_hint": "hvac",
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": 1200,
+      "keyword_difficulty": 2,
+      "cpc_usd": null,
+      "intent_type": "problem",
+      "opportunity_score": 80.4,
+      "score_components": {
+        "demand": 51.31968743412708,
+        "winnability": 96,
+        "intent_fit": 100,
+        "seed_prior": 75,
+        "scoring_version_1": 1,
+        "seed_manual_score": 75
+      },
+      "recommendation": "NEW",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "Public SEO dataset — verify in Ahrefs",
+        "source_url": "https://seobrothers.com/guides/hvac-seo/",
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Trial - Problem Intent); geography assumed US-national; metrics require vendor validation. Seed evidence — tier: B — Validate"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": "2026-08-10T00:00:00Z",
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_concrete_calculator_3defdb7d",
+      "schema_version": "1.0.0",
+      "keyword": "concrete calculator",
+      "intent_cluster_id": null,
+      "cluster_label": "Concrete",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": 550000,
+      "keyword_difficulty": null,
+      "cpc_usd": null,
+      "intent_type": "tool",
+      "opportunity_score": 73.4,
+      "score_components": {
+        "demand": 95.67271149157074,
+        "winnability": 50,
+        "intent_fit": 70,
+        "seed_prior": 81,
+        "scoring_version_1": 1,
+        "seed_manual_score": 81
+      },
+      "recommendation": "WATCH",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "seed workbook (unvalidated public estimate)",
+        "source_url": "https://marketkeep.com/seo-keywords-for-concrete-contractors/",
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Trial - Calculators); geography assumed US-national; metrics require vendor validation. Seed evidence — tier: A — Research/Build | note: BUILD LATER / CLUSTER HUB | SERP examples: https://www.concretenetwork.com/concrete/howmuch/calculator.htm ; https://mudmixer.com/pages/concrete-calculator"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": "2026-08-10T00:00:00Z",
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_uuid_generator_27ba84ae",
+      "schema_version": "1.0.0",
+      "keyword": "uuid generator",
+      "intent_cluster_id": null,
+      "cluster_label": "Developer Utilities",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": 110000,
+      "keyword_difficulty": 22,
+      "cpc_usd": 0.85,
+      "intent_type": "tool",
+      "opportunity_score": 73.2,
+      "score_components": {
+        "demand": 84.02321141930375,
+        "winnability": 56,
+        "intent_fit": 70,
+        "seed_prior": 91,
+        "scoring_version_1": 1,
+        "seed_manual_score": 91
+      },
+      "recommendation": "NEW",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "KDROI public estimate — validate in Ahrefs",
+        "source_url": "https://kdroi.io/analysis/uuid-generator",
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Researched Opportunities); geography assumed US-national; metrics require vendor validation. Seed evidence — tier: A - Research first | note: RESEARCH FIRST | SERP examples: https://www.uuidgenerator.net/ ; https://guidgenerator.com/ ; https://kinde.com/tools/online-uuid-generator/"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": "2026-08-10T00:00:00Z",
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_water_heater_leaking_from_bottom_cbcffd06",
+      "schema_version": "1.0.0",
+      "keyword": "water heater leaking from bottom",
+      "intent_cluster_id": null,
+      "cluster_label": "Plumbing",
+      "problem_family_hint": "plumbing",
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": 8100,
+      "keyword_difficulty": null,
+      "cpc_usd": 15.19,
+      "intent_type": "problem",
+      "opportunity_score": 72.4,
+      "score_components": {
+        "demand": 65.14141698131083,
+        "winnability": 50,
+        "intent_fit": 100,
+        "seed_prior": 86,
+        "scoring_version_1": 1,
+        "seed_manual_score": 86
+      },
+      "recommendation": "WATCH",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "Global volume + paid difficulty only; SEO KD unknown",
+        "source_url": "https://adtargeting.io/industry/plumbing-keywords",
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Trial - Problem Intent + Trial - Ahrefs Queue); geography assumed US-national; metrics require vendor validation. Seed evidence — tier: A — Research/Build | SERP examples: https://www.reddit.com/ ; https://www.qualityplumbing.cc/ ; https://www.aaronservices.com/"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": "2026-08-10T00:00:00Z",
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_hash_generator_adbe0641",
+      "schema_version": "1.0.0",
+      "keyword": "hash generator",
+      "intent_cluster_id": null,
+      "cluster_label": "Developer Utilities",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": 45000,
+      "keyword_difficulty": 20,
+      "cpc_usd": 1.15,
+      "intent_type": "tool",
+      "opportunity_score": 71.8,
+      "score_components": {
+        "demand": 77.55354189625572,
+        "winnability": 60,
+        "intent_fit": 70,
+        "seed_prior": 87,
+        "scoring_version_1": 1,
+        "seed_manual_score": 87
+      },
+      "recommendation": "NEW",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "KDROI public estimate — validate in Ahrefs",
+        "source_url": "https://kdroi.io/analysis/hash-generator",
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Researched Opportunities); geography assumed US-national; metrics require vendor validation. Seed evidence — tier: A - Research first | note: RESEARCH FIRST | SERP examples: https://www.md5hashgenerator.com/ ; https://coddy.tech/tools/hash-generator"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": "2026-08-10T00:00:00Z",
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_timestamp_converter_1ca6f316",
+      "schema_version": "1.0.0",
+      "keyword": "timestamp converter",
+      "intent_cluster_id": null,
+      "cluster_label": "Developer / Time",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": 48000,
+      "keyword_difficulty": 22,
+      "cpc_usd": 0.95,
+      "intent_type": "tool",
+      "opportunity_score": 70.5,
+      "score_components": {
+        "demand": 78.02068728959313,
+        "winnability": 56,
+        "intent_fit": 70,
+        "seed_prior": 85,
+        "scoring_version_1": 1,
+        "seed_manual_score": 85
+      },
+      "recommendation": "NEW",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "KDROI public estimate — validate in Ahrefs",
+        "source_url": "https://kdroi.io/analysis/timestamp-converter",
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Researched Opportunities); geography assumed US-national; metrics require vendor validation. Seed evidence — tier: A - Research first | note: RESEARCH FIRST | SERP examples: https://www.devtools.tools/timestamp-converter"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": "2026-08-10T00:00:00Z",
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_hex_to_rgb_converter_a23ebf8d",
+      "schema_version": "1.0.0",
+      "keyword": "hex to rgb converter",
+      "intent_cluster_id": null,
+      "cluster_label": "Color / Developer",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": 55000,
+      "keyword_difficulty": 20,
+      "cpc_usd": 0.75,
+      "intent_type": "tool",
+      "opportunity_score": 70.5,
+      "score_components": {
+        "demand": 79.00604482490407,
+        "winnability": 60,
+        "intent_fit": 70,
+        "seed_prior": 75,
+        "scoring_version_1": 1,
+        "seed_manual_score": 75
+      },
+      "recommendation": "NEW",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "KDROI public estimate — validate in Ahrefs",
+        "source_url": "https://kdroi.io/analysis/hex-to-rgb-converter",
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Researched Opportunities); geography assumed US-national; metrics require vendor validation. Seed evidence — tier: B - Validate | note: CLUSTER ONLY | SERP examples: https://htmlcolorcodes.com/hex-to-rgb/ ; https://www.rapidtables.com/convert/color/hex-to-rgb.html ; https://openreplay.com/tools/hex-to-rgb/"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": "2026-08-10T00:00:00Z",
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_slug_generator_1c658f9e",
+      "schema_version": "1.0.0",
+      "keyword": "slug generator",
+      "intent_cluster_id": null,
+      "cluster_label": "Developer Utilities",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": 22000,
+      "keyword_difficulty": 18,
+      "cpc_usd": 0.65,
+      "intent_type": "tool",
+      "opportunity_score": 69.7,
+      "score_components": {
+        "demand": 72.37371134703677,
+        "winnability": 64,
+        "intent_fit": 70,
+        "seed_prior": 75,
+        "scoring_version_1": 1,
+        "seed_manual_score": 75
+      },
+      "recommendation": "WATCH",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "KDROI public estimate — validate in Ahrefs",
+        "source_url": "https://kdroi.io/analysis/slug-generator",
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Researched Opportunities); geography assumed US-national; metrics require vendor validation. Seed evidence — tier: B - Validate | note: VALIDATE"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": "2026-08-10T00:00:00Z",
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_garage_door_won_t_close_a3ad6a42",
+      "schema_version": "1.0.0",
+      "keyword": "garage door won't close",
+      "intent_cluster_id": null,
+      "cluster_label": "Garage Door",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": 2400,
+      "keyword_difficulty": null,
+      "cpc_usd": 11.79,
+      "intent_type": "problem",
+      "opportunity_score": 69.4,
+      "score_components": {
+        "demand": 56.33685402852676,
+        "winnability": 50,
+        "intent_fit": 100,
+        "seed_prior": 83,
+        "scoring_version_1": 1,
+        "seed_manual_score": 83
+      },
+      "recommendation": "WATCH",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "Google Keyword Planner-style volume/CPC; SEO KD not provided",
+        "source_url": "https://dynamicorbitmedia.com/garage-door-keywords/",
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Trial - Problem Intent + Trial - Ahrefs Queue); geography assumed US-national; metrics require vendor validation. Seed evidence — tier: A — Research/Build | SERP examples: https://www.reddit.com/r/HomeImprovement/comments/pzyepj/my_garage_door_doesnt_close_by_itself_anymore_is/ ; https://support.chamberlaingroup.com/s/closing-issues ; https://vergedoors.com/blog/my-garage-door-wont-close-why-is-this-happening/ ; https://cunninghamdoor.com/blog/garage-door-not-closing/"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": "2026-08-10T00:00:00Z",
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_concrete_slab_calculator_ffdff70d",
+      "schema_version": "1.0.0",
+      "keyword": "concrete slab calculator",
+      "intent_cluster_id": null,
+      "cluster_label": "Concrete",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": 49500,
+      "keyword_difficulty": null,
+      "cpc_usd": null,
+      "intent_type": "tool",
+      "opportunity_score": 69.2,
+      "score_components": {
+        "demand": 78.24341998222614,
+        "winnability": 50,
+        "intent_fit": 70,
+        "seed_prior": 88,
+        "scoring_version_1": 1,
+        "seed_manual_score": 88
+      },
+      "recommendation": "WATCH",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "seed workbook (unvalidated public estimate)",
+        "source_url": "https://marketkeep.com/seo-keywords-for-concrete-contractors/",
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Trial - Calculators + Trial - Ahrefs Queue); geography assumed US-national; metrics require vendor validation. Seed evidence — tier: A — Research/Build | note: GREENLIGHT FOR AHREFS CHECK | SERP examples: https://www.smyrnareadymix.com/calculators/concreteslab.html ; https://sutherlands.com/material-calculators/concrete-slab"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": "2026-08-10T00:00:00Z",
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_gravel_calculator_c10869bb",
+      "schema_version": "1.0.0",
+      "keyword": "gravel calculator",
+      "intent_cluster_id": null,
+      "cluster_label": "Gravel",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": 49500,
+      "keyword_difficulty": null,
+      "cpc_usd": 3.44,
+      "intent_type": "tool",
+      "opportunity_score": 68.6,
+      "score_components": {
+        "demand": 78.24341998222614,
+        "winnability": 50,
+        "intent_fit": 70,
+        "seed_prior": 84,
+        "scoring_version_1": 1,
+        "seed_manual_score": 84
+      },
+      "recommendation": "WATCH",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "seed workbook (unvalidated public estimate)",
+        "source_url": "https://www.seodata.dev/keyword/gravel-calculator",
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Trial - Calculators); geography assumed US-national; metrics require vendor validation. Seed evidence — tier: A — Research/Build | note: BUILD AS HUB AFTER LONG-TAIL ENTRY | SERP examples: https://www.calculator.net/gravel-calculator.html ; https://www.inchcalculator.com/gravel-calculator/ ; https://gravelcalculator.site/"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": "2026-08-10T00:00:00Z",
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_garage_door_off_track_66270381",
+      "schema_version": "1.0.0",
+      "keyword": "garage door off track",
+      "intent_cluster_id": null,
+      "cluster_label": "Garage Door",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": 2400,
+      "keyword_difficulty": null,
+      "cpc_usd": 16.48,
+      "intent_type": "problem",
+      "opportunity_score": 68.3,
+      "score_components": {
+        "demand": 56.33685402852676,
+        "winnability": 50,
+        "intent_fit": 100,
+        "seed_prior": 76,
+        "scoring_version_1": 1,
+        "seed_manual_score": 76
+      },
+      "recommendation": "WATCH",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "Volume/CPC public; SEO KD not provided",
+        "source_url": "https://dynamicorbitmedia.com/garage-door-keywords/",
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Trial - Problem Intent); geography assumed US-national; metrics require vendor validation. Seed evidence — tier: B — Validate"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": "2026-08-10T00:00:00Z",
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_random_number_generator_44af6c79",
+      "schema_version": "1.0.0",
+      "keyword": "random number generator",
+      "intent_cluster_id": null,
+      "cluster_label": "Generators",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": 180000,
+      "keyword_difficulty": 22,
+      "cpc_usd": 0.55,
+      "intent_type": "tool",
+      "opportunity_score": 68.1,
+      "score_components": {
+        "demand": 87.58787508505512,
+        "winnability": 56,
+        "intent_fit": 70,
+        "seed_prior": 50,
+        "scoring_version_1": 1
+      },
+      "recommendation": "WATCH",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "seed workbook (unvalidated public estimate)",
+        "source_url": "https://kdroi.io/analysis/random-number-generator",
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Validation Queue); geography assumed US-national; metrics require vendor validation. Seed evidence — note: Manual SERP review still needed"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": null,
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_aspect_ratio_calculator_7af274ff",
+      "schema_version": "1.0.0",
+      "keyword": "aspect ratio calculator",
+      "intent_cluster_id": null,
+      "cluster_label": "Media / Design",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": 42000,
+      "keyword_difficulty": 25,
+      "cpc_usd": 0.85,
+      "intent_type": "tool",
+      "opportunity_score": 67.6,
+      "score_components": {
+        "demand": 77.05415483996502,
+        "winnability": 50,
+        "intent_fit": 70,
+        "seed_prior": 80,
+        "scoring_version_1": 1,
+        "seed_manual_score": 80
+      },
+      "recommendation": "WATCH",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "KDROI public estimate — validate in Ahrefs",
+        "source_url": "https://kdroi.io/analysis/aspect-ratio-calculator",
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Researched Opportunities); geography assumed US-national; metrics require vendor validation. Seed evidence — tier: A - Research first | note: RESEARCH FIRST | SERP examples: https://calculateaspectratio.com/ ; https://www.digitalrebellion.com/webapps/aspectcalc ; https://www.calculatorsoup.com/calculators/technology/aspect-ratio-calculator.php"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": "2026-08-10T00:00:00Z",
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_garage_door_not_closing_all_the_way_47d65b70",
+      "schema_version": "1.0.0",
+      "keyword": "garage door not closing all the way",
+      "intent_cluster_id": null,
+      "cluster_label": "Garage Door",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": 880,
+      "keyword_difficulty": null,
+      "cpc_usd": 10.18,
+      "intent_type": "problem",
+      "opportunity_score": 67,
+      "score_components": {
+        "demand": 49.07471120250281,
+        "winnability": 50,
+        "intent_fit": 100,
+        "seed_prior": 82,
+        "scoring_version_1": 1,
+        "seed_manual_score": 82
+      },
+      "recommendation": "WATCH",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "Volume/CPC public; SEO KD not provided",
+        "source_url": "https://dynamicorbitmedia.com/garage-door-keywords/",
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Trial - Problem Intent); geography assumed US-national; metrics require vendor validation. Seed evidence — tier: A — Research/Build | SERP examples: https://www.justanswer.com/home-improvement/67xhn-garage-door-won-t-close-way-goes-part.html"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": "2026-08-10T00:00:00Z",
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_garbage_disposal_not_working_35f82200",
+      "schema_version": "1.0.0",
+      "keyword": "garbage disposal not working",
+      "intent_cluster_id": null,
+      "cluster_label": "Plumbing",
+      "problem_family_hint": "plumbing",
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": 6600,
+      "keyword_difficulty": 32,
+      "cpc_usd": 20.5,
+      "intent_type": "problem",
+      "opportunity_score": 66.4,
+      "score_components": {
+        "demand": 63.659065592364485,
+        "winnability": 36,
+        "intent_fit": 100,
+        "seed_prior": 77,
+        "scoring_version_1": 1,
+        "seed_manual_score": 77
+      },
+      "recommendation": "WATCH",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "Public SEO dataset",
+        "source_url": "https://www.causalfunnel.com/blog/top-100-plumbing-keywords-to-boost-your-business/",
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Trial - Problem Intent + Trial - Ahrefs Queue); geography assumed US-national; metrics require vendor validation. Seed evidence — tier: B — Validate | SERP examples: https://www.rotorooter.com/blog/garbage-disposal/3-ways-to-fix-a-garbage-disposal/ ; https://www.reddit.com/r/HomeImprovement/comments/1qdj3u/garbage_disposal_not_working/ ; https://www.mccoys.com/diy-center/tips-techniques/garbage-disposal-not-working"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": "2026-08-10T00:00:00Z",
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_binary_converter_e3516c41",
+      "schema_version": "1.0.0",
+      "keyword": "binary converter",
+      "intent_cluster_id": null,
+      "cluster_label": "Converters",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": 75000,
+      "keyword_difficulty": 22,
+      "cpc_usd": 0.55,
+      "intent_type": "tool",
+      "opportunity_score": 66.2,
+      "score_components": {
+        "demand": 81.25102105652834,
+        "winnability": 56,
+        "intent_fit": 70,
+        "seed_prior": 50,
+        "scoring_version_1": 1
+      },
+      "recommendation": "WATCH",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "seed workbook (unvalidated public estimate)",
+        "source_url": "https://kdroi.io/analysis/binary-converter",
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Validation Queue); geography assumed US-national; metrics require vendor validation. Seed evidence — note: Manual SERP review still needed"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": null,
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_date_calculator_23eddab4",
+      "schema_version": "1.0.0",
+      "keyword": "date calculator",
+      "intent_cluster_id": null,
+      "cluster_label": "Calculators",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": 95000,
+      "keyword_difficulty": 28,
+      "cpc_usd": 0.72,
+      "intent_type": "tool",
+      "opportunity_score": 66.1,
+      "score_components": {
+        "demand": 82.96206008814747,
+        "winnability": 44,
+        "intent_fit": 70,
+        "seed_prior": 70,
+        "scoring_version_1": 1,
+        "seed_manual_score": 70
+      },
+      "recommendation": "WATCH",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "KDROI public estimate — validate in Ahrefs",
+        "source_url": "https://kdroi.io/analysis/date-calculator",
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Researched Opportunities); geography assumed US-national; metrics require vendor validation. Seed evidence — tier: B - Validate | note: WATCH / NICHE VARIANTS | SERP examples: https://www.timeanddate.com/date/dateadd.html ; https://www.calculator.net/date-calculator.html ; https://www.shiftflow.app/free-tools/free-date-calculator"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": "2026-08-10T00:00:00Z",
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_tip_calculator_e2af23a7",
+      "schema_version": "1.0.0",
+      "keyword": "tip calculator",
+      "intent_cluster_id": null,
+      "cluster_label": "Calculators",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": 165000,
+      "keyword_difficulty": 25,
+      "cpc_usd": 0.95,
+      "intent_type": "tool",
+      "opportunity_score": 66.1,
+      "score_components": {
+        "demand": 86.95806573689845,
+        "winnability": 50,
+        "intent_fit": 70,
+        "seed_prior": 50,
+        "scoring_version_1": 1
+      },
+      "recommendation": "WATCH",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "seed workbook (unvalidated public estimate)",
+        "source_url": "https://kdroi.io/analysis/tip-calculator",
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Validation Queue); geography assumed US-national; metrics require vendor validation. Seed evidence — note: Manual SERP review still needed"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": null,
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_water_heater_leaking_d1a33945",
+      "schema_version": "1.0.0",
+      "keyword": "water heater leaking",
+      "intent_cluster_id": null,
+      "cluster_label": "Plumbing",
+      "problem_family_hint": "plumbing",
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": 9900,
+      "keyword_difficulty": 35,
+      "cpc_usd": 21.8,
+      "intent_type": "problem",
+      "opportunity_score": 66.1,
+      "score_components": {
+        "demand": 66.59391990995917,
+        "winnability": 30,
+        "intent_fit": 100,
+        "seed_prior": 81,
+        "scoring_version_1": 1,
+        "seed_manual_score": 81
+      },
+      "recommendation": "WATCH",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "Public SEO dataset",
+        "source_url": "https://www.causalfunnel.com/blog/top-100-plumbing-keywords-to-boost-your-business/",
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Trial - Problem Intent); geography assumed US-national; metrics require vendor validation. Seed evidence — tier: A — Research/Build | SERP examples: https://www.reddit.com/ ; https://www.qualityplumbing.cc/ ; https://www.thespruce.com/"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": "2026-08-10T00:00:00Z",
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_age_calculator_ed9104c3",
+      "schema_version": "1.0.0",
+      "keyword": "age calculator",
+      "intent_cluster_id": null,
+      "cluster_label": "Calculators",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": 220000,
+      "keyword_difficulty": 32,
+      "cpc_usd": 0.65,
+      "intent_type": "tool",
+      "opportunity_score": 65.5,
+      "score_components": {
+        "demand": 89.04037801370345,
+        "winnability": 36,
+        "intent_fit": 70,
+        "seed_prior": 70,
+        "scoring_version_1": 1,
+        "seed_manual_score": 70
+      },
+      "recommendation": "WATCH",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "KDROI public estimate — validate in Ahrefs",
+        "source_url": "https://kdroi.io/analysis/age-calculator",
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Researched Opportunities); geography assumed US-national; metrics require vendor validation. Seed evidence — tier: B - Validate | note: WATCH / NICHE VARIANTS | SERP examples: https://www.calculator.net/age-calculator.html ; https://www.calculatestuff.com/health/age-calculator"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": "2026-08-10T00:00:00Z",
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_base64_encoder_4b4fff4b",
+      "schema_version": "1.0.0",
+      "keyword": "base64 encoder",
+      "intent_cluster_id": null,
+      "cluster_label": "Developer Utilities",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": 85000,
+      "keyword_difficulty": 18,
+      "cpc_usd": 0.95,
+      "intent_type": "unknown",
+      "opportunity_score": 64.7,
+      "score_components": {
+        "demand": 82.15698209523822,
+        "winnability": 64,
+        "intent_fit": 30,
+        "seed_prior": 89,
+        "scoring_version_1": 1,
+        "seed_manual_score": 89
+      },
+      "recommendation": "WATCH",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "KDROI public estimate — validate in Ahrefs",
+        "source_url": "https://kdroi.io/analysis/base64-encoder",
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Researched Opportunities); geography assumed US-national; metrics require vendor validation. Seed evidence — tier: A - Research first | note: RESEARCH FIRST | SERP examples: https://www.base64encode.org/ ; https://www.base64encode.net/ ; https://jam.dev/utilities/base-64-encoder"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": "2026-08-10T00:00:00Z",
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_color_picker_85a6bbeb",
+      "schema_version": "1.0.0",
+      "keyword": "color picker",
+      "intent_cluster_id": null,
+      "cluster_label": "Color / Developer",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": 145000,
+      "keyword_difficulty": 28,
+      "cpc_usd": 1.2,
+      "intent_type": "tool",
+      "opportunity_score": 64,
+      "score_components": {
+        "demand": 86.0228000372496,
+        "winnability": 44,
+        "intent_fit": 70,
+        "seed_prior": 50,
+        "scoring_version_1": 1
+      },
+      "recommendation": "WATCH",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "seed workbook (unvalidated public estimate)",
+        "source_url": "https://kdroi.io/analysis/color-picker",
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Validation Queue); geography assumed US-national; metrics require vendor validation. Seed evidence — note: Manual SERP review still needed"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": null,
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_concrete_floor_calculator_05d5c7d1",
+      "schema_version": "1.0.0",
+      "keyword": "concrete floor calculator",
+      "intent_cluster_id": null,
+      "cluster_label": "Concrete",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": 14800,
+      "keyword_difficulty": null,
+      "cpc_usd": null,
+      "intent_type": "tool",
+      "opportunity_score": 63.4,
+      "score_components": {
+        "demand": 69.50436192324929,
+        "winnability": 50,
+        "intent_fit": 70,
+        "seed_prior": 67,
+        "scoring_version_1": 1,
+        "seed_manual_score": 67
+      },
+      "recommendation": "WATCH",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "seed workbook (unvalidated public estimate)",
+        "source_url": "https://marketkeep.com/seo-keywords-for-concrete-contractors/",
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Trial - Calculators); geography assumed US-national; metrics require vendor validation. Seed evidence — tier: C — Later | note: VALIDATE INTENT OVERLAP | SERP examples: https://www.concretenetwork.com/concrete/howmuch/calculator.htm"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": "2026-08-10T00:00:00Z",
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_time_zone_converter_f2be8bdf",
+      "schema_version": "1.0.0",
+      "keyword": "time zone converter",
+      "intent_cluster_id": null,
+      "cluster_label": "Converters",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": 180000,
+      "keyword_difficulty": 35,
+      "cpc_usd": 1.25,
+      "intent_type": "tool",
+      "opportunity_score": 63.3,
+      "score_components": {
+        "demand": 87.58787508505512,
+        "winnability": 30,
+        "intent_fit": 70,
+        "seed_prior": 70,
+        "scoring_version_1": 1,
+        "seed_manual_score": 70
+      },
+      "recommendation": "WATCH",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "KDROI public estimate — validate in Ahrefs",
+        "source_url": "https://kdroi.io/analysis/time-zone-converter",
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Researched Opportunities); geography assumed US-national; metrics require vendor validation. Seed evidence — tier: B - Validate | note: SKIP HEAD TERM | SERP examples: https://www.timeanddate.com/worldclock/converter.html ; https://www.worldtimebuddy.com/ ; https://savvytime.com/converter"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": "2026-08-10T00:00:00Z",
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_password_generator_dbea338e",
+      "schema_version": "1.0.0",
+      "keyword": "password generator",
+      "intent_cluster_id": null,
+      "cluster_label": "Generators",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": 240000,
+      "keyword_difficulty": 35,
+      "cpc_usd": 1.8,
+      "intent_type": "tool",
+      "opportunity_score": 63.3,
+      "score_components": {
+        "demand": 89.67018736186012,
+        "winnability": 30,
+        "intent_fit": 70,
+        "seed_prior": 66,
+        "scoring_version_1": 1,
+        "seed_manual_score": 66
+      },
+      "recommendation": "WATCH",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "KDROI public estimate — validate in Ahrefs",
+        "source_url": "https://kdroi.io/analysis/password-generator",
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Researched Opportunities); geography assumed US-national; metrics require vendor validation. Seed evidence — tier: C - Watch | note: SKIP | SERP examples: https://www.lastpass.com/features/password-generator ; https://1password.com/password-generator"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": "2026-08-10T00:00:00Z",
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_color_palette_generator_9d0237f1",
+      "schema_version": "1.0.0",
+      "keyword": "color palette generator",
+      "intent_cluster_id": null,
+      "cluster_label": "Media / Design",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": 65000,
+      "keyword_difficulty": 32,
+      "cpc_usd": 1.25,
+      "intent_type": "tool",
+      "opportunity_score": 63.2,
+      "score_components": {
+        "demand": 80.21522261071426,
+        "winnability": 36,
+        "intent_fit": 70,
+        "seed_prior": 72,
+        "scoring_version_1": 1,
+        "seed_manual_score": 72
+      },
+      "recommendation": "WATCH",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "KDROI public estimate — validate in Ahrefs",
+        "source_url": "https://kdroi.io/analysis/color-palette-generator",
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Researched Opportunities); geography assumed US-national; metrics require vendor validation. Seed evidence — tier: B - Validate | note: SKIP HEAD TERM | SERP examples: https://coolors.co/ ; https://www.canva.com/colors/color-palette-generator/ ; https://color.adobe.com/"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": "2026-08-10T00:00:00Z",
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_paint_calculator_b1718404",
+      "schema_version": "1.0.0",
+      "keyword": "paint calculator",
+      "intent_cluster_id": null,
+      "cluster_label": "Paint",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": 18100,
+      "keyword_difficulty": null,
+      "cpc_usd": 0.42,
+      "intent_type": "tool",
+      "opportunity_score": 62.9,
+      "score_components": {
+        "demand": 70.96130958115307,
+        "winnability": 50,
+        "intent_fit": 70,
+        "seed_prior": 61,
+        "scoring_version_1": 1,
+        "seed_manual_score": 61
+      },
+      "recommendation": "WATCH",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "Needs Ahrefs/Keyword Planner validation",
+        "source_url": "https://www.semrush.com/website/glidden.com/overview/",
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Researched Opportunities + Trial - Calculators); geography assumed US-national; metrics require vendor validation. Seed evidence — tier: C — Later | note: DEPRIORITIZE HEAD TERM | SERP examples: https://www.behr.com/consumer/paint-and-stain-calculator/ ; https://www.sherwin-williams.com/homeowners/color/try-on-colors/paint-calculator ; https://www.lowes.com/n/calculators/paint-calculator"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": "2026-08-10T00:00:00Z",
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_roman_numeral_converter_f6056abb",
+      "schema_version": "1.0.0",
+      "keyword": "roman numeral converter",
+      "intent_cluster_id": null,
+      "cluster_label": "Converters",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": 85000,
+      "keyword_difficulty": 28,
+      "cpc_usd": 0.45,
+      "intent_type": "tool",
+      "opportunity_score": 62.8,
+      "score_components": {
+        "demand": 82.15698209523822,
+        "winnability": 44,
+        "intent_fit": 70,
+        "seed_prior": 50,
+        "scoring_version_1": 1
+      },
+      "recommendation": "WATCH",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "seed workbook (unvalidated public estimate)",
+        "source_url": "https://kdroi.io/analysis/roman-numeral-converter",
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Validation Queue); geography assumed US-national; metrics require vendor validation. Seed evidence — note: Manual SERP review still needed"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": null,
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_fence_calculator_ff777a51",
+      "schema_version": "1.0.0",
+      "keyword": "fence calculator",
+      "intent_cluster_id": null,
+      "cluster_label": "Fence",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": 9900,
+      "keyword_difficulty": null,
+      "cpc_usd": 3.91,
+      "intent_type": "tool",
+      "opportunity_score": 62.4,
+      "score_components": {
+        "demand": 66.59391990995917,
+        "winnability": 50,
+        "intent_fit": 70,
+        "seed_prior": 66,
+        "scoring_version_1": 1,
+        "seed_manual_score": 66
+      },
+      "recommendation": "WATCH",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "Needs Ahrefs/Keyword Planner validation",
+        "source_url": "https://www.seodata.dev/keyword/fence-calculator",
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Researched Opportunities + Trial - Calculators); geography assumed US-national; metrics require vendor validation. Seed evidence — tier: C — Later | note: BUILD AFTER LONG-TAIL | SERP examples: https://www.omnicalculator.com/construction/board-on-board-fence ; https://www.hooverfence.com/fence-calculator"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": "2026-08-10T00:00:00Z",
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_concrete_slab_cost_calculator_5419640a",
+      "schema_version": "1.0.0",
+      "keyword": "concrete slab cost calculator",
+      "intent_cluster_id": null,
+      "cluster_label": "Concrete",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": 9900,
+      "keyword_difficulty": null,
+      "cpc_usd": null,
+      "intent_type": "tool",
+      "opportunity_score": 62.4,
+      "score_components": {
+        "demand": 66.59391990995917,
+        "winnability": 50,
+        "intent_fit": 70,
+        "seed_prior": 66,
+        "scoring_version_1": 1,
+        "seed_manual_score": 66
+      },
+      "recommendation": "WATCH",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "seed workbook (unvalidated public estimate)",
+        "source_url": "https://marketkeep.com/seo-keywords-for-concrete-contractors/",
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Trial - Calculators + Trial - Ahrefs Queue); geography assumed US-national; metrics require vendor validation. Seed evidence — tier: C — Later | note: GREENLIGHT FOR AHREFS CHECK | SERP examples: https://www.concretenetwork.com/concrete/howmuch/calculator.htm"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": "2026-08-10T00:00:00Z",
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_sump_pump_not_working_d4837c67",
+      "schema_version": "1.0.0",
+      "keyword": "sump pump not working",
+      "intent_cluster_id": null,
+      "cluster_label": "Plumbing",
+      "problem_family_hint": "plumbing",
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": 4400,
+      "keyword_difficulty": 38,
+      "cpc_usd": 23.9,
+      "intent_type": "problem",
+      "opportunity_score": 61.8,
+      "score_components": {
+        "demand": 60.72421127476979,
+        "winnability": 24,
+        "intent_fit": 100,
+        "seed_prior": 76,
+        "scoring_version_1": 1,
+        "seed_manual_score": 76
+      },
+      "recommendation": "WATCH",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "Public SEO dataset",
+        "source_url": "https://www.causalfunnel.com/blog/top-100-plumbing-keywords-to-boost-your-business/",
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Trial - Problem Intent + Trial - Ahrefs Queue); geography assumed US-national; metrics require vendor validation. Seed evidence — tier: B — Validate | SERP examples: https://www.reddit.com/ ; https://www.justanswer.com/"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": "2026-08-10T00:00:00Z",
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_driveway_gravel_calculator_60e2db80",
+      "schema_version": "1.0.0",
+      "keyword": "driveway gravel calculator",
+      "intent_cluster_id": null,
+      "cluster_label": "Gravel",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": 2900,
+      "keyword_difficulty": null,
+      "cpc_usd": 2.58,
+      "intent_type": "tool",
+      "opportunity_score": 60.9,
+      "score_components": {
+        "demand": 57.706633298315936,
+        "winnability": 50,
+        "intent_fit": 70,
+        "seed_prior": 74,
+        "scoring_version_1": 1,
+        "seed_manual_score": 74
+      },
+      "recommendation": "WATCH",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "seed workbook (unvalidated public estimate)",
+        "source_url": "https://www.seodata.dev/keyword/driveway-gravel-calculator",
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Trial - Calculators + Trial - Ahrefs Queue); geography assumed US-national; metrics require vendor validation. Seed evidence — tier: B — Validate | note: TOP CALCULATOR TEST | SERP examples: https://www.concretecalculatormax.com/calculators/gravel/gravel-driveway-calculator ; https://easternlm.com/calculator/driveway ; https://www.eano.com/tools-templates/driveway-gravel-calculator"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": "2026-08-10T00:00:00Z",
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_percentage_calculator_e4be0c48",
+      "schema_version": "1.0.0",
+      "keyword": "percentage calculator",
+      "intent_cluster_id": null,
+      "cluster_label": "Calculators",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": 450000,
+      "keyword_difficulty": 38,
+      "cpc_usd": 1.85,
+      "intent_type": "tool",
+      "opportunity_score": 60.5,
+      "score_components": {
+        "demand": 94.22020856292241,
+        "winnability": 24,
+        "intent_fit": 70,
+        "seed_prior": 50,
+        "scoring_version_1": 1
+      },
+      "recommendation": "WATCH",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "seed workbook (unvalidated public estimate)",
+        "source_url": "https://kdroi.io/analysis/percentage-calculator",
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Validation Queue); geography assumed US-national; metrics require vendor validation. Seed evidence — note: Manual SERP review still needed"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": null,
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_pea_gravel_calculator_2698b3a7",
+      "schema_version": "1.0.0",
+      "keyword": "pea gravel calculator",
+      "intent_cluster_id": null,
+      "cluster_label": "Gravel",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": 5400,
+      "keyword_difficulty": null,
+      "cpc_usd": 4.83,
+      "intent_type": "tool",
+      "opportunity_score": 60.5,
+      "score_components": {
+        "demand": 62.20656266371615,
+        "winnability": 50,
+        "intent_fit": 70,
+        "seed_prior": 62,
+        "scoring_version_1": 1,
+        "seed_manual_score": 62
+      },
+      "recommendation": "WATCH",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "seed workbook (unvalidated public estimate)",
+        "source_url": "https://www.seodata.dev/keyword/gravel-calculator",
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Trial - Calculators); geography assumed US-national; metrics require vendor validation. Seed evidence — tier: C — Later | note: TARGET INSIDE GRAVEL HUB | SERP examples: https://www.inchcalculator.com/gravel-calculator/ ; https://www.omnicalculator.com/construction/gravel"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": "2026-08-10T00:00:00Z",
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_how_much_gravel_do_i_need_ee69092c",
+      "schema_version": "1.0.0",
+      "keyword": "how much gravel do i need",
+      "intent_cluster_id": null,
+      "cluster_label": "Gravel",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": 2900,
+      "keyword_difficulty": null,
+      "cpc_usd": 1.03,
+      "intent_type": "tool",
+      "opportunity_score": 59.9,
+      "score_components": {
+        "demand": 57.706633298315936,
+        "winnability": 50,
+        "intent_fit": 70,
+        "seed_prior": 67,
+        "scoring_version_1": 1,
+        "seed_manual_score": 67
+      },
+      "recommendation": "WATCH",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "seed workbook (unvalidated public estimate)",
+        "source_url": "https://www.seodata.dev/keyword/gravel-calculator",
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Trial - Calculators + Trial - Ahrefs Queue); geography assumed US-national; metrics require vendor validation. Seed evidence — tier: C — Later | note: AHREFS PRIORITY | SERP examples: https://www.calculator.net/gravel-calculator.html ; https://www.inchcalculator.com/gravel-calculator/"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": "2026-08-10T00:00:00Z",
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_flooring_calculator_3c81e90c",
+      "schema_version": "1.0.0",
+      "keyword": "flooring calculator",
+      "intent_cluster_id": null,
+      "cluster_label": "Flooring",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": 3600,
+      "keyword_difficulty": null,
+      "cpc_usd": 1.05,
+      "intent_type": "tool",
+      "opportunity_score": 59.9,
+      "score_components": {
+        "demand": 59.27170834612146,
+        "winnability": 50,
+        "intent_fit": 70,
+        "seed_prior": 64,
+        "scoring_version_1": 1,
+        "seed_manual_score": 64
+      },
+      "recommendation": "WATCH",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "seed workbook (unvalidated public estimate)",
+        "source_url": "https://www.semrush.com/",
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Trial - Calculators + Trial - Ahrefs Queue); geography assumed US-national; metrics require vendor validation. Seed evidence — tier: C — Later | note: VALIDATE BEFORE BUILD | SERP examples: https://intelcalculator.com/construction/flooring-calculator/ ; https://www.measuresquare.com/flooring-calculator/ ; https://www.lowes.com/n/calculators/vinyl-flooring-calculator"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": "2026-08-10T00:00:00Z",
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_electrical_burning_smell_b5149946",
+      "schema_version": "1.0.0",
+      "keyword": "electrical burning smell",
+      "intent_cluster_id": null,
+      "cluster_label": "Electrical",
+      "problem_family_hint": "electrical",
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": 6800,
+      "keyword_difficulty": 42,
+      "cpc_usd": null,
+      "intent_type": "problem",
+      "opportunity_score": 59.5,
+      "score_components": {
+        "demand": 63.87514854510393,
+        "winnability": 16,
+        "intent_fit": 100,
+        "seed_prior": 70,
+        "scoring_version_1": 1,
+        "seed_manual_score": 70
+      },
+      "recommendation": "WATCH",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "Public SEO dataset",
+        "source_url": "https://www.causalfunnel.com/blog/125-high-volume-seo-keywords-for-electricians-to-rank-1/",
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Trial - Problem Intent); geography assumed US-national; metrics require vendor validation. Seed evidence — tier: B — Validate"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": "2026-08-10T00:00:00Z",
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_carpet_calculator_6d9db577",
+      "schema_version": "1.0.0",
+      "keyword": "carpet calculator",
+      "intent_cluster_id": null,
+      "cluster_label": "Flooring",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": 3600,
+      "keyword_difficulty": null,
+      "cpc_usd": 1.82,
+      "intent_type": "tool",
+      "opportunity_score": 59.1,
+      "score_components": {
+        "demand": 59.27170834612146,
+        "winnability": 50,
+        "intent_fit": 70,
+        "seed_prior": 59,
+        "scoring_version_1": 1,
+        "seed_manual_score": 59
+      },
+      "recommendation": "WATCH",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "seed workbook (unvalidated public estimate)",
+        "source_url": "https://www.semrush.com/",
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Trial - Calculators); geography assumed US-national; metrics require vendor validation. Seed evidence — tier: C — Later | note: VALIDATE | SERP examples: https://www.measuresquare.com/"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": "2026-08-10T00:00:00Z",
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_circuit_breaker_keeps_tripping_874b3834",
+      "schema_version": "1.0.0",
+      "keyword": "circuit breaker keeps tripping",
+      "intent_cluster_id": null,
+      "cluster_label": "Electrical",
+      "problem_family_hint": "electrical",
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": 15600,
+      "keyword_difficulty": 50,
+      "cpc_usd": null,
+      "intent_type": "problem",
+      "opportunity_score": 58.7,
+      "score_components": {
+        "demand": 69.88540997257435,
+        "winnability": 0,
+        "intent_fit": 100,
+        "seed_prior": 85,
+        "scoring_version_1": 1,
+        "seed_manual_score": 85
+      },
+      "recommendation": "WATCH",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "Public SEO dataset",
+        "source_url": "https://www.causalfunnel.com/blog/125-high-volume-seo-keywords-for-electricians-to-rank-1/",
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Trial - Problem Intent + Trial - Ahrefs Queue); geography assumed US-national; metrics require vendor validation. Seed evidence — tier: A — Research/Build | SERP examples: https://safewireguides.com/ ; https://www.hometips.com/repair-fix/circuit-breaker-tripping.html"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": "2026-08-10T00:00:00Z",
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_fence_material_calculator_22cc292c",
+      "schema_version": "1.0.0",
+      "keyword": "fence material calculator",
+      "intent_cluster_id": null,
+      "cluster_label": "Fence",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": 1000,
+      "keyword_difficulty": null,
+      "cpc_usd": 3.9,
+      "intent_type": "tool",
+      "opportunity_score": 58.2,
+      "score_components": {
+        "demand": 50,
+        "winnability": 50,
+        "intent_fit": 70,
+        "seed_prior": 71,
+        "scoring_version_1": 1,
+        "seed_manual_score": 71
+      },
+      "recommendation": "WATCH",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "seed workbook (unvalidated public estimate)",
+        "source_url": "https://www.seodata.dev/keyword/fence-calculator",
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Low-KD Hunt Queue + Trial - Calculators + Trial - Ahrefs Queue); geography assumed US-national; metrics require vendor validation. Seed evidence — tier: B — Validate | note: TOP CALCULATOR TEST | SERP examples: https://thesitemath.com/fencing-calculator/ ; https://www.topfencesupply.com/calculator"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": "2026-08-10T00:00:00Z",
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_wood_fence_calculator_54d60364",
+      "schema_version": "1.0.0",
+      "keyword": "wood fence calculator",
+      "intent_cluster_id": null,
+      "cluster_label": "Fence",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": 1300,
+      "keyword_difficulty": null,
+      "cpc_usd": 4.43,
+      "intent_type": "tool",
+      "opportunity_score": 58.1,
+      "score_components": {
+        "demand": 51.89905587178062,
+        "winnability": 50,
+        "intent_fit": 70,
+        "seed_prior": 67,
+        "scoring_version_1": 1,
+        "seed_manual_score": 67
+      },
+      "recommendation": "WATCH",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "seed workbook (unvalidated public estimate)",
+        "source_url": "https://www.seodata.dev/keyword/fence-calculator",
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Trial - Calculators + Trial - Ahrefs Queue); geography assumed US-national; metrics require vendor validation. Seed evidence — tier: C — Later | note: AHREFS PRIORITY | SERP examples: https://www.inchcalculator.com/fence-calculator/ ; https://www.topfencesupply.com/calculator"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": "2026-08-10T00:00:00Z",
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_meta_tag_generator_831222f2",
+      "schema_version": "1.0.0",
+      "keyword": "meta tag generator",
+      "intent_cluster_id": null,
+      "cluster_label": "SEO Tools",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": 28000,
+      "keyword_difficulty": 32,
+      "cpc_usd": 2.45,
+      "intent_type": "tool",
+      "opportunity_score": 58,
+      "score_components": {
+        "demand": 74.11930052237032,
+        "winnability": 36,
+        "intent_fit": 70,
+        "seed_prior": 50,
+        "scoring_version_1": 1
+      },
+      "recommendation": "WATCH",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "seed workbook (unvalidated public estimate)",
+        "source_url": "https://kdroi.io/analysis/meta-tag-generator",
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Validation Queue); geography assumed US-national; metrics require vendor validation. Seed evidence — note: Manual SERP review still needed"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": null,
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_outlet_not_working_c9cdf751",
+      "schema_version": "1.0.0",
+      "keyword": "outlet not working",
+      "intent_cluster_id": null,
+      "cluster_label": "Electrical",
+      "problem_family_hint": "electrical",
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": 9400,
+      "keyword_difficulty": 48,
+      "cpc_usd": null,
+      "intent_type": "problem",
+      "opportunity_score": 57.2,
+      "score_components": {
+        "demand": 66.21879755999498,
+        "winnability": 4,
+        "intent_fit": 100,
+        "seed_prior": 74,
+        "scoring_version_1": 1,
+        "seed_manual_score": 74
+      },
+      "recommendation": "WATCH",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "Volume/KD is proxy from 'outlet not working repair'",
+        "source_url": "https://www.causalfunnel.com/blog/125-high-volume-seo-keywords-for-electricians-to-rank-1/",
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Trial - Problem Intent); geography assumed US-national; metrics require vendor validation. Seed evidence — tier: B — Validate | SERP examples: https://www.reddit.com/ ; https://metroelectricmichigan.com/ ; https://reliableair.com/"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": "2026-08-10T00:00:00Z",
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_json_formatter_f025bf92",
+      "schema_version": "1.0.0",
+      "keyword": "json formatter",
+      "intent_cluster_id": null,
+      "cluster_label": "Developer Utilities",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": 120000,
+      "keyword_difficulty": 32,
+      "cpc_usd": 2.4,
+      "intent_type": "unknown",
+      "opportunity_score": 57,
+      "score_components": {
+        "demand": 84.65302076746042,
+        "winnability": 36,
+        "intent_fit": 30,
+        "seed_prior": 89,
+        "scoring_version_1": 1,
+        "seed_manual_score": 89
+      },
+      "recommendation": "WATCH",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "KDROI public estimate — validate in Ahrefs",
+        "source_url": "https://kdroi.io/analysis/json-formatter",
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Researched Opportunities); geography assumed US-national; metrics require vendor validation. Seed evidence — tier: A - Research first | note: VALIDATE | SERP examples: https://jsonformatter.curiousconcept.com/ ; https://jsonformatter.org/ ; https://json-indent.com/"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": "2026-08-10T00:00:00Z",
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_sql_formatter_4fea28f8",
+      "schema_version": "1.0.0",
+      "keyword": "sql formatter",
+      "intent_cluster_id": null,
+      "cluster_label": "Developer Utilities",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": 55000,
+      "keyword_difficulty": 28,
+      "cpc_usd": 1.65,
+      "intent_type": "unknown",
+      "opportunity_score": 56.9,
+      "score_components": {
+        "demand": 79.00604482490407,
+        "winnability": 44,
+        "intent_fit": 30,
+        "seed_prior": 83,
+        "scoring_version_1": 1,
+        "seed_manual_score": 83
+      },
+      "recommendation": "WATCH",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "KDROI public estimate — validate in Ahrefs",
+        "source_url": "https://kdroi.io/analysis/sql-formatter",
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Researched Opportunities); geography assumed US-national; metrics require vendor validation. Seed evidence — tier: A - Research first | note: VALIDATE | SERP examples: https://www.dpriver.com/pp/sqlformat.htm ; https://codebeautify.org/sqlformatter ; https://sqlformat.org/"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": "2026-08-10T00:00:00Z",
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_lights_flickering_in_house_b2eed658",
+      "schema_version": "1.0.0",
+      "keyword": "lights flickering in house",
+      "intent_cluster_id": null,
+      "cluster_label": "Electrical",
+      "problem_family_hint": "electrical",
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": 11800,
+      "keyword_difficulty": 52,
+      "cpc_usd": null,
+      "intent_type": "problem",
+      "opportunity_score": 56.9,
+      "score_components": {
+        "demand": 67.86470012176875,
+        "winnability": 0,
+        "intent_fit": 100,
+        "seed_prior": 77,
+        "scoring_version_1": 1,
+        "seed_manual_score": 77
+      },
+      "recommendation": "WATCH",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "Volume/KD is proxy from 'flickering lights repair'",
+        "source_url": "https://www.causalfunnel.com/blog/125-high-volume-seo-keywords-for-electricians-to-rank-1/",
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Trial - Problem Intent); geography assumed US-national; metrics require vendor validation. Seed evidence — tier: B — Validate"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": "2026-08-10T00:00:00Z",
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_html_encoder_c4474da7",
+      "schema_version": "1.0.0",
+      "keyword": "html encoder",
+      "intent_cluster_id": null,
+      "cluster_label": "Developer Utilities",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": 35000,
+      "keyword_difficulty": 22,
+      "cpc_usd": 0.75,
+      "intent_type": "unknown",
+      "opportunity_score": 54.5,
+      "score_components": {
+        "demand": 75.73446740583792,
+        "winnability": 56,
+        "intent_fit": 30,
+        "seed_prior": 50,
+        "scoring_version_1": 1
+      },
+      "recommendation": "REJECT",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "seed workbook (unvalidated public estimate)",
+        "source_url": "https://kdroi.io/analysis/html-encoder",
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Validation Queue); geography assumed US-national; metrics require vendor validation. Seed evidence — note: Manual SERP review still needed"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": null,
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_water_leaking_from_ceiling_52dffe91",
+      "schema_version": "1.0.0",
+      "keyword": "water leaking from ceiling",
+      "intent_cluster_id": null,
+      "cluster_label": "Water / Roof",
+      "problem_family_hint": "roofing",
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": null,
+      "keyword_difficulty": null,
+      "cpc_usd": null,
+      "intent_type": "problem",
+      "opportunity_score": 53.7,
+      "score_components": {
+        "demand": 0,
+        "winnability": 50,
+        "intent_fit": 100,
+        "seed_prior": 91,
+        "scoring_version_1": 1,
+        "seed_manual_score": 91
+      },
+      "recommendation": "WATCH",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "Exact metrics not found publicly — SERP inspected live",
+        "source_url": null,
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Trial - Problem Intent + Trial - Ahrefs Queue); geography assumed US-national; metrics require vendor validation. Seed evidence — tier: A — Research/Build | SERP examples: https://www.reddit.com/r/DIY/comments/17wbpm3/water_leaking_from_ceiling_how_bad_is_it_should_i/ ; https://youngconstructionnorthiowa.com/blog/water-leaking-from-ceiling/ ; https://hudcoroofing.com/water-leaking-from-ceiling-roof-repair-tips/ ; https://www.abchomeandcommercial.com/resources/water-leaking-from-ceiling/"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": "2026-08-10T00:00:00Z",
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_water_leaking_from_ceiling_after_rain_0e80c447",
+      "schema_version": "1.0.0",
+      "keyword": "water leaking from ceiling after rain",
+      "intent_cluster_id": null,
+      "cluster_label": "Water / Roof",
+      "problem_family_hint": "roofing",
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": null,
+      "keyword_difficulty": null,
+      "cpc_usd": null,
+      "intent_type": "problem",
+      "opportunity_score": 53.7,
+      "score_components": {
+        "demand": 0,
+        "winnability": 50,
+        "intent_fit": 100,
+        "seed_prior": 91,
+        "scoring_version_1": 1,
+        "seed_manual_score": 91
+      },
+      "recommendation": "WATCH",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "Exact metrics not found publicly — SERP inspected live",
+        "source_url": null,
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Trial - Problem Intent); geography assumed US-national; metrics require vendor validation. Seed evidence — tier: A — Research/Build | SERP examples: https://hudcoroofing.com/water-leaking-from-ceiling-roof-repair-tips/ ; https://www.allconroofing.com/stop-water-leaking-from-your-ceiling-with-these-tips/"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": "2026-08-10T00:00:00Z",
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_markdown_editor_37a0f1be",
+      "schema_version": "1.0.0",
+      "keyword": "markdown editor",
+      "intent_cluster_id": null,
+      "cluster_label": "Developer Utilities",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": 75000,
+      "keyword_difficulty": 35,
+      "cpc_usd": 2.1,
+      "intent_type": "unknown",
+      "opportunity_score": 48.4,
+      "score_components": {
+        "demand": 81.25102105652834,
+        "winnability": 30,
+        "intent_fit": 30,
+        "seed_prior": 50,
+        "scoring_version_1": 1
+      },
+      "recommendation": "REJECT",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "seed workbook (unvalidated public estimate)",
+        "source_url": "https://kdroi.io/analysis/markdown-editor",
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Validation Queue); geography assumed US-national; metrics require vendor validation. Seed evidence — note: Manual SERP review still needed"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": null,
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_schedule_builder_95fb9712",
+      "schema_version": "1.0.0",
+      "keyword": "schedule builder",
+      "intent_cluster_id": null,
+      "cluster_label": "Scheduling",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": 74000,
+      "keyword_difficulty": 36,
+      "cpc_usd": 4.49,
+      "intent_type": "unknown",
+      "opportunity_score": 47.7,
+      "score_components": {
+        "demand": 81.15386199551628,
+        "winnability": 28,
+        "intent_fit": 30,
+        "seed_prior": 50,
+        "scoring_version_1": 1
+      },
+      "recommendation": "REJECT",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "seed workbook (unvalidated public estimate)",
+        "source_url": "https://kdroi.io/analysis/schedule-builder",
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Validation Queue); geography assumed US-national; metrics require vendor validation. Seed evidence — note: Manual SERP review still needed"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": null,
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_drywall_calculator_e38d1e0d",
+      "schema_version": "1.0.0",
+      "keyword": "drywall calculator",
+      "intent_cluster_id": null,
+      "cluster_label": "Drywall",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": null,
+      "keyword_difficulty": null,
+      "cpc_usd": null,
+      "intent_type": "tool",
+      "opportunity_score": 45.9,
+      "score_components": {
+        "demand": 0,
+        "winnability": 50,
+        "intent_fit": 70,
+        "seed_prior": 89,
+        "scoring_version_1": 1,
+        "seed_manual_score": 89
+      },
+      "recommendation": "WATCH",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "seed workbook (unvalidated public estimate)",
+        "source_url": null,
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Trial - Calculators + Trial - Ahrefs Queue); geography assumed US-national; metrics require vendor validation. Seed evidence — tier: A — Research/Build | note: AHREFS PRIORITY | SERP examples: https://supercalc.dev/calculators/ ; https://miniwebtool.com/alltools/ ; https://simplifycalc.com/"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": "2026-08-10T00:00:00Z",
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_tile_calculator_5c7a97b4",
+      "schema_version": "1.0.0",
+      "keyword": "tile calculator",
+      "intent_cluster_id": null,
+      "cluster_label": "Tile",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": null,
+      "keyword_difficulty": null,
+      "cpc_usd": null,
+      "intent_type": "tool",
+      "opportunity_score": 45.6,
+      "score_components": {
+        "demand": 0,
+        "winnability": 50,
+        "intent_fit": 70,
+        "seed_prior": 87,
+        "scoring_version_1": 1,
+        "seed_manual_score": 87
+      },
+      "recommendation": "WATCH",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "seed workbook (unvalidated public estimate)",
+        "source_url": null,
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Trial - Calculators + Trial - Ahrefs Queue); geography assumed US-national; metrics require vendor validation. Seed evidence — tier: A — Research/Build | note: AHREFS PRIORITY | SERP examples: https://intelcalculator.com/construction/flooring-calculator/ ; https://grout-calculator.us/shower/"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": "2026-08-10T00:00:00Z",
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_line_counter_fc8a6dd0",
+      "schema_version": "1.0.0",
+      "keyword": "line counter",
+      "intent_cluster_id": null,
+      "cluster_label": "Text Utilities",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": null,
+      "keyword_difficulty": null,
+      "cpc_usd": null,
+      "intent_type": "tool",
+      "opportunity_score": 44.8,
+      "score_components": {
+        "demand": 0,
+        "winnability": 50,
+        "intent_fit": 70,
+        "seed_prior": 82,
+        "scoring_version_1": 1,
+        "seed_manual_score": 82
+      },
+      "recommendation": "WATCH",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "Needs Ahrefs/Keyword Planner validation",
+        "source_url": null,
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Researched Opportunities); geography assumed US-national; metrics require vendor validation. Seed evidence — tier: A - Research first | note: RESEARCH FIRST | SERP examples: https://linecounter.org/"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": "2026-08-10T00:00:00Z",
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_character_counter_e3837405",
+      "schema_version": "1.0.0",
+      "keyword": "character counter",
+      "intent_cluster_id": null,
+      "cluster_label": "Text Utilities",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": null,
+      "keyword_difficulty": null,
+      "cpc_usd": null,
+      "intent_type": "tool",
+      "opportunity_score": 44.2,
+      "score_components": {
+        "demand": 0,
+        "winnability": 50,
+        "intent_fit": 70,
+        "seed_prior": 78,
+        "scoring_version_1": 1,
+        "seed_manual_score": 78
+      },
+      "recommendation": "WATCH",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "Needs Ahrefs/Keyword Planner validation",
+        "source_url": null,
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Researched Opportunities); geography assumed US-national; metrics require vendor validation. Seed evidence — tier: A - Research first | note: VALIDATE | SERP examples: https://wordcounter.net/character-count ; https://charactercounter.com/ ; https://www.charactercountonline.com/"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": "2026-08-10T00:00:00Z",
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_mulch_calculator_1b848c59",
+      "schema_version": "1.0.0",
+      "keyword": "mulch calculator",
+      "intent_cluster_id": null,
+      "cluster_label": "Property / Landscaping",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": null,
+      "keyword_difficulty": null,
+      "cpc_usd": null,
+      "intent_type": "tool",
+      "opportunity_score": 44.2,
+      "score_components": {
+        "demand": 0,
+        "winnability": 50,
+        "intent_fit": 70,
+        "seed_prior": 78,
+        "scoring_version_1": 1,
+        "seed_manual_score": 78
+      },
+      "recommendation": "WATCH",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "Needs Ahrefs/Keyword Planner validation",
+        "source_url": null,
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Researched Opportunities); geography assumed US-national; metrics require vendor validation. Seed evidence — tier: A - Research first | note: RESEARCH FIRST | SERP examples: https://www.calculator.net/mulch-calculator.html ; https://www.landscapecalculator.com/calculators/mulch ; https://mulchcenter.com/yardage-calculator/"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": "2026-08-10T00:00:00Z",
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_square_footage_calculator_f3004094",
+      "schema_version": "1.0.0",
+      "keyword": "square footage calculator",
+      "intent_cluster_id": null,
+      "cluster_label": "Property / Measurement",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": null,
+      "keyword_difficulty": null,
+      "cpc_usd": null,
+      "intent_type": "tool",
+      "opportunity_score": 42.4,
+      "score_components": {
+        "demand": 0,
+        "winnability": 50,
+        "intent_fit": 70,
+        "seed_prior": 66,
+        "scoring_version_1": 1,
+        "seed_manual_score": 66
+      },
+      "recommendation": "WATCH",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "Needs Ahrefs/Keyword Planner validation",
+        "source_url": null,
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Researched Opportunities); geography assumed US-national; metrics require vendor validation. Seed evidence — tier: C - Watch | note: LONG-TAIL ONLY | SERP examples: https://www.calculatorsoup.com/calculators/construction/square-footage-calculator.php ; https://www.calculator.net/square-footage-calculator.html"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": "2026-08-10T00:00:00Z",
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_count_lines_in_text_aafc11d6",
+      "schema_version": "1.0.0",
+      "keyword": "count lines in text",
+      "intent_cluster_id": null,
+      "cluster_label": "line counter",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": null,
+      "keyword_difficulty": null,
+      "cpc_usd": null,
+      "intent_type": "tool",
+      "opportunity_score": 40,
+      "score_components": {
+        "demand": 0,
+        "winnability": 50,
+        "intent_fit": 70,
+        "seed_prior": 50,
+        "scoring_version_1": 1
+      },
+      "recommendation": "WATCH",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "seed workbook (unvalidated public estimate)",
+        "source_url": null,
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Low-KD Hunt Queue); geography assumed US-national; metrics require vendor validation. Seed evidence — note: Pull in Ahrefs Starter"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": null,
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_code_line_counter_online_74a3c7f0",
+      "schema_version": "1.0.0",
+      "keyword": "code line counter online",
+      "intent_cluster_id": null,
+      "cluster_label": "line counter",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": null,
+      "keyword_difficulty": null,
+      "cpc_usd": null,
+      "intent_type": "tool",
+      "opportunity_score": 40,
+      "score_components": {
+        "demand": 0,
+        "winnability": 50,
+        "intent_fit": 70,
+        "seed_prior": 50,
+        "scoring_version_1": 1
+      },
+      "recommendation": "WATCH",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "seed workbook (unvalidated public estimate)",
+        "source_url": null,
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Low-KD Hunt Queue); geography assumed US-national; metrics require vendor validation. Seed evidence — note: Pull in Ahrefs Starter"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": null,
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_character_count_without_spaces_38e8364d",
+      "schema_version": "1.0.0",
+      "keyword": "character count without spaces",
+      "intent_cluster_id": null,
+      "cluster_label": "character counter",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": null,
+      "keyword_difficulty": null,
+      "cpc_usd": null,
+      "intent_type": "tool",
+      "opportunity_score": 40,
+      "score_components": {
+        "demand": 0,
+        "winnability": 50,
+        "intent_fit": 70,
+        "seed_prior": 50,
+        "scoring_version_1": 1
+      },
+      "recommendation": "WATCH",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "seed workbook (unvalidated public estimate)",
+        "source_url": null,
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Low-KD Hunt Queue); geography assumed US-national; metrics require vendor validation. Seed evidence — note: Pull in Ahrefs Starter"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": null,
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_letter_counter_online_8d1fe831",
+      "schema_version": "1.0.0",
+      "keyword": "letter counter online",
+      "intent_cluster_id": null,
+      "cluster_label": "character counter",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": null,
+      "keyword_difficulty": null,
+      "cpc_usd": null,
+      "intent_type": "tool",
+      "opportunity_score": 40,
+      "score_components": {
+        "demand": 0,
+        "winnability": 50,
+        "intent_fit": 70,
+        "seed_prior": 50,
+        "scoring_version_1": 1
+      },
+      "recommendation": "WATCH",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "seed workbook (unvalidated public estimate)",
+        "source_url": null,
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Low-KD Hunt Queue); geography assumed US-national; metrics require vendor validation. Seed evidence — note: Pull in Ahrefs Starter"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": null,
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_unix_timestamp_converter_milliseconds_65a00274",
+      "schema_version": "1.0.0",
+      "keyword": "unix timestamp converter milliseconds",
+      "intent_cluster_id": null,
+      "cluster_label": "timestamp converter",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": null,
+      "keyword_difficulty": null,
+      "cpc_usd": null,
+      "intent_type": "tool",
+      "opportunity_score": 40,
+      "score_components": {
+        "demand": 0,
+        "winnability": 50,
+        "intent_fit": 70,
+        "seed_prior": 50,
+        "scoring_version_1": 1
+      },
+      "recommendation": "MERGE",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "seed workbook (unvalidated public estimate)",
+        "source_url": null,
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Low-KD Hunt Queue); geography assumed US-national; metrics require vendor validation. Seed evidence — note: Pull in Ahrefs Starter"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": null,
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_epoch_milliseconds_converter_f4fafa89",
+      "schema_version": "1.0.0",
+      "keyword": "epoch milliseconds converter",
+      "intent_cluster_id": null,
+      "cluster_label": "timestamp converter",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": null,
+      "keyword_difficulty": null,
+      "cpc_usd": null,
+      "intent_type": "tool",
+      "opportunity_score": 40,
+      "score_components": {
+        "demand": 0,
+        "winnability": 50,
+        "intent_fit": 70,
+        "seed_prior": 50,
+        "scoring_version_1": 1
+      },
+      "recommendation": "WATCH",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "seed workbook (unvalidated public estimate)",
+        "source_url": null,
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Low-KD Hunt Queue); geography assumed US-national; metrics require vendor validation. Seed evidence — note: Pull in Ahrefs Starter"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": null,
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_bulk_uuid_generator_44aef57c",
+      "schema_version": "1.0.0",
+      "keyword": "bulk uuid generator",
+      "intent_cluster_id": null,
+      "cluster_label": "uuid generator",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": null,
+      "keyword_difficulty": null,
+      "cpc_usd": null,
+      "intent_type": "tool",
+      "opportunity_score": 40,
+      "score_components": {
+        "demand": 0,
+        "winnability": 50,
+        "intent_fit": 70,
+        "seed_prior": 50,
+        "scoring_version_1": 1
+      },
+      "recommendation": "MERGE",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "seed workbook (unvalidated public estimate)",
+        "source_url": null,
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Low-KD Hunt Queue); geography assumed US-national; metrics require vendor validation. Seed evidence — note: Pull in Ahrefs Starter"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": null,
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_uuid_v4_generator_bulk_2601fefc",
+      "schema_version": "1.0.0",
+      "keyword": "uuid v4 generator bulk",
+      "intent_cluster_id": null,
+      "cluster_label": "uuid generator",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": null,
+      "keyword_difficulty": null,
+      "cpc_usd": null,
+      "intent_type": "tool",
+      "opportunity_score": 40,
+      "score_components": {
+        "demand": 0,
+        "winnability": 50,
+        "intent_fit": 70,
+        "seed_prior": 50,
+        "scoring_version_1": 1
+      },
+      "recommendation": "MERGE",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "seed workbook (unvalidated public estimate)",
+        "source_url": null,
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Low-KD Hunt Queue); geography assumed US-national; metrics require vendor validation. Seed evidence — note: Pull in Ahrefs Starter"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": null,
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_sha256_hash_generator_online_a74a9fd9",
+      "schema_version": "1.0.0",
+      "keyword": "sha256 hash generator online",
+      "intent_cluster_id": null,
+      "cluster_label": "hash generator",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": null,
+      "keyword_difficulty": null,
+      "cpc_usd": null,
+      "intent_type": "tool",
+      "opportunity_score": 40,
+      "score_components": {
+        "demand": 0,
+        "winnability": 50,
+        "intent_fit": 70,
+        "seed_prior": 50,
+        "scoring_version_1": 1
+      },
+      "recommendation": "MERGE",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "seed workbook (unvalidated public estimate)",
+        "source_url": null,
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Low-KD Hunt Queue); geography assumed US-national; metrics require vendor validation. Seed evidence — note: Pull in Ahrefs Starter"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": null,
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_checksum_generator_online_b420527d",
+      "schema_version": "1.0.0",
+      "keyword": "checksum generator online",
+      "intent_cluster_id": null,
+      "cluster_label": "hash generator",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": null,
+      "keyword_difficulty": null,
+      "cpc_usd": null,
+      "intent_type": "tool",
+      "opportunity_score": 40,
+      "score_components": {
+        "demand": 0,
+        "winnability": 50,
+        "intent_fit": 70,
+        "seed_prior": 50,
+        "scoring_version_1": 1
+      },
+      "recommendation": "WATCH",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "seed workbook (unvalidated public estimate)",
+        "source_url": null,
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Low-KD Hunt Queue); geography assumed US-national; metrics require vendor validation. Seed evidence — note: Pull in Ahrefs Starter"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": null,
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_aspect_ratio_calculator_pixels_9454a4ee",
+      "schema_version": "1.0.0",
+      "keyword": "aspect ratio calculator pixels",
+      "intent_cluster_id": null,
+      "cluster_label": "aspect ratio calculator",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": null,
+      "keyword_difficulty": null,
+      "cpc_usd": null,
+      "intent_type": "tool",
+      "opportunity_score": 40,
+      "score_components": {
+        "demand": 0,
+        "winnability": 50,
+        "intent_fit": 70,
+        "seed_prior": 50,
+        "scoring_version_1": 1
+      },
+      "recommendation": "WATCH",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "seed workbook (unvalidated public estimate)",
+        "source_url": null,
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Low-KD Hunt Queue); geography assumed US-national; metrics require vendor validation. Seed evidence — note: Pull in Ahrefs Starter"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": null,
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_16_9_aspect_ratio_calculator_d42bcbdd",
+      "schema_version": "1.0.0",
+      "keyword": "16 9 aspect ratio calculator",
+      "intent_cluster_id": null,
+      "cluster_label": "aspect ratio calculator",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": null,
+      "keyword_difficulty": null,
+      "cpc_usd": null,
+      "intent_type": "tool",
+      "opportunity_score": 40,
+      "score_components": {
+        "demand": 0,
+        "winnability": 50,
+        "intent_fit": 70,
+        "seed_prior": 50,
+        "scoring_version_1": 1
+      },
+      "recommendation": "WATCH",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "seed workbook (unvalidated public estimate)",
+        "source_url": null,
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Low-KD Hunt Queue); geography assumed US-national; metrics require vendor validation. Seed evidence — note: Pull in Ahrefs Starter"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": null,
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_mulch_cubic_yards_calculator_67e911f6",
+      "schema_version": "1.0.0",
+      "keyword": "mulch cubic yards calculator",
+      "intent_cluster_id": null,
+      "cluster_label": "mulch calculator",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": null,
+      "keyword_difficulty": null,
+      "cpc_usd": null,
+      "intent_type": "tool",
+      "opportunity_score": 40,
+      "score_components": {
+        "demand": 0,
+        "winnability": 50,
+        "intent_fit": 70,
+        "seed_prior": 50,
+        "scoring_version_1": 1
+      },
+      "recommendation": "WATCH",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "seed workbook (unvalidated public estimate)",
+        "source_url": null,
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Low-KD Hunt Queue); geography assumed US-national; metrics require vendor validation. Seed evidence — note: Pull in Ahrefs Starter"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": null,
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_how_much_mulch_do_i_need_calculator_1ad7677a",
+      "schema_version": "1.0.0",
+      "keyword": "how much mulch do i need calculator",
+      "intent_cluster_id": null,
+      "cluster_label": "mulch calculator",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": null,
+      "keyword_difficulty": null,
+      "cpc_usd": null,
+      "intent_type": "tool",
+      "opportunity_score": 40,
+      "score_components": {
+        "demand": 0,
+        "winnability": 50,
+        "intent_fit": 70,
+        "seed_prior": 50,
+        "scoring_version_1": 1
+      },
+      "recommendation": "WATCH",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "seed workbook (unvalidated public estimate)",
+        "source_url": null,
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Low-KD Hunt Queue); geography assumed US-national; metrics require vendor validation. Seed evidence — note: Pull in Ahrefs Starter"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": null,
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_fence_post_spacing_calculator_f5e4cb90",
+      "schema_version": "1.0.0",
+      "keyword": "fence post spacing calculator",
+      "intent_cluster_id": null,
+      "cluster_label": "fence calculator",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": null,
+      "keyword_difficulty": null,
+      "cpc_usd": null,
+      "intent_type": "tool",
+      "opportunity_score": 40,
+      "score_components": {
+        "demand": 0,
+        "winnability": 50,
+        "intent_fit": 70,
+        "seed_prior": 50,
+        "scoring_version_1": 1
+      },
+      "recommendation": "WATCH",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "seed workbook (unvalidated public estimate)",
+        "source_url": null,
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Low-KD Hunt Queue); geography assumed US-national; metrics require vendor validation. Seed evidence — note: Pull in Ahrefs Starter"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": null,
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_picket_spacing_calculator_21436c8f",
+      "schema_version": "1.0.0",
+      "keyword": "picket spacing calculator",
+      "intent_cluster_id": null,
+      "cluster_label": "fence calculator",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": null,
+      "keyword_difficulty": null,
+      "cpc_usd": null,
+      "intent_type": "tool",
+      "opportunity_score": 40,
+      "score_components": {
+        "demand": 0,
+        "winnability": 50,
+        "intent_fit": 70,
+        "seed_prior": 50,
+        "scoring_version_1": 1
+      },
+      "recommendation": "WATCH",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "seed workbook (unvalidated public estimate)",
+        "source_url": null,
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Low-KD Hunt Queue); geography assumed US-national; metrics require vendor validation. Seed evidence — note: Pull in Ahrefs Starter"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": null,
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_irregular_room_square_footage_calculator_0dc954fc",
+      "schema_version": "1.0.0",
+      "keyword": "irregular room square footage calculator",
+      "intent_cluster_id": null,
+      "cluster_label": "square footage calculator",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": null,
+      "keyword_difficulty": null,
+      "cpc_usd": null,
+      "intent_type": "tool",
+      "opportunity_score": 40,
+      "score_components": {
+        "demand": 0,
+        "winnability": 50,
+        "intent_fit": 70,
+        "seed_prior": 50,
+        "scoring_version_1": 1
+      },
+      "recommendation": "WATCH",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "seed workbook (unvalidated public estimate)",
+        "source_url": null,
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Low-KD Hunt Queue); geography assumed US-national; metrics require vendor validation. Seed evidence — note: Pull in Ahrefs Starter"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": null,
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_wall_square_footage_calculator_ec162dbe",
+      "schema_version": "1.0.0",
+      "keyword": "wall square footage calculator",
+      "intent_cluster_id": null,
+      "cluster_label": "square footage calculator",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": null,
+      "keyword_difficulty": null,
+      "cpc_usd": null,
+      "intent_type": "tool",
+      "opportunity_score": 40,
+      "score_components": {
+        "demand": 0,
+        "winnability": 50,
+        "intent_fit": 70,
+        "seed_prior": 50,
+        "scoring_version_1": 1
+      },
+      "recommendation": "WATCH",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "seed workbook (unvalidated public estimate)",
+        "source_url": null,
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Low-KD Hunt Queue); geography assumed US-national; metrics require vendor validation. Seed evidence — note: Pull in Ahrefs Starter"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": null,
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_cabinet_paint_calculator_bfdddccc",
+      "schema_version": "1.0.0",
+      "keyword": "cabinet paint calculator",
+      "intent_cluster_id": null,
+      "cluster_label": "paint calculator",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": null,
+      "keyword_difficulty": null,
+      "cpc_usd": null,
+      "intent_type": "tool",
+      "opportunity_score": 40,
+      "score_components": {
+        "demand": 0,
+        "winnability": 50,
+        "intent_fit": 70,
+        "seed_prior": 50,
+        "scoring_version_1": 1
+      },
+      "recommendation": "WATCH",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "seed workbook (unvalidated public estimate)",
+        "source_url": null,
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Low-KD Hunt Queue); geography assumed US-national; metrics require vendor validation. Seed evidence — note: Pull in Ahrefs Starter"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": null,
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_ceiling_paint_calculator_75830107",
+      "schema_version": "1.0.0",
+      "keyword": "ceiling paint calculator",
+      "intent_cluster_id": null,
+      "cluster_label": "paint calculator",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": null,
+      "keyword_difficulty": null,
+      "cpc_usd": null,
+      "intent_type": "tool",
+      "opportunity_score": 40,
+      "score_components": {
+        "demand": 0,
+        "winnability": 50,
+        "intent_fit": 70,
+        "seed_prior": 50,
+        "scoring_version_1": 1
+      },
+      "recommendation": "WATCH",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "seed workbook (unvalidated public estimate)",
+        "source_url": null,
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Low-KD Hunt Queue); geography assumed US-national; metrics require vendor validation. Seed evidence — note: Pull in Ahrefs Starter"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": null,
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_words_from_letters_generator_9e2997e1",
+      "schema_version": "1.0.0",
+      "keyword": "words from letters generator",
+      "intent_cluster_id": null,
+      "cluster_label": "word unscrambler",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": null,
+      "keyword_difficulty": null,
+      "cpc_usd": null,
+      "intent_type": "tool",
+      "opportunity_score": 40,
+      "score_components": {
+        "demand": 0,
+        "winnability": 50,
+        "intent_fit": 70,
+        "seed_prior": 50,
+        "scoring_version_1": 1
+      },
+      "recommendation": "WATCH",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "seed workbook (unvalidated public estimate)",
+        "source_url": null,
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Low-KD Hunt Queue); geography assumed US-national; metrics require vendor validation. Seed evidence — note: Pull in Ahrefs Starter"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": null,
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_remove_duplicate_lines_1f42a80e",
+      "schema_version": "1.0.0",
+      "keyword": "remove duplicate lines",
+      "intent_cluster_id": null,
+      "cluster_label": "Text Utilities",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": null,
+      "keyword_difficulty": null,
+      "cpc_usd": null,
+      "intent_type": "unknown",
+      "opportunity_score": 34.8,
+      "score_components": {
+        "demand": 0,
+        "winnability": 50,
+        "intent_fit": 30,
+        "seed_prior": 82,
+        "scoring_version_1": 1,
+        "seed_manual_score": 82
+      },
+      "recommendation": "WATCH",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "Needs Ahrefs/Keyword Planner validation",
+        "source_url": null,
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Researched Opportunities); geography assumed US-national; metrics require vendor validation. Seed evidence — tier: A - Research first | note: RESEARCH FIRST | SERP examples: https://iforgeapps.com/tools/duplicate-line-remover/"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": "2026-08-10T00:00:00Z",
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_word_unscrambler_8c3960b6",
+      "schema_version": "1.0.0",
+      "keyword": "word unscrambler",
+      "intent_cluster_id": null,
+      "cluster_label": "Word / Puzzle",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": null,
+      "keyword_difficulty": null,
+      "cpc_usd": null,
+      "intent_type": "unknown",
+      "opportunity_score": 33.9,
+      "score_components": {
+        "demand": 0,
+        "winnability": 50,
+        "intent_fit": 30,
+        "seed_prior": 76,
+        "scoring_version_1": 1,
+        "seed_manual_score": 76
+      },
+      "recommendation": "WATCH",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "Needs Ahrefs/Keyword Planner validation",
+        "source_url": null,
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Researched Opportunities); geography assumed US-national; metrics require vendor validation. Seed evidence — tier: B - Validate | note: VALIDATE | SERP examples: https://www.unscramblerer.com/"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": "2026-08-10T00:00:00Z",
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_remove_duplicate_lines_from_list_391455c2",
+      "schema_version": "1.0.0",
+      "keyword": "remove duplicate lines from list",
+      "intent_cluster_id": null,
+      "cluster_label": "duplicate line remover",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": null,
+      "keyword_difficulty": null,
+      "cpc_usd": null,
+      "intent_type": "unknown",
+      "opportunity_score": 30,
+      "score_components": {
+        "demand": 0,
+        "winnability": 50,
+        "intent_fit": 30,
+        "seed_prior": 50,
+        "scoring_version_1": 1
+      },
+      "recommendation": "WATCH",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "seed workbook (unvalidated public estimate)",
+        "source_url": null,
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Low-KD Hunt Queue); geography assumed US-national; metrics require vendor validation. Seed evidence — note: Pull in Ahrefs Starter"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": null,
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_remove_duplicate_rows_online_da0e9849",
+      "schema_version": "1.0.0",
+      "keyword": "remove duplicate rows online",
+      "intent_cluster_id": null,
+      "cluster_label": "duplicate line remover",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": null,
+      "keyword_difficulty": null,
+      "cpc_usd": null,
+      "intent_type": "unknown",
+      "opportunity_score": 30,
+      "score_components": {
+        "demand": 0,
+        "winnability": 50,
+        "intent_fit": 30,
+        "seed_prior": 50,
+        "scoring_version_1": 1
+      },
+      "recommendation": "WATCH",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "seed workbook (unvalidated public estimate)",
+        "source_url": null,
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Low-KD Hunt Queue); geography assumed US-national; metrics require vendor validation. Seed evidence — note: Pull in Ahrefs Starter"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": null,
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_base64_image_encoder_b50c1a46",
+      "schema_version": "1.0.0",
+      "keyword": "base64 image encoder",
+      "intent_cluster_id": null,
+      "cluster_label": "base64 encoder",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": null,
+      "keyword_difficulty": null,
+      "cpc_usd": null,
+      "intent_type": "unknown",
+      "opportunity_score": 30,
+      "score_components": {
+        "demand": 0,
+        "winnability": 50,
+        "intent_fit": 30,
+        "seed_prior": 50,
+        "scoring_version_1": 1
+      },
+      "recommendation": "WATCH",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "seed workbook (unvalidated public estimate)",
+        "source_url": null,
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Low-KD Hunt Queue); geography assumed US-national; metrics require vendor validation. Seed evidence — note: Pull in Ahrefs Starter"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": null,
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_url_safe_base64_encoder_9cc3600d",
+      "schema_version": "1.0.0",
+      "keyword": "url safe base64 encoder",
+      "intent_cluster_id": null,
+      "cluster_label": "base64 encoder",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": null,
+      "keyword_difficulty": null,
+      "cpc_usd": null,
+      "intent_type": "unknown",
+      "opportunity_score": 30,
+      "score_components": {
+        "demand": 0,
+        "winnability": 50,
+        "intent_fit": 30,
+        "seed_prior": 50,
+        "scoring_version_1": 1
+      },
+      "recommendation": "WATCH",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "seed workbook (unvalidated public estimate)",
+        "source_url": null,
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Low-KD Hunt Queue); geography assumed US-national; metrics require vendor validation. Seed evidence — note: Pull in Ahrefs Starter"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": null,
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_json_beautifier_online_c4f9fe9f",
+      "schema_version": "1.0.0",
+      "keyword": "json beautifier online",
+      "intent_cluster_id": null,
+      "cluster_label": "json formatter",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": null,
+      "keyword_difficulty": null,
+      "cpc_usd": null,
+      "intent_type": "unknown",
+      "opportunity_score": 30,
+      "score_components": {
+        "demand": 0,
+        "winnability": 50,
+        "intent_fit": 30,
+        "seed_prior": 50,
+        "scoring_version_1": 1
+      },
+      "recommendation": "WATCH",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "seed workbook (unvalidated public estimate)",
+        "source_url": null,
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Low-KD Hunt Queue); geography assumed US-national; metrics require vendor validation. Seed evidence — note: Pull in Ahrefs Starter"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": null,
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_json_pretty_print_online_3aae8b58",
+      "schema_version": "1.0.0",
+      "keyword": "json pretty print online",
+      "intent_cluster_id": null,
+      "cluster_label": "json formatter",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": null,
+      "keyword_difficulty": null,
+      "cpc_usd": null,
+      "intent_type": "unknown",
+      "opportunity_score": 30,
+      "score_components": {
+        "demand": 0,
+        "winnability": 50,
+        "intent_fit": 30,
+        "seed_prior": 50,
+        "scoring_version_1": 1
+      },
+      "recommendation": "WATCH",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "seed workbook (unvalidated public estimate)",
+        "source_url": null,
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Low-KD Hunt Queue); geography assumed US-national; metrics require vendor validation. Seed evidence — note: Pull in Ahrefs Starter"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": null,
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_mysql_formatter_online_41aaee27",
+      "schema_version": "1.0.0",
+      "keyword": "mysql formatter online",
+      "intent_cluster_id": null,
+      "cluster_label": "sql formatter",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": null,
+      "keyword_difficulty": null,
+      "cpc_usd": null,
+      "intent_type": "unknown",
+      "opportunity_score": 30,
+      "score_components": {
+        "demand": 0,
+        "winnability": 50,
+        "intent_fit": 30,
+        "seed_prior": 50,
+        "scoring_version_1": 1
+      },
+      "recommendation": "WATCH",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "seed workbook (unvalidated public estimate)",
+        "source_url": null,
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Low-KD Hunt Queue); geography assumed US-national; metrics require vendor validation. Seed evidence — note: Pull in Ahrefs Starter"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": null,
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_postgresql_formatter_online_3362c1b5",
+      "schema_version": "1.0.0",
+      "keyword": "postgresql formatter online",
+      "intent_cluster_id": null,
+      "cluster_label": "sql formatter",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": null,
+      "keyword_difficulty": null,
+      "cpc_usd": null,
+      "intent_type": "unknown",
+      "opportunity_score": 30,
+      "score_components": {
+        "demand": 0,
+        "winnability": 50,
+        "intent_fit": 30,
+        "seed_prior": 50,
+        "scoring_version_1": 1
+      },
+      "recommendation": "WATCH",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "seed workbook (unvalidated public estimate)",
+        "source_url": null,
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Low-KD Hunt Queue); geography assumed US-national; metrics require vendor validation. Seed evidence — note: Pull in Ahrefs Starter"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": null,
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    },
+    {
+      "search_opportunity_id": "so_seed_7_letter_word_unscrambler_3f8a7487",
+      "schema_version": "1.0.0",
+      "keyword": "7 letter word unscrambler",
+      "intent_cluster_id": null,
+      "cluster_label": "word unscrambler",
+      "problem_family_hint": null,
+      "source": "seed_import",
+      "geography": {
+        "mode": "national",
+        "country": "US"
+      },
+      "geography_assumed": true,
+      "volume_monthly": null,
+      "keyword_difficulty": null,
+      "cpc_usd": null,
+      "intent_type": "unknown",
+      "opportunity_score": 30,
+      "score_components": {
+        "demand": 0,
+        "winnability": 50,
+        "intent_fit": 30,
+        "seed_prior": 50,
+        "scoring_version_1": 1
+      },
+      "recommendation": "WATCH",
+      "status": "candidate",
+      "metric_snapshot_ids": [],
+      "serp_snapshot_ids": [],
+      "provenance": {
+        "source_type": "seed workbook (unvalidated public estimate)",
+        "source_url": null,
+        "confidence_note": "Imported from Trial_Run_Home_Tools_Keyword_SERP_Research.xlsx (Low-KD Hunt Queue); geography assumed US-national; metrics require vendor validation. Seed evidence — note: Pull in Ahrefs Starter"
+      },
+      "vendor_cost_usd": null,
+      "researched_at": null,
+      "created_at": "2026-08-14T18:00:00Z",
+      "updated_at": null
+    }
+  ]
+}
