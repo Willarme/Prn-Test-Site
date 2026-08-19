@@ -63,7 +63,7 @@ describe("client/server boundary", () => {
   it("only owner-admin API routes can mutate publish state or policy", () => {
     const mutators = allSrc.filter((f) => {
       const c = readFileSync(f, "utf-8");
-      return /published_page_ids\s*=|admin_audit\.push|store\.save\(|policyStore\(\)\.save/.test(c);
+      return /setPublished\(|appendAudit\(|published_page_ids\s*=|admin_audit\.push|store\.save\(|policyStore\(\)\.save/.test(c);
     });
     for (const file of mutators) {
       const normalized = file.replace(/\\/g, "/");

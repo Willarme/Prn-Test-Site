@@ -1,47 +1,51 @@
 # Owner To-Do — things only you can do
 
-Living list, updated at the end of every session. **⛔ BLOCKING** = the next
-build steps cannot proceed without it. **▶ UNBLOCKS** = enables something
-already built. Everything else = when convenient.
+Living list, refreshed at the end of every session.
+**⛔ BLOCKING** = something already built cannot work until you do this.
+Everything else = when convenient.
 
-## ⛔ BLOCKING — real persistence (nothing else in the pipeline is blocked, but
-##    the staging site cannot keep data or admin changes without this)
+---
 
-1. **Supabase — create a NEW project named "PRN Trial Claude"** in your existing
-   Supabase account (dashboard → New project; any region; save the DB password
-   in your password manager). Then paste into
-   `C:\Users\melis\property-response-network\.env.local`:
-   ```
-   SUPABASE_URL=...
-   SUPABASE_ANON_KEY=...
-   SUPABASE_SERVICE_ROLE_KEY=...
-   ```
-   Also add the same three in Vercel → prn-trial-claude → Settings → Environment
-   Variables (Production + Preview). Then tell Claude **"wire Supabase"** — the
-   migration is already written; the file/cookie stopgaps get removed.
-   *Why blocking:* until then, staging journeys live in the tester's browser
-   only, admin publish/policy changes on staging reset on redeploy, and the
-   Requests view is empty on staging.
+## ⛔ BLOCKING — 2 environment variables in Vercel (about 2 minutes)
 
-## ▶ UNBLOCKS features already built
+The database is live and working **locally**, but the staging website still has
+no database credentials, so anything you do at prn-trial-claude.vercel.app is
+still temporary.
 
-2. **Owner password for Admin** — in Vercel → prn-trial-claude → Settings →
-   Environment Variables add `ADMIN_PASSWORD` = a password of 8+ characters
-   (Production + Preview), then Redeploy. This turns the Admin dashboard from
-   read-only preview into a working owner console (publish pages, change
-   page-creator controls). Locally: add the same line to `.env.local`.
-3. **DataForSEO** — create account, fund the $50 minimum, put credentials in
-   `.env.local` (and Vercel env) as `DATAFORSEO_LOGIN` / `DATAFORSEO_PASSWORD`.
-   Then tell Claude **"run the DataForSEO smoke test."** Unblocks live
-   autonomous research (today's opportunities are your seed workbook, scored).
-4. **GitHub workflow scope** — in a terminal: `gh auth refresh -s workflow`
+Go to **https://vercel.com/soul-tech-team/prn-trial-claude/settings/environment-variables**
+and add these two (values are in your local `.env.local` — copy them from
+there, or from Supabase → API Keys):
+
+| Key | Value |
+|---|---|
+| `SUPABASE_URL` | `https://qupgsflrufpysxcyulro.supabase.co` |
+| `SUPABASE_SERVICE_ROLE_KEY` | the `sb_secret_…` key (mark it **Sensitive** if offered) |
+
+Leave all environment checkboxes ticked. Then tell Claude — a redeploy picks
+them up and staging starts keeping data like your local copy does.
+
+*(`ADMIN_PASSWORD` is already set — thank you.)*
+
+---
+
+## ▶ Worth doing soon
+
+1. **Verify the DataForSEO account** — the yellow banner on their dashboard.
+   Credentials work and a live test already returned real data, but some
+   endpoints stay rate-limited to zero until the account is verified.
+2. **Add funds to DataForSEO only when you want volume.** The $1 credit is
+   proven working (a live test cost $0.10). The monthly cap in your admin
+   controls is set to **$1** so nothing can quietly drain it — raise it from
+   the dashboard whenever you top up.
+3. **GitHub workflow scope** — in a terminal: `gh auth refresh -s workflow`
    (approve in browser). Lets Claude push the CI automation file.
 
 ## Decisions when you have a minute
 
-5. Skim `docs/canon/DECISIONS.md` D-12 → D-22 — the calls Claude made under
-   your standing approval; flag anything to change.
-6. Trial brand/domain name (OD-8) — needed before Search Console + launch.
+4. Skim `docs/canon/DECISIONS.md` D-12 → D-23 — calls Claude made under your
+   standing approval. Flag anything to change.
+5. Trial brand/domain name (OD-8) — needed before Search Console + launch.
+6. Obsidian agent-memory vaults (OD-12) — decided direction, not yet built.
 
 ## LAUNCH-GATE (before any public traffic — not needed yet)
 
@@ -60,3 +64,16 @@ already built. Everything else = when convenient.
     Intelligence / coverage' and that the rejected post-job outcome follow-up
     is not assigned to A16 or any other active trial agent."
 11. Reattach the original **#15** document before the Trust copy wave.
+
+---
+
+## Handy commands (you can run these any time)
+
+```
+cd C:\Users\melis\property-response-network
+npm run db:migrate -- --status   what database changes are applied
+npm run smoke:seo                live DataForSEO check (costs about $0.10)
+npm run factory                  re-run research -> pages -> QA
+npm run policy                   show the page-creator controls
+```
+Double-click `tools\set-keys.cmd` any time to fill in a missing key.

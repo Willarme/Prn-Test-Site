@@ -1,6 +1,6 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import type { IntakeSession } from "@/domain/intake/contracts";
-import type { ConsentEvent } from "@/domain/privacy/contracts";
+import type { ConsentEvent, DisclosureVersion } from "@/domain/privacy/contracts";
 import type { EvidenceObject, JobPacket, ProblemRecord } from "@/domain/problem/contracts";
 import type { PageSpec } from "@/domain/search/pages";
 import type { EventEnvelope } from "@/platform/events/envelope";
@@ -44,6 +44,8 @@ export interface RecordJourneyInput {
 export interface RuntimeStore {
   readonly kind: "supabase" | "file";
   recordJourney(input: RecordJourneyInput): Promise<void>;
+  /** Persist the exact disclosure text once, so consent can always be reproduced. */
+  ensureDisclosure(disclosure: DisclosureVersion): Promise<void>;
   recordEvents(events: EventEnvelope[]): Promise<void>;
   getJourney(requestId: string): Promise<Journey | null>;
   listJourneys(limit?: number): Promise<Journey[]>;
@@ -158,7 +160,23 @@ class SupabaseRuntimeStore implements RuntimeStore {
       ).error,
       "insert session"
     );
-    await this.recordEvents(events);
+    // Telemetry must never invalidate a journey that is already committed:
+    // a failed event insert would send the customer a retry that duplicates
+    // their ProblemRecord and their consent row.
+    try {
+      await this.recordEvents(events);
+    } catch {
+      /* best effort */
+    }
+  }
+
+  async ensureDisclosure(disclosure: DisclosureVersion): Promise<void> {
+    // Insert-if-absent: the table grants INSERT only, never UPDATE, so a
+    // published disclosure version can never be rewritten after the fact.
+    const { error } = await this.db
+      .from("disclosure_version")
+      .upsert(disclosure, { onConflict: "disclosure_version_id", ignoreDuplicates: true });
+    if (error) throw new Error(`record disclosure: ${error.message}`);
   }
 
   async recordEvents(events: EventEnvelope[]): Promise<void> {
@@ -196,19 +214,23 @@ class SupabaseRuntimeStore implements RuntimeStore {
       .maybeSingle();
     if (error) throw new Error(`load session: ${error.message}`);
     if (!session) return null;
-    const { data: problem } = await this.db
+    const { data: problem, error: problemError } = await this.db
       .from("problem_record")
       .select("*")
       .eq("intake_session_id", session.intake_session_id)
+      .order("created_at", { ascending: true })
+      .limit(1)
       .maybeSingle();
+    if (problemError) throw new Error(`load problem: ${problemError.message}`);
     if (!problem) return null;
-    const { data: packetRow } = await this.db
+    const { data: packetRow, error: packetError } = await this.db
       .from("job_packet")
       .select("packet")
       .eq("problem_id", problem.problem_id)
       .order("packet_version", { ascending: false })
       .limit(1)
       .maybeSingle();
+    if (packetError) throw new Error(`load packet: ${packetError.message}`);
     if (!packetRow) return null;
     return {
       session: session as SessionRow,
@@ -230,12 +252,16 @@ class SupabaseRuntimeStore implements RuntimeStore {
         .from("problem_record")
         .select("*")
         .eq("intake_session_id", session.intake_session_id)
+        .order("created_at", { ascending: true })
+        .limit(1)
         .maybeSingle();
       if (!problem) continue;
+      // Same packet selection rule as getJourney: newest version wins.
       const { data: packetRow } = await this.db
         .from("job_packet")
         .select("packet")
         .eq("problem_id", problem.problem_id)
+        .order("packet_version", { ascending: false })
         .limit(1)
         .maybeSingle();
       if (!packetRow) continue;
@@ -331,6 +357,10 @@ class FileRuntimeStore implements RuntimeStore {
       db.packets.push(input.packet);
       db.events.push(...input.events);
     });
+  }
+
+  async ensureDisclosure(): Promise<void> {
+    /* the local file store keeps the active disclosure in code */
   }
 
   async recordEvents(events: EventEnvelope[]): Promise<void> {

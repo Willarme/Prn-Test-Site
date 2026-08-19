@@ -1,9 +1,13 @@
+import { adminGate } from "@/components/admin/AdminGate";
 import Link from "next/link";
 import { runtimeStore } from "@/platform/stores/runtime";
 
 export const dynamic = "force-dynamic";
 
 export default async function RequestsPage() {
+  const gate = await adminGate();
+  if (gate) return gate;
+
   const store = runtimeStore();
   const [journeys, audit] = await Promise.all([store.listJourneys(100), store.listAudit(30)]);
 

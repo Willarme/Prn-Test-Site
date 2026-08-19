@@ -1,5 +1,23 @@
 # Changelog
 
+## Database live + admin security hardening (2026-08-19)
+
+- Supabase "PRN Trial Claude" wired: 25 tables, RLS on every one, privileges
+  to the server-side role only. Verified end to end — a real journey persists,
+  the results page renders it, admin reads it, and unauthenticated or
+  public-key reads get 401.
+- SECURITY FIX (found by adversarial review): every /admin page now gates
+  READ behind owner sign-in. Previously only the buttons were gated, so the
+  customer-journey ledger and request ids were readable by anyone with the
+  URL. Session cookies hardened (scrypt HMAC, server-side expiry, invalidated
+  by password rotation) and sign-in throttled.
+- Consent ledger is append-only at the database level; disclosure text is
+  persisted and its id carries the content hash.
+- Migration tool verifies TLS against Supabase pinned CA.
+- DataForSEO live: credentials verified, language parameter fixed, real
+  metrics returned. Monthly search-data cap lowered to the $1 trial credit.
+- 186/186 tests (8 new admin-auth tests), lint/typecheck/build clean.
+
 ## Owner Admin dashboard + committed factory portfolio (2026-08-14)
 
 - /admin (Company OS Lite, door-machine slice pulled forward — D-21):

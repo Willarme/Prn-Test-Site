@@ -13,11 +13,15 @@ const CONTENT =
   "We do not publish or send your name, contact information, exact address, private photos or other sensitive details unless you choose to share them. " +
   "By continuing, you agree to the Terms and Privacy Notice.";
 
+const CONTENT_HASH = shortHash(CONTENT);
+
 export const ACTIVE_DISCLOSURE: DisclosureVersion = DisclosureVersion.parse({
-  disclosure_version_id: "dv_intake_0_1",
+  // Id carries the content hash: editing the wording mints a NEW version id,
+  // so historical ConsentEvents keep pointing at the text actually shown.
+  disclosure_version_id: `dv_intake_0_1_${CONTENT_HASH}`,
   version_label: "0.1-draft-counsel-review",
   content_text: CONTENT,
-  content_hash: shortHash(CONTENT),
+  content_hash: CONTENT_HASH,
   status: "active",
   jurisdiction_hint: "US (Indiana-first); counsel review required before launch",
   effective_from: "2026-08-14T00:00:00Z",

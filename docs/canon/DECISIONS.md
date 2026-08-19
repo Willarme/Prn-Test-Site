@@ -5,6 +5,36 @@ The owner authorized continuing without per-wave stops and asked for a list
 of calls made in her absence. D-12 through D-19 are those calls — review and
 overturn freely; each is built to be cheap to change.
 
+## D-23 — Database live; admin surface gated; ledger append-only — 2026-08-19
+Supabase project "PRN Trial Claude" wired and verified end to end. Security
+posture, after an adversarial review found the admin pages readable without
+authentication (they gated the BUTTONS, not the DATA):
+- Every /admin page now calls adminGate() BEFORE loading anything; with no
+  owner session it renders sign-in only. No ADMIN_PASSWORD configured means
+  the dashboard shows a setup notice and never touches customer data.
+- Session cookie is scrypt-derived HMAC over an issued-at stamp, expires
+  server-side, dies when the password is rotated, and is not password
+  equivalent. Sign-in is throttled.
+- Tables: RLS enabled with no policies; privileges granted to the server-side
+  service role only and revoked from anon/authenticated (the project was
+  created with auto-expose OFF, the secure choice).
+- consent_event and event_envelope: UPDATE/DELETE revoked even from the
+  application role, so the consent ledger is append-only structurally.
+- disclosure_version table added; the exact wording shown is persisted, and
+  the disclosure id now carries the content hash so revising the text mints a
+  new id instead of silently re-pointing historical consent.
+- Migration tool verifies TLS against Supabase pinned CA (certs/) rather than
+  disabling verification while carrying the database password.
+- /results/[request_id] remains an unguessable capability URL by design
+  (#14A: the guest gets a packet with a private share link, no account). That
+  is safe only because the ids are crypto-random and are no longer listed by
+  an open admin page.
+Also fixed from the same review: event recording is best-effort so telemetry
+cannot invalidate a committed journey (which would have duplicated a customer
+consent row on retry); both store backends now select the newest packet and
+the earliest problem consistently; the client-boundary guard test had gone
+vacuous after the refactor and now matches the real mutators.
+
 ## D-21 — Owner Admin dashboard now, not at Wave 8; staging stopgaps
 The owner could not test anything without visibility, so Admin/Company OS
 Lite's door-machine slice (#14A §17: Search/Opportunities, Pages incl.

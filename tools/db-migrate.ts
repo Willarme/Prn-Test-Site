@@ -9,7 +9,7 @@
  * token) or a full SUPABASE_DB_URL in .env.local. Applied migrations are
  * recorded in _prn_migrations so re-running is safe.
  */
-import { readFileSync, readdirSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
 import { Client } from "pg";
 
@@ -49,6 +49,17 @@ function candidates(): string[] {
   return hosts.map((h) => `postgresql://postgres.${ref}:${enc}@${h}:5432/postgres`);
 }
 
+/**
+ * Verify TLS against Supabase own CA rather than disabling verification: this
+ * connection carries the database password, so an on-path attacker must not be
+ * able to present a substitute certificate.
+ */
+function tlsOptions(): { ca: string; rejectUnauthorized: true } | { rejectUnauthorized: true } {
+  const caPath = path.join(process.cwd(), "certs", "supabase-prod-ca-2021.crt");
+  if (existsSync(caPath)) return { ca: readFileSync(caPath, "utf-8"), rejectUnauthorized: true };
+  return { rejectUnauthorized: true };
+}
+
 async function connect(): Promise<Client> {
   const urls = candidates();
   if (urls.length === 0) {
@@ -62,7 +73,7 @@ async function connect(): Promise<Client> {
   }
   let lastErr: unknown = null;
   for (const url of urls) {
-    const client = new Client({ connectionString: url, ssl: { rejectUnauthorized: false }, connectionTimeoutMillis: 15000 });
+    const client = new Client({ connectionString: url, ssl: tlsOptions(), connectionTimeoutMillis: 15000 });
     try {
       await client.connect();
       const host = new URL(url).host;
@@ -90,6 +101,8 @@ async function main() {
     await client.query(
       "create table if not exists _prn_migrations (name text primary key, applied_at timestamptz not null default now())"
     );
+    // Same lockdown as every other table, from the moment it exists.
+    await client.query("alter table _prn_migrations enable row level security");
     const { rows } = await client.query<{ name: string }>("select name from _prn_migrations");
     const applied = new Set(rows.map((r) => r.name));
 

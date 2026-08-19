@@ -143,6 +143,9 @@ export async function POST(request: Request): Promise<NextResponse> {
   }
 
   try {
+    // The exact wording shown must be reproducible later, independent of any
+    // future revision to the text (#14A 9.3).
+    await store.ensureDisclosure(ACTIVE_DISCLOSURE);
     await store.recordJourney({
       session: {
         intake_session_id: intakeSessionId,

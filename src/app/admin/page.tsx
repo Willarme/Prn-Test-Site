@@ -1,3 +1,4 @@
+import { adminGate } from "@/components/admin/AdminGate";
 import Link from "next/link";
 import { loadOpportunities, allStagedSpecs, publishedPageIds } from "@/platform/admin/data";
 import { runtimeStore } from "@/platform/stores/runtime";
@@ -23,6 +24,9 @@ function Stat({ label, value, hint }: { label: string; value: string | number; h
 }
 
 export default async function AdminOverview() {
+  const gate = await adminGate();
+  if (gate) return gate;
+
   const opps = loadOpportunities();
   const store = runtimeStore();
   const [staged, published, totals, safetyTriggers] = await Promise.all([

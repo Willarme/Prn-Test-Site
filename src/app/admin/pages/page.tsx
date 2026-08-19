@@ -1,5 +1,5 @@
+import { adminGate } from "@/components/admin/AdminGate";
 import Link from "next/link";
-import { adminMode } from "@/platform/admin/auth";
 import { allStagedSpecs, loadStaged, publishedPageIds } from "@/platform/admin/data";
 import { DEFAULT_FLAGS } from "@/platform/flags";
 import { PublishButton } from "@/components/admin/PublishButton";
@@ -7,18 +7,16 @@ import { PublishButton } from "@/components/admin/PublishButton";
 export const dynamic = "force-dynamic";
 
 export default async function AdminPages() {
-  const mode = await adminMode();
+  const gate = await adminGate();
+  if (gate) return gate;
+
   const specs = await allStagedSpecs();
   const published = await publishedPageIds();
   const { skipped } = loadStaged();
   const doorsFlag = DEFAULT_FLAGS.find((f) => f.flag_key === "seo_doors_enabled")?.enabled ?? false;
-  const canPublish = mode === "unlocked";
-  const disabledReason =
-    mode === "preview"
-      ? "Preview mode — set ADMIN_PASSWORD to enable"
-      : mode === "locked"
-        ? "Sign in to publish"
-        : null;
+  // Past the gate the owner is signed in, so publishing is available.
+  const canPublish = true;
+  const disabledReason = null;
 
   return (
     <div>

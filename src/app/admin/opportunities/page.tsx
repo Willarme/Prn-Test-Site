@@ -1,8 +1,14 @@
+import { adminGate } from "@/components/admin/AdminGate";
 import { loadOpportunities } from "@/platform/admin/data";
+
+export const dynamic = "force-dynamic";
 
 const REC_ORDER = ["NEW", "EXPAND", "MERGE", "WATCH", "REJECT"];
 
-export default function OpportunitiesPage() {
+export default async function OpportunitiesPage() {
+  const gate = await adminGate();
+  if (gate) return gate;
+
   const { opportunities, summary, generated_at } = loadOpportunities();
   const sorted = [...opportunities].sort((a, b) => {
     const ra = REC_ORDER.indexOf(a.recommendation ?? "REJECT");

@@ -1,19 +1,16 @@
-import { adminMode } from "@/platform/admin/auth";
+import { adminGate } from "@/components/admin/AdminGate";
 import { policyStore } from "@/platform/admin/data";
 import { PolicyForm } from "@/components/admin/PolicyForm";
 
 export const dynamic = "force-dynamic";
 
 export default async function ControlsPage() {
-  const mode = await adminMode();
+  const gate = await adminGate();
+  if (gate) return gate;
+
   const p = await policyStore().getActive();
-  const canEdit = mode === "unlocked";
-  const disabledReason =
-    mode === "preview"
-      ? "Preview mode — configure ADMIN_PASSWORD to enable changes. Values shown are the live policy."
-      : mode === "locked"
-        ? "Sign in to change controls."
-        : null;
+  const canEdit = true;
+  const disabledReason = null;
 
   return (
     <div>
