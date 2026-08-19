@@ -1,69 +1,85 @@
 # Owner To-Do — things only you can do
 
 Living list, refreshed at the end of every session.
-**⛔ BLOCKING** = something already built cannot work until you do this.
+**⛔ BLOCKING** = the next build steps cannot proceed until you do this.
+**🧪 TEST & REVIEW** = things only you can judge (look, try, give edits).
 Everything else = when convenient.
 
 ---
 
-## ⛔ BLOCKING — 2 environment variables in Vercel (about 2 minutes)
+## ⛔ BLOCKING — nothing right now
 
-The database is live and working **locally**, but the staging website still has
-no database credentials, so anything you do at prn-trial-claude.vercel.app is
-still temporary.
-
-Go to **https://vercel.com/soul-tech-team/prn-trial-claude/settings/environment-variables**
-and add these two (values are in your local `.env.local` — copy them from
-there, or from Supabase → API Keys):
-
-| Key | Value |
-|---|---|
-| `SUPABASE_URL` | `https://qupgsflrufpysxcyulro.supabase.co` |
-| `SUPABASE_SERVICE_ROLE_KEY` | the `sb_secret_…` key (mark it **Sensitive** if offered) |
-
-Leave all environment checkboxes ticked. Then tell Claude — a redeploy picks
-them up and staging starts keeping data like your local copy does.
-
-*(`ADMIN_PASSWORD` is already set — thank you.)*
+The live site keeps data, the admin is locked behind your password, the
+engine research works, photos store privately. You are unblocked to test.
 
 ---
 
+## 🧪 TEST & REVIEW (your eyes needed — not blocking the engine work)
+
+1. **Try the full intake on the live site** — go to
+   https://prn-trial-claude.vercel.app/start, type a problem the way a
+   customer would (e.g. *"my Carrier AC is 8 years old and blowing warm air
+   since yesterday"*), then:
+   - check the green checks it awards from your sentence,
+   - try the photo button on your phone (model label, thermostat),
+   - walk the guided diagnosis to an outcome,
+   - open "View my Job Packet" and **review the packet itself** — is this
+     what a technician wants? What's missing, what's noise, what reads
+     wrong? Write notes; we'll iterate on the packet template.
+   *(blocks: high-quality PDF packets — the core product. Not blocking the
+   page engine.)*
+2. **Print / Save as PDF** from the packet page and review the printed
+   layout — this is the artifact customers will forward to providers.
+3. **Template + skin review** — open each staged door page from the home
+   page (7 so far) and the sample
+   https://prn-trial-claude.vercel.app/staged/ac-not-turning-on. Give edits
+   on layout, wording, colors, what the "one excellent page" should feel like.
+   *(⛔ blocks: generating pages at volume. NOT blocking testing with a few
+   pages or the engine/packet work.)*
+4. **Sign in to Admin** at https://prn-trial-claude.vercel.app/admin with
+   your owner password — try Pages → preview → Approve & publish, and the
+   Page-creator controls (national vs local, county → all cities). Tell me
+   what's confusing.
+
 ## ▶ Worth doing soon
 
-1. **Verify the DataForSEO account** — the yellow banner on their dashboard.
-   Credentials work and a live test already returned real data, but some
-   endpoints stay rate-limited to zero until the account is verified.
-2. **Add funds to DataForSEO only when you want volume.** The $1 credit is
-   proven working (a live test cost $0.10). The monthly cap in your admin
-   controls is set to **$1** so nothing can quietly drain it — raise it from
-   the dashboard whenever you top up.
-3. **GitHub workflow scope** — in a terminal: `gh auth refresh -s workflow`
+5. **Verify the DataForSEO account** (yellow banner on their dashboard) —
+   some endpoints stay rate-limited to zero until verified.
+6. **Add DataForSEO funds only when you want volume.** Live test on the $1
+   credit works (cost $0.10). Monthly cap in admin controls is $1; raise it
+   when you top up.
+7. **GitHub workflow scope** — in a terminal: `gh auth refresh -s workflow`
    (approve in browser). Lets Claude push the CI automation file.
 
 ## Decisions when you have a minute
 
-4. Skim `docs/canon/DECISIONS.md` D-12 → D-23 — calls Claude made under your
+8. Skim `docs/canon/DECISIONS.md` D-12 → D-24 — calls Claude made under your
    standing approval. Flag anything to change.
-5. Trial brand/domain name (OD-8) — needed before Search Console + launch.
-6. Obsidian agent-memory vaults (OD-12) — decided direction, not yet built.
+9. **OD-13 pricing in the guided diagnosis** — the walkthrough ends in a
+   decision frame (rent a tester vs. diagnostic visit vs. gamble on a cheap
+   part) but with NO dollar amounts, because canon forbids invented prices.
+   Decide: accept "typical range" wording with a source note, or wait for a
+   sourced price registry.
+10. Trial brand/domain name (OD-8) — needed before Search Console + launch.
+11. Obsidian agent-memory vaults (OD-12) — direction agreed, build later.
 
 ## LAUNCH-GATE (before any public traffic — not needed yet)
 
-7. Legal counsel review: Terms, Privacy Notice, the intake consent wording
-   (currently the #14A §9.2 draft, marked draft in code), and the safety
-   response copy (`src/domain/problem/safety.ts`).
-8. Buy the domain; verify it in Google Search Console.
-9. OpenAI API key (real A01/A02 + A05 writer + A06 critic) with spend limits,
-   into `.env.local` as `OPENAI_API_KEY`.
+12. Legal counsel review: Terms, Privacy Notice, the intake consent wording
+    (currently the #14A §9.2 draft), and the safety response copy
+    (`src/domain/problem/safety.ts` and the playbook safety notes).
+13. Buy the domain; verify it in Google Search Console.
+14. OpenAI API key (real A01/A02 + A05 writer + A06 critic + photo reading)
+    with spend limits, into `.env.local` as `OPENAI_API_KEY`.
 
 ## Optional
 
-10. Paste to the planning GPT (verifies decision D-1): "From #20 PRN Canonical
+15. Paste to the planning GPT (verifies decision D-1): "From #20 PRN Canonical
     Agent Registry: paste A16's full registry entry (ID, canonical name,
     mandate, boundaries, build stage). Confirm A16 is 'Trust Network
     Intelligence / coverage' and that the rejected post-job outcome follow-up
     is not assigned to A16 or any other active trial agent."
-11. Reattach the original **#15** document before the Trust copy wave.
+16. Reattach the original **#15** document before the Trust copy wave.
 
 ---
 
