@@ -28,6 +28,8 @@ import type {
  */
 const BASE_URL = "https://api.dataforseo.com/v3";
 const US_LOCATION_CODE = 2840;
+// Every DataForSEO endpoint requires an explicit language alongside location.
+const LANGUAGE = "en";
 const TASK_OK = 20000;
 
 type FetchLike = (url: string, init: RequestInit) => Promise<Response>;
@@ -130,7 +132,7 @@ export class DataForSeoAdapter implements SeoDataAdapter {
 
   async discoverIdeas(seeds: string[], geography: GeographyScope): Promise<DiscoverIdeasResult> {
     const data = await this.post("/dataforseo_labs/google/keyword_ideas/live", [
-      { keywords: seeds, location_code: locationCode(geography), limit: 200 },
+      { keywords: seeds, location_code: locationCode(geography), language_code: LANGUAGE, limit: 200 },
     ]);
     const ideas: DiscoverIdeasResult["ideas"] = [];
     for (const task of data.tasks ?? []) {
@@ -154,10 +156,10 @@ export class DataForSeoAdapter implements SeoDataAdapter {
     const loc = locationCode(geography);
     const [volumes, difficulties] = await Promise.all([
       this.post("/keywords_data/google_ads/search_volume/live", [
-        { keywords, location_code: loc },
+        { keywords, location_code: loc, language_code: LANGUAGE },
       ]),
       this.post("/dataforseo_labs/google/bulk_keyword_difficulty/live", [
-        { keywords, location_code: loc },
+        { keywords, location_code: loc, language_code: LANGUAGE },
       ]),
     ]);
 
@@ -218,7 +220,7 @@ export class DataForSeoAdapter implements SeoDataAdapter {
 
   async getSearchIntent(keywords: string[]): Promise<SearchIntentResult> {
     const data = await this.post("/dataforseo_labs/google/search_intent/live", [
-      { keywords, language_code: "en" },
+      { keywords, language_code: LANGUAGE },
     ]);
     const byKeyword = new Map<string, string>();
     for (const task of data.tasks ?? []) {
@@ -251,7 +253,7 @@ export class DataForSeoAdapter implements SeoDataAdapter {
 
   async getSerpSnapshot(keyword: string, geography: GeographyScope): Promise<SerpSnapshot> {
     const data = await this.post("/serp/google/organic/live/advanced", [
-      { keyword, location_code: locationCode(geography), depth: 10 },
+      { keyword, location_code: locationCode(geography), language_code: LANGUAGE, depth: 10 },
     ]);
     const results: SerpSnapshot["results"] = [];
     for (const task of data.tasks ?? []) {
@@ -288,7 +290,7 @@ export class DataForSeoAdapter implements SeoDataAdapter {
 
   async getTrend(keywords: string[], geography: GeographyScope): Promise<TrendSeries[]> {
     const data = await this.post("/keywords_data/google_trends/explore/live", [
-      { keywords, location_code: locationCode(geography) },
+      { keywords, location_code: locationCode(geography), language_code: LANGUAGE },
     ]);
     // google_trends explore returns one combined graph: each data entry has a
     // values[] array aligned to the requested keywords, in request order.

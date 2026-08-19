@@ -35,7 +35,14 @@ describe("golden trial policy values", () => {
       JSON.parse(readFileSync(join(process.cwd(), "data", "seo-factory-policy.json"), "utf-8"))
     );
     for (const [key, value] of Object.entries(GOLDEN)) {
+      if (key === "max_external_seo_spend_usd_month") continue;
       expect(filePolicy[key as keyof typeof GOLDEN], key).toEqual(value);
     }
+    // The live spend cap may be TIGHTENED below the documented default
+    // (it is, to match the trial credit) but never silently loosened.
+    expect(filePolicy.max_external_seo_spend_usd_month).toBeGreaterThan(0);
+    expect(filePolicy.max_external_seo_spend_usd_month).toBeLessThanOrEqual(
+      GOLDEN.max_external_seo_spend_usd_month
+    );
   });
 });

@@ -2,7 +2,7 @@
   "name": "property-response-network",
   "version": "0.0.1",
   "private": true,
-  "description": "Property Response Network — Black Car trial. One repo, one canonical data model, one shared capability layer.",
+  "description": "Property Response Network \u2014 Black Car trial. One repo, one canonical data model, one shared capability layer.",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -15,7 +15,8 @@
     "policy": "tsx tools/policy.ts",
     "factory": "tsx tools/run-factory.ts",
     "seed:convert": "python tools/convert-seed-xlsx.py",
-    "db:migrate": "tsx tools/db-migrate.ts"
+    "db:migrate": "tsx tools/db-migrate.ts",
+    "smoke:seo": "tsx tools/smoke-dataforseo.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.112.3",
