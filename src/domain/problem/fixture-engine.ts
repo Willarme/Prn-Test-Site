@@ -152,6 +152,9 @@ export function buildJobPacketFixture(
     ],
     questions_for_provider: questions,
     call_script: `Hi — something happened at my home and I have an organized summary ready. In short: ${evidence.content.slice(0, 140)}${evidence.content.length > 140 ? "…" : ""}. I can send you the full Job Packet with details and photos. Are you able to take a look?`,
+    collected_details: [],
+    media_count: 0,
+    diagnosis: null,
     generated_at: now,
     engine: "fixture",
   };

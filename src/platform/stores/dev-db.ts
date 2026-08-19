@@ -20,6 +20,8 @@ export interface DevDb {
   packets: JobPacket[];
   events: EventEnvelope[];
   staged_specs: PageSpec[];
+  intake_answers: Array<{ request_id: string; field_key: string; value_text: string | null; evidence_id: string | null; source: string; answered_at: string }>;
+  diagnosis_answers: Array<{ request_id: string; step_id: string; answer: string | null; evidence_id: string | null; answered_at: string }>;
   /** page_ids the OWNER published from Admin (QA PASS required). */
   published_page_ids: string[];
   /** Owner publish/unpublish/policy actions — audit trail (#14A §17). */
@@ -34,6 +36,8 @@ const EMPTY: DevDb = {
   packets: [],
   events: [],
   staged_specs: [],
+  intake_answers: [],
+  diagnosis_answers: [],
   published_page_ids: [],
   admin_audit: [],
 };

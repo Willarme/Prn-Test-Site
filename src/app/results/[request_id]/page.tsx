@@ -81,6 +81,11 @@ export default async function ResultsPage({
             provider time spent gathering information, and potentially less of your money
             spent on that time where it&apos;s billable.
           </p>
+          <p style={{ marginTop: 14 }} className="no-print">
+            <Link href={`/complete/${request_id}`} className="btn btn-ghost btn-sm">
+              ← Add details or walk through it (strengthens the packet)
+            </Link>
+          </p>
           <p className="mono" style={{ color: "var(--on-dark-faint)", marginTop: 12 }}>
             Packet {packet.job_packet_id} · v{packet.packet_version} · engine: {packet.engine}
             {fromCookie ? " · preview: shown from this browser only" : ""}
@@ -96,6 +101,42 @@ export default async function ResultsPage({
             <div className="prose">
               <h2>The problem, in your words</h2>
               <p>{packet.summary_plain}</p>
+
+              {(packet.collected_details.length > 0 || packet.media_count > 0) && (
+                <>
+                  <h2>Details supplied</h2>
+                  <ul>
+                    {packet.collected_details.map((d, i) => (
+                      <li key={i}>
+                        <strong>{d.label}:</strong> {d.value}
+                      </li>
+                    ))}
+                    {packet.media_count > 0 && (
+                      <li>
+                        <strong>Photos/video attached:</strong> {packet.media_count} (shared privately with the
+                        provider you choose)
+                      </li>
+                    )}
+                  </ul>
+                </>
+              )}
+
+              {packet.diagnosis && (
+                <>
+                  <h2>Guided walkthrough findings</h2>
+                  <p>
+                    <strong>{packet.diagnosis.outcome_title}</strong> — {packet.diagnosis.likely_cause}
+                  </p>
+                  <ul>
+                    {packet.diagnosis.steps_answered.map((s, i) => (
+                      <li key={i}>
+                        {s.step}: <em>{s.answer}</em>
+                      </li>
+                    ))}
+                  </ul>
+                  <p className="hint">Note for the provider: {packet.diagnosis.provider_note}</p>
+                </>
+              )}
 
               <h2>Likely service category</h2>
               <p>

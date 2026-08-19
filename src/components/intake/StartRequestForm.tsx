@@ -81,7 +81,7 @@ export function StartRequestForm({ attribution }: StartRequestFormProps) {
       } catch {
         /* fine */
       }
-      router.push(`/results/${data.request_id}`);
+      router.push(data.next ?? `/results/${data.request_id}`);
     } catch {
       setError("Connection hiccup — your text is still here, try again.");
     } finally {

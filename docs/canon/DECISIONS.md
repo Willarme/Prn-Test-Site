@@ -5,6 +5,26 @@ The owner authorized continuing without per-wave stops and asked for a list
 of calls made in her absence. D-12 through D-19 are those calls — review and
 overturn freely; each is built to be cheap to change.
 
+## D-24 — Post-description intake: playbooks, photos, guided diagnosis — 2026-08-19
+Owner direction: after the first description, show TWO boxes — (1) every
+detail a technician wants, green-checked where already known, photo-first
+with typed fallback, nothing required; (2) an optional guided diagnosis that
+eliminates causes step by step (photo / yes-no / 0-10 rating / choice), can
+end in a safe DIY fix, and always sharpens the packet. Efficiency rule: all
+of it is GENERATED ONCE per problem family as an IntakePlaybook (fields +
+full branching script), cached, and replayed statically — zero per-customer
+AI calls. Built: playbook contract + validator (no dead ends), content-bank
+playbooks for AC-not-cold (the owner's worked example), HVAC no-power,
+plumbing leak, electrical, generic; deterministic auto-detection of brand /
+model / age / timing from the customer's words; private photo/video storage
+(Supabase bucket, type+size allowlist, never public); answers and step
+photos feed a re-assembled packet version every time (newest wins); a step
+photo can satisfy required fields ("two checks in one"); packet gains
+collected details, media count, walkthrough findings, provider note, and
+drops questions already answered. Harvest-to-property-memory flag set on
+equipment fields for Customer Lite. Verified live end to end on Supabase.
+Decision frames use NO invented prices (OD-13).
+
 ## D-23 — Database live; admin surface gated; ledger append-only — 2026-08-19
 Supabase project "PRN Trial Claude" wired and verified end to end. Security
 posture, after an adversarial review found the admin pages readable without

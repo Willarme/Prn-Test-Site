@@ -42,6 +42,8 @@ export const IntakeSession = z.object({
   request_id: Id.nullable(),
   attribution: DoorAttribution,
   consent_event_ids: z.array(Id),
+  /** Which generated-once playbook this request follows (stable per request). */
+  playbook_id: Id.nullable().optional(),
   entered_at: IsoDateTime,
   intake_started_at: IsoDateTime.nullable(),
 });

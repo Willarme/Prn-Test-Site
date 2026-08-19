@@ -6,6 +6,17 @@ come up, newest first. When decided, entries move to DECISIONS.md.
 
 ## Open
 
+- **OD-13 — Guided-diagnosis economics need sourced prices.** The owner wants
+  the walkthrough to end in a decision frame (rent a tester vs. paid diagnostic
+  visit vs. buy the cheap part on a gamble) with dollar figures. Canon forbids
+  invented prices/local claims, so v1 frames the decision with placeholders
+  ("[local estimate]") and a FactBundle hook; real figures arrive when a sourced
+  price registry exists (vendor/retailer APIs or owner-entered ranges with
+  provenance). Owner may accept "typical range" language with a source note.
+- **OD-12 — Obsidian agent-memory vaults.** Direction agreed (one vault rooted
+  at docs/canon, one folder per agent, wiki-linked; Supabase stays system of
+  record). Build at the Admin/agents wave.
+
 - **OD-11 — Trust-adjacent card copy pending #15.** The results page's "Ask
   My People" / "Find someone for me" card bodies use deliberately
   descriptive-neutral wording. When #15 is reattached, replace with the

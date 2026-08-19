@@ -34,10 +34,15 @@ export type ProblemRecord = z.infer<typeof ProblemRecord>;
 /** Raw supplied evidence — private by default, preserved verbatim. */
 export const EvidenceObject = z.object({
   evidence_id: Id,
-  kind: z.enum(["customer_text", "photo", "voice_transcript"]),
+  kind: z.enum(["customer_text", "photo", "video", "voice_transcript"]),
+  /** Text content, or the PRIVATE storage reference for media. Never a public URL. */
   content: z.string(),
   privacy: z.literal("private"),
   captured_at: IsoDateTime,
+  mime: z.string().nullable().optional(),
+  bytes: z.number().int().min(0).nullable().optional(),
+  /** Which required field this media satisfies, when applicable. */
+  field_key: z.string().nullable().optional(),
 });
 export type EvidenceObject = z.infer<typeof EvidenceObject>;
 
@@ -63,6 +68,20 @@ export const JobPacket = z.object({
   safe_prep_notes: z.array(z.string()),
   questions_for_provider: z.array(z.string()),
   call_script: z.string().min(1),
+  /** Equipment/context details the customer supplied (label → value). */
+  collected_details: z.array(z.object({ label: z.string(), value: z.string(), source: z.string() })).default([]),
+  /** Number of photos/videos attached (the media itself stays private). */
+  media_count: z.number().int().min(0).default(0),
+  /** Guided-diagnosis findings, when the customer walked through it. */
+  diagnosis: z
+    .object({
+      outcome_title: z.string(),
+      likely_cause: z.string(),
+      steps_answered: z.array(z.object({ step: z.string(), answer: z.string() })),
+      provider_note: z.string(),
+    })
+    .nullable()
+    .default(null),
   generated_at: IsoDateTime,
   engine: z.enum(["fixture", "production"]),
 });

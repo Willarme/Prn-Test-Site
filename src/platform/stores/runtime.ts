@@ -1,5 +1,6 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import type { IntakeSession } from "@/domain/intake/contracts";
+import type { DiagnosisAnswer, IntakeAnswer } from "@/domain/intake/playbook";
 import type { ConsentEvent, DisclosureVersion } from "@/domain/privacy/contracts";
 import type { EvidenceObject, JobPacket, ProblemRecord } from "@/domain/problem/contracts";
 import type { PageSpec } from "@/domain/search/pages";
@@ -56,6 +57,17 @@ export interface RuntimeStore {
   listStagedSpecs(): Promise<PageSpec[]>;
   appendAudit(entry: AuditEntry): Promise<void>;
   listAudit(limit?: number): Promise<AuditEntry[]>;
+
+  // --- post-description intake (details + guided diagnosis) ---
+  /** Attach new evidence (photo/video) to the journey ProblemRecord. */
+  attachEvidence(problemId: string, evidence: EvidenceObject): Promise<void>;
+  saveIntakeAnswers(answers: IntakeAnswer[]): Promise<void>;
+  listIntakeAnswers(requestId: string): Promise<IntakeAnswer[]>;
+  saveDiagnosisAnswer(answer: DiagnosisAnswer): Promise<void>;
+  listDiagnosisAnswers(requestId: string): Promise<DiagnosisAnswer[]>;
+  listEvidence(problemId: string): Promise<EvidenceObject[]>;
+  /** Store a regenerated packet version (newest version wins on read). */
+  savePacket(packet: JobPacket): Promise<void>;
 }
 
 // ---------------------------------------------------------------------------
@@ -154,6 +166,7 @@ class SupabaseRuntimeStore implements RuntimeStore {
           request_id: session.request_id,
           attribution: session.attribution,
           consent_event_ids: session.consent_event_ids,
+          playbook_id: session.playbook_id ?? null,
           entered_at: session.entered_at,
           intake_started_at: session.intake_started_at,
         })
@@ -339,6 +352,99 @@ class SupabaseRuntimeStore implements RuntimeStore {
     if (error) throw new Error(`list audit: ${error.message}`);
     return (data ?? []) as AuditEntry[];
   }
+
+  async attachEvidence(problemId: string, evidence: EvidenceObject): Promise<void> {
+    throwOn(
+      (
+        await this.db.from("evidence_object").insert({
+          evidence_id: evidence.evidence_id,
+          kind: evidence.kind,
+          content: evidence.content,
+          privacy: evidence.privacy,
+          captured_at: evidence.captured_at,
+          mime: evidence.mime ?? null,
+          bytes: evidence.bytes ?? null,
+          field_key: evidence.field_key ?? null,
+        })
+      ).error,
+      "insert evidence"
+    );
+    const { data: problem, error } = await this.db
+      .from("problem_record")
+      .select("evidence_ids")
+      .eq("problem_id", problemId)
+      .maybeSingle();
+    if (error) throw new Error(`load problem: ${error.message}`);
+    const ids = Array.from(new Set([...(problem?.evidence_ids ?? []), evidence.evidence_id]));
+    throwOn(
+      (
+        await this.db
+          .from("problem_record")
+          .update({ evidence_ids: ids, updated_at: evidence.captured_at })
+          .eq("problem_id", problemId)
+      ).error,
+      "update problem evidence"
+    );
+  }
+
+  async saveIntakeAnswers(answers: IntakeAnswer[]): Promise<void> {
+    if (answers.length === 0) return;
+    throwOn((await this.db.from("intake_answer").insert(answers)).error, "insert answers");
+  }
+
+  async listIntakeAnswers(requestId: string): Promise<IntakeAnswer[]> {
+    const { data, error } = await this.db
+      .from("intake_answer")
+      .select("request_id, field_key, value_text, evidence_id, source, answered_at")
+      .eq("request_id", requestId)
+      .order("answered_at", { ascending: true });
+    if (error) throw new Error(`list answers: ${error.message}`);
+    return (data ?? []) as IntakeAnswer[];
+  }
+
+  async saveDiagnosisAnswer(answer: DiagnosisAnswer): Promise<void> {
+    throwOn((await this.db.from("diagnosis_answer").insert(answer)).error, "insert diagnosis answer");
+  }
+
+  async listDiagnosisAnswers(requestId: string): Promise<DiagnosisAnswer[]> {
+    const { data, error } = await this.db
+      .from("diagnosis_answer")
+      .select("request_id, step_id, answer, evidence_id, answered_at")
+      .eq("request_id", requestId)
+      .order("answered_at", { ascending: true });
+    if (error) throw new Error(`list diagnosis: ${error.message}`);
+    return (data ?? []) as DiagnosisAnswer[];
+  }
+
+  async listEvidence(problemId: string): Promise<EvidenceObject[]> {
+    const { data: problem } = await this.db
+      .from("problem_record")
+      .select("evidence_ids")
+      .eq("problem_id", problemId)
+      .maybeSingle();
+    const ids: string[] = problem?.evidence_ids ?? [];
+    if (ids.length === 0) return [];
+    const { data, error } = await this.db.from("evidence_object").select("*").in("evidence_id", ids);
+    if (error) throw new Error(`list evidence: ${error.message}`);
+    return (data ?? []) as EvidenceObject[];
+  }
+
+  async savePacket(packet: JobPacket): Promise<void> {
+    throwOn(
+      (
+        await this.db.from("job_packet").insert({
+          job_packet_id: packet.job_packet_id,
+          packet_version: packet.packet_version,
+          schema_version: packet.schema_version,
+          problem_id: packet.problem_id,
+          packet,
+          generated_at: packet.generated_at,
+          engine: packet.engine,
+        })
+      ).error,
+      "insert packet version"
+    );
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -375,7 +481,9 @@ class FileRuntimeStore implements RuntimeStore {
     if (!session) return null;
     const problem = db.problems.find((p) => p.intake_session_id === session.intake_session_id);
     if (!problem) return null;
-    const packet = db.packets.find((k) => k.problem_id === problem.problem_id);
+    const packet = [...db.packets]
+      .filter((k) => k.problem_id === problem.problem_id)
+      .sort((a, b) => b.packet_version - a.packet_version)[0];
     if (!packet) return null;
     return { session, problem, packet };
   }
@@ -385,7 +493,11 @@ class FileRuntimeStore implements RuntimeStore {
     const out: Journey[] = [];
     for (const session of [...db.intake_sessions].reverse().slice(0, limit)) {
       const problem = db.problems.find((p) => p.intake_session_id === session.intake_session_id);
-      const packet = problem ? db.packets.find((k) => k.problem_id === problem.problem_id) : undefined;
+      const packet = problem
+        ? [...db.packets]
+            .filter((k) => k.problem_id === problem.problem_id)
+            .sort((a, b) => b.packet_version - a.packet_version)[0]
+        : undefined;
       if (problem && packet) out.push({ session, problem, packet });
     }
     return out;
@@ -429,6 +541,50 @@ class FileRuntimeStore implements RuntimeStore {
 
   async listAudit(limit = 50): Promise<AuditEntry[]> {
     return [...readDevDb().admin_audit].reverse().slice(0, limit);
+  }
+
+  async attachEvidence(problemId: string, evidence: EvidenceObject): Promise<void> {
+    updateDevDb((db) => {
+      db.evidence.push(evidence);
+      const p = db.problems.find((x) => x.problem_id === problemId);
+      if (p && !p.evidence_ids.includes(evidence.evidence_id)) {
+        p.evidence_ids.push(evidence.evidence_id);
+        p.updated_at = evidence.captured_at;
+      }
+    });
+  }
+
+  async saveIntakeAnswers(answers: IntakeAnswer[]): Promise<void> {
+    updateDevDb((db) => {
+      db.intake_answers.push(...answers);
+    });
+  }
+
+  async listIntakeAnswers(requestId: string): Promise<IntakeAnswer[]> {
+    return readDevDb().intake_answers.filter((a) => a.request_id === requestId) as IntakeAnswer[];
+  }
+
+  async saveDiagnosisAnswer(answer: DiagnosisAnswer): Promise<void> {
+    updateDevDb((db) => {
+      db.diagnosis_answers.push(answer);
+    });
+  }
+
+  async listDiagnosisAnswers(requestId: string): Promise<DiagnosisAnswer[]> {
+    return readDevDb().diagnosis_answers.filter((a) => a.request_id === requestId) as DiagnosisAnswer[];
+  }
+
+  async listEvidence(problemId: string): Promise<EvidenceObject[]> {
+    const db = readDevDb();
+    const p = db.problems.find((x) => x.problem_id === problemId);
+    if (!p) return [];
+    return db.evidence.filter((e) => p.evidence_ids.includes(e.evidence_id));
+  }
+
+  async savePacket(packet: JobPacket): Promise<void> {
+    updateDevDb((db) => {
+      db.packets.push(packet);
+    });
   }
 }
 

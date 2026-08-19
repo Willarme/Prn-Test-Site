@@ -5,6 +5,8 @@ import { DoorAttribution } from "@/domain/intake/contracts";
 import { analyzeProblemFixture, buildJobPacketFixture } from "@/domain/problem/fixture-engine";
 import { checkSafety } from "@/domain/problem/safety";
 import { ACTIVE_DISCLOSURE, CONSENT_SCOPE_INTAKE } from "@/domain/privacy/disclosures";
+import { detectFields } from "@/domain/intake/extract";
+import { selectPlaybook } from "@/domain/intake/playbooks";
 import { flagEnabled } from "@/platform/flags";
 import { runtimeStore } from "@/platform/stores/runtime";
 import type { EventEnvelope } from "@/platform/events/envelope";
@@ -108,6 +110,18 @@ export async function POST(request: Request): Promise<NextResponse> {
   });
   const packet = buildJobPacketFixture(problem, evidence, now);
 
+  // Route to the generated-once playbook and award green checks for anything
+  // the customer already told us (no AI call; see domain/intake/extract).
+  const playbook = selectPlaybook(description, problem.service_category);
+  const detected = detectFields(description, playbook.required_fields).map((d) => ({
+    request_id: requestId,
+    field_key: d.field_key,
+    value_text: d.value_text,
+    evidence_id: null,
+    source: "auto_detected" as const,
+    answered_at: now,
+  }));
+
   const consent = {
     consent_event_id: `ce_${randomUUID()}`,
     person_id: null,
@@ -154,6 +168,7 @@ export async function POST(request: Request): Promise<NextResponse> {
         request_id: requestId,
         attribution,
         consent_event_ids: [consent.consent_event_id],
+        playbook_id: playbook.playbook_id,
         entered_at: now,
         intake_started_at: now,
       },
@@ -163,6 +178,13 @@ export async function POST(request: Request): Promise<NextResponse> {
       packet,
       events,
     });
+    if (detected.length > 0) {
+      try {
+        await store.saveIntakeAnswers(detected);
+      } catch {
+        /* best effort — the customer can still add these by hand */
+      }
+    }
   } catch (err) {
     // Never lose the customer's work to a storage failure (#14A 13.4).
     return NextResponse.json(
@@ -177,6 +199,7 @@ export async function POST(request: Request): Promise<NextResponse> {
 
   const res = NextResponse.json({
     request_id: requestId,
+    next: `/complete/${requestId}`,
     safety:
       problem.safety_state === "normal"
         ? null

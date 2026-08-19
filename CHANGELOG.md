@@ -1,5 +1,20 @@
 # Changelog
 
+## Post-description intake: details + guided diagnosis (2026-08-19)
+
+- /complete/[request_id]: two-box step after the first description (D-24) —
+  technician details with green checks (auto-detected from the customer's
+  words, typed, or photographed) and an optional static guided walkthrough.
+- IntakePlaybook contract (generate once, replay forever) + 5 content-bank
+  playbooks with dead-end validation; AC-not-cold playbook is the owner's
+  worked example, canon-safe (no prices, no dangerous instructions).
+- Private photo/video upload (Supabase bucket or local), allowlisted types,
+  25 MB cap; evidence linked to the ProblemRecord; step photos satisfy fields.
+- Packet re-assembles as a new version after every answer: details, media
+  count, diagnosis findings + provider note, answered questions dropped.
+- Migration 00005 (intake_answer, diagnosis_answer, intake_playbook,
+  evidence media columns). 200/200 tests.
+
 ## Database live + admin security hardening (2026-08-19)
 
 - Supabase "PRN Trial Claude" wired: 25 tables, RLS on every one, privileges
