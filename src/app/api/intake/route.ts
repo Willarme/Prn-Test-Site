@@ -6,15 +6,14 @@ import { analyzeProblemFixture, buildJobPacketFixture } from "@/domain/problem/f
 import { checkSafety } from "@/domain/problem/safety";
 import { ACTIVE_DISCLOSURE, CONSENT_SCOPE_INTAKE } from "@/domain/privacy/disclosures";
 import { flagEnabled } from "@/platform/flags";
-import { updateDevDb } from "@/platform/stores/dev-db";
+import { runtimeStore } from "@/platform/stores/runtime";
 import type { EventEnvelope } from "@/platform/events/envelope";
 
 /**
  * The ONE central intake entry (doors render the shared form; this is where
  * every submission lands). Doors own zero business logic — the SAFETY GATE
- * runs server-side BEFORE any analysis (#14A §14), consent is verified
- * against the active DisclosureVersion, and access-control ids are
- * crypto-random (never derived from content).
+ * runs server-side BEFORE any analysis (#14A 14), consent is verified against
+ * the active DisclosureVersion, and access-control ids are crypto-random.
  */
 const IntakeRequest = z.object({
   description: z.string().min(8, "Tell us a little more — a sentence is plenty."),
@@ -72,22 +71,21 @@ export async function POST(request: Request): Promise<NextResponse> {
   }
 
   const now = new Date().toISOString().replace(/\.\d+Z$/, "Z");
+  const store = runtimeStore();
 
-  // SAFETY GATE — deterministic, BEFORE any analysis (#14A §14). A halt-class
+  // SAFETY GATE — deterministic, BEFORE any analysis (#14A 14). A halt-class
   // hazard creates no ProblemRecord and no packet; only the safety event.
   const safety = checkSafety(description);
   if (safety && !safety.intake_may_continue) {
-    updateDevDb((db) => {
-      db.events.push(
-        makeEvent(
-          "safety.triggered",
-          null,
-          { safety_rule_id: safety.safety_rule_id, halted: "true" },
-          attribution.landing_path,
-          now
-        )
-      );
-    });
+    await store.recordEvents([
+      makeEvent(
+        "safety.triggered",
+        null,
+        { safety_rule_id: safety.safety_rule_id, halted: "true" },
+        attribution.landing_path,
+        now
+      ),
+    ]);
     return NextResponse.json({
       request_id: null,
       safety: {
@@ -102,11 +100,19 @@ export async function POST(request: Request): Promise<NextResponse> {
   const intakeSessionId = `is_${randomUUID()}`;
   const requestId = `rq_${randomUUID()}`;
 
+  const { problem, evidence } = analyzeProblemFixture({
+    description,
+    intake_session_id: intakeSessionId,
+    problem_family_hint: attribution.problem_family_hint,
+    now,
+  });
+  const packet = buildJobPacketFixture(problem, evidence, now);
+
   const consent = {
     consent_event_id: `ce_${randomUUID()}`,
     person_id: null,
     guest_session_id: guestSessionId,
-    problem_id: null as string | null,
+    problem_id: problem.problem_id,
     scope: CONSENT_SCOPE_INTAKE,
     action: "GRANT" as const,
     disclosure_version_id: ACTIVE_DISCLOSURE.disclosure_version_id,
@@ -115,51 +121,56 @@ export async function POST(request: Request): Promise<NextResponse> {
     occurred_at: now,
   };
 
-  const { problem, evidence } = analyzeProblemFixture({
-    description,
+  const ctx = {
     intake_session_id: intakeSessionId,
-    problem_family_hint: attribution.problem_family_hint,
-    now,
-  });
-  consent.problem_id = problem.problem_id;
-  const packet = buildJobPacketFixture(problem, evidence, now);
+    problem_id: problem.problem_id,
+    ...(attribution.page_id ? { page_id: attribution.page_id } : {}),
+  };
+  const events: EventEnvelope[] = [
+    makeEvent("intake.started", guestSessionId, ctx, attribution.landing_path, now),
+    makeEvent("consent.granted", guestSessionId, ctx, attribution.landing_path, now),
+    makeEvent("problem.created", guestSessionId, ctx, attribution.landing_path, now),
+    makeEvent(
+      "packet.generated",
+      guestSessionId,
+      { ...ctx, job_packet_id: packet.job_packet_id },
+      attribution.landing_path,
+      now
+    ),
+  ];
+  if (problem.safety_state !== "normal") {
+    events.push(makeEvent("safety.triggered", guestSessionId, ctx, attribution.landing_path, now));
+  }
 
-  updateDevDb((db) => {
-    db.intake_sessions.push({
-      intake_session_id: intakeSessionId,
-      schema_version: "1.0.0",
-      guest_session_id: guestSessionId,
-      request_id: requestId,
-      attribution,
-      consent_event_ids: [consent.consent_event_id],
-      entered_at: now,
-      intake_started_at: now,
+  try {
+    await store.recordJourney({
+      session: {
+        intake_session_id: intakeSessionId,
+        schema_version: "1.0.0",
+        guest_session_id: guestSessionId,
+        request_id: requestId,
+        attribution,
+        consent_event_ids: [consent.consent_event_id],
+        entered_at: now,
+        intake_started_at: now,
+      },
+      consent,
+      problem,
+      evidence,
+      packet,
+      events,
     });
-    db.consent_events.push(consent);
-    db.problems.push(problem);
-    db.evidence.push(evidence);
-    db.packets.push(packet);
-    const ctx = {
-      intake_session_id: intakeSessionId,
-      problem_id: problem.problem_id,
-      ...(attribution.page_id ? { page_id: attribution.page_id } : {}),
-    };
-    db.events.push(
-      makeEvent("intake.started", guestSessionId, ctx, attribution.landing_path, now),
-      makeEvent("consent.granted", guestSessionId, ctx, attribution.landing_path, now),
-      makeEvent("problem.created", guestSessionId, ctx, attribution.landing_path, now),
-      makeEvent(
-        "packet.generated",
-        guestSessionId,
-        { ...ctx, job_packet_id: packet.job_packet_id },
-        attribution.landing_path,
-        now
-      )
+  } catch (err) {
+    // Never lose the customer's work to a storage failure (#14A 13.4).
+    return NextResponse.json(
+      {
+        error:
+          "We could not save your request just now. Your text is still here — please try again in a moment.",
+        detail: err instanceof Error ? err.message : String(err),
+      },
+      { status: 503 }
     );
-    if (problem.safety_state !== "normal") {
-      db.events.push(makeEvent("safety.triggered", guestSessionId, ctx, attribution.landing_path, now));
-    }
-  });
+  }
 
   const res = NextResponse.json({
     request_id: requestId,
@@ -173,19 +184,18 @@ export async function POST(request: Request): Promise<NextResponse> {
           },
   });
 
-  // STAGING STOPGAP (D-21): until the database is connected, serverless
-  // instances don't share the runtime store, so the results page also reads
-  // the journey from the tester's OWN browser cookie (httpOnly; only that
-  // browser can see it — not shareable). Removed when Supabase lands.
-  if (process.env.VERCEL) {
+  // No database configured (local dev or a preview deploy without keys):
+  // carry the journey in the requester own browser so the flow still works.
+  // Never set once the database is wired.
+  if (store.kind === "file") {
     const payload = Buffer.from(
-      JSON.stringify({ request_id: requestId, problem, evidence, packet })
+      JSON.stringify({ request_id: requestId, problem, packet })
     ).toString("base64url");
     if (payload.length < 3800) {
       res.cookies.set("prn_last_journey", payload, {
         httpOnly: true,
         sameSite: "lax",
-        secure: true,
+        secure: process.env.NODE_ENV === "production",
         maxAge: 60 * 60 * 24 * 7,
         path: "/results",
       });

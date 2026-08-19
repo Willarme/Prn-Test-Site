@@ -9,7 +9,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const spec = findStagedByPath(`/problems/${slug}`);
+  const spec = await findStagedByPath(`/problems/${slug}`);
   if (!spec) return { title: "Not found" };
   return {
     title: spec.title,
@@ -24,7 +24,7 @@ export default async function StagedDoorPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const spec = findStagedByPath(`/problems/${slug}`);
+  const spec = await findStagedByPath(`/problems/${slug}`);
   if (!spec) notFound();
   return <IntentPageView spec={spec} staged />;
 }

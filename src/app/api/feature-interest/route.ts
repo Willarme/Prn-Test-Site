@@ -1,12 +1,12 @@
+import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { findConcept } from "@/domain/feature-lab/concepts";
-import { shortHash } from "@/domain/shared/hash";
 import { flagEnabled } from "@/platform/flags";
-import { updateDevDb } from "@/platform/stores/dev-db";
+import { runtimeStore } from "@/platform/stores/runtime";
 import type { EventEnvelope } from "@/platform/events/envelope";
 
-// Email capture (the fourth #14A §16 funnel step) arrives with the Feature
+// Email capture (the fourth #14A 16 funnel step) arrives with the Feature
 // Lab wave proper — the contract surfaces only what is actually persisted.
 const InterestRequest = z.object({
   concept: z.string().min(1),
@@ -27,7 +27,7 @@ export async function POST(request: Request): Promise<NextResponse> {
   const { concept, kind, thumb, landing_path } = parsed.data;
   const now = new Date().toISOString().replace(/\.\d+Z$/, "Z");
   const event: EventEnvelope = {
-    event_id: `ev_${shortHash(`${concept}|${kind}|${thumb ?? ""}|${now}|${Math.random()}`)}`,
+    event_id: `ev_${randomUUID()}`,
     event_name: `feature_lab.${kind}` as EventEnvelope["event_name"],
     event_version: 1,
     occurred_at: now,
@@ -42,8 +42,12 @@ export async function POST(request: Request): Promise<NextResponse> {
     agent_run_id: null,
     action_request_id: null,
   };
-  updateDevDb((db) => {
-    db.events.push(event);
-  });
-  return NextResponse.json({ ok: true });
+  try {
+    await runtimeStore().recordEvents([event]);
+  } catch {
+    // Interest signals are best-effort telemetry; never surface a failure to
+    // the visitor over a thumbs-up.
+    return NextResponse.json({ ok: true, recorded: false });
+  }
+  return NextResponse.json({ ok: true, recorded: true });
 }

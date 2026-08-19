@@ -4,9 +4,9 @@ import { allStagedSpecs } from "@/platform/admin/data";
 
 export const dynamic = "force-dynamic";
 
-export default function Home() {
+export default async function Home() {
   // UI only — zero business logic lives in this layer.
-  const staged = allStagedSpecs();
+  const staged = await allStagedSpecs();
   return (
     <main>
       <section className="section">

@@ -3,21 +3,22 @@ import { allStagedSpecs, publishedPageIds } from "@/platform/admin/data";
 
 /**
  * Staged/published PageSpec lookup for rendering.
- * PUBLISHED = the owner pressed Publish in Admin on a QA-PASS page (recorded
- * in the runtime store). There is no other path to PUBLISHED (canon).
+ * PUBLISHED = the owner pressed Publish in Admin on a QA-PASS page. There is
+ * no other path to PUBLISHED (canon, #14A 15.1 step 8).
  */
-export function listStagedSpecs(): PageSpec[] {
+export async function listStagedSpecs(): Promise<PageSpec[]> {
   return allStagedSpecs();
 }
 
-export function findStagedByPath(canonicalPath: string): PageSpec | null {
-  return listStagedSpecs().find((s) => s.canonical_path === canonicalPath) ?? null;
+export async function findStagedByPath(canonicalPath: string): Promise<PageSpec | null> {
+  const specs = await listStagedSpecs();
+  return specs.find((s) => s.canonical_path === canonicalPath) ?? null;
 }
 
-export function findPublishedByPath(canonicalPath: string): PageSpec | null {
-  const published = publishedPageIds();
+export async function findPublishedByPath(canonicalPath: string): Promise<PageSpec | null> {
+  const [specs, published] = await Promise.all([listStagedSpecs(), publishedPageIds()]);
   return (
-    listStagedSpecs().find(
+    specs.find(
       (s) => s.canonical_path === canonicalPath && published.has(s.page_id) && s.qa.state === "PASS"
     ) ?? null
   );

@@ -1,0 +1,421 @@
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import type { IntakeSession } from "@/domain/intake/contracts";
+import type { ConsentEvent } from "@/domain/privacy/contracts";
+import type { EvidenceObject, JobPacket, ProblemRecord } from "@/domain/problem/contracts";
+import type { PageSpec } from "@/domain/search/pages";
+import type { EventEnvelope } from "@/platform/events/envelope";
+import { readDevDb, updateDevDb } from "@/platform/stores/dev-db";
+
+/**
+ * Runtime store — the one place customer journeys, events, publish state and
+ * the owner audit trail are read/written. Two interchangeable backends:
+ *
+ *  - SupabaseRuntimeStore: used whenever SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY
+ *    are configured. Server-side only, service role, over HTTP (serverless-safe).
+ *    Row-level security is deny-all, so nothing else can read these rows.
+ *  - FileRuntimeStore: local JSON fallback for development without a database.
+ *
+ * Callers never know which backend they got (#22A: one capability, many adapters).
+ */
+export type SessionRow = IntakeSession & { request_id: string };
+
+export interface Journey {
+  session: SessionRow;
+  problem: ProblemRecord;
+  packet: JobPacket;
+}
+
+export interface AuditEntry {
+  at: string;
+  action: string;
+  target: string;
+  detail: string | null;
+}
+
+export interface RecordJourneyInput {
+  session: SessionRow;
+  consent: ConsentEvent;
+  problem: ProblemRecord;
+  evidence: EvidenceObject;
+  packet: JobPacket;
+  events: EventEnvelope[];
+}
+
+export interface RuntimeStore {
+  readonly kind: "supabase" | "file";
+  recordJourney(input: RecordJourneyInput): Promise<void>;
+  recordEvents(events: EventEnvelope[]): Promise<void>;
+  getJourney(requestId: string): Promise<Journey | null>;
+  listJourneys(limit?: number): Promise<Journey[]>;
+  countEvents(eventName: string): Promise<number>;
+  totals(): Promise<{ journeys: number; packets: number; consents: number }>;
+  getPublishedPageIds(): Promise<Set<string>>;
+  setPublished(spec: PageSpec, published: boolean): Promise<void>;
+  listStagedSpecs(): Promise<PageSpec[]>;
+  appendAudit(entry: AuditEntry): Promise<void>;
+  listAudit(limit?: number): Promise<AuditEntry[]>;
+}
+
+// ---------------------------------------------------------------------------
+// Supabase backend
+// ---------------------------------------------------------------------------
+
+function client(): SupabaseClient {
+  return createClient(process.env.SUPABASE_URL as string, process.env.SUPABASE_SERVICE_ROLE_KEY as string, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+}
+
+function throwOn(error: { message: string } | null, what: string): void {
+  if (error) throw new Error(`${what}: ${error.message}`);
+}
+
+class SupabaseRuntimeStore implements RuntimeStore {
+  readonly kind = "supabase" as const;
+  private db = client();
+
+  async recordJourney(input: RecordJourneyInput): Promise<void> {
+    const { session, consent, problem, evidence, packet, events } = input;
+    // Raw evidence first, then the record that references it, then the packet
+    // derived from it: the provenance chain is never written out of order.
+    throwOn(
+      (
+        await this.db.from("evidence_object").insert({
+          evidence_id: evidence.evidence_id,
+          kind: evidence.kind,
+          content: evidence.content,
+          privacy: evidence.privacy,
+          captured_at: evidence.captured_at,
+        })
+      ).error,
+      "insert evidence"
+    );
+    throwOn(
+      (
+        await this.db.from("problem_record").insert({
+          problem_id: problem.problem_id,
+          schema_version: problem.schema_version,
+          status: problem.status,
+          source_channel: problem.source_channel,
+          intake_session_id: problem.intake_session_id,
+          problem_summary: problem.problem_summary,
+          service_category: problem.service_category,
+          service_category_confidence: problem.service_category_confidence,
+          safety_state: problem.safety_state,
+          safety_rule_id: problem.safety_rule_id,
+          evidence_ids: problem.evidence_ids,
+          claim_ids: problem.claim_ids,
+          clarifiers_asked: problem.clarifiers_asked,
+          created_at: problem.created_at,
+          updated_at: problem.updated_at,
+        })
+      ).error,
+      "insert problem"
+    );
+    throwOn(
+      (
+        await this.db.from("job_packet").insert({
+          job_packet_id: packet.job_packet_id,
+          packet_version: packet.packet_version,
+          schema_version: packet.schema_version,
+          problem_id: packet.problem_id,
+          packet,
+          generated_at: packet.generated_at,
+          engine: packet.engine,
+        })
+      ).error,
+      "insert packet"
+    );
+    throwOn(
+      (
+        await this.db.from("consent_event").insert({
+          consent_event_id: consent.consent_event_id,
+          person_id: consent.person_id,
+          guest_session_id: consent.guest_session_id,
+          problem_id: consent.problem_id,
+          scope: consent.scope,
+          action: consent.action,
+          disclosure_version_id: consent.disclosure_version_id,
+          surface: consent.surface,
+          trace_id: consent.trace_id,
+          occurred_at: consent.occurred_at,
+        })
+      ).error,
+      "insert consent"
+    );
+    throwOn(
+      (
+        await this.db.from("intake_session").insert({
+          intake_session_id: session.intake_session_id,
+          schema_version: session.schema_version,
+          guest_session_id: session.guest_session_id,
+          request_id: session.request_id,
+          attribution: session.attribution,
+          consent_event_ids: session.consent_event_ids,
+          entered_at: session.entered_at,
+          intake_started_at: session.intake_started_at,
+        })
+      ).error,
+      "insert session"
+    );
+    await this.recordEvents(events);
+  }
+
+  async recordEvents(events: EventEnvelope[]): Promise<void> {
+    if (events.length === 0) return;
+    throwOn(
+      (
+        await this.db.from("event_envelope").insert(
+          events.map((e) => ({
+            event_id: e.event_id,
+            event_name: e.event_name,
+            event_version: e.event_version,
+            occurred_at: e.occurred_at,
+            actor: e.actor,
+            guest_session_id: e.guest_session_id,
+            context: e.context,
+            source: e.source,
+            versions: e.versions,
+            result: e.result,
+            privacy_class: e.privacy_class,
+            trace_id: e.trace_id,
+            agent_run_id: e.agent_run_id,
+            action_request_id: e.action_request_id,
+          }))
+        )
+      ).error,
+      "insert events"
+    );
+  }
+
+  async getJourney(requestId: string): Promise<Journey | null> {
+    const { data: session, error } = await this.db
+      .from("intake_session")
+      .select("*")
+      .eq("request_id", requestId)
+      .maybeSingle();
+    if (error) throw new Error(`load session: ${error.message}`);
+    if (!session) return null;
+    const { data: problem } = await this.db
+      .from("problem_record")
+      .select("*")
+      .eq("intake_session_id", session.intake_session_id)
+      .maybeSingle();
+    if (!problem) return null;
+    const { data: packetRow } = await this.db
+      .from("job_packet")
+      .select("packet")
+      .eq("problem_id", problem.problem_id)
+      .order("packet_version", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (!packetRow) return null;
+    return {
+      session: session as SessionRow,
+      problem: problem as ProblemRecord,
+      packet: packetRow.packet as JobPacket,
+    };
+  }
+
+  async listJourneys(limit = 100): Promise<Journey[]> {
+    const { data: sessions, error } = await this.db
+      .from("intake_session")
+      .select("*")
+      .order("entered_at", { ascending: false })
+      .limit(limit);
+    if (error) throw new Error(`list sessions: ${error.message}`);
+    const out: Journey[] = [];
+    for (const session of sessions ?? []) {
+      const { data: problem } = await this.db
+        .from("problem_record")
+        .select("*")
+        .eq("intake_session_id", session.intake_session_id)
+        .maybeSingle();
+      if (!problem) continue;
+      const { data: packetRow } = await this.db
+        .from("job_packet")
+        .select("packet")
+        .eq("problem_id", problem.problem_id)
+        .limit(1)
+        .maybeSingle();
+      if (!packetRow) continue;
+      out.push({
+        session: session as SessionRow,
+        problem: problem as ProblemRecord,
+        packet: packetRow.packet as JobPacket,
+      });
+    }
+    return out;
+  }
+
+  async countEvents(eventName: string): Promise<number> {
+    const { count, error } = await this.db
+      .from("event_envelope")
+      .select("event_id", { count: "exact", head: true })
+      .eq("event_name", eventName);
+    if (error) throw new Error(`count events: ${error.message}`);
+    return count ?? 0;
+  }
+
+  async totals(): Promise<{ journeys: number; packets: number; consents: number }> {
+    const counts = await Promise.all(
+      ["intake_session", "job_packet", "consent_event"].map(async (table) => {
+        const { count } = await this.db.from(table).select("*", { count: "exact", head: true });
+        return count ?? 0;
+      })
+    );
+    return { journeys: counts[0], packets: counts[1], consents: counts[2] };
+  }
+
+  async getPublishedPageIds(): Promise<Set<string>> {
+    const { data, error } = await this.db.from("published_page").select("page_id");
+    if (error) throw new Error(`list published: ${error.message}`);
+    return new Set((data ?? []).map((r) => r.page_id as string));
+  }
+
+  async setPublished(spec: PageSpec, published: boolean): Promise<void> {
+    if (published) {
+      throwOn(
+        (
+          await this.db.from("published_page").upsert({
+            page_id: spec.page_id,
+            page_spec_id: spec.page_spec_id,
+            canonical_path: spec.canonical_path,
+            published_at: new Date().toISOString(),
+          })
+        ).error,
+        "publish page"
+      );
+    } else {
+      throwOn(
+        (await this.db.from("published_page").delete().eq("page_id", spec.page_id)).error,
+        "unpublish page"
+      );
+    }
+  }
+
+  async listStagedSpecs(): Promise<PageSpec[]> {
+    const { data, error } = await this.db.from("staged_page_spec").select("spec");
+    if (error) throw new Error(`list staged: ${error.message}`);
+    return (data ?? []).map((r) => r.spec as PageSpec);
+  }
+
+  async appendAudit(entry: AuditEntry): Promise<void> {
+    throwOn((await this.db.from("admin_audit").insert(entry)).error, "append audit");
+  }
+
+  async listAudit(limit = 50): Promise<AuditEntry[]> {
+    const { data, error } = await this.db
+      .from("admin_audit")
+      .select("at, action, target, detail")
+      .order("at", { ascending: false })
+      .limit(limit);
+    if (error) throw new Error(`list audit: ${error.message}`);
+    return (data ?? []) as AuditEntry[];
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Local file backend (development without a database)
+// ---------------------------------------------------------------------------
+
+class FileRuntimeStore implements RuntimeStore {
+  readonly kind = "file" as const;
+
+  async recordJourney(input: RecordJourneyInput): Promise<void> {
+    updateDevDb((db) => {
+      db.intake_sessions.push(input.session);
+      db.consent_events.push(input.consent);
+      db.problems.push(input.problem);
+      db.evidence.push(input.evidence);
+      db.packets.push(input.packet);
+      db.events.push(...input.events);
+    });
+  }
+
+  async recordEvents(events: EventEnvelope[]): Promise<void> {
+    updateDevDb((db) => {
+      db.events.push(...events);
+    });
+  }
+
+  async getJourney(requestId: string): Promise<Journey | null> {
+    const db = readDevDb();
+    const session = db.intake_sessions.find((s) => s.request_id === requestId);
+    if (!session) return null;
+    const problem = db.problems.find((p) => p.intake_session_id === session.intake_session_id);
+    if (!problem) return null;
+    const packet = db.packets.find((k) => k.problem_id === problem.problem_id);
+    if (!packet) return null;
+    return { session, problem, packet };
+  }
+
+  async listJourneys(limit = 100): Promise<Journey[]> {
+    const db = readDevDb();
+    const out: Journey[] = [];
+    for (const session of [...db.intake_sessions].reverse().slice(0, limit)) {
+      const problem = db.problems.find((p) => p.intake_session_id === session.intake_session_id);
+      const packet = problem ? db.packets.find((k) => k.problem_id === problem.problem_id) : undefined;
+      if (problem && packet) out.push({ session, problem, packet });
+    }
+    return out;
+  }
+
+  async countEvents(eventName: string): Promise<number> {
+    return readDevDb().events.filter((e) => e.event_name === eventName).length;
+  }
+
+  async totals(): Promise<{ journeys: number; packets: number; consents: number }> {
+    const db = readDevDb();
+    return {
+      journeys: db.intake_sessions.length,
+      packets: db.packets.length,
+      consents: db.consent_events.length,
+    };
+  }
+
+  async getPublishedPageIds(): Promise<Set<string>> {
+    return new Set(readDevDb().published_page_ids);
+  }
+
+  async setPublished(spec: PageSpec, published: boolean): Promise<void> {
+    updateDevDb((db) => {
+      const set = new Set(db.published_page_ids);
+      if (published) set.add(spec.page_id);
+      else set.delete(spec.page_id);
+      db.published_page_ids = [...set];
+    });
+  }
+
+  async listStagedSpecs(): Promise<PageSpec[]> {
+    return readDevDb().staged_specs;
+  }
+
+  async appendAudit(entry: AuditEntry): Promise<void> {
+    updateDevDb((db) => {
+      db.admin_audit.push(entry);
+    });
+  }
+
+  async listAudit(limit = 50): Promise<AuditEntry[]> {
+    return [...readDevDb().admin_audit].reverse().slice(0, limit);
+  }
+}
+
+export function supabaseConfigured(): boolean {
+  return Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
+}
+
+let cached: RuntimeStore | null = null;
+
+export function runtimeStore(): RuntimeStore {
+  if (!cached) {
+    cached = supabaseConfigured() ? new SupabaseRuntimeStore() : new FileRuntimeStore();
+  }
+  return cached;
+}
+
+/** Test seam: forces re-selection of the backend. */
+export function resetRuntimeStore(): void {
+  cached = null;
+}

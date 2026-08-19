@@ -3,15 +3,18 @@ import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { FEATURE_CONCEPTS } from "@/domain/feature-lab/concepts";
+import type { JobPacket, ProblemRecord } from "@/domain/problem/contracts";
 import { SAFETY_RULES } from "@/domain/problem/safety";
 import { flagEnabled } from "@/platform/flags";
-import { readDevDb } from "@/platform/stores/dev-db";
+import { runtimeStore } from "@/platform/stores/runtime";
 import { AlreadyHaveSomeone, PacketActions } from "@/components/results/PacketActions";
 
 export const metadata: Metadata = {
   title: "Your Job Packet is ready",
   robots: { index: false, follow: false }, // customer results are always private
 };
+
+export const dynamic = "force-dynamic";
 
 export default async function ResultsPage({
   params,
@@ -20,24 +23,25 @@ export default async function ResultsPage({
 }) {
   if (!flagEnabled("results_shell_enabled")) notFound();
   const { request_id } = await params;
-  const db = readDevDb();
-  const session = db.intake_sessions.find((s) => s.request_id === request_id);
-  let problem = session
-    ? db.problems.find((p) => p.intake_session_id === session.intake_session_id)
-    : undefined;
-  const problemId = problem?.problem_id;
-  let packet = problemId ? db.packets.find((k) => k.problem_id === problemId) : null;
+  const store = runtimeStore();
+  const journey = await store.getJourney(request_id);
+
+  let problem: ProblemRecord | undefined = journey?.problem;
+  let packet: JobPacket | undefined = journey?.packet;
   let fromCookie = false;
-  if (!packet) {
-    // Staging stopgap (D-21): journey carried in the tester's own browser.
-    const jar = await cookies();
-    const raw = jar.get("prn_last_journey")?.value;
+
+  // Fallback ONLY when there is no database configured (local dev / a preview
+  // deploy without credentials): the journey rides in the tester own browser
+  // cookie so the flow can still be walked end to end. Never used once the
+  // database is wired.
+  if (!packet && store.kind === "file") {
+    const raw = (await cookies()).get("prn_last_journey")?.value;
     if (raw) {
       try {
         const j = JSON.parse(Buffer.from(raw, "base64url").toString("utf-8")) as {
           request_id: string;
-          problem: typeof problem;
-          packet: NonNullable<typeof packet>;
+          problem: ProblemRecord;
+          packet: JobPacket;
         };
         if (j.request_id === request_id) {
           problem = j.problem;
@@ -49,28 +53,10 @@ export default async function ResultsPage({
       }
     }
   }
-  if ((!session && !fromCookie) || !problem || !packet) {
-    // Staging preview uses ephemeral storage until Supabase is wired — be
-    // honest instead of a bare 404 when a record didn't survive a cold start.
-    if (process.env.VERCEL) {
-      return (
-        <main className="section">
-          <div className="wrap-narrow">
-            <div className="eyebrow">Preview environment</div>
-            <h1 className="d2">This preview doesn&apos;t keep requests yet.</h1>
-            <p className="lede" style={{ marginTop: 16 }}>
-              The staging preview stores journeys in temporary memory only — this request has
-              expired. The permanent database arrives with the Supabase wiring. Start a fresh
-              journey from any door page to see the full flow.
-            </p>
-          </div>
-        </main>
-      );
-    }
-    notFound();
-  }
-  const safetyRule = SAFETY_RULES.find((r) => r.safety_rule_id === problem.safety_rule_id) ?? null;
 
+  if (!problem || !packet) notFound();
+
+  const safetyRule = SAFETY_RULES.find((r) => r.safety_rule_id === problem.safety_rule_id) ?? null;
   const copySummary = packet.call_script;
 
   return (
@@ -97,7 +83,7 @@ export default async function ResultsPage({
           </p>
           <p className="mono" style={{ color: "var(--on-dark-faint)", marginTop: 12 }}>
             Packet {packet.job_packet_id} · v{packet.packet_version} · engine: {packet.engine}
-            {fromCookie ? " · staging: shown from this browser only" : ""}
+            {fromCookie ? " · preview: shown from this browser only" : ""}
           </p>
         </div>
       </section>

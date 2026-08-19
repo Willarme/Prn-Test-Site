@@ -3,7 +3,7 @@ import { z } from "zod";
 import { SeoFactoryPolicy } from "@/domain/search/policy";
 import { isAdminUnlocked } from "@/platform/admin/auth";
 import { policyStore } from "@/platform/admin/data";
-import { updateDevDb } from "@/platform/stores/dev-db";
+import { runtimeStore } from "@/platform/stores/runtime";
 
 const Body = z.object({
   national_enabled: z.boolean(),
@@ -74,17 +74,15 @@ export async function PUT(request: Request): Promise<NextResponse> {
   }
   try {
     await store.save(valid.data);
-    updateDevDb((db) => {
-      db.admin_audit.push({
-        at: valid.data.effective_from,
-        action: "policy.saved",
-        target: `v${valid.data.version}`,
-        detail: null,
-      });
+    await runtimeStore().appendAudit({
+      at: valid.data.effective_from,
+      action: "policy.saved",
+      target: `v${valid.data.version}`,
+      detail: null,
     });
   } catch (err) {
     return NextResponse.json(
-      { error: `Could not persist: ${err instanceof Error ? err.message : String(err)}` },
+      { error: `Could not save: ${err instanceof Error ? err.message : String(err)}` },
       { status: 500 }
     );
   }

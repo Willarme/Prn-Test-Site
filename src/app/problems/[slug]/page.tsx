@@ -16,7 +16,7 @@ export default async function PublishedDoorPage({
   const flag = DEFAULT_FLAGS.find((f) => f.flag_key === "seo_doors_enabled");
   if (!flag?.enabled) notFound();
   const { slug } = await params;
-  const spec = findPublishedByPath(`/problems/${slug}`);
+  const spec = await findPublishedByPath(`/problems/${slug}`);
   if (!spec) notFound();
   return <IntentPageView spec={spec} staged={false} />;
 }

@@ -4,10 +4,12 @@ import { allStagedSpecs, loadStaged, publishedPageIds } from "@/platform/admin/d
 import { DEFAULT_FLAGS } from "@/platform/flags";
 import { PublishButton } from "@/components/admin/PublishButton";
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminPages() {
   const mode = await adminMode();
-  const specs = allStagedSpecs();
-  const published = publishedPageIds();
+  const specs = await allStagedSpecs();
+  const published = await publishedPageIds();
   const { skipped } = loadStaged();
   const doorsFlag = DEFAULT_FLAGS.find((f) => f.flag_key === "seo_doors_enabled")?.enabled ?? false;
   const canPublish = mode === "unlocked";
