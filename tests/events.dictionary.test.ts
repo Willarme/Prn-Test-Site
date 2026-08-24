@@ -17,6 +17,8 @@ import {
   persistSeededDictionary,
   resetDictionaryForTests,
   seedDictionary,
+  seedGroupOf,
+  SEED_CENSUS,
 } from "@/platform/events/dictionary";
 import { EVENT_NAMES } from "@/platform/events/names";
 
@@ -107,6 +109,36 @@ describe("seeded event dictionary", () => {
   it("carries the reserved tenant_id on every row and no tenant logic anywhere", () => {
     for (const def of listEventDefinitions()) expect(def.tenant_id).toBe("prn");
     for (const def of listMetricDefinitions()) expect(def.tenant_id).toBe("prn");
+  });
+});
+
+describe("dictionary census (counted from the file, not from a document)", () => {
+  it("pins each seed group's size so a name cannot be added unnoticed", () => {
+    const counts: Record<string, number> = {
+      core_14a: 0,
+      door_slice: 0,
+      platform: 0,
+      steward: 0,
+      loop_seam: 0,
+    };
+    for (const name of EVENT_NAMES) counts[seedGroupOf(name)] += 1;
+    expect(counts.core_14a).toBe(SEED_CENSUS.core_14a);
+    expect(counts.door_slice).toBe(SEED_CENSUS.door_slice);
+    expect(counts.platform).toBe(SEED_CENSUS.platform);
+    expect(counts.steward).toBe(SEED_CENSUS.steward);
+    expect(counts.loop_seam).toBe(SEED_CENSUS.loop_seam);
+    expect(EVENT_NAMES.length).toBe(
+      SEED_CENSUS.core_14a +
+        SEED_CENSUS.door_slice +
+        SEED_CENSUS.platform +
+        SEED_CENSUS.steward +
+        SEED_CENSUS.loop_seam
+    );
+    expect(listMetricDefinitions().length).toBe(SEED_CENSUS.owner_gauges);
+  });
+
+  it("counts eleven reserved-semantics names across the three parked families", () => {
+    expect(listEventDefinitions().filter((d) => isReserved(d.event_name)).length).toBe(11);
   });
 });
 

@@ -335,6 +335,34 @@ const OWNER_GAUGE_SEEDS: { metric_key: string; display_name: string }[] = [
   { metric_key: "ai_native_readiness", display_name: "AI-Native Readiness" },
 ];
 
+/**
+ * THE CENSUS, counted from the file rather than from any document
+ * (2026-08-24). The Loop Spec Audit describes the shipped dictionary as "68
+ * shipped names: 55 core 14A §18.2 + 11 SLICE_EVENT_NAMES + 2 PLATFORM
+ * provisional". The repo actually ships 69: CORE_EVENT_NAMES has 56 entries,
+ * not 55. Nothing turns on the difference — every shipped name is seeded
+ * either way — but the record should be true, and the counts below are pinned
+ * by a test so an accidental name addition cannot slip in unnoticed.
+ *
+ *   core_14a   56   (#14A §18.2, of which 11 are reserved-semantics names:
+ *                    7 trust.*, 2 home_person.*, 2 customer_lite.*)
+ *   door_slice 11   live and already emitting
+ *   platform    2   A00's, ratified by A08
+ *   steward     6   A08's own
+ *   loop_seam   6   registered for A04/A05/A06 ahead of their builds
+ *   ----------------
+ *   total      81   EventDefinitions, all seeded `approved` at version 1
+ *              11   MetricDefinitions, all seeded `proposed` at version 1
+ */
+export const SEED_CENSUS = {
+  core_14a: 56,
+  door_slice: 11,
+  platform: 2,
+  steward: 6,
+  loop_seam: 6,
+  owner_gauges: 11,
+} as const;
+
 /** Which seed group a name came from — provenance the audit digest reports. */
 export type SeedGroup = "core_14a" | "door_slice" | "platform" | "steward" | "loop_seam";
 
