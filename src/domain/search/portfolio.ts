@@ -20,7 +20,11 @@ export function evaluatePortfolio(
   opportunities: SearchOpportunity[],
   policy: SeoFactoryPolicy
 ): { opportunities: SearchOpportunity[]; summary: PortfolioSummary } {
-  const scored = opportunities.map((o) => scoreOpportunity(o)).sort((a, b) => b.score - a.score);
+  // Weights come from policy now (C12). With the shipped defaults this is the
+  // same arithmetic it always was.
+  const scored = opportunities
+    .map((o) => scoreOpportunity(o, policy))
+    .sort((a, b) => b.score - a.score);
   const seen: SearchOpportunity[] = [];
   const out: SearchOpportunity[] = [];
   const byRec: Record<string, number> = {};
@@ -38,6 +42,7 @@ export function evaluatePortfolio(
     const stored: SearchOpportunity = {
       ...s.opportunity,
       opportunity_score: s.score,
+      score_version: s.score_version,
       score_components: {
         ...s.components,
         ...(seedPrior !== undefined ? { seed_manual_score: seedPrior } : {}),

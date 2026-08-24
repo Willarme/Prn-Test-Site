@@ -7,6 +7,7 @@ import {
   UsdAmount,
 } from "@/domain/shared/primitives";
 import { GeographyPlan, plannedPagesPerPeriod } from "@/domain/search/geography-plan";
+import { ScoringPolicy, V1_SCORING_POLICY, weightSum } from "@/domain/search/scoring";
 
 export const PublishMode = z.enum(["OWNER_APPROVAL", "LOW_RISK_AUTO"]);
 export const AutonomyStage = z.enum(["T0", "T1", "T2", "T3"]);
@@ -35,6 +36,18 @@ export const SeoFactoryPolicy = z
      */
     geography_plan: GeographyPlan,
     allowed_categories: z.array(z.string()),
+    /**
+     * SCORING IS POLICY NOW (C12 / pre-answer 4). The four weights that used to
+     * be a `const WEIGHTS` literal inside scoring.ts are here, at their exact
+     * shipped values, plus canon's remaining signal categories at weight zero
+     * as TEST placeholders. The owner can retune without a deploy; nothing
+     * about today's numbers changed.
+     *
+     * `.default()` rather than required: the committed data/seo-factory-policy.json
+     * predates this field, and a policy file that stops parsing is a policy
+     * file that stops protecting anything.
+     */
+    scoring: ScoringPolicy.default(V1_SCORING_POLICY),
     discovery_scan_cadence: Cadence,
     search_console_ingest_cadence: Cadence,
     target_qualified_pages_per_period: z.number().int().min(0),
@@ -87,6 +100,22 @@ export const SeoFactoryPolicy = z
         code: z.ZodIssueCode.custom,
         message: "human publish approval is ON during the trial until T2+ graduation",
         path: ["human_approval_required"],
+      });
+    }
+    /**
+     * Scoring weights must sum to 1, or "0-100 opportunity score" is a lie and
+     * SearchOpportunity.opportunity_score (max 100) starts failing to parse.
+     * This is also the guard that makes the zero-weighted placeholder
+     * categories safe to ship: an owner who gives `business_value` weight has
+     * to take it from somewhere, deliberately, instead of quietly inflating
+     * every score in the queue.
+     */
+    const sum = weightSum(p.scoring.weights);
+    if (Math.abs(sum - 1) > 1e-9) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `scoring weights must sum to exactly 1 (they sum to ${sum}) — adding weight to one signal means taking it from another`,
+        path: ["scoring", "weights"],
       });
     }
   });

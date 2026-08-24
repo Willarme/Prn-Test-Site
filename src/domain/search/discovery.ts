@@ -6,7 +6,7 @@ import {
 } from "@/domain/search/geography-plan";
 import { classifyIntentPrnSide, inferProblemFamily } from "@/domain/search/intent-classifier";
 import { recommend } from "@/domain/search/recommend";
-import { SCORING_VERSION, scoreOpportunity } from "@/domain/search/scoring";
+import { scoreOpportunity } from "@/domain/search/scoring";
 import type { SeoFactoryPolicy } from "@/domain/search/policy";
 import type { Cadence } from "@/domain/shared/primitives";
 import type { AgentRun } from "@/platform/agents/contracts";
@@ -111,8 +111,19 @@ export async function runDiscovery(
   const month = startedAt.slice(0, 7); // budgets are calendar-monthly
   const period = periodFor(policy.discovery_scan_cadence, startedAt);
   const idempotencyKey = `a04:${policy.policy_id}:v${policy.version}:${period}`;
+  // The scoring POLICY, not the module constant, goes into the input hash:
+  // a weight change must invalidate the idempotency slot, or the first run
+  // after a retune would be skipped as "already done this period" and the
+  // owner's change would silently not take.
   const inputHash = simpleHash(
-    JSON.stringify([policy.version, policy.geography_plan, policy.allowed_categories, period, SCORING_VERSION])
+    JSON.stringify([
+      policy.version,
+      policy.geography_plan,
+      policy.allowed_categories,
+      period,
+      policy.scoring.version,
+      policy.scoring.weights,
+    ])
   );
 
   const empty = (status: DiscoveryReport["status"], runId: string): DiscoveryReport => ({
@@ -284,7 +295,7 @@ export async function runDiscovery(
     //    the strongest keyword in a family claims the page and weaker
     //    variants MERGE into it — deterministic, vendor-order-independent.
     const scoredBatch = mergedRecords
-      .map((record) => scoreOpportunity(record))
+      .map((record) => scoreOpportunity(record, policy))
       .sort((a, b) => b.score - a.score);
 
     const portfolio = await deps.opportunities.list();
@@ -304,6 +315,7 @@ export async function runDiscovery(
       const stored: SearchOpportunity = {
         ...scored.opportunity,
         opportunity_score: scored.score,
+        score_version: scored.score_version,
         score_components: {
           ...scored.components,
           ...(seedPrior !== undefined ? { seed_manual_score: seedPrior } : {}),
