@@ -15,9 +15,35 @@ export const CapabilityStatus = z.enum(["LIVE", "TEST", "FUTURE_DISABLED", "RETI
 export type CapabilityStatus = z.infer<typeof CapabilityStatus>;
 
 /**
+ * How a capability is currently implemented (A00 spec §4): the point of the
+ * registry is that an agent's IDENTITY never changes when its IMPLEMENTATION
+ * does — today's deterministic stand-ins swap for models later without
+ * touching any call site.
+ */
+export const CapabilityImplementationKind = z.enum([
+  "deterministic",
+  "model",
+  "external_adapter",
+]);
+export type CapabilityImplementationKind = z.infer<typeof CapabilityImplementationKind>;
+
+/**
  * Typed business operation registry entry (#22A via kit 16/25). UI, API, MCP
  * and agents all call the same capability; adapters never own business logic.
  * FUTURE_DISABLED entries may be registered but must never be executable.
+ *
+ * A00 (Wave 0) extends this EXISTING contract in place rather than creating a
+ * parallel registry — the spec's proposed CapabilityDefinition fields land
+ * here as optional implementation-binding metadata:
+ *  - `current_implementation` / `implementation_ref`: which concrete code
+ *    currently answers this capability (e.g. the fixture engine functions or
+ *    the DataForSeoAdapter);
+ *  - `owning_agent_ids`: which agents may call it (mirrors the Agent
+ *    Registry's `allowed_capabilities`);
+ *  - `aliases`: A00-spec capability names that map onto an existing key
+ *    (e.g. spec "classify_problem" → existing "classify_home_problem"), so
+ *    the platform gateway can resolve spec names without renaming anything
+ *    an existing reader depends on.
  */
 export const CapabilityDefinition = z.object({
   capability_key: z.string().regex(/^[a-z_]+(\.[a-z_]+)*$/),
@@ -27,6 +53,10 @@ export const CapabilityDefinition = z.object({
   input_schema_ref: z.string().min(1),
   output_schema_ref: z.string().min(1),
   required_scopes: z.array(z.string().min(1)),
+  current_implementation: CapabilityImplementationKind.optional(),
+  implementation_ref: z.string().min(1).optional(),
+  owning_agent_ids: z.array(z.string().regex(/^A\d{2}$/)).optional(),
+  aliases: z.array(z.string().regex(/^[a-z_]+(\.[a-z_]+)*$/)).optional(),
 });
 export type CapabilityDefinition = z.infer<typeof CapabilityDefinition>;
 

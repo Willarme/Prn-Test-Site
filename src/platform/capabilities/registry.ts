@@ -12,11 +12,15 @@ const V = "0.1.0";
  */
 export const CAPABILITY_REGISTRY: readonly CapabilityDefinition[] = [
   // --- Core customer engine (#14A §11.1) — wired in Waves 2/7 ---
-  { capability_key: "classify_home_problem", version: V, risk_class: "R1", status: "TEST", input_schema_ref: "contracts://problem/ClassifyInput", output_schema_ref: "contracts://problem/ClassifyOutput", required_scopes: ["problem.own.write"] },
+  // A00 implementation binding: the deterministic stand-in behind the same
+  // contract production A01 will implement. Alias "classify_problem" is the
+  // A00-spec name for this same capability.
+  { capability_key: "classify_home_problem", version: V, risk_class: "R1", status: "TEST", input_schema_ref: "contracts://problem/ClassifyInput", output_schema_ref: "contracts://problem/ClassifyOutput", required_scopes: ["problem.own.write"], current_implementation: "deterministic", implementation_ref: "analyzeProblemFixture (FixtureProblemAnalyzer) @ src/domain/problem/fixture-engine.ts", owning_agent_ids: ["A01"], aliases: ["classify_problem"] },
   { capability_key: "create_problem_record", version: V, risk_class: "R2", status: "TEST", input_schema_ref: "contracts://problem/CreateInput", output_schema_ref: "contracts://problem/ProblemRecord", required_scopes: ["problem.own.write"] },
   { capability_key: "add_problem_evidence", version: V, risk_class: "R2", status: "TEST", input_schema_ref: "contracts://problem/EvidenceInput", output_schema_ref: "contracts://problem/EvidenceObject", required_scopes: ["problem.own.write"] },
   { capability_key: "select_next_clarifier", version: V, risk_class: "R1", status: "TEST", input_schema_ref: "contracts://problem/ClarifierInput", output_schema_ref: "contracts://problem/ClarifierOutput", required_scopes: ["problem.own.read"] },
-  { capability_key: "generate_job_packet", version: V, risk_class: "R2", status: "TEST", input_schema_ref: "contracts://packet/GenerateInput", output_schema_ref: "contracts://packet/JobPacket", required_scopes: ["problem.own.write"] },
+  // A00 implementation binding — alias "build_job_packet" is the A00-spec name.
+  { capability_key: "generate_job_packet", version: V, risk_class: "R2", status: "TEST", input_schema_ref: "contracts://packet/GenerateInput", output_schema_ref: "contracts://packet/JobPacket", required_scopes: ["problem.own.write"], current_implementation: "deterministic", implementation_ref: "buildJobPacketFixture (FixtureJobPacketBuilder) @ src/domain/problem/fixture-engine.ts", owning_agent_ids: ["A02"], aliases: ["build_job_packet"] },
   { capability_key: "get_job_packet", version: V, risk_class: "R1", status: "TEST", input_schema_ref: "contracts://packet/GetInput", output_schema_ref: "contracts://packet/JobPacket", required_scopes: ["problem.own.read"] },
   { capability_key: "create_trust_request", version: V, risk_class: "R3", status: "TEST", input_schema_ref: "contracts://trust/CreateRequestInput", output_schema_ref: "contracts://trust/TrustRequest", required_scopes: ["trust.request.send"] },
   { capability_key: "record_trust_response", version: V, risk_class: "R2", status: "TEST", input_schema_ref: "contracts://trust/ResponseInput", output_schema_ref: "contracts://trust/TrustResponse", required_scopes: [] },
@@ -36,7 +40,9 @@ export const CAPABILITY_REGISTRY: readonly CapabilityDefinition[] = [
   // (review), publish_page (release). Admin PageSpec search is an admin-UI
   // query over the registry, not a separate capability.
   { capability_key: "seo.discover_opportunities", version: V, risk_class: "R0", status: "TEST", input_schema_ref: "contracts://search/DiscoverInput", output_schema_ref: "contracts://search/SearchOpportunity[]", required_scopes: ["agent.internal"] },
-  { capability_key: "seo.refresh_metrics", version: V, risk_class: "R0", status: "TEST", input_schema_ref: "contracts://search/RefreshInput", output_schema_ref: "contracts://search/SeoMetricSnapshot[]", required_scopes: ["agent.internal"] },
+  // A00 implementation binding: the real vendor adapter behind a typed seam —
+  // alias "get_search_metrics" is the A00-spec name for this capability.
+  { capability_key: "seo.refresh_metrics", version: V, risk_class: "R0", status: "TEST", input_schema_ref: "contracts://search/RefreshInput", output_schema_ref: "contracts://search/SeoMetricSnapshot[]", required_scopes: ["agent.internal"], current_implementation: "external_adapter", implementation_ref: "DataForSeoAdapter @ src/platform/adapters/dataforseo.ts", owning_agent_ids: ["A04"], aliases: ["get_search_metrics"] },
   { capability_key: "seo.ingest_search_console", version: V, risk_class: "R0", status: "TEST", input_schema_ref: "contracts://search/IngestInput", output_schema_ref: "contracts://search/PagePerformanceDaily[]", required_scopes: ["agent.internal"] },
   { capability_key: "seo.build_candidate_pages", version: V, risk_class: "R2", status: "TEST", input_schema_ref: "contracts://search/BuildInput", output_schema_ref: "contracts://search/PageSpec[]", required_scopes: ["agent.internal"] },
   { capability_key: "seo.qa_candidate_pages", version: V, risk_class: "R0", status: "TEST", input_schema_ref: "contracts://search/QaInput", output_schema_ref: "contracts://search/QaResult[]", required_scopes: ["agent.internal"] },
@@ -60,3 +66,20 @@ export const CAPABILITY_REGISTRY: readonly CapabilityDefinition[] = [
   { capability_key: "tool_rental_transaction", version: V, risk_class: "R5", status: "FUTURE_DISABLED", input_schema_ref: "reserved://future", output_schema_ref: "reserved://future", required_scopes: ["admin.full"] },
   { capability_key: "customer_outcome_followup", version: V, risk_class: "R3", status: "FUTURE_DISABLED", input_schema_ref: "reserved://future", output_schema_ref: "reserved://future", required_scopes: ["admin.full"] },
 ] as const;
+
+/**
+ * A00 Capability Registry resolution (spec §3): look a capability up by its
+ * canonical key OR any registered A00-spec alias. This is how an agent's
+ * identity survives an implementation swap — call sites name the capability,
+ * this registry names the current implementation.
+ *
+ * Wave 0 only DESCRIBES what already exists; no existing call site is
+ * rewritten to route through this yet (that is Wave 1's job for A01/A02).
+ */
+export function resolveCapability(name: string): CapabilityDefinition | null {
+  return (
+    CAPABILITY_REGISTRY.find(
+      (c) => c.capability_key === name || (c.aliases ?? []).includes(name)
+    ) ?? null
+  );
+}
