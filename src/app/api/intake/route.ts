@@ -7,6 +7,7 @@ import { checkSafety } from "@/domain/problem/safety";
 import { ACTIVE_DISCLOSURE, CONSENT_SCOPE_INTAKE } from "@/domain/privacy/disclosures";
 import { detectFields } from "@/domain/intake/extract";
 import { selectPlaybook } from "@/domain/intake/playbooks";
+import { emitPlatformEvent } from "@/platform/events/emit";
 import { flagEnabled } from "@/platform/flags";
 import { recordAgentRun } from "@/platform/runs/ledger";
 import { runtimeStore } from "@/platform/stores/runtime";
@@ -115,7 +116,7 @@ export async function POST(request: Request): Promise<NextResponse> {
   // A00 Agent Run Ledger (Wave-0 proof case): audit A01's classify_problem
   // run. IDs only — never the customer's description or evidence. Fail-soft
   // by contract: recordAgentRun never throws and never alters this flow.
-  await recordAgentRun({
+  const platformRun = await recordAgentRun({
     agent_id: "A01",
     trigger: "request",
     input_ids: [requestId, intakeSessionId, problem.problem_id],
@@ -128,6 +129,18 @@ export async function POST(request: Request): Promise<NextResponse> {
     },
     cost_usd: 0, // deterministic path — becomes a TEST-labeled real figure once a model is wired
     latency_ms: Date.now() - analyzeStarted,
+  });
+  // A00 Event Spine proof case: one envelope per platform run, linked by
+  // agent_run_id. "agent.run_completed" is an EXISTING canonical A08-owned
+  // name (#14A §18.2) — no new name invented here. Fail-soft telemetry.
+  await emitPlatformEvent({
+    event_name: "agent.run_completed",
+    agent_id: "A01",
+    agent_run_id: platformRun.run_id,
+    context: { intake_session_id: intakeSessionId, problem_id: problem.problem_id },
+    versions: { schema: "1.0.0", engine: "fixture", capability: "classify_problem" },
+    duration_ms: platformRun.latency_ms ?? null,
+    cost_usd: 0,
   });
 
   // Route to the generated-once playbook and award green checks for anything

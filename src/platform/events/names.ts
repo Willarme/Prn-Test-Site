@@ -77,5 +77,17 @@ export const SLICE_EVENT_NAMES = [
   "economics.revenue_recorded",
 ] as const;
 
-export const EVENT_NAMES = [...CORE_EVENT_NAMES, ...SLICE_EVENT_NAMES] as const;
+/**
+ * A00 platform additions — PROVISIONAL, PENDING A08 RATIFICATION (A00 spec
+ * §5: A00 builds the pipe, A08 owns the dictionary; these two strings are
+ * not final canonical names until the Metric & Event Steward ratifies them).
+ * Added for the kill-switch audit trail: the switch itself is mutable state,
+ * so every toggle emits an envelope to keep the HISTORY append-only.
+ */
+export const PLATFORM_EVENT_NAMES = [
+  "platform.kill_switch_engaged",
+  "platform.kill_switch_released",
+] as const;
+
+export const EVENT_NAMES = [...CORE_EVENT_NAMES, ...SLICE_EVENT_NAMES, ...PLATFORM_EVENT_NAMES] as const;
 export type EventName = (typeof EVENT_NAMES)[number];

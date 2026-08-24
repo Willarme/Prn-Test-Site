@@ -21,6 +21,13 @@ export const PrivacyClass = z.enum(["private", "internal", "public_safe"]);
  */
 export const EventEnvelope = z.object({
   event_id: Id,
+  /**
+   * Reserved — white-label approval condition (a), 2026-08-24. Default "prn"
+   * where set; NO tenant logic, routing, or UI exists around it. Per-client
+   * deployments each run their own store; this field only exists so a later
+   * central fleet view costs nothing.
+   */
+  tenant_id: z.string().min(1).optional(),
   event_name: z.enum(EVENT_NAMES as unknown as [EventName, ...EventName[]]),
   event_version: z.number().int().min(1),
   occurred_at: IsoDateTime,
