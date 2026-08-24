@@ -89,6 +89,72 @@ export const PLATFORM_POLICY_SETTINGS: readonly PolicySetting[] = [
     value: 24,
     version: 1,
   },
+  /**
+   * A09 data-quality tunables (§10 requires the rule set, tolerances, sampling,
+   * alert severity, quarantine behaviour and auto-repair classes be
+   * configuration rather than constants).
+   *
+   * The auto-repair ALLOW-LIST itself cannot live here — this store's own
+   * shipped test asserts every value is a number or boolean — so it lives in
+   * platform/quality/repairs.ts as an explicitly empty array, and this boolean
+   * is the master switch above it. Both must be turned on for anything to
+   * auto-execute, and both ship off.
+   */
+  {
+    key: "quality.ingest_validation_enabled",
+    level: "COMPANY",
+    // The cheap synchronous guard at the store boundary. ON: catching a bad
+    // write in the same request cycle is the whole point of ingest validation.
+    value: true,
+    version: 1,
+  },
+  {
+    key: "quality.reconciliation_cadence_hours",
+    level: "COMPANY",
+    // The heavier sweep. Nothing schedules it in Wave 0 — the orchestrator is
+    // interface-only and A09 does not build A00's job; the function is a plain
+    // callable with a run-level idempotency key so a retry cannot double-write.
+    value: 24,
+    version: 1,
+  },
+  {
+    key: "quality.auto_repair_enabled",
+    level: "COMPANY",
+    // MASTER SWITCH ABOVE AN ALREADY-EMPTY ALLOW-LIST (condition 11 / pre-answer
+    // 5). OD-10 records that autonomy graduation is a process gate, not a
+    // machine gate. Joshua turns this on for one named class at a time, at
+    // review, with that class's reversal test green.
+    value: false,
+    version: 1,
+  },
+  {
+    key: "quality.cross_source_tolerance_pct",
+    level: "COMPANY",
+    // Percentage delta two independently-derived totals may differ by before a
+    // mismatch is raised. Zero: in a deterministic trial with no sampling,
+    // any drift between two counts of the same thing is a real finding.
+    value: 0,
+    version: 1,
+  },
+  {
+    key: "quality.quarantine_customer_reads",
+    level: "COMPANY",
+    /**
+     * OFF, AND NOT A DECISION — the knob exists so the parked question has a
+     * home (pre-answer 10, melissa-park).
+     *
+     * TODO-ASK-OWNER (Melissa): what does a homeowner see when their own record
+     * is quarantined mid-journey — their ProblemRecord, their Job Packet, or
+     * their /results page? Nothing, an error, a neutral holding state? Can
+     * their intake still complete? That is homeowner experience, copy and
+     * psychology, not an engineering call. Until it is answered, quarantine is
+     * scoped to KPI and admin reads ONLY and a live homeowner journey cannot be
+     * broken by one. Turning this on without answering the question first ships
+     * an unwritten experience.
+     */
+    value: false,
+    version: 1,
+  },
 ] as const;
 
 export function getPolicySetting<T = unknown>(key: string): PolicySetting<T> | null {
@@ -105,6 +171,15 @@ export function requirePolicyNumber(key: string): number {
   const setting = getPolicySetting<number>(key);
   if (!setting || typeof setting.value !== "number" || !Number.isFinite(setting.value)) {
     throw new Error(`policy setting "${key}" is missing or not a number`);
+  }
+  return setting.value;
+}
+
+/** Same discipline for a required boolean flag. */
+export function requirePolicyBoolean(key: string): boolean {
+  const setting = getPolicySetting<boolean>(key);
+  if (!setting || typeof setting.value !== "boolean") {
+    throw new Error(`policy setting "${key}" is missing or not a boolean`);
   }
   return setting.value;
 }

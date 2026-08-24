@@ -58,8 +58,18 @@ describe("A00 agent run ledger", () => {
     expect(res.status).toBe(200);
 
     const runs = recentAgentRuns();
-    expect(runs.length).toBe(1);
-    const run = runs[0];
+    /**
+     * A09 (Data Quality, 2026-08-24) also writes ONE row per guarded journey
+     * write — its ingest validation batch, which is a separate agent RUN, not a
+     * second row for A01's. The pin this test carries is "one row per agent
+     * run, never one per event", so it scopes to A01 and pins A09's single row
+     * alongside: a THIRD writer, or a second row from either, still fails here.
+     */
+    const a01Runs = runs.filter((r) => r.agent_id === "A01");
+    expect(a01Runs.length).toBe(1);
+    expect(runs.filter((r) => r.agent_id === "A09").length).toBe(1);
+    expect(runs.length).toBe(2);
+    const run = a01Runs[0];
     expect(AgentRunRecord.safeParse(run).success).toBe(true);
     expect(run.agent_id).toBe("A01");
     expect(run.trigger).toBe("request");

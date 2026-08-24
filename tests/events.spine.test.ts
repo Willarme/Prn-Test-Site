@@ -60,7 +60,10 @@ describe("A00 event + metric spine", () => {
     const res = await intakePost(intakeRequest("Water heater is leaking from the bottom seam"));
     expect(res.status).toBe(200);
 
-    const run = recentAgentRuns()[recentAgentRuns().length - 1];
+    // A09's ingest guard now writes its own validation-batch row after A01's,
+    // so "the last run" is no longer "the intake run". Scope to A01.
+    const a01Runs = recentAgentRuns().filter((r) => r.agent_id === "A01");
+    const run = a01Runs[a01Runs.length - 1];
     const events = readDevDb().events.filter((e) => e.event_name === "agent.run_completed");
     expect(events.length).toBe(1);
     const envelope = events[0];

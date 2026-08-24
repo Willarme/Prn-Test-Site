@@ -95,6 +95,11 @@ describe("A08 reconciliation — the seed list vs what src/ already emits", () =
       "platform/events/definitions.ts",
       "platform/events/names.ts",
       "platform/stores/runtime.ts",
+      // A09's ingest guard DECORATES RuntimeStore.recordEvents to validate what
+      // passes through it; it emits nothing itself. A09's own six names are all
+      // literals in platform/quality/events.ts, which this scan reads and
+      // checks like any other caller.
+      "platform/quality/ingest.ts",
     ];
     const callers = emitters
       .map((f) => f.replace(/\\/g, "/"))

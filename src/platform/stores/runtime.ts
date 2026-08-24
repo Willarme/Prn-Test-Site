@@ -5,6 +5,7 @@ import type { ConsentEvent, DisclosureVersion } from "@/domain/privacy/contracts
 import type { EvidenceObject, JobPacket, ProblemRecord } from "@/domain/problem/contracts";
 import type { PageSpec } from "@/domain/search/pages";
 import type { EventEnvelope } from "@/platform/events/envelope";
+import { applyQualityGuard } from "@/platform/quality/ingest";
 import { readDevDb, updateDevDb } from "@/platform/stores/dev-db";
 
 /**
@@ -594,11 +595,30 @@ export function supabaseConfigured(): boolean {
 
 let cached: RuntimeStore | null = null;
 
+/**
+ * A09 (Data Quality, 2026-08-24) wraps the selected backend in its ingest
+ * guard HERE rather than asking each caller to validate. That is the whole
+ * point of hooking at the store boundary (Loop Spec Audit pre-answer 3): one
+ * wrapper covers every writer and cannot be bypassed by a new caller who
+ * forgets, and no domain module needed an edit.
+ *
+ * The guard writes AFTER the inner write, returns its result untouched, and
+ * swallows every failure of its own — delete platform/quality and the customer
+ * journey behaves identically. `applyQualityGuard` is imported here as a
+ * function only; nothing in platform/quality imports this module at module
+ * scope, so there is no load-time cycle.
+ */
 export function runtimeStore(): RuntimeStore {
   if (!cached) {
-    cached = supabaseConfigured() ? new SupabaseRuntimeStore() : new FileRuntimeStore();
+    const backend = supabaseConfigured() ? new SupabaseRuntimeStore() : new FileRuntimeStore();
+    cached = applyQualityGuard(backend);
   }
   return cached;
+}
+
+/** The backend without A09's guard — for tests that need the raw store. */
+export function unguardedRuntimeStore(): RuntimeStore {
+  return supabaseConfigured() ? new SupabaseRuntimeStore() : new FileRuntimeStore();
 }
 
 /** Test seam: forces re-selection of the backend. */
