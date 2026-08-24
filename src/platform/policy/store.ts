@@ -65,6 +65,30 @@ export const PLATFORM_POLICY_SETTINGS: readonly PolicySetting[] = [
     value: 25 * 1024 * 1024, // 25 MB — short phone clips fit (value unchanged in the A00 migration)
     version: 1,
   },
+  /**
+   * A08 dictionary tunables (A08 §10 requires these be configuration, not
+   * hard-coded constants). The two NAMING PATTERNS cannot live here — this
+   * store's own shipped test asserts every value is a number or boolean — so
+   * they live in platform/events/config.ts and are documented there.
+   */
+  {
+    key: "events.near_duplicate_max_distance",
+    level: "COMPANY",
+    // Max normalized edit distance at which two names are FLAGGED for human
+    // judgement. Flags, never auto-blocks: only an EXACT collision is a hard
+    // block (canon: "new events cannot duplicate an existing meaning under a
+    // new name"); a near match is a question, not a verdict.
+    value: 2,
+    version: 1,
+  },
+  {
+    key: "events.dictionary_audit_cadence_hours",
+    level: "COMPANY",
+    // Stage F scheduled dictionary audit. Nothing schedules it yet — no cron
+    // route exists in Wave 0; the function is callable and tested.
+    value: 24,
+    version: 1,
+  },
 ] as const;
 
 export function getPolicySetting<T = unknown>(key: string): PolicySetting<T> | null {
