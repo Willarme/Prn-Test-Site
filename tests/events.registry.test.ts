@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { CORE_EVENT_NAMES, EVENT_NAMES, SLICE_EVENT_NAMES } from "@/platform/events/names";
+import {
+  CORE_EVENT_NAMES,
+  EVENT_NAMES,
+  LOOP_SEAM_EVENT_NAMES,
+  SLICE_EVENT_NAMES,
+  STEWARD_EVENT_NAMES,
+} from "@/platform/events/names";
 import { EventEnvelope } from "@/platform/events/envelope";
 
 describe("canonical event names (A08 stewardship)", () => {
@@ -42,6 +48,52 @@ describe("canonical event names (A08 stewardship)", () => {
     for (const name of SLICE_EVENT_NAMES) {
       expect(CORE_EVENT_NAMES).not.toContain(name);
       expect(EVENT_NAMES).toContain(name);
+    }
+  });
+});
+
+describe("A08 name additions", () => {
+  it("carries A08's own six emitted names — without them A08 cannot emit at all", () => {
+    expect([...STEWARD_EVENT_NAMES]).toEqual([
+      "schema.proposed",
+      "schema.approved",
+      "event.deprecated",
+      "metric.created",
+      "metric.versioned",
+      "compatibility.failed",
+    ]);
+    for (const name of STEWARD_EVENT_NAMES) expect(EVENT_NAMES).toContain(name);
+  });
+
+  it("registers the loop-seam names the coherence report found missing", () => {
+    for (const name of [
+      "seo.opportunity_accepted",
+      "seo.opportunity_rejected",
+      "seo.opportunity_deferred",
+      "page.defect_found",
+      "page.defect_repaired",
+      "seo.page_performance_recorded",
+    ]) {
+      expect(LOOP_SEAM_EVENT_NAMES as readonly string[]).toContain(name);
+      expect(EVENT_NAMES).toContain(name);
+    }
+  });
+
+  it("registers ONE opportunity-decision family: seo.*, never a parallel search.*", () => {
+    expect(EVENT_NAMES.some((n) => n.startsWith("search."))).toBe(false);
+  });
+
+  it("prefixes A06's bare defect names so they pass the shipped convention", () => {
+    expect(EVENT_NAMES as readonly string[]).not.toContain("defect_found");
+    expect(EVENT_NAMES as readonly string[]).not.toContain("defect_repaired");
+    for (const name of ["page.defect_found", "page.defect_repaired"]) {
+      expect(name).toMatch(/^[a-z_]+\.[a-z_]+$/);
+    }
+  });
+
+  it("keeps every A08 addition out of the #14A §18.2 core group", () => {
+    for (const name of [...STEWARD_EVENT_NAMES, ...LOOP_SEAM_EVENT_NAMES]) {
+      expect(CORE_EVENT_NAMES as readonly string[]).not.toContain(name);
     }
   });
 });

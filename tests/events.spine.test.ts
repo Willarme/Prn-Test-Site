@@ -5,7 +5,7 @@ import { beforeAll, afterAll, describe, expect, it } from "vitest";
 import { ACTIVE_DISCLOSURE } from "@/domain/privacy/disclosures";
 import { EventEnvelope } from "@/platform/events/envelope";
 import { emitPlatformEvent } from "@/platform/events/emit";
-import { PLATFORM_EVENT_NAMES } from "@/platform/events/names";
+import { EVENT_NAMES, PLATFORM_EVENT_NAMES } from "@/platform/events/names";
 import { readDevDb } from "@/platform/stores/dev-db";
 import { resetAgentRunLedgerForTests, recentAgentRuns } from "@/platform/runs/ledger";
 
@@ -78,11 +78,24 @@ describe("A00 event + metric spine", () => {
     expect(EventEnvelope.safeParse(envelope).success).toBe(true);
   });
 
-  it("platform name additions are exactly the two provisional kill-switch names", () => {
+  /**
+   * A08 UPDATE 2026-08-24 (Loop Spec Audit pre-answer 14). A00 pinned this
+   * test to prove it invented no name family beyond the two kill-switch
+   * strings, and marked those two PROVISIONAL PENDING A08 RATIFICATION.
+   * A08 has now ratified them AS-IS: the two strings are unchanged, so the
+   * original assertion still holds verbatim and A00's guarantee is intact.
+   * What changed is their STATUS, so the test now also pins the ratification
+   * — the group is still exactly these two names, and nothing may quietly
+   * grow a `platform.*` family under cover of A08 having "opened" the file.
+   */
+  it("platform name additions are exactly the two kill-switch names, now A08-ratified", () => {
     expect([...PLATFORM_EVENT_NAMES]).toEqual([
       "platform.kill_switch_engaged",
       "platform.kill_switch_released",
     ]);
+    for (const name of PLATFORM_EVENT_NAMES) {
+      expect(EVENT_NAMES).toContain(name);
+    }
   });
 
   it("emit never leaks customer free text — context is IDs only by construction", async () => {
