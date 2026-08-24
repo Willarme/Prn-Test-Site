@@ -153,11 +153,62 @@ export const LOOP_SEAM_EVENT_NAMES = [
   "seo.page_performance_recorded",
 ] as const;
 
+/**
+ * A09 DATA-QUALITY additions — registered by A09's build, 2026-08-24, through
+ * A08's machinery rather than beside it. FLAGGED FOR OWNER RATIFICATION.
+ *
+ * WHAT WAS ALREADY HERE. `data_quality.issue_detected` and
+ * `data_quality.quarantined` ship in CORE_EVENT_NAMES (14A §18.2) and A09 emits
+ * those unchanged — including for reconciliation mismatches, which are the same
+ * finding under a `kind` discriminator, not a second family. Nothing about the
+ * issue/quarantine half of A09 needed a new name.
+ *
+ * WHY THESE FOUR EXIST ANYWAY. A09's Definition of Done requires an owner to
+ * approve or reject a proposed repair and requires the corresponding event to
+ * fire either way; with no repair name registered, the repair half of the agent
+ * is unobservable. Canon doc 20 §A09 names five events
+ * (`data.quality_issue`, `reconciliation.mismatch`, `repair.proposed`,
+ * `repair.executed`, `repair_verified`). None is registered here, and
+ * `repair_verified` fails the shipped domain.action regex outright
+ * (tests/events.registry.test.ts). Rather than mint canon's `repair.*` family
+ * as a SECOND vocabulary alongside the `data_quality.*` one already shipping —
+ * exactly the metric drift A09 exists to detect — the repair lifecycle is
+ * registered INSIDE the existing `data_quality.` domain:
+ *
+ *   canon doc 20            registered here
+ *   repair.proposed    ->   data_quality.repair_proposed
+ *   repair.executed    ->   data_quality.repair_executed
+ *   repair_verified    ->   data_quality.repair_verified   (dot restored)
+ *
+ * `data_quality.quarantine_released` is the fourth and pairs with the shipped
+ * `data_quality.quarantined`, on the precedent A00 set with
+ * platform.kill_switch_engaged / _released: a marker's current status is
+ * mutable state, so both edges are evented to keep the HISTORY append-only. A
+ * release changes which rows KPI reads include, so a release that left no
+ * record would be a silent restatement of every number.
+ *
+ * NO REJECTION EVENT. An owner rejecting a repair is recorded as the
+ * ApprovalItem's own REJECTED status plus a new append-only finding version on
+ * the issue — the decision already has a durable home, and a name registered
+ * for it would be a fifth thing to ratify for no added visibility.
+ *
+ * TODO-ASK-OWNER (Joshua): ratify these four spellings, or rule that canon doc
+ * 20's `repair.*` family is the one of record — in which case A08 deprecates
+ * these forward rather than A09 renaming anything itself.
+ */
+export const A09_EVENT_NAMES = [
+  "data_quality.quarantine_released",
+  "data_quality.repair_proposed",
+  "data_quality.repair_executed",
+  "data_quality.repair_verified",
+] as const;
+
 export const EVENT_NAMES = [
   ...CORE_EVENT_NAMES,
   ...SLICE_EVENT_NAMES,
   ...PLATFORM_EVENT_NAMES,
   ...STEWARD_EVENT_NAMES,
   ...LOOP_SEAM_EVENT_NAMES,
+  ...A09_EVENT_NAMES,
 ] as const;
 export type EventName = (typeof EVENT_NAMES)[number];

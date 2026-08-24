@@ -9,6 +9,7 @@ import {
   RETENTION_CLASS_PLACEHOLDER,
 } from "@/platform/events/definitions";
 import {
+  A09_EVENT_NAMES,
   CORE_EVENT_NAMES,
   EVENT_NAMES,
   LOOP_SEAM_EVENT_NAMES,
@@ -302,6 +303,37 @@ const EVENT_SEEDS: Record<string, EventSeed> = {
       "context.source",
     ],
   },
+
+  // ---- A09 data-quality additions (see names.ts A09_EVENT_NAMES) -----------
+  // Registered inside the existing `data_quality.` domain rather than as
+  // canon doc 20's parallel `repair.*` family. Every one requires
+  // context.issue_id so a repair event can always be joined back to the
+  // finding it belongs to — an unjoinable repair record is exactly the
+  // "confidently wrong" state A09 exists to prevent.
+  "data_quality.quarantine_released": {
+    description:
+      "A quarantine marker was released, returning its record to KPI reads. The marker's status is mutable, so both edges are evented to keep the history append-only.",
+    owner: "A09",
+    required: ["context.issue_id", "context.entity_type", "context.entity_id"],
+  },
+  "data_quality.repair_proposed": {
+    description:
+      "A repair was proposed for a data-quality finding and filed to the Approval Center. Proposing is never executing.",
+    owner: "A09",
+    required: ["context.issue_id", "context.repair_kind"],
+  },
+  "data_quality.repair_executed": {
+    description:
+      "An owner-approved repair was executed. Reversible by contract; the reversal state travels on the execution record.",
+    owner: "A09",
+    required: ["context.issue_id", "context.repair_kind"],
+  },
+  "data_quality.repair_verified": {
+    description:
+      "An executed repair was re-checked against the rule that raised the finding and passed. Canon doc 20 spells this `repair_verified`; the dot is restored to satisfy the shipped domain.action convention.",
+    owner: "A09",
+    required: ["context.issue_id", "context.repair_kind"],
+  },
 };
 
 /**
@@ -350,8 +382,12 @@ const OWNER_GAUGE_SEEDS: { metric_key: string; display_name: string }[] = [
  *   platform    2   A00's, ratified by A08
  *   steward     6   A08's own
  *   loop_seam   6   registered for A04/A05/A06 ahead of their builds
+ *   a09         4   A09's repair/quarantine lifecycle (2026-08-24) — see the
+ *                   A09_EVENT_NAMES note in names.ts. DELIBERATE census change:
+ *                   the pinned counts moved from 81 to 85 because four names
+ *                   were added on purpose, not because a name slipped in.
  *   ----------------
- *   total      81   EventDefinitions, all seeded `approved` at version 1
+ *   total      85   EventDefinitions, all seeded `approved` at version 1
  *              11   MetricDefinitions, all seeded `proposed` at version 1
  */
 export const SEED_CENSUS = {
@@ -360,11 +396,18 @@ export const SEED_CENSUS = {
   platform: 2,
   steward: 6,
   loop_seam: 6,
+  a09: 4,
   owner_gauges: 11,
 } as const;
 
 /** Which seed group a name came from — provenance the audit digest reports. */
-export type SeedGroup = "core_14a" | "door_slice" | "platform" | "steward" | "loop_seam";
+export type SeedGroup =
+  | "core_14a"
+  | "door_slice"
+  | "platform"
+  | "steward"
+  | "loop_seam"
+  | "a09";
 
 export function seedGroupOf(name: string): SeedGroup {
   if ((CORE_EVENT_NAMES as readonly string[]).includes(name)) return "core_14a";
@@ -372,6 +415,7 @@ export function seedGroupOf(name: string): SeedGroup {
   if ((PLATFORM_EVENT_NAMES as readonly string[]).includes(name)) return "platform";
   if ((STEWARD_EVENT_NAMES as readonly string[]).includes(name)) return "steward";
   if ((LOOP_SEAM_EVENT_NAMES as readonly string[]).includes(name)) return "loop_seam";
+  if ((A09_EVENT_NAMES as readonly string[]).includes(name)) return "a09";
   return "core_14a";
 }
 

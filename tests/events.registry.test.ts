@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  A09_EVENT_NAMES,
   CORE_EVENT_NAMES,
   EVENT_NAMES,
   LOOP_SEAM_EVENT_NAMES,
@@ -94,6 +95,54 @@ describe("A08 name additions", () => {
   it("keeps every A08 addition out of the #14A §18.2 core group", () => {
     for (const name of [...STEWARD_EVENT_NAMES, ...LOOP_SEAM_EVENT_NAMES]) {
       expect(CORE_EVENT_NAMES as readonly string[]).not.toContain(name);
+    }
+  });
+});
+
+/**
+ * A09 build, 2026-08-24 — four names added DELIBERATELY through A08's
+ * machinery, flagged in the build report for owner ratification. The point of
+ * these assertions is that A09 extended one family instead of minting the
+ * parallel `repair.*` family canon doc 20 spells, which is the metric drift
+ * A09 itself exists to detect.
+ */
+describe("A09 name additions", () => {
+  it("registers the repair/quarantine lifecycle inside the shipped data_quality domain", () => {
+    expect([...A09_EVENT_NAMES]).toEqual([
+      "data_quality.quarantine_released",
+      "data_quality.repair_proposed",
+      "data_quality.repair_executed",
+      "data_quality.repair_verified",
+    ]);
+    for (const name of A09_EVENT_NAMES) {
+      expect(EVENT_NAMES).toContain(name);
+      expect(name).toMatch(/^[a-z_]+\.[a-z_]+$/);
+      expect(name.startsWith("data_quality.")).toBe(true);
+    }
+  });
+
+  it("mints NO parallel repair.* or reconciliation.* family from canon doc 20", () => {
+    expect(EVENT_NAMES.some((n) => n.startsWith("repair."))).toBe(false);
+    expect(EVENT_NAMES.some((n) => n.startsWith("reconciliation."))).toBe(false);
+    // canon doc 20's `data.quality_issue` would be a second name for the
+    // already-shipping data_quality.issue_detected.
+    expect(EVENT_NAMES.some((n) => n.startsWith("data."))).toBe(false);
+  });
+
+  it("carries no dotless name — canon doc 20's `repair_verified` fails the convention", () => {
+    expect(EVENT_NAMES as readonly string[]).not.toContain("repair_verified");
+    expect(EVENT_NAMES).toContain("data_quality.repair_verified");
+  });
+
+  it("keeps A09's additions out of the #14A §18.2 core group", () => {
+    for (const name of A09_EVENT_NAMES) {
+      expect(CORE_EVENT_NAMES as readonly string[]).not.toContain(name);
+    }
+    // ...while the two names A09 mostly emits were ALREADY core. A09 did not
+    // re-register what 14A §18.2 had.
+    for (const name of ["data_quality.issue_detected", "data_quality.quarantined"]) {
+      expect(CORE_EVENT_NAMES as readonly string[]).toContain(name);
+      expect(A09_EVENT_NAMES as readonly string[]).not.toContain(name);
     }
   });
 });

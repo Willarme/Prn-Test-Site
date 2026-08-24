@@ -120,6 +120,10 @@ describe("dictionary census (counted from the file, not from a document)", () =>
       platform: 0,
       steward: 0,
       loop_seam: 0,
+      // A09 build, 2026-08-24 — DELIBERATE census change. Four names were added
+      // on purpose (names.ts A09_EVENT_NAMES); this group and the total moving
+      // from 81 to 85 is the record of that decision, not a leak past the pin.
+      a09: 0,
     };
     for (const name of EVENT_NAMES) counts[seedGroupOf(name)] += 1;
     expect(counts.core_14a).toBe(SEED_CENSUS.core_14a);
@@ -127,13 +131,16 @@ describe("dictionary census (counted from the file, not from a document)", () =>
     expect(counts.platform).toBe(SEED_CENSUS.platform);
     expect(counts.steward).toBe(SEED_CENSUS.steward);
     expect(counts.loop_seam).toBe(SEED_CENSUS.loop_seam);
+    expect(counts.a09).toBe(SEED_CENSUS.a09);
     expect(EVENT_NAMES.length).toBe(
       SEED_CENSUS.core_14a +
         SEED_CENSUS.door_slice +
         SEED_CENSUS.platform +
         SEED_CENSUS.steward +
-        SEED_CENSUS.loop_seam
+        SEED_CENSUS.loop_seam +
+        SEED_CENSUS.a09
     );
+    expect(EVENT_NAMES.length).toBe(85);
     expect(listMetricDefinitions().length).toBe(SEED_CENSUS.owner_gauges);
   });
 
