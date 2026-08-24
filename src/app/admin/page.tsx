@@ -92,7 +92,9 @@ export default async function AdminOverview() {
               <strong>
                 {a.agent_id} {a.name}
               </strong>{" "}
-              <span className="pill pill-green">{a.stage}</span>
+              {/* A00 migration: the registry's old `stage` field is now `status`
+                  (same values) — this renders the identical string as before. */}
+              <span className="pill pill-green">{a.status}</span>
               <br />
               <span style={{ color: "var(--on-dark-mute)", fontSize: ".9rem" }}>{a.mandate}</span>
             </p>
