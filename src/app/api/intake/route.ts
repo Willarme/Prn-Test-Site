@@ -8,6 +8,7 @@ import { ACTIVE_DISCLOSURE, CONSENT_SCOPE_INTAKE } from "@/domain/privacy/disclo
 import { detectFields } from "@/domain/intake/extract";
 import { selectPlaybook } from "@/domain/intake/playbooks";
 import { flagEnabled } from "@/platform/flags";
+import { recordAgentRun } from "@/platform/runs/ledger";
 import { runtimeStore } from "@/platform/stores/runtime";
 import type { EventEnvelope } from "@/platform/events/envelope";
 
@@ -102,6 +103,7 @@ export async function POST(request: Request): Promise<NextResponse> {
   const intakeSessionId = `is_${randomUUID()}`;
   const requestId = `rq_${randomUUID()}`;
 
+  const analyzeStarted = Date.now();
   const { problem, evidence } = analyzeProblemFixture({
     description,
     intake_session_id: intakeSessionId,
@@ -109,6 +111,24 @@ export async function POST(request: Request): Promise<NextResponse> {
     now,
   });
   const packet = buildJobPacketFixture(problem, evidence, now);
+
+  // A00 Agent Run Ledger (Wave-0 proof case): audit A01's classify_problem
+  // run. IDs only — never the customer's description or evidence. Fail-soft
+  // by contract: recordAgentRun never throws and never alters this flow.
+  await recordAgentRun({
+    agent_id: "A01",
+    trigger: "request",
+    input_ids: [requestId, intakeSessionId, problem.problem_id],
+    capabilities_used: ["classify_problem"],
+    tool_provider: "deterministic-stand-in",
+    outputs_summary: {
+      problem_id: problem.problem_id,
+      job_packet_id: packet.job_packet_id,
+      safety_state: problem.safety_state,
+    },
+    cost_usd: 0, // deterministic path — becomes a TEST-labeled real figure once a model is wired
+    latency_ms: Date.now() - analyzeStarted,
+  });
 
   // Route to the generated-once playbook and award green checks for anything
   // the customer already told us (no AI call; see domain/intake/extract).
