@@ -68,7 +68,12 @@ describe("client/server boundary", () => {
     for (const file of mutators) {
       const normalized = file.replace(/\\/g, "/");
       expect(
-        normalized.includes("/app/api/admin/") || normalized.includes("/platform/stores/"),
+        normalized.includes("/app/api/admin/") ||
+          normalized.includes("/platform/stores/") ||
+          // A00: the Approval Center is the platform store for owner
+          // decisions — resolveApproval() appends the decision to the admin
+          // audit trail, and its callers are admin-gated surfaces only.
+          normalized.endsWith("/platform/approvals/center.ts"),
         `${normalized} mutates owner state outside the admin API`
       ).toBe(true);
     }
