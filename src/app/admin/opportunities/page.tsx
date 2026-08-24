@@ -80,7 +80,11 @@ export default async function OpportunitiesPage() {
         {!decisionsReadable && (
           <span style={{ color: "var(--amber)" }}>
             {" "}
-            Decisions could not be read just now, so every row shows its stored status.
+            <strong>Decisions are unavailable right now.</strong> The decision store could not be
+            read, which means it cannot be written either — so the accept / reject / defer controls
+            are switched off rather than failing when you click them. If this is a fresh
+            deployment, migration 00011 (opportunity_decision) is written but not yet applied.
+            Every row below shows its stored status.
           </span>
         )}
       </div>
@@ -130,10 +134,22 @@ export default async function OpportunitiesPage() {
                   <td style={{ padding: "8px 10px" }}>{o.opportunity_score ?? "—"}</td>
                   <td style={{ padding: "8px 10px", color: "var(--on-dark-mute)" }}>{o.source}</td>
                   <td style={{ padding: "8px 10px" }}>
-                    <OpportunityDecision
-                      opportunityId={o.search_opportunity_id}
-                      status={status}
-                    />
+                    {/*
+                      A control that is guaranteed to fail is worse than no
+                      control. If the decision store cannot be READ it cannot be
+                      WRITTEN either, so the buttons come off rather than
+                      offering the owner an action that 500s.
+                    */}
+                    {decisionsReadable ? (
+                      <OpportunityDecision
+                        opportunityId={o.search_opportunity_id}
+                        status={status}
+                      />
+                    ) : (
+                      <span className="hint" style={{ color: "var(--on-dark-mute)" }}>
+                        unavailable
+                      </span>
+                    )}
                   </td>
                 </tr>
               );

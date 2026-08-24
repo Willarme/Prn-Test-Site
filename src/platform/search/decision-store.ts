@@ -41,8 +41,29 @@ export interface OpportunityDecisionStore {
   list(): Promise<OpportunityDecision[]>;
 }
 
+/**
+ * A write that does not land must say what to DO about it, not just what
+ * PostgREST said. Found by running the real app: with Supabase configured from
+ * .env.local and migration 00011 written-but-not-applied, an owner clicking
+ * "Accept" got a raw `Could not find the table 'public.opportunity_decision' in
+ * the schema cache` and a 500. The discipline was right — the decision must
+ * never be silently lost — but the message told the owner nothing actionable.
+ * Every other platform module names its migration in its miss log; this one
+ * now does too.
+ *
+ * The unit tests could not have caught this: they inject `() => null` as the
+ * client provider, which selects the FILE backend, so the Supabase path was
+ * never exercised until the app actually ran.
+ */
+const MIGRATION = "supabase/migrations/00011_opportunity_decision.sql";
+
 function fail(what: string, message: string): never {
-  throw new Error(`${what}: ${message}`);
+  const missingTable = /opportunity_decision/.test(message) && /schema cache|does not exist/i.test(message);
+  throw new Error(
+    missingTable
+      ? `${what}: the opportunity_decision table does not exist yet. Apply ${MIGRATION} (written, NOT applied) to enable owner decisions. Your decision was NOT recorded.`
+      : `${what}: ${message}`
+  );
 }
 
 /** Supabase backend — table `opportunity_decision`, migration 00011 (written, NOT applied). */

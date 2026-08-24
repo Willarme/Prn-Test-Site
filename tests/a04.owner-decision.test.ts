@@ -247,6 +247,56 @@ describe("decideOpportunity wires all four consequences", () => {
   });
 });
 
+/**
+ * FOUND BY RUNNING THE REAL APP, not by the tests above — which all inject
+ * `() => null` as the client provider and therefore only ever exercised the
+ * FILE backend. With Supabase configured from .env.local and migration 00011
+ * written-but-not-applied, clicking Accept returned a raw PostgREST string and
+ * a 500. The fail-LOUD discipline was correct (a lost decision must never look
+ * like a saved one); the message was useless.
+ */
+describe("a write that cannot land says what to do about it", () => {
+  it("names the unapplied migration and states the decision was NOT recorded", async () => {
+    const missingTable = {
+      from: () => ({
+        insert: async () => ({
+          error: {
+            message: "Could not find the table 'public.opportunity_decision' in the schema cache",
+          },
+        }),
+      }),
+    };
+    const brokenProviderFn = () => missingTable;
+
+    await expect(
+      decideOpportunity(
+        { opportunity: opportunity(), kind: "accept", decided_by: "owner" },
+        brokenProviderFn as never
+      )
+    ).rejects.toThrow(/00011_opportunity_decision\.sql/);
+
+    await expect(
+      decideOpportunity(
+        { opportunity: opportunity(), kind: "accept", decided_by: "owner" },
+        brokenProviderFn as never
+      )
+    ).rejects.toThrow(/NOT recorded/);
+  });
+
+  it("an unrelated database error is passed through unchanged, not mislabelled", async () => {
+    const otherFailure = {
+      from: () => ({ insert: async () => ({ error: { message: "connection refused" } }) }),
+    };
+    await expect(
+      decideOpportunity(
+        { opportunity: opportunity(), kind: "accept", decided_by: "owner" },
+        (() => otherFailure) as never
+      )
+    ).rejects.toThrow(/connection refused/);
+  });
+});
+
+
 describe("A04 mints no event names", () => {
   it("every name A04 emits is already in A08's dictionary", () => {
     for (const name of A04_EMITTED_EVENT_NAMES) {

@@ -211,6 +211,26 @@ export async function decideOpportunity(
     clientProvider
   );
 
+  /**
+   * THE JOIN RUNS ONE WAY, AND THAT IS DELIBERATE. The persisted decision row
+   * carries `approval_id: null` and `run_id: null`, because the decision is
+   * written FIRST (it is the fail-loud part) and its paperwork is created
+   * afterwards — and the store is append-only, so there is no update to stamp
+   * them back in. Verified by running the app: the stored rows show
+   * `run: none`.
+   *
+   * Provenance is still complete, in the other direction: the Agent Run Ledger
+   * row's `outputs_summary` carries `decision_id` and `approval_id`, and the
+   * Approval Center item's `evidence` carries `decision_id`. So a decision
+   * resolves to its ledger row and its approval item by lookup; only the
+   * inline back-pointers are absent.
+   *
+   * Filing the approval first would populate them and would also leave an
+   * orphaned approval item whenever the decision write fails — trading a
+   * cosmetic null for a real inconsistency. The columns stay in the schema for
+   * the day the write becomes transactional. The returned object below IS
+   * stamped, so callers in the same request see the full picture.
+   */
   const stamped: OpportunityDecision = { ...decision, approval_id: approvalId, run_id: runId };
   return {
     decision: stamped,

@@ -89,6 +89,17 @@ create table if not exists opportunity_decision (
   ),
   score_version_at_decision text,
   -- Provenance: the Approval Center item and the Agent Run Ledger row.
+  --
+  -- BOTH ARE NULL IN PRACTICE TODAY, and that is deliberate rather than a bug.
+  -- The decision row is written FIRST (it is the fail-loud part) and its
+  -- paperwork is created afterwards; the table is append-only, so there is no
+  -- update to stamp the ids back in. The join runs the OTHER way and is
+  -- complete: the ledger row's outputs_summary carries decision_id and
+  -- approval_id, and the Approval Center item's evidence carries decision_id.
+  -- Filing the approval first would populate these and would also leave an
+  -- orphaned approval item whenever the decision write failed — a real
+  -- inconsistency traded for a cosmetic null. The columns stay for the day the
+  -- write becomes transactional.
   approval_id text,
   run_id text
 );
