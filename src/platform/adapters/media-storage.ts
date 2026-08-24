@@ -1,6 +1,7 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { createClient } from "@supabase/supabase-js";
+import { requirePolicyNumber } from "@/platform/policy/store";
 
 /**
  * Private media storage for customer photos/video (#14A §19: private
@@ -17,7 +18,10 @@ export const MEDIA_ALLOWLIST: Record<string, string> = {
   "video/mp4": "mp4",
   "video/quicktime": "mov",
 };
-export const MEDIA_MAX_BYTES = 25 * 1024 * 1024; // 25 MB — short phone clips fit
+// A00 step 6: the 25 MB cap moved to the versioned Policy + Config Store
+// (key intake.media_max_bytes) — same value, same behavior, one less magic
+// number. This export stays so existing readers are untouched.
+export const MEDIA_MAX_BYTES = requirePolicyNumber("intake.media_max_bytes");
 
 export interface StoredMedia {
   storage_ref: string;
