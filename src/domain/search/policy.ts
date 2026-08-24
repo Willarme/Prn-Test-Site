@@ -102,6 +102,38 @@ export const SeoFactoryPolicy = z
     min_user_value_score: z.number().min(0).max(100).nullable(),
     max_external_seo_spend_usd_month: UsdAmount,
     max_page_ai_spend_usd_month: UsdAmount,
+    /**
+     * EVERY PRN DOLLAR IS A TEST FIGURE, AND THE SCHEMA NOW SAYS SO
+     * (pre-answer 11, hard canon rule 4). The two caps above shipped as bare
+     * numbers with no label anywhere — `max_external_seo_spend_usd_month: 1`
+     * reads like a considered budget and is in fact the DataForSEO trial
+     * credit. `is_test_figure` is a LITERAL true, so a policy that drops the
+     * label does not parse: an unlabelled PRN dollar cannot ship.
+     *
+     * This covers PRN's OWN caps only. Vendor prices are a different class of
+     * number — a third party's published fact, quoted with its date — and are
+     * never TEST-labelled as if invented. See platform/economics/rates.ts.
+     *
+     * TODO-ASK-OWNER (Joshua): the live cap is $1, the spec's TEST planning
+     * band is $5–$25/month. Left at 1 until raised deliberately.
+     */
+    budget_figures: z
+      .object({
+        is_test_figure: z.literal(true),
+        note: z.string().min(1),
+      })
+      .default({
+        is_test_figure: true,
+        note: "TEST figures, not commitments. max_external_seo_spend_usd_month is the DataForSEO trial credit, not a considered budget; the spec's TEST planning band is $5-$25/month. Vendor prices are SOURCED and labelled separately in platform/economics/rates.ts.",
+      }),
+    /**
+     * THE BATCH SIZE THE BRAKE ENFORCES (C8). DataForSEO bills per task and one
+     * task carries up to 1,000 keywords, so an unbounded keyword list is an
+     * unbounded number of tasks in one un-estimated request. Default is the
+     * vendor's own task size: batching at exactly one task per call makes every
+     * call individually estimable.
+     */
+    max_keywords_per_vendor_call: z.number().int().min(1).max(1000).default(1000),
     serp_depth: z.number().int().min(1).max(100),
     include_trend_data: z.boolean(),
     allow_refresh_existing: z.boolean(),

@@ -1,7 +1,7 @@
 {
   "policy_id": "seo_factory_policy_default",
   "schema_version": "1.0.0",
-  "version": 5,
+  "version": 6,
   "geography_plan": {
     "national": {
       "enabled": true,
@@ -29,6 +29,11 @@
   "min_user_value_score": null,
   "max_external_seo_spend_usd_month": 1,
   "max_page_ai_spend_usd_month": 25,
+  "budget_figures": {
+    "is_test_figure": true,
+    "note": "TEST figures, not commitments (hard canon rule 4). max_external_seo_spend_usd_month is $1 because that is the DataForSEO TRIAL CREDIT, not a considered budget; the spec's TEST planning band is $5-$25/month and raising it is Joshua's deliberate call. Vendor prices are a different class of number - a third party's published fact - and are SOURCED, dated and never TEST-labelled: see src/platform/economics/rates.ts."
+  },
+  "max_keywords_per_vendor_call": 1000,
   "serp_depth": 10,
   "include_trend_data": true,
   "allow_refresh_existing": false,

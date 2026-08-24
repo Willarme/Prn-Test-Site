@@ -12,6 +12,12 @@ import type { SeoFactoryPolicy } from "@/domain/search/policy";
 import type { Cadence } from "@/domain/shared/primitives";
 import type { AgentRun } from "@/platform/agents/contracts";
 import type { SeoDataAdapter } from "@/platform/adapters/seo-data";
+import type { VendorCostRate } from "@/platform/economics/contracts";
+import {
+  chunkKeywords,
+  estimateVendorCall,
+  type CostEstimate,
+} from "@/platform/economics/rates";
 import type {
   AgentRunStore,
   CostStore,
@@ -47,6 +53,23 @@ export interface DiscoveryDeps {
   /** injected clock for deterministic tests, ISO datetime */
   now: () => string;
   idSuffix: () => string;
+  /**
+   * Kill-switch probe, injected so the domain layer stays free of platform
+   * imports. Callers pass `() => checkKillSwitch("A04")`. Absent means "no
+   * switch wired" (tests and the CLI), which is the same as not engaged.
+   */
+  checkKill?: () => { engaged: boolean; reason?: string };
+  /** Vendor price registry for the pre-flight estimate. Defaults to the shipped rates. */
+  rates?: readonly VendorCostRate[];
+  /** Called when the brake stops a run, so the caller can emit seo.budget_exhausted. */
+  onBudgetExhausted?: (context: {
+    agent_run_id: string;
+    vendor: string;
+    month: string;
+    cap_usd: number;
+    spent_usd: number;
+    stage: "pre_run" | "mid_run";
+  }) => Promise<void>;
 }
 
 export interface DiscoveryReport {
@@ -68,6 +91,9 @@ export interface DiscoveryReport {
    */
   duplicate_intent_candidates: number;
   duplicate_intent_groups: number;
+  /** Why the brake or the kill switch stopped spending, in order. */
+  brake_reasons: string[];
+  halted_by_kill_switch: boolean;
   error: string | null;
 }
 
@@ -148,6 +174,8 @@ export async function runDiscovery(
     deferred_local_targets: 0,
     duplicate_intent_candidates: 0,
     duplicate_intent_groups: 0,
+    brake_reasons: [],
+    halted_by_kill_switch: false,
     error: null,
   });
 
@@ -186,6 +214,16 @@ export async function runDiscovery(
   if (remainingBudget <= 0 || !nationalTarget) {
     const status = !nationalTarget ? "completed" : "skipped";
     await deps.runs.save({ ...run, status, finished_at: deps.now() });
+    if (nationalTarget) {
+      await deps.onBudgetExhausted?.({
+        agent_run_id: run.agent_run_id,
+        vendor: deps.adapter.vendor,
+        month,
+        cap_usd: policy.max_external_seo_spend_usd_month,
+        spent_usd: spentThisMonth,
+        stage: "pre_run",
+      });
+    }
     return {
       ...empty(!nationalTarget ? "completed" : "stopped_budget", run.agent_run_id),
       deferred_local_targets: deferredLocalTargets,
@@ -207,44 +245,115 @@ export async function runDiscovery(
     remainingBudget -= costUsd;
   };
 
+  /**
+   * THE PRE-FLIGHT BRAKE (C8) — the gap this build closed.
+   *
+   * The old check was `remainingBudget > 0` before an UNBOUNDED call whose cost
+   * was only recorded after it returned. With a $1 cap and a 4,000-keyword
+   * list, one request was four billable tasks: the cap was blown by an
+   * arbitrary amount while the run still reported `budget_limited` cleanly and
+   * satisfied its own done-when. Now every call is priced BEFORE it is made,
+   * against the registered rate, rounded UP, and refused if it does not fit.
+   *
+   * An UNESTIMABLE call is refused too. `estimateVendorCall` returns
+   * `known: false` for a vendor/service with no registered rate, and an unknown
+   * price is not a free one — pricing it at zero is precisely how budgets get
+   * silently blown.
+   *
+   * THE KILL SWITCH IS CHECKED HERE, NOT ONLY AT THE TOP. A run that started
+   * before the owner hit pause must stop at the next call, not finish spending.
+   */
+  const spendGate = (service: string, units: number): { ok: boolean; reason: string; estimate: CostEstimate } => {
+    const kill = deps.checkKill?.() ?? { engaged: false };
+    if (kill.engaged) {
+      return {
+        ok: false,
+        reason: `kill switch engaged for A04${kill.reason ? ` (${kill.reason})` : ""} — no further vendor spend`,
+        estimate: { estimated_usd: 0, basis: "not priced — halted", known: false, rate_version: null },
+      };
+    }
+    const estimate = estimateVendorCall(deps.adapter.vendor, service, units, deps.rates);
+    if (!estimate.known) {
+      return { ok: false, reason: estimate.basis, estimate };
+    }
+    if (estimate.estimated_usd > remainingBudget) {
+      return {
+        ok: false,
+        reason: `estimated $${estimate.estimated_usd} for ${service} exceeds $${Math.round(remainingBudget * 1e6) / 1e6} remaining this month`,
+        estimate,
+      };
+    }
+    return { ok: true, reason: estimate.basis, estimate };
+  };
+
   try {
     let vendorCost = 0;
     let budgetLimited = false;
+    let haltedByKillSwitch = false;
+    const brakeReasons: string[] = [];
     const scope = nationalTarget.scope;
+    const perCall = policy.max_keywords_per_vendor_call;
 
-    // 1. Cheap broad discovery (progressive enrichment step 1).
+    const halt = (reason: string): void => {
+      brakeReasons.push(reason);
+      if (reason.startsWith("kill switch")) haltedByKillSwitch = true;
+      else budgetLimited = true;
+    };
+
+    // 1. Cheap broad discovery (progressive enrichment step 1), priced first.
     const seeds = policy.allowed_categories.length > 0 ? policy.allowed_categories : ["home problems"];
-    const discovery = await deps.adapter.discoverIdeas(seeds, scope);
-    vendorCost += discovery.vendor_cost_usd;
-    await recordCost("keyword_ideas", discovery.vendor_cost_usd, null);
-    const keywords = [...new Set(discovery.ideas.map((i) => i.keyword))];
-
-    // 2. Bulk metrics — only if budget remains (#23: stop enrichment cleanly).
-    let metrics: Awaited<ReturnType<SeoDataAdapter["getKeywordMetrics"]>> = [];
-    if (remainingBudget > 0 && keywords.length > 0) {
-      metrics = await deps.adapter.getKeywordMetrics(keywords, scope);
-      let metricsCost = 0;
-      for (const snap of metrics) {
-        metricsCost += snap.vendor_cost_usd ?? 0;
-        await deps.snapshots.saveMetric(snap); // provenance chain (#23 §1.2)
-      }
-      vendorCost += metricsCost;
-      await recordCost("keyword_metrics", metricsCost, metrics[0]?.rate_version ?? null);
-    } else if (keywords.length > 0) {
-      budgetLimited = true;
+    let keywords: string[] = [];
+    const ideasGate = spendGate("keyword_ideas", seeds.length);
+    if (!ideasGate.ok) {
+      halt(ideasGate.reason);
+    } else {
+      const discovery = await deps.adapter.discoverIdeas(seeds, scope);
+      vendorCost += discovery.vendor_cost_usd;
+      await recordCost("keyword_ideas", discovery.vendor_cost_usd, ideasGate.estimate.rate_version);
+      keywords = [...new Set(discovery.ideas.map((i) => i.keyword))];
     }
 
-    // 3. Vendor intent labels — skipped when the budget ran out mid-run.
-    let vendorIntents: Awaited<ReturnType<SeoDataAdapter["getSearchIntent"]>> = {
+    // 2. Bulk metrics — CHUNKED, and every chunk priced before it is sent.
+    //    This is the overshoot fix: one 4,000-keyword request was four billable
+    //    tasks in a single un-estimated call.
+    const metrics: Awaited<ReturnType<SeoDataAdapter["getKeywordMetrics"]>> = [];
+    for (const chunk of chunkKeywords(keywords, perCall)) {
+      const gate = spendGate("keyword_metrics", chunk.length);
+      if (!gate.ok) {
+        halt(gate.reason);
+        break; // stop cleanly; partial enrichment is honest, overspend is not
+      }
+      const batch = await deps.adapter.getKeywordMetrics(chunk, scope);
+      let metricsCost = 0;
+      for (const snap of batch) {
+        metricsCost += snap.vendor_cost_usd ?? 0;
+        await deps.snapshots.saveMetric(snap); // provenance chain (#23 §1.2)
+        metrics.push(snap);
+      }
+      vendorCost += metricsCost;
+      await recordCost(
+        "keyword_metrics",
+        metricsCost,
+        batch[0]?.rate_version ?? gate.estimate.rate_version
+      );
+    }
+
+    // 3. Vendor intent labels — same chunking, same pre-flight pricing.
+    const vendorIntents: Awaited<ReturnType<SeoDataAdapter["getSearchIntent"]>> = {
       classifications: [],
       vendor_cost_usd: 0,
     };
-    if (remainingBudget > 0 && keywords.length > 0) {
-      vendorIntents = await deps.adapter.getSearchIntent(keywords);
-      vendorCost += vendorIntents.vendor_cost_usd;
-      await recordCost("search_intent", vendorIntents.vendor_cost_usd, null);
-    } else if (keywords.length > 0) {
-      budgetLimited = true;
+    for (const chunk of chunkKeywords(keywords, perCall)) {
+      const gate = spendGate("search_intent", chunk.length);
+      if (!gate.ok) {
+        halt(gate.reason);
+        break;
+      }
+      const batch = await deps.adapter.getSearchIntent(chunk);
+      vendorIntents.classifications.push(...batch.classifications);
+      vendorIntents.vendor_cost_usd += batch.vendor_cost_usd;
+      vendorCost += batch.vendor_cost_usd;
+      await recordCost("search_intent", batch.vendor_cost_usd, gate.estimate.rate_version);
     }
 
     // 4. Build MERGED records first (verification blocker fix): metrics known
@@ -353,6 +462,21 @@ export async function runDiscovery(
       cost_usd: vendorCost,
     });
 
+    // A run that stopped spending mid-flight says so out loud. The run itself
+    // still COMPLETES — the records it did produce are real and the queue is
+    // correct as far as it goes; what must never happen is a clean-looking
+    // report that hides a cap being hit.
+    if (budgetLimited) {
+      await deps.onBudgetExhausted?.({
+        agent_run_id: run.agent_run_id,
+        vendor: deps.adapter.vendor,
+        month,
+        cap_usd: policy.max_external_seo_spend_usd_month,
+        spent_usd: spentThisMonth + vendorCost,
+        stage: "mid_run",
+      });
+    }
+
     return {
       agent_run_id: run.agent_run_id,
       status: "completed",
@@ -369,6 +493,8 @@ export async function runDiscovery(
       deferred_local_targets: deferredLocalTargets,
       duplicate_intent_candidates: duplicates.duplicate_candidates,
       duplicate_intent_groups: duplicates.groups.length,
+      brake_reasons: brakeReasons,
+      halted_by_kill_switch: haltedByKillSwitch,
       error: null,
     };
   } catch (err) {
