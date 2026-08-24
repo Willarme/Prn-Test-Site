@@ -31,13 +31,21 @@ async function main() {
   const imported = importSeedRows(seedFile, NOW);
   const { opportunities, summary } = evaluatePortfolio(imported, policy);
 
-  // Doors are PROBLEM-intent pages (D-3). Tool/calculator opportunities stay
-  // in the portfolio for a later product line but never become doors here.
+  // WHICH INTENTS MAY BECOME DOORS IS POLICY NOW, NOT A LINE IN THIS SCRIPT
+  // (C6 / pre-answer 8). This used to be a hardcoded `intent_type === "problem"`
+  // filter with a comment above it — the only guard standing between 59
+  // tool-intent opportunities and the page factory, living in a CLI script
+  // where no owner would ever find it. `page_eligible_intent_types` defaults to
+  // ["problem"], so the behaviour is identical and the rule is now visible and
+  // changeable in policy. The STEERING RULING itself (do tool topics belong in
+  // the queue at all?) is TODO-ASK-OWNER — Melissa's, parked, see policy.ts.
+  //
   // Skip opportunities that already have a handcrafted/staged page — the
   // factory builds NEW doors, it never re-builds an existing one.
+  const eligibleIntents = new Set<string>(policy.page_eligible_intent_types);
   const alreadyStaged = new Set([SAMPLE_PAGE_SPEC.search_opportunity_id, SAMPLE_PAGE_SPEC.primary_query]);
   const problemNew = opportunities.filter(
-    (o) => o.intent_type === "problem" && !alreadyStaged.has(o.search_opportunity_id) && !alreadyStaged.has(o.keyword)
+    (o) => eligibleIntents.has(o.intent_type) && !alreadyStaged.has(o.search_opportunity_id) && !alreadyStaged.has(o.keyword)
   );
   const { specs, skipped } = buildCandidatePages(problemNew, policy.max_new_pages_per_period, {
     now: () => NOW,

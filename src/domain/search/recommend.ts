@@ -2,6 +2,7 @@ import type { SearchOpportunity } from "@/domain/search/contracts";
 import type { OpportunityRecommendation } from "@/domain/search/lifecycle";
 import type { SeoFactoryPolicy } from "@/domain/search/policy";
 import { qualifiesForNewPage, type ScoredOpportunity } from "@/domain/search/scoring";
+import { matchHardExclusions } from "@/domain/search/vocabulary";
 
 /**
  * Near-duplicate / cannibalization detection (deterministic v1). Two keywords
@@ -53,6 +54,16 @@ export interface RecommendationResult {
   recommendation: OpportunityRecommendation;
   reason: string;
   duplicate_of: string | null; // search_opportunity_id of the existing overlap
+  /**
+   * THE REASONS TRAIL (C6). `reason` is the one-line summary the admin table
+   * has always rendered; `reasons` is the full ordered trail, which matters for
+   * hard exclusions specifically — an owner reading a REJECT needs to know
+   * WHICH rule fired and why, and two rules firing is information about the
+   * rules. Additive: every existing consumer of `reason` is untouched.
+   */
+  reasons: string[];
+  /** exclusion_ids that fired, empty when none did. */
+  excluded_by: string[];
 }
 
 /**
@@ -78,6 +89,28 @@ export function recommend(
   existing: SearchOpportunity[],
   policy: SeoFactoryPolicy
 ): RecommendationResult {
+  /**
+   * HARD EXCLUSIONS FIRST, AND THEY ALWAYS WIN (C6). Before scoring is
+   * consulted, before cannibalization, before any threshold: a keyword the
+   * owner has excluded resolves REJECT and no score can override it. This is
+   * the mechanism for "never build a page about this", and a mechanism that
+   * could be outvoted by a high score would not be one.
+   *
+   * The list ships EMPTY. Populating it is the owner deciding what PRN is
+   * about; a build session doing it would be inventing product scope.
+   */
+  const hits = matchHardExclusions(scored.opportunity.keyword, policy.vocabulary);
+  if (hits.length > 0) {
+    const reasons = hits.map((h) => `hard exclusion ${h.exclusion_id}: ${h.reason}`);
+    return {
+      recommendation: "REJECT",
+      reason: reasons[0],
+      duplicate_of: null,
+      reasons,
+      excluded_by: hits.map((h) => h.exclusion_id),
+    };
+  }
+
   const overlap = existing.find(
     (e) =>
       e.search_opportunity_id !== scored.opportunity.search_opportunity_id &&
@@ -92,32 +125,39 @@ export function recommend(
     // Same intent family: never a second door for the same search need.
     const distinct = policy.min_intent_distinctness;
     const recommendation: OpportunityRecommendation = distinct === "high" ? "MERGE" : "EXPAND";
+    const reason = `Overlaps existing intent "${overlap.keyword}" — ${recommendation} instead of NEW (doorway/cannibalization rule)`;
     return {
       recommendation,
-      reason: `Overlaps existing intent "${overlap.keyword}" — ${recommendation} instead of NEW (doorway/cannibalization rule)`,
+      reason,
       duplicate_of: overlap.search_opportunity_id,
+      reasons: [reason],
+      excluded_by: [],
     };
   }
 
   if (scored.needs_enrichment) {
-    return {
-      recommendation: "WATCH",
-      reason: "Metrics unknown (volume/KD null) — needs vendor enrichment before it can qualify",
-      duplicate_of: null,
-    };
+    const reason =
+      "Metrics unknown (volume/KD null) — needs vendor enrichment before it can qualify";
+    return { recommendation: "WATCH", reason, duplicate_of: null, reasons: [reason], excluded_by: [] };
   }
 
   if (!qualifiesForNewPage(scored, policy)) {
+    const reason = `Score ${scored.score} vs threshold ${policy.min_opportunity_score} (thresholds are never lowered to fill quota)`;
     return {
       recommendation: scored.score >= policy.min_opportunity_score - 15 ? "WATCH" : "REJECT",
-      reason: `Score ${scored.score} vs threshold ${policy.min_opportunity_score} (thresholds are never lowered to fill quota)`,
+      reason,
       duplicate_of: null,
+      reasons: [reason],
+      excluded_by: [],
     };
   }
 
+  const reason = `Qualifies: score ${scored.score} >= ${policy.min_opportunity_score}, metrics known, no cannibalization overlap`;
   return {
     recommendation: "NEW",
-    reason: `Qualifies: score ${scored.score} >= ${policy.min_opportunity_score}, metrics known, no cannibalization overlap`,
+    reason,
     duplicate_of: null,
+    reasons: [reason],
+    excluded_by: [],
   };
 }

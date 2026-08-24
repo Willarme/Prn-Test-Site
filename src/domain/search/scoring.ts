@@ -304,7 +304,9 @@ export function qualifiesForNewPage(scored: ScoredOpportunity, policy: SeoFactor
     // when the owner keeps the catch-all category in the list — removing it
     // makes the gate strict (only classified categories pass).
     const family = scored.opportunity.problem_family_hint;
-    const catchAll = "general_home_problem"; // moved to policy vocabulary in step 3
+    // The catch-all KEY is policy vocabulary, not a literal in this file, so a
+    // client in another vertical does not fork this function (C5, white-label).
+    const catchAll = policy.vocabulary.catch_all_category;
     const inCategory =
       family !== null
         ? policy.allowed_categories.includes(family)

@@ -8,6 +8,7 @@ import {
 } from "@/domain/shared/primitives";
 import { GeographyPlan, plannedPagesPerPeriod } from "@/domain/search/geography-plan";
 import { ScoringPolicy, V1_SCORING_POLICY, weightSum } from "@/domain/search/scoring";
+import { MarketVocabulary, PRN_TRIAL_VOCABULARY } from "@/domain/search/vocabulary";
 
 export const PublishMode = z.enum(["OWNER_APPROVAL", "LOW_RISK_AUTO"]);
 export const AutonomyStage = z.enum(["T0", "T1", "T2", "T3"]);
@@ -48,6 +49,47 @@ export const SeoFactoryPolicy = z
      * file that stops protecting anything.
      */
     scoring: ScoringPolicy.default(V1_SCORING_POLICY),
+    /**
+     * MARKET VOCABULARY (C5) — the problem/tool word lists, the family regexes,
+     * the catch-all category key and the owner's hard-exclusion rules, all of
+     * which were code constants. Values are the shipped PRN ones verbatim.
+     * A second client swaps this block instead of forking two source files.
+     *
+     * `allowed_categories` deliberately STAYS above rather than moving in here:
+     * it is already policy data, already on the admin form and already settable
+     * through the CLI. Relocating it would break the owner's form for no
+     * white-label gain — the point of the condition is to get CODE constants
+     * out, and that one never was one.
+     */
+    vocabulary: MarketVocabulary.default(PRN_TRIAL_VOCABULARY),
+    /**
+     * THE STEERING MECHANISM (C6 / pre-answer 8) — TODO-ASK-OWNER (Melissa).
+     *
+     * ⚠ THE RULING IS PARKED AND IS NOT MADE HERE. The question — are
+     * tool/calculator topics home problems at all, and do they belong in A04's
+     * queue? — is thesis and homeowner experience, not engineering. It is the
+     * one owner-observed defect in the one real agent: 59 of the 96 seeded
+     * opportunities are tool intent, intentFitScore awards tool exactly 70
+     * against a threshold of exactly 70, and Melissa rejected the tool topics
+     * live ("it needs more help", Compendium §5.6 trap 34).
+     *
+     * WHAT THIS FIELD CHANGES: nothing, today. The value below is the filter
+     * that already existed as a COMMENT-LEVEL line inside tools/run-factory.ts
+     * ("Doors are PROBLEM-intent pages (D-3). Tool/calculator opportunities
+     * stay in the portfolio for a later product line but never become doors
+     * here"). Moving it from a CLI script into owner-visible policy is the
+     * whole change: the rule is now somewhere the owner can see it and change
+     * it without a code edit, and the behaviour is byte-identical.
+     *
+     * Note this gates PAGE ELIGIBILITY, not scoring or recommendation: tool
+     * opportunities keep their scores and their recommendations so the queue
+     * the owner reviews is unchanged. Whoever rules on steering can then choose
+     * between "exclude from pages" (this field), "exclude from the queue"
+     * (a hard exclusion), or "they are fine" — without another build.
+     */
+    page_eligible_intent_types: z
+      .array(z.enum(["problem", "tool", "informational", "commercial", "unknown"]))
+      .default(["problem"]),
     discovery_scan_cadence: Cadence,
     search_console_ingest_cadence: Cadence,
     target_qualified_pages_per_period: z.number().int().min(0),
