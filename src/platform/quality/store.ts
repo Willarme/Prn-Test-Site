@@ -9,6 +9,7 @@ import {
   QuarantineMarker,
   RepairExecution,
   RepairProposal,
+  RepairReversalSnapshot,
   type QuarantineStatus,
 } from "@/platform/quality/types";
 
@@ -58,6 +59,8 @@ export interface QualityStore {
   listRepairProposals(): Promise<RepairProposal[]>;
   appendRepairExecution(execution: RepairExecution): Promise<void>;
   listRepairExecutions(): Promise<RepairExecution[]>;
+  appendReversalSnapshot(snapshot: RepairReversalSnapshot): Promise<void>;
+  listReversalSnapshots(): Promise<RepairReversalSnapshot[]>;
 }
 
 function fail(what: string, message: string): never {
@@ -155,6 +158,17 @@ class SupabaseQualityStore implements QualityStore {
     if (error) fail("list repair executions", error.message);
     return (data ?? []).map((row) => RepairExecution.parse(row));
   }
+
+  async appendReversalSnapshot(snapshot: RepairReversalSnapshot): Promise<void> {
+    const { error } = await this.db.from("repair_reversal_snapshot").insert(snapshot);
+    if (error) fail("append reversal snapshot", error.message);
+  }
+
+  async listReversalSnapshots(): Promise<RepairReversalSnapshot[]> {
+    const { data, error } = await this.db.from("repair_reversal_snapshot").select("*").limit(2000);
+    if (error) fail("list reversal snapshots", error.message);
+    return (data ?? []).map((row) => RepairReversalSnapshot.parse(row));
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -222,6 +236,16 @@ class FileQualityStore implements QualityStore {
 
   async listRepairExecutions(): Promise<RepairExecution[]> {
     return readDevDb().repair_executions.map((row) => RepairExecution.parse(row));
+  }
+
+  async appendReversalSnapshot(snapshot: RepairReversalSnapshot): Promise<void> {
+    updateDevDb((db) => {
+      db.repair_reversal_snapshots.push(snapshot);
+    });
+  }
+
+  async listReversalSnapshots(): Promise<RepairReversalSnapshot[]> {
+    return readDevDb().repair_reversal_snapshots.map((row) => RepairReversalSnapshot.parse(row));
   }
 }
 

@@ -41,6 +41,7 @@ export interface DevDb {
   quarantine_markers: unknown[];
   repair_proposals: unknown[];
   repair_executions: unknown[];
+  repair_reversal_snapshots: unknown[];
 }
 
 /**
@@ -73,6 +74,7 @@ function emptyDb(): DevDb {
     quarantine_markers: [],
     repair_proposals: [],
     repair_executions: [],
+    repair_reversal_snapshots: [],
   };
 }
 

@@ -275,6 +275,28 @@ export const RepairExecution = z
 export type RepairExecution = z.infer<typeof RepairExecution>;
 
 /**
+ * The exact prior value a repair overwrote, so a reversal can restore it
+ * BYTE-FOR-BYTE rather than approximately. ID ARRAYS ONLY — every declared
+ * repair kind touches an id list and nothing else, which is what lets the
+ * snapshot stay inside the no-raw-evidence contract. A repair that needed to
+ * snapshot free text could not be declared at all, and that is the intended
+ * ceiling on what A09 is ever allowed to repair.
+ */
+export const RepairReversalSnapshot = z
+  .object({
+    reversal_token: z.string().min(1),
+    tenant_id: z.string().min(1),
+    entity_type: EntityType,
+    entity_id: z.string().min(1),
+    target_field: z.string().min(1),
+    /** Bounded, and allowed to contain "" — restoring a blank id exactly is the point. */
+    previous_ids: z.array(z.string().max(128)).max(200),
+    captured_at: IsoDateTime,
+  })
+  .strict();
+export type RepairReversalSnapshot = z.infer<typeof RepairReversalSnapshot>;
+
+/**
  * FAIL-LOUD WRITE RESULT — a DELIBERATE DIVERGENCE from the platform's
  * fail-soft default (Loop Spec Audit condition 7), documented here because it
  * is the one place A09 refuses an approved platform contract.
