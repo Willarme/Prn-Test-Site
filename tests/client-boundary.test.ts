@@ -42,6 +42,42 @@ describe("client/server boundary", () => {
     }
   });
 
+  /**
+   * A08, Loop Spec Audit condition 15 — GUARD THE DICTIONARY AT THE CLIENT
+   * BOUNDARY. src/platform/events/** holds the compiled EVENT_NAMES const, the
+   * seeded EventDefinition table and the steward's validation logic. A single
+   * "use client" file importing any of it ships the entire event/metric
+   * dictionary into the page payload — the same leak class as the
+   * playbook-graph exposure (Trial Build State lines 104-125, Master Todo
+   * T0-02), and the reason §7 says "the registry is never public".
+   *
+   * The check is on the import PATH, so it catches the alias and a relative
+   * import equally, and on the exported symbols, so it catches a re-export
+   * laundering the dictionary through a third module.
+   */
+  it("browser code never imports the event/metric dictionary", () => {
+    for (const file of clientFiles) {
+      const content = readFileSync(file, "utf-8");
+      expect(content, file).not.toMatch(/platform\/events/);
+      expect(content, file).not.toMatch(/\bEVENT_NAMES\b/);
+      expect(content, file).not.toMatch(/\bEventDefinition\b/);
+      expect(content, file).not.toMatch(/\bMetricDefinition\b/);
+      expect(content, file).not.toMatch(/\bvalidateAndEmit\b/);
+    }
+  });
+
+  /**
+   * The same guard one level out: the approval queue and the run ledger are
+   * owner-facing records, and neither belongs in a browser bundle either.
+   */
+  it("browser code never imports the approval queue or the run ledger", () => {
+    for (const file of clientFiles) {
+      const content = readFileSync(file, "utf-8");
+      expect(content, file).not.toMatch(/platform\/approvals/);
+      expect(content, file).not.toMatch(/platform\/runs/);
+    }
+  });
+
   it("no source file hard-codes a credential-shaped literal", () => {
     for (const file of allSrc) {
       const content = readFileSync(file, "utf-8");

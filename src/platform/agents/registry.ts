@@ -146,6 +146,33 @@ export const TRIAL_AGENT_REGISTRY: readonly AgentDefinition[] = [
       "Owns canonical event/metric names, versions, definitions. Blocks silent denominator/name drift.",
     phase_band: "TRIAL",
     ...TBD,
+    /**
+     * A08 BUILD, 2026-08-24. `autonomy_level` deliberately stays "TBD" from the
+     * TBD spread above (Loop Spec Audit condition 12): §3/§7/§11 treat "L1-L2"
+     * as settled, but canon carries two non-identical scales and the owners
+     * have not picked one. A08 follows the L1-L2 BEHAVIOUR — auto-validate a
+     * clean new definition, always route a change to a human — without writing
+     * an L-level into this field ahead of that decision.
+     *
+     * `allowed_capabilities` stays EMPTY and that is a real statement here, not
+     * a backfill gap: A08 must NEVER call the AI/Tool Gateway inline in the
+     * emit-and-validate path (§3/§7), and no offline model-assisted capability
+     * is built. Every A08 job is deterministic string/schema work.
+     *
+     * `data_access` / `write_access` are enumerated because A08's modules
+     * exist — these are observed facts, not a guess. The event_envelope read is
+     * the Stage F audit's, and it selects event_name/occurred_at/trace_id only,
+     * never joining to any customer-evidence table (condition 14).
+     */
+    data_access: [
+      "event_definition",
+      "metric_definition",
+      "event_envelope",
+      "agent_run_ledger",
+      "approval_item",
+    ],
+    write_access: ["event_definition", "metric_definition", "approval_item"],
+    schedule: "scheduled dictionary audit — cadence in policy events.dictionary_audit_cadence_hours (no cron route wired in Wave 0)",
     kill_switch_ref: killRef("A08"),
   },
   {
