@@ -33,6 +33,25 @@ import { runtimeStore } from "@/platform/stores/runtime";
  * finding/quarantine writes. Zero findings with `could_not_verify: true` means
  * "we do not know", and the cockpit must say so rather than showing a reassuring
  * zero.
+ *
+ * READS FAIL SOFT, WRITES FAIL LOUD (step 11). The fail-loud contract in
+ * issues.ts was chosen for WRITES and it stands: a swallowed issue write leaves
+ * bad data feeding KPIs while the run reports clean. It must not be applied to
+ * READS. A09's store throws on any Postgres error, so with a database configured
+ * and migration 00010 written-but-NOT-applied — the exact state this branch
+ * ships — "relation does not exist" propagated out of these three functions,
+ * through the single Promise.all in app/admin/page.tsx, and 500'd the ENTIRE
+ * owner cockpit, including every panel unrelated to A09. That contradicts the
+ * platform contract at db/client.ts (a missing table means log the miss and
+ * proceed), and A00's listApprovals() fails soft in the identical situation.
+ *
+ * So the three reads the cockpit makes catch, and report `could_not_verify`
+ * with `read_failed` — a shape that already means "A09 could not verify; this
+ * is NOT a verified-clean". The failure becomes a panel that says so instead of
+ * a page that is gone. Nothing below these entry points is softened: the store
+ * seam still throws, and currentFindings/activeQuarantineKeys stay loud for the
+ * write-path callers (findingById gates repair execution, where a silent "no
+ * such finding" would be exactly the no-op the fail-loud contract prevents).
  */
 
 export interface QualityKpiSnapshot {
@@ -49,10 +68,52 @@ export interface QualityKpiSnapshot {
   /** Ingest checks that passed, over all ingest checks run this process. */
   data_completeness_pass_rate: number;
   data_completeness_sample: number;
-  /** TRUE when this process lost a finding or quarantine write. */
+  /** TRUE when this process lost a write OR could not read A09's records back. */
   could_not_verify: boolean;
+  /**
+   * TRUE when the READ failed — A09's tables are unreachable or migration 00010
+   * is not applied. Distinct from a lost write so the cockpit states the actual
+   * reason instead of reporting "lost 0 writes", and so the counts below can be
+   * rendered as unknown rather than as zero.
+   */
+  read_failed: boolean;
   findings_write_failed: number;
   quarantines_write_failed: number;
+}
+
+// ---------------------------------------------------------------------------
+// Fail-soft reads — the cockpit's three entry points only
+// ---------------------------------------------------------------------------
+
+let readMissLogged = false;
+
+/**
+ * Once per process, mirroring A00's logMiss. A lost WRITE is logged every time
+ * because each one is its own incident; an unreadable table is one standing
+ * condition, and a cockpit that re-logs it on every render buries the incidents.
+ */
+function logReadMiss(what: string, reason: string): void {
+  if (readMissLogged) return;
+  readMissLogged = true;
+  console.warn(
+    `[a09-quality] cockpit read unavailable — ${what} could not be read (${reason}). ` +
+      "The quality panels report COULD NOT VERIFY, which is not the same as clean. " +
+      "Apply supabase/migrations/00010_data_quality.sql to enable them."
+  );
+}
+
+/** Run one cockpit read; on failure hand back `fallback` and admit it failed. */
+async function softRead<T>(
+  what: string,
+  read: () => Promise<T>,
+  fallback: T
+): Promise<{ value: T; failed: boolean }> {
+  try {
+    return { value: await read(), failed: false };
+  } catch (err) {
+    logReadMiss(what, err instanceof Error ? err.message : String(err));
+    return { value: fallback, failed: true };
+  }
 }
 
 /** Ingest pass/fail tally — the data-completeness denominator. */
@@ -67,6 +128,7 @@ export function recordIngestCheckOutcome(passed: boolean): void {
 export function resetQualityKpiForTests(): void {
   ingestChecksRun = 0;
   ingestChecksPassed = 0;
+  readMissLogged = false;
 }
 
 function withinDays(iso: string, days: number, at: number): boolean {
@@ -77,8 +139,19 @@ function withinDays(iso: string, days: number, at: number): boolean {
 export async function qualityKpiSnapshot(
   deps: QualityDeps = {}
 ): Promise<QualityKpiSnapshot> {
-  const findings = await currentFindings(deps);
-  const quarantined = await activeQuarantineKeys(deps);
+  const findingsRead = await softRead<QualityFinding[]>(
+    "quality findings",
+    () => currentFindings(deps),
+    []
+  );
+  const quarantineRead = await softRead<Set<string>>(
+    "quarantine markers",
+    () => activeQuarantineKeys(deps),
+    new Set()
+  );
+  const findings = findingsRead.value;
+  const quarantined = quarantineRead.value;
+  const readFailed = findingsRead.failed || quarantineRead.failed;
   const at = Date.now();
   const c = qualityCounters();
 
@@ -117,7 +190,8 @@ export async function qualityKpiSnapshot(
     by_severity: bySeverity,
     data_completeness_pass_rate: ingestChecksRun > 0 ? ingestChecksPassed / ingestChecksRun : 1,
     data_completeness_sample: ingestChecksRun,
-    could_not_verify: writesLost(c),
+    could_not_verify: writesLost(c) || readFailed,
+    read_failed: readFailed,
     findings_write_failed: c.findings_write_failed,
     quarantines_write_failed: c.quarantines_write_failed,
   };
@@ -130,6 +204,12 @@ export interface QuarantineFilteredTotals {
   /** How many journeys were withheld from the counts above. */
   excluded_by_quarantine: number;
   could_not_verify: boolean;
+  /**
+   * TRUE when the quarantine filter could not run. The journey counts are still
+   * real; what is unknown is whether any of them SHOULD have been withheld, so
+   * the cockpit must not present them as quarantine-honest.
+   */
+  read_failed: boolean;
 }
 
 /**
@@ -142,11 +222,12 @@ export async function qualityFilteredJourneyTotals(
   deps: QualityDeps = {}
 ): Promise<QuarantineFilteredTotals> {
   const store = runtimeStore();
-  const [raw, journeys, keys] = await Promise.all([
+  const [raw, journeys, keysRead] = await Promise.all([
     store.totals(),
     store.listJourneys(1000),
-    activeQuarantineKeys(deps),
+    softRead<Set<string>>("quarantine markers", () => activeQuarantineKeys(deps), new Set()),
   ]);
+  const keys = keysRead.value;
 
   let excluded = 0;
   for (const j of journeys) {
@@ -162,7 +243,8 @@ export async function qualityFilteredJourneyTotals(
     packets: Math.max(0, raw.packets - excluded),
     consents: raw.consents,
     excluded_by_quarantine: excluded,
-    could_not_verify: writesLost(),
+    could_not_verify: writesLost() || keysRead.failed,
+    read_failed: keysRead.failed,
   };
 }
 
@@ -170,6 +252,11 @@ export async function qualityFilteredJourneyTotals(
  * Whether an arbitrary list of entity refs should be shown in an AGGREGATE.
  * Exposed so a future KPI consumer filters through A09 rather than reimplementing
  * the join — the seam the audit warned "is the one most likely to rot".
+ *
+ * DELIBERATELY STILL LOUD. This returns rows with no channel to say "the filter
+ * did not run", so failing soft here would hand a caller silently unfiltered
+ * aggregates that look filtered. A caller that wants the soft behaviour reads
+ * `could_not_verify` off one of the snapshots above.
  */
 export async function excludeQuarantined<T>(
   rows: readonly T[],
@@ -189,7 +276,14 @@ export async function exceptionQueue(
   deps: QualityDeps = {}
 ): Promise<QualityFinding[]> {
   const order: Record<Severity, number> = { critical: 0, high: 1, medium: 2, low: 3 };
-  return (await currentFindings(deps))
+  // An empty queue here is NOT "no findings" — the caller pairs it with the
+  // snapshot's could_not_verify, which is what makes the empty state honest.
+  const findings = await softRead<QualityFinding[]>(
+    "quality findings",
+    () => currentFindings(deps),
+    []
+  );
+  return findings.value
     .filter(isUnresolved)
     .sort((a, b) => order[a.severity] - order[b.severity] || (a.created_at < b.created_at ? 1 : -1))
     .slice(0, limit);

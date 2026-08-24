@@ -84,11 +84,15 @@ export default async function AdminOverview() {
         <Stat
           label="Journeys recorded"
           value={totals.journeys}
-          hint={
+          hint={`${totals.packets} packets · ${totals.consents} consent events${
             totals.excluded_by_quarantine > 0
-              ? `${totals.packets} packets · ${totals.consents} consent events · ${totals.excluded_by_quarantine} withheld by data quality`
-              : `${totals.packets} packets · ${totals.consents} consent events`
-          }
+              ? ` · ${totals.excluded_by_quarantine} withheld by data quality`
+              : ""
+          }${
+            // The journey count is real; whether any of it SHOULD have been
+            // withheld is what could not be established.
+            totals.read_failed ? " · quarantine filter could not run" : ""
+          }`}
         />
         <Stat label="Safety triggers" value={safetyTriggers} hint="deterministic gate, before analysis" />
         <Stat
@@ -116,27 +120,60 @@ export default async function AdminOverview() {
           <p style={{ margin: "8px 0" }}>
             <span className="pill pill-amber">COULD NOT VERIFY</span>{" "}
             <span style={{ color: "var(--on-dark-mute)" }}>
-              A09 lost {quality.findings_write_failed} finding write(s) and{" "}
-              {quality.quarantines_write_failed} quarantine write(s) this process. The numbers below
-              are incomplete — read them as &quot;unknown&quot;, not as &quot;clean&quot;.
+              {/*
+                The two causes read differently and must not be conflated. A lost
+                WRITE leaves partial numbers; a failed READ leaves no numbers at
+                all, and saying "lost 0 writes" would be the wrong reason.
+              */}
+              {quality.read_failed ? (
+                <>
+                  The A09 records could not be read back, so nothing below was verified. This is
+                  not a clean bill of health — it is no reading at all. Apply
+                  supabase/migrations/00010_data_quality.sql, or check that the database is
+                  reachable.{" "}
+                </>
+              ) : null}
+              {quality.findings_write_failed + quality.quarantines_write_failed > 0 ? (
+                <>
+                  A09 lost {quality.findings_write_failed} finding write(s) and{" "}
+                  {quality.quarantines_write_failed} quarantine write(s) this process. The numbers
+                  below are incomplete — read them as &quot;unknown&quot;, not as &quot;clean&quot;.
+                </>
+              ) : null}
             </span>
           </p>
         ) : null}
+        {/*
+          A dash, never a zero, when the read failed. "0 critical open" and
+          "we could not look" are opposite facts and must not render alike.
+        */}
         <div className="grid3" style={{ marginTop: 8 }}>
           <Stat
             label="Critical open"
-            value={quality.critical_open}
-            hint={`${quality.critical_open_7d} in 7d · ${quality.critical_open_30d} in 30d`}
+            value={quality.read_failed ? "—" : quality.critical_open}
+            hint={
+              quality.read_failed
+                ? "could not be read"
+                : `${quality.critical_open_7d} in 7d · ${quality.critical_open_30d} in 30d`
+            }
           />
           <Stat
             label="Unresolved"
-            value={quality.unresolved_total}
-            hint={`${quality.unresolved_mismatches} of ${quality.mismatches_total} reconciliation mismatches`}
+            value={quality.read_failed ? "—" : quality.unresolved_total}
+            hint={
+              quality.read_failed
+                ? "could not be read"
+                : `${quality.unresolved_mismatches} of ${quality.mismatches_total} reconciliation mismatches`
+            }
           />
           <Stat
             label="Quarantined"
-            value={quality.quarantined_active}
-            hint="held out of KPI counts · nothing deleted · still served to the customer"
+            value={quality.read_failed ? "—" : quality.quarantined_active}
+            hint={
+              quality.read_failed
+                ? "could not be read"
+                : "held out of KPI counts · nothing deleted · still served to the customer"
+            }
           />
         </div>
         {queue.length === 0 ? (
