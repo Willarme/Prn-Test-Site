@@ -26,21 +26,55 @@ export interface DevDb {
   published_page_ids: string[];
   /** Owner publish/unpublish/policy actions — audit trail (#14A §17). */
   admin_audit: Array<{ at: string; action: string; target: string; detail: string | null }>;
+
+  /**
+   * A09 Data Quality (migration 00010 — written, NOT applied). These four are
+   * the DURABLE store in the file-backed dev environment, not a buffer: A09's
+   * writes are fail-LOUD by deliberate exception (types.ts QualityWriteResult),
+   * so "no database configured" must still mean the finding lands somewhere it
+   * can be read back, or a dev run would report clean while losing its own
+   * findings. Typed as `unknown[]` here ONLY because dev-db.ts is a generic
+   * container that must not depend on platform/quality; the arrays are parsed
+   * through the zod shapes in platform/quality/types.ts on the way in and out.
+   */
+  quality_findings: unknown[];
+  quarantine_markers: unknown[];
+  repair_proposals: unknown[];
+  repair_executions: unknown[];
 }
 
-const EMPTY: DevDb = {
-  intake_sessions: [],
-  consent_events: [],
-  problems: [],
-  evidence: [],
-  packets: [],
-  events: [],
-  staged_specs: [],
-  intake_answers: [],
-  diagnosis_answers: [],
-  published_page_ids: [],
-  admin_audit: [],
-};
+/**
+ * A FACTORY, not a shared constant.
+ *
+ * This was `const EMPTY: DevDb = { ... }` spread as `{ ...EMPTY }`. That spread
+ * is SHALLOW: every "fresh, genuinely empty" database handed back on a
+ * cache miss shared the SAME array objects with the constant, so a caller doing
+ * `db.problems.push(...)` mutated the module-level template. The next read of a
+ * still-nonexistent file then returned those rows as if they had been loaded —
+ * a ghost store that accumulates in memory and disappears on restart. Found by
+ * A09, the first writer whose store legitimately starts empty many times in one
+ * process; the door-slice collections had the same defect and never surfaced it
+ * because each test file used a single path.
+ */
+function emptyDb(): DevDb {
+  return {
+    intake_sessions: [],
+    consent_events: [],
+    problems: [],
+    evidence: [],
+    packets: [],
+    events: [],
+    staged_specs: [],
+    intake_answers: [],
+    diagnosis_answers: [],
+    published_page_ids: [],
+    admin_audit: [],
+    quality_findings: [],
+    quarantine_markers: [],
+    repair_proposals: [],
+    repair_executions: [],
+  };
+}
 
 function dbPath(): string {
   if (process.env.PRN_DEV_DB_PATH) return process.env.PRN_DEV_DB_PATH;
@@ -57,10 +91,10 @@ export function readDevDb(): DevDb {
   try {
     raw = readFileSync(path, "utf-8");
   } catch {
-    return { ...EMPTY }; // no file yet — genuinely empty
+    return emptyDb(); // no file yet — genuinely empty
   }
   try {
-    return { ...EMPTY, ...(JSON.parse(raw) as Partial<DevDb>) };
+    return { ...emptyDb(), ...(JSON.parse(raw) as Partial<DevDb>) };
   } catch {
     // Corrupt/partial file: preserve it for recovery instead of letting the
     // next write silently erase all prior journeys (verification finding).
@@ -69,7 +103,7 @@ export function readDevDb(): DevDb {
     } catch {
       /* best effort */
     }
-    return { ...EMPTY };
+    return emptyDb();
   }
 }
 
