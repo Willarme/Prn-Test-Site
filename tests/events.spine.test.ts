@@ -1,10 +1,14 @@
 import { mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { beforeAll, afterAll, describe, expect, it } from "vitest";
+import { beforeAll, beforeEach, afterAll, describe, expect, it } from "vitest";
 import { ACTIVE_DISCLOSURE } from "@/domain/privacy/disclosures";
 import { EventEnvelope } from "@/platform/events/envelope";
-import { emitPlatformEvent } from "@/platform/events/emit";
+import {
+  emitPlatformEvent,
+  resetPlatformEventEmitterForTests,
+  type PlatformEventInput,
+} from "@/platform/events/emit";
 import { EVENT_NAMES, PLATFORM_EVENT_NAMES } from "@/platform/events/names";
 import { readDevDb } from "@/platform/stores/dev-db";
 import { resetAgentRunLedgerForTests, recentAgentRuns } from "@/platform/runs/ledger";
@@ -74,7 +78,8 @@ describe("A00 event + metric spine", () => {
       event_name: "agent.run_started",
       agent_id: "A02",
     });
-    expect(envelope.tenant_id).toBe("prn");
+    expect(envelope).not.toBeNull();
+    expect(envelope!.tenant_id).toBe("prn");
     expect(EventEnvelope.safeParse(envelope).success).toBe(true);
   });
 
@@ -104,6 +109,68 @@ describe("A00 event + metric spine", () => {
       agent_id: "A01",
       context: { problem_id: "pr_x" },
     });
-    expect(Object.keys(envelope.context)).toEqual(["problem_id"]);
+    expect(envelope).not.toBeNull();
+    expect(Object.keys(envelope!.context)).toEqual(["problem_id"]);
+  });
+});
+
+/**
+ * A08 step 8 verification defect: emit.ts documented "Never throws" and
+ * steward.ts stamps "NEVER throws" on validateAndEmit, but the envelope was
+ * built with EventEnvelope.parse() OUTSIDE the try/catch. Every value below is
+ * TYPE-LEGAL against PlatformEventInput (`number | null`, `string`) and so
+ * passes the compiler, yet fails the schema — and the ZodError landed in the
+ * CALLER'S business path. /api/intake, the capability gateway and the kill
+ * switch all emit mid-request, so a bad duration figure could 500 a
+ * homeowner's intake over telemetry. Fixed with safeParse + the existing
+ * fail-soft miss-logging path.
+ */
+describe("emit fail-soft contract — telemetry can never throw into a caller", () => {
+  beforeEach(() => {
+    resetPlatformEventEmitterForTests();
+  });
+
+  const badInputs: [string, PlatformEventInput][] = [
+    ["duration_ms NaN", { event_name: "agent.run_completed", duration_ms: Number.NaN }],
+    ["duration_ms negative", { event_name: "agent.run_completed", duration_ms: -1 }],
+    [
+      "cost_usd Infinity",
+      { event_name: "agent.run_completed", cost_usd: Number.POSITIVE_INFINITY },
+    ],
+    ["cost_usd negative", { event_name: "agent.run_completed", cost_usd: -0.01 }],
+    ["agent_id empty", { event_name: "agent.run_completed", agent_id: "" }],
+    ["tenant_id empty", { event_name: "agent.run_completed", tenant_id: "" }],
+  ];
+
+  it.each(badInputs)("resolves null instead of throwing on %s", async (_label, input) => {
+    await expect(emitPlatformEvent(input)).resolves.toBeNull();
+  });
+
+  it("stores nothing when the envelope is malformed — no partial telemetry rows", async () => {
+    const before = readDevDb().events.length;
+    await emitPlatformEvent({ event_name: "agent.run_started", duration_ms: Number.NaN });
+    expect(readDevDb().events.length).toBe(before);
+  });
+
+  it("a malformed telemetry figure cannot 500 a request whose work already succeeded", async () => {
+    // The shape every emitting caller has: business work done, THEN emit.
+    async function homeownerRequest(): Promise<Response> {
+      const packet = { job_packet_id: "jp_1" };
+      await emitPlatformEvent({
+        event_name: "agent.run_completed",
+        agent_id: "",
+        duration_ms: Number.NaN,
+        cost_usd: Number.POSITIVE_INFINITY,
+      });
+      return new Response(JSON.stringify(packet), { status: 200 });
+    }
+    const res = await homeownerRequest();
+    expect(res.status).toBe(200);
+    await expect(res.json()).resolves.toEqual({ job_packet_id: "jp_1" });
+  });
+
+  it("the real /api/intake path still answers 200 with the fail-soft emit in place", async () => {
+    const res = await intakePost(intakeRequest("Furnace is making a loud banging noise"));
+    expect(res.status).toBe(200);
   });
 });

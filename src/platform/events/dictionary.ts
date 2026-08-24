@@ -430,7 +430,7 @@ export function seedDictionary(): void {
       formula_description: OWNER_GAUGE_FORMULA,
       metric_type: "TBD",
       source_events: [],
-      window: "TBD",
+      metric_window: "TBD",
       status: "proposed",
       tenant_id: "prn",
     });
@@ -580,7 +580,7 @@ async function persistMetric(
       metric_type: def.metric_type,
       source_events: def.source_events,
       denominator_event: def.denominator_event ?? null,
-      window: def.window,
+      metric_window: def.metric_window,
       segments: def.segments ?? null,
       target: def.target ?? null,
       target_is_test_figure: def.target_is_test_figure ?? null,

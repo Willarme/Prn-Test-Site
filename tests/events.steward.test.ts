@@ -153,6 +153,47 @@ describe("validateAndEmit", () => {
   });
 });
 
+/**
+ * A08 step 8 verification defect. The docblock above validateAndEmit stamps
+ * "NEVER throws", but the shared emit path it delegates to built its envelope
+ * with EventEnvelope.parse() outside any try/catch. Each value below is
+ * TYPE-LEGAL against ValidateAndEmitInput and so compiles, yet fails the
+ * envelope schema — which meant the ZodError travelled straight through
+ * validateAndEmit into whatever business path called it. "agent.run_completed"
+ * seeds approved with no required_envelope_fields, so every case here reaches
+ * the emit path rather than being turned away earlier by the validator.
+ */
+describe("validateAndEmit never throws — the stamped contract, actually enforced", () => {
+  const badFields: [string, Partial<Record<string, unknown>>][] = [
+    ["duration_ms NaN", { duration_ms: Number.NaN }],
+    ["duration_ms negative", { duration_ms: -1 }],
+    ["cost_usd Infinity", { cost_usd: Number.POSITIVE_INFINITY }],
+    ["cost_usd negative", { cost_usd: -0.01 }],
+    ["agent_id empty", { agent_id: "" }],
+    ["tenant_id empty", { tenant_id: "" }],
+  ];
+
+  it.each(badFields)("survives %s and reports it without raising", async (_label, extra) => {
+    const res = await validateAndEmit(
+      { event_name: "agent.run_completed", ...extra },
+      noDb
+    );
+    // Reached emit (not turned away by the validator) and failed soft there.
+    expect(res.status).toBe("emitted");
+    expect(res.envelope).toBeNull();
+  });
+
+  it("keeps a valid emission unchanged — the fix costs the happy path nothing", async () => {
+    const res = await validateAndEmit(
+      { event_name: "agent.run_completed", agent_id: "A01", duration_ms: 12, cost_usd: 0 },
+      noDb
+    );
+    expect(res.status).toBe("emitted");
+    expect(res.envelope).not.toBeNull();
+    expect(res.envelope!.result.duration_ms).toBe(12);
+  });
+});
+
 describe("proposeEventDefinition", () => {
   it("auto-validates a clean, non-colliding definition and says so out loud", async () => {
     const res = await proposeEventDefinition(newEventInput(), ctx, noDb);
@@ -211,7 +252,7 @@ describe("proposeMetricDefinition", () => {
     formula_description: "Count of packet.generated events in the window.",
     metric_type: "count" as const,
     source_events: ["packet.generated"],
-    window: "rolling_7d",
+    metric_window: "rolling_7d",
     status: "approved" as const,
   };
 
@@ -354,7 +395,7 @@ describe("ANY change to a registered definition goes to a human", () => {
         formula_description: "Count of packet.generated events in the window.",
         metric_type: "count",
         source_events: ["packet.generated"],
-        window: "rolling_7d",
+        metric_window: "rolling_7d",
         status: "approved",
       },
       ctx,
@@ -362,7 +403,7 @@ describe("ANY change to a registered definition goes to a human", () => {
     );
     const res = await proposeMetricDefinitionChange(
       "packets_generated",
-      { window: "rolling_28d" },
+      { metric_window: "rolling_28d" },
       ctx,
       noDb
     );
@@ -374,8 +415,10 @@ describe("ANY change to a registered definition goes to a human", () => {
       noDb
     );
     await applyApprovedChange(res.approval_id!, resolved as ApprovalItem, noDb);
-    expect(lookupMetricDefinition("packets_generated").definition!.window).toBe("rolling_28d");
-    expect(lookupMetricDefinition("packets_generated", 1).definition!.window).toBe("rolling_7d");
+    expect(lookupMetricDefinition("packets_generated").definition!.metric_window).toBe("rolling_28d");
+    expect(lookupMetricDefinition("packets_generated", 1).definition!.metric_window).toBe(
+      "rolling_7d"
+    );
   });
 });
 
@@ -432,7 +475,7 @@ describe("deprecation — never a delete", () => {
         formula_description: "Count of page.qa_passed events.",
         metric_type: "count",
         source_events: ["page.qa_passed"],
-        window: "rolling_7d",
+        metric_window: "rolling_7d",
         status: "approved",
       },
       ctx,
@@ -453,7 +496,7 @@ describe("lineage and impact", () => {
         metric_type: "rate",
         source_events: ["packet.viewed", "packet.downloaded"],
         denominator_event: "intake.started",
-        window: "rolling_7d",
+        metric_window: "rolling_7d",
         status: "approved",
       },
       ctx,

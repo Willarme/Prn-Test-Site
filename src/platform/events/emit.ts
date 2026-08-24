@@ -18,8 +18,21 @@ import { runtimeStore } from "@/platform/stores/runtime";
  * and the two kill-switch names added in names.ts are explicitly provisional
  * pending A08 ratification.
  *
- * FAIL-SOFT: emitting is telemetry, never business logic — a storage failure
- * is logged and swallowed so the wrapped call proceeds exactly as before.
+ * FAIL-SOFT: emitting is telemetry, never business logic — a failure is logged
+ * and swallowed so the wrapped call proceeds exactly as before. TWO failures
+ * are possible and BOTH are swallowed:
+ *
+ *   STORAGE    — the append to event_envelope failed. The envelope was valid,
+ *                so it is still returned; only the durable write is lost.
+ *   VALIDATION — the input could not produce a schema-valid envelope (a
+ *                type-legal but out-of-contract value: NaN/negative
+ *                duration_ms, non-finite/negative cost_usd, an empty
+ *                agent_id or tenant_id). Nothing is stored and `null` is
+ *                returned. This case previously threw a ZodError into the
+ *                CALLER'S business path — /api/intake, the gateway and the
+ *                kill switch all emit mid-request, so a bad telemetry figure
+ *                could 500 a homeowner's intake. Validating with safeParse is
+ *                what makes the "never throws" contract above actually true.
  */
 export interface PlatformEventInput {
   event_name: EventName;
@@ -40,10 +53,20 @@ export interface PlatformEventInput {
 }
 
 let missLogged = false;
+let invalidLogged = false;
 
-/** Build + append one platform EventEnvelope. Never throws. */
-export async function emitPlatformEvent(input: PlatformEventInput): Promise<EventEnvelope> {
-  const envelope: EventEnvelope = EventEnvelope.parse({
+/**
+ * Build + append one platform EventEnvelope. NEVER THROWS.
+ *
+ * Returns the envelope on success, or `null` when the input could not produce
+ * a valid one — telemetry is dropped, never raised, so the caller's business
+ * path is unaffected either way. Callers that only emit can ignore the return;
+ * callers that read it must handle null.
+ */
+export async function emitPlatformEvent(
+  input: PlatformEventInput
+): Promise<EventEnvelope | null> {
+  const candidate = EventEnvelope.safeParse({
     event_id: `ev_${randomUUID()}`,
     tenant_id: input.tenant_id ?? "prn",
     event_name: input.event_name,
@@ -64,6 +87,19 @@ export async function emitPlatformEvent(input: PlatformEventInput): Promise<Even
     agent_run_id: input.agent_run_id ?? null,
     action_request_id: null,
   });
+  if (!candidate.success) {
+    if (!invalidLogged) {
+      invalidLogged = true;
+      const issues = candidate.error.issues
+        .map((i) => `${i.path.join(".") || "(root)"}: ${i.message}`)
+        .join("; ");
+      console.warn(
+        `[a00-event-spine] refused a malformed envelope for "${input.event_name}" (${issues}) — proceeding without telemetry.`
+      );
+    }
+    return null;
+  }
+  const envelope: EventEnvelope = candidate.data;
   try {
     await runtimeStore().recordEvents([envelope]);
   } catch (err) {
@@ -80,4 +116,5 @@ export async function emitPlatformEvent(input: PlatformEventInput): Promise<Even
 /** Test seam. */
 export function resetPlatformEventEmitterForTests(): void {
   missLogged = false;
+  invalidLogged = false;
 }

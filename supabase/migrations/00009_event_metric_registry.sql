@@ -62,7 +62,11 @@ create table if not exists metric_definition (
   -- one place that can say "rate implies denominator". Blocks silent
   -- denominator drift.
   denominator_event text,
-  window text not null,
+  -- NOT `window`: WINDOW is a PostgreSQL reserved key word (window functions),
+  -- so an unquoted `window text not null` does not parse. Renamed rather than
+  -- permanently quoted so the column and MetricDefinition.metric_window stay
+  -- one vocabulary — nothing external consumed the old name.
+  metric_window text not null,
   segments jsonb,
   -- Any trial target is a TEST figure (hard canon rule 4). No dollar figures.
   target numeric,

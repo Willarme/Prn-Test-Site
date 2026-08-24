@@ -44,7 +44,7 @@ const validMetric = {
   formula_description: "Count of page.published events in the window.",
   metric_type: "count",
   source_events: ["page.published"],
-  window: "rolling_7d",
+  metric_window: "rolling_7d",
   status: "approved",
   tenant_id: "prn",
 };
@@ -205,9 +205,9 @@ describe("backward-compatibility analysis (pre-answer 3)", () => {
     expect(analyzeEventChange(before, after).change_class).toBe("breaking");
   });
 
-  it("calls a denominator or window change breaking", () => {
+  it("calls a denominator or metric_window change breaking", () => {
     const m0 = MetricDefinition.parse(validMetric);
-    const m1 = MetricDefinition.parse({ ...validMetric, window: "rolling_28d" });
+    const m1 = MetricDefinition.parse({ ...validMetric, metric_window: "rolling_28d" });
     expect(analyzeMetricChange(m0, m1).change_class).toBe("breaking");
 
     const rate0 = MetricDefinition.parse({

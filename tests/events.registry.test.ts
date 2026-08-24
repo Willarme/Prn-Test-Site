@@ -129,4 +129,48 @@ describe("EventEnvelope", () => {
       false
     );
   });
+
+  /**
+   * A08 step 8 verification gap: every case above tested a WRONG VALUE. Nothing
+   * tested a MISSING KEY, so a required field quietly becoming `.optional()`
+   * would have shipped green — the envelope is the contract of record for every
+   * agent in the platform, and a silently droppable key is exactly the kind of
+   * drift A08 exists to prevent. The schema already rejects these; that is the
+   * point, and now it is pinned.
+   */
+  const requiredKeys = Object.keys(valid) as (keyof typeof valid)[];
+
+  it("pins the required-key count — a new required key must update this list deliberately", () => {
+    expect(requiredKeys).toHaveLength(14);
+  });
+
+  it.each(requiredKeys)("rejects an envelope missing %s", (key) => {
+    const incomplete: Record<string, unknown> = { ...valid };
+    delete incomplete[key as string];
+    expect(EventEnvelope.safeParse(incomplete).success).toBe(false);
+  });
+
+  it("rejects a missing trace_id — NULLABLE is not the same as OPTIONAL", () => {
+    const { trace_id: _omitted, ...withoutTraceId } = valid;
+    expect(EventEnvelope.safeParse({ ...withoutTraceId, trace_id: null }).success).toBe(true);
+    expect(EventEnvelope.safeParse(withoutTraceId).success).toBe(false);
+  });
+
+  it("rejects a missing event_name — the name is what makes an envelope readable", () => {
+    const { event_name: _omitted, ...withoutEventName } = valid;
+    expect(EventEnvelope.safeParse(withoutEventName).success).toBe(false);
+  });
+
+  /**
+   * The counterpart that keeps the loop above honest: tenant_id is the ONE key
+   * that is genuinely optional (reserved for white-label condition (a), with no
+   * tenant logic anywhere). If it ever became required, the loop would still
+   * pass while every existing producer broke — so its absence is pinned too.
+   */
+  it("keeps tenant_id optional — the one reserved key an emitter may omit", () => {
+    expect(requiredKeys).not.toContain("tenant_id");
+    expect(EventEnvelope.safeParse(valid).success).toBe(true);
+    expect(EventEnvelope.safeParse({ ...valid, tenant_id: "prn" }).success).toBe(true);
+    expect(EventEnvelope.safeParse({ ...valid, tenant_id: "" }).success).toBe(false);
+  });
 });

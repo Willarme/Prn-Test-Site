@@ -173,8 +173,15 @@ export const MetricDefinition = z
     source_events: z.array(z.string().min(1)),
     /** REQUIRED for any rate/ratio metric — enforced below. */
     denominator_event: z.string().min(1).optional(),
-    /** e.g. "rolling_7d". Exact enum TBD — canon fixes none. */
-    window: z.string().min(1),
+    /**
+     * e.g. "rolling_7d". Exact enum TBD — canon fixes none.
+     *
+     * NAMED `metric_window`, NOT `window`: WINDOW is a PostgreSQL reserved key
+     * word, so the registry column cannot carry the bare name unquoted
+     * (migration 00009). The field is renamed to match rather than the column
+     * permanently quoted, so SQL and TypeScript stay one vocabulary.
+     */
+    metric_window: z.string().min(1),
     segments: z.array(z.string().min(1)).optional(),
     /** Any target is a business commitment — see the target rule below. */
     target: z.number().optional(),
@@ -262,7 +269,7 @@ export interface MetricLineage {
  *
  *  BREAKING: removing a field, changing a field's type, renaming a required
  *  field, narrowing an enum, changing a MetricDefinition's denominator_event,
- *  changing its window, removing a source_event.
+ *  changing its metric_window, removing a source_event.
  *
  *  ADDITIVE: adding an optional field, widening an enum, adding a
  *  source_event, editing display_name or description.
@@ -337,8 +344,8 @@ export function analyzeMetricChange(
       `denominator_event changed: ${before.denominator_event ?? "none"} -> ${after.denominator_event ?? "none"}`
     );
   }
-  if (before.window !== after.window) {
-    breaking.push(`window changed: ${before.window} -> ${after.window}`);
+  if (before.metric_window !== after.metric_window) {
+    breaking.push(`metric_window changed: ${before.metric_window} -> ${after.metric_window}`);
   }
   if (before.metric_type !== after.metric_type) {
     breaking.push(`metric_type changed: ${before.metric_type} -> ${after.metric_type}`);

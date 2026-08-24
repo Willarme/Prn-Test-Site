@@ -141,6 +141,13 @@ export interface ValidateAndEmitInput extends Omit<PlatformEventInput, "event_na
 
 export interface ValidateAndEmitResult {
   status: "emitted" | "emitted_undefined" | "emitted_unvalidated" | "blocked";
+  /**
+   * Null when the emission was `blocked`, and ALSO null when the shared emit
+   * path refused a malformed envelope — emit.ts fails soft on a type-legal but
+   * out-of-contract value (NaN duration_ms, an empty agent_id) rather than
+   * throwing into the caller's business path. A null envelope on an `emitted*`
+   * status therefore means "validated, not stored", never "threw".
+   */
   envelope: EventEnvelope | null;
   reasons: string[];
 }
