@@ -53,7 +53,10 @@ describe("owner admin auth", () => {
   it("rejects a tampered or forged cookie", async () => {
     process.env.ADMIN_PASSWORD = PASSWORD;
     const cookie = sessionCookie(PASSWORD);
-    cookieStore.value = cookie.value.replace(/.$/, "0");
+    // Flip the last hex char to a DIFFERENT char: replacing it with a fixed
+    // "0" left the cookie unchanged (and valid) whenever the MAC already
+    // ended in 0 — a 1-in-16 flake caught in the A00 non-regression sweep.
+    cookieStore.value = cookie.value.replace(/.$/, (c) => (c === "0" ? "1" : "0"));
     expect(await isAdminUnlocked()).toBe(false);
     cookieStore.value = `${Date.now()}.deadbeef`;
     expect(await isAdminUnlocked()).toBe(false);
