@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { z } from "zod";
 import { IsoDateTime } from "@/domain/shared/primitives";
 import { AgentId } from "@/platform/agents/contracts";
+import { ApprovalKind } from "@/platform/approvals/kinds";
 import {
   serviceClientProvider,
   type PlatformClientProvider,
@@ -49,6 +50,14 @@ export const ApprovalItem = z.object({
   tenant_id: z.string().min(1).optional(),
   /** Links back to the AgentRunRecord that produced this ask. */
   run_id: z.string().min(1),
+  /**
+   * A08 ADDITION, 2026-08-24 — the item taxonomy (coherence report issue 14).
+   * OPTIONAL, therefore ADDITIVE, therefore not a break: every item written
+   * before this existed still parses and every existing reader is untouched.
+   * See approvals/kinds.ts for the vocabulary and the carrier rationale; the
+   * column is added in migration 00009.
+   */
+  approval_kind: ApprovalKind.optional(),
   what_happened: z.string().min(1),
   /** IDs and summaries only — never raw customer evidence. */
   evidence: z.unknown(),
@@ -109,6 +118,7 @@ export async function queueApproval(
       agent_id: item.agent_id,
       tenant_id: item.tenant_id,
       run_id: item.run_id,
+      approval_kind: item.approval_kind ?? null,
       what_happened: item.what_happened,
       evidence: item.evidence ?? null,
       recommendation: item.recommendation ?? null,
