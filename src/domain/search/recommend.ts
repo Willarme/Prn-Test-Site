@@ -1,6 +1,7 @@
 import type { SearchOpportunity } from "@/domain/search/contracts";
 import type { OpportunityRecommendation } from "@/domain/search/lifecycle";
 import type { SeoFactoryPolicy } from "@/domain/search/policy";
+import { sameIntentFamily } from "@/domain/search/intent-family";
 import { qualifiesForNewPage, type ScoredOpportunity } from "@/domain/search/scoring";
 import { matchHardExclusions } from "@/domain/search/vocabulary";
 
@@ -8,47 +9,15 @@ import { matchHardExclusions } from "@/domain/search/vocabulary";
  * Near-duplicate / cannibalization detection (deterministic v1). Two keywords
  * are the same intent family when their token sets overlap heavily or one
  * contains the other. This is intentionally conservative: ambiguous cases
- * become MERGE/EXPAND, never a second NEW page (#23 §0.2 doorway-abuse rule).
+ * become MERGE/EXPAND, never a second NEW page (#23 section 0.2 doorway-abuse rule).
+ *
+ * THE MATCHER MOVED (coherence report issue 15, C13). `keywordTokens` and
+ * `sameIntentFamily` now live in domain/search/intent-family.ts, the helper
+ * A04 and A05 share. They are re-exported here so every existing import keeps
+ * working unchanged — including A06's qa.ts, whose independent reimplementation
+ * is A06's build to do, not A04's to do for it.
  */
-// Negations ("not", "won't") are NOT stopwords: "won't turn on" and
-// "won't turn off" are different home problems and must stay distinct.
-const STOPWORDS = new Set(["a", "an", "the", "is", "my", "why", "how", "to", "in", "of", "for", "do", "does", "what"]);
-
-/** Conservative suffix stemming so "turning"/"turn", "leaks"/"leak" match. */
-function stem(token: string): string {
-  // All negation spellings collapse to one marker: "won't"/"wont"/"doesnt"
-  // carry the same signal as "not" — but "on" vs "off" stays distinct.
-  if (token === "wont" || token === "doesnt" || token === "isnt" || token === "cant") return "not";
-  if (token.length > 5 && token.endsWith("ing")) return token.slice(0, -3);
-  if (token.length > 4 && token.endsWith("ed")) return token.slice(0, -2);
-  if (token.length > 3 && token.endsWith("s") && !token.endsWith("ss")) return token.slice(0, -1);
-  return token;
-}
-
-export function keywordTokens(keyword: string): Set<string> {
-  return new Set(
-    keyword
-      .toLowerCase()
-      .replace(/[^a-z0-9\s]/g, "")
-      .split(/\s+/)
-      .filter((t) => t.length > 1 && !STOPWORDS.has(t))
-      .map(stem)
-  );
-}
-
-export function sameIntentFamily(a: string, b: string): boolean {
-  const ta = keywordTokens(a);
-  const tb = keywordTokens(b);
-  if (ta.size === 0 || tb.size === 0) return a.trim().toLowerCase() === b.trim().toLowerCase();
-  let shared = 0;
-  for (const t of ta) if (tb.has(t)) shared++;
-  const jaccard = shared / (ta.size + tb.size - shared);
-  const containment = shared / Math.min(ta.size, tb.size);
-  // 0.7 bar: "ac won't turn on"/"ac not turning on" normalize to identical
-  // sets (1.0), while "won't turn on"/"won't turn off" score 0.6 and stay
-  // distinct — negated opposites are different home problems.
-  return jaccard >= 0.7 || containment >= 0.99;
-}
+export { keywordTokens, sameIntentFamily } from "@/domain/search/intent-family";
 
 export interface RecommendationResult {
   recommendation: OpportunityRecommendation;

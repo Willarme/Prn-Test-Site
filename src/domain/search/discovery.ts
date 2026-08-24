@@ -5,7 +5,8 @@ import {
   type GeographyTarget,
 } from "@/domain/search/geography-plan";
 import { classifyIntentPrnSide, inferProblemFamily } from "@/domain/search/intent-classifier";
-import { recommend } from "@/domain/search/recommend";
+import { detectDuplicateIntents } from "@/domain/search/intent-family";
+import { isMergeTarget, recommend } from "@/domain/search/recommend";
 import { scoreOpportunity } from "@/domain/search/scoring";
 import type { SeoFactoryPolicy } from "@/domain/search/policy";
 import type { Cadence } from "@/domain/shared/primitives";
@@ -59,6 +60,14 @@ export interface DiscoveryReport {
   vendor_cost_usd: number;
   budget_limited: boolean;
   deferred_local_targets: number;
+  /**
+   * CANNIBALIZATION PRE-GATE (C13, coherence issue 15). How many of this
+   * batch's candidates collapsed into an intent family already claimed by
+   * another candidate or an existing record. Previously invisible: the run
+   * reported "4 MERGE" with no way to see the collision structure behind it.
+   */
+  duplicate_intent_candidates: number;
+  duplicate_intent_groups: number;
   error: string | null;
 }
 
@@ -137,6 +146,8 @@ export async function runDiscovery(
     vendor_cost_usd: 0,
     budget_limited: status === "stopped_budget",
     deferred_local_targets: 0,
+    duplicate_intent_candidates: 0,
+    duplicate_intent_groups: 0,
     error: null,
   });
 
@@ -302,6 +313,12 @@ export async function runDiscovery(
     const seen: SearchOpportunity[] = portfolio.filter(
       (p) => !keywords.includes(p.keyword) // batch keywords are re-evaluated fresh
     );
+    // THE CANNIBALIZATION PRE-GATE (C13). Runs BEFORE the recommendation loop,
+    // over the whole batch at once, so the collision structure is a reported
+    // fact rather than an inference from the MERGE count. It decides nothing:
+    // recommend() stays the only place a recommendation is assigned.
+    const duplicates = detectDuplicateIntents(scoredBatch, seen, isMergeTarget);
+
     const recommendations: Record<string, number> = {};
     const newCandidates: string[] = [];
 
@@ -350,6 +367,8 @@ export async function runDiscovery(
       vendor_cost_usd: vendorCost,
       budget_limited: budgetLimited,
       deferred_local_targets: deferredLocalTargets,
+      duplicate_intent_candidates: duplicates.duplicate_candidates,
+      duplicate_intent_groups: duplicates.groups.length,
       error: null,
     };
   } catch (err) {
