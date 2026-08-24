@@ -4,6 +4,11 @@ import { loadOpportunities, allStagedSpecs, publishedPageIds } from "@/platform/
 import { runtimeStore } from "@/platform/stores/runtime";
 import { DEFAULT_FLAGS } from "@/platform/flags";
 import { TRIAL_AGENT_REGISTRY } from "@/platform/agents/registry";
+import {
+  exceptionQueue,
+  qualityFilteredJourneyTotals,
+  qualityKpiSnapshot,
+} from "@/platform/quality/kpi";
 
 export const dynamic = "force-dynamic";
 
@@ -29,11 +34,16 @@ export default async function AdminOverview() {
 
   const opps = loadOpportunities();
   const store = runtimeStore();
-  const [staged, published, totals, safetyTriggers] = await Promise.all([
+  const [staged, published, totals, safetyTriggers, quality, queue] = await Promise.all([
     allStagedSpecs(),
     publishedPageIds(),
-    store.totals(),
+    // A09: the journey counts honour quarantine — a record A09 contained stops
+    // contributing to the owner's numbers the moment the marker exists. That is
+    // the difference between quarantine and a cosmetic flag.
+    qualityFilteredJourneyTotals(),
     store.countEvents("safety.triggered"),
+    qualityKpiSnapshot(),
+    exceptionQueue(8),
   ]);
   const qaPass = staged.filter((s) => s.qa.state === "PASS").length;
   const qaFail = staged.filter((s) => s.qa.state === "FAIL").length;
@@ -74,7 +84,11 @@ export default async function AdminOverview() {
         <Stat
           label="Journeys recorded"
           value={totals.journeys}
-          hint={`${totals.packets} packets · ${totals.consents} consent events`}
+          hint={
+            totals.excluded_by_quarantine > 0
+              ? `${totals.packets} packets · ${totals.consents} consent events · ${totals.excluded_by_quarantine} withheld by data quality`
+              : `${totals.packets} packets · ${totals.consents} consent events`
+          }
         />
         <Stat label="Safety triggers" value={safetyTriggers} hint="deterministic gate, before analysis" />
         <Stat
@@ -82,6 +96,102 @@ export default async function AdminOverview() {
           value={opps.summary.needs_enrichment}
           hint="metrics unknown until DataForSEO runs"
         />
+      </div>
+
+      {/*
+        A09 DATA QUALITY — inside the cockpit, NOT a second screen. Canon is
+        explicit that A09's findings surface in A07's Company Health view and
+        that A09 does not get its own dashboard, so this is a section on the
+        page that already exists rather than a new top-level admin route.
+
+        IDS AND COUNTS ONLY. Every cell below is a number, a rule id, an entity
+        id or a severity word. Nothing here can render a homeowner's words, a
+        photo reference or consent text — the finding shapes cannot carry them
+        (platform/quality/types.ts), so this surface could not leak them even if
+        it tried.
+      */}
+      <div className="cell" style={{ marginBottom: 30 }}>
+        <span className="tag">Data quality · A09</span>
+        {quality.could_not_verify ? (
+          <p style={{ margin: "8px 0" }}>
+            <span className="pill pill-amber">COULD NOT VERIFY</span>{" "}
+            <span style={{ color: "var(--on-dark-mute)" }}>
+              A09 lost {quality.findings_write_failed} finding write(s) and{" "}
+              {quality.quarantines_write_failed} quarantine write(s) this process. The numbers below
+              are incomplete — read them as &quot;unknown&quot;, not as &quot;clean&quot;.
+            </span>
+          </p>
+        ) : null}
+        <div className="grid3" style={{ marginTop: 8 }}>
+          <Stat
+            label="Critical open"
+            value={quality.critical_open}
+            hint={`${quality.critical_open_7d} in 7d · ${quality.critical_open_30d} in 30d`}
+          />
+          <Stat
+            label="Unresolved"
+            value={quality.unresolved_total}
+            hint={`${quality.unresolved_mismatches} of ${quality.mismatches_total} reconciliation mismatches`}
+          />
+          <Stat
+            label="Quarantined"
+            value={quality.quarantined_active}
+            hint="held out of KPI counts · nothing deleted · still served to the customer"
+          />
+        </div>
+        {queue.length === 0 ? (
+          <p className="hint" style={{ color: "var(--on-dark-mute)", marginTop: 12 }}>
+            {quality.could_not_verify
+              ? "No findings could be read back."
+              : "No unresolved data-quality findings."}
+          </p>
+        ) : (
+          <div style={{ overflowX: "auto", marginTop: 12 }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: ".85rem" }}>
+              <thead>
+                <tr className="mono" style={{ textAlign: "left", color: "var(--on-dark-mute)" }}>
+                  <th style={{ padding: "6px 8px" }}>Severity</th>
+                  <th style={{ padding: "6px 8px" }}>Rule</th>
+                  <th style={{ padding: "6px 8px" }}>Entity</th>
+                  <th style={{ padding: "6px 8px" }}>Code</th>
+                  <th style={{ padding: "6px 8px" }}>Suspected owner</th>
+                  <th style={{ padding: "6px 8px" }}>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {queue.map((f) => (
+                  <tr key={f.issue_id} style={{ borderTop: "1px solid var(--line-d)" }}>
+                    <td style={{ padding: "6px 8px" }}>
+                      <span
+                        className={`pill ${
+                          f.severity === "critical" || f.severity === "high"
+                            ? "pill-amber"
+                            : "pill-green"
+                        }`}
+                      >
+                        {f.severity}
+                      </span>
+                    </td>
+                    <td className="mono" style={{ padding: "6px 8px" }}>{f.rule_id}</td>
+                    <td className="mono" style={{ padding: "6px 8px" }}>
+                      {f.entity_type}:{f.entity_id}
+                    </td>
+                    <td className="mono" style={{ padding: "6px 8px" }}>{f.detail_code}</td>
+                    <td className="mono" style={{ padding: "6px 8px" }}>
+                      {/* Never a guess: null means the ledger did not support naming one. */}
+                      {f.root_hypothesis.suspected_owner ?? "unattributed"}
+                    </td>
+                    <td className="mono" style={{ padding: "6px 8px" }}>{f.status}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <p className="hint" style={{ color: "var(--on-dark-mute)", marginTop: 8 }}>
+              Repairs a human must decide on appear in{" "}
+              <Link href="/admin/approvals">the Approval Center</Link>.
+            </p>
+          </div>
+        )}
       </div>
 
       <div className="grid2" style={{ marginBottom: 30 }}>

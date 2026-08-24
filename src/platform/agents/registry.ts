@@ -185,6 +185,64 @@ export const TRIAL_AGENT_REGISTRY: readonly AgentDefinition[] = [
       "Ingest/nightly invariants, missing links, duplicates/impossible states, schema drift; quarantine, never drop.",
     phase_band: "TRIAL",
     ...TBD,
+    /**
+     * A09 BUILD, 2026-08-24.
+     *
+     * `autonomy_level` stays "TBD" from the TBD spread above (Loop Spec Audit
+     * condition 12 and OD-10). The spec header reads L2 detect/prepare, and A09
+     * follows that BEHAVIOUR — it detects, quarantines and prepares repairs and
+     * executes none without a human — but canon carries two non-identical
+     * autonomy scales and the owners have not picked one. OD-10 additionally
+     * records that autonomy graduation is a PROCESS gate, not a machine gate,
+     * which is precisely why the auto-repair allow-list ships empty rather than
+     * why an L-number gets written here.
+     *
+     * `allowed_capabilities` stays EMPTY and that is a real statement, not a
+     * backfill gap: A09 makes no AI/model call anywhere (§3) and calls the
+     * gateway for nothing in Wave 0. Cross-source reconciliation against search
+     * metrics would go through the registered capability `get_search_metrics`
+     * rather than the DataForSEO adapter directly (condition 5) — that sweep is
+     * not built in Wave 0, so claiming the capability now would overstate scope.
+     *
+     * `data_access` / `write_access` are enumerated because the modules exist —
+     * observed facts, not a guess.
+     *
+     * WRITE SCOPE CONTAINS NO CUSTOMER-EVIDENCE TABLE. A09 writes its own four
+     * finding/quarantine/repair tables and files Approval Center items; it
+     * writes NOTHING else. `problem_record` appears in write_access ONLY because
+     * an owner-approved repair rewrites an id ARRAY on it, and only through the
+     * two declared kinds — it can never write evidence_object, intake_answer,
+     * consent_event, job_packet or published_page, and no repair may touch page
+     * publish state (condition 8). The consent ledger is READ-ONLY here,
+     * permanently, by rule and by test.
+     */
+    data_access: [
+      "problem_record",
+      "job_packet",
+      "search_opportunity",
+      "page_spec",
+      "intake_session",
+      "consent_event",
+      "event_envelope",
+      "agent_run_ledger",
+      "approval_item",
+      "data_quality_issue",
+      "quarantine_marker",
+      "repair_proposal",
+      "repair_execution",
+    ],
+    write_access: [
+      "data_quality_issue",
+      "quarantine_marker",
+      "repair_proposal",
+      "repair_execution",
+      "repair_reversal_snapshot",
+      "approval_item",
+      // Owner-approved repairs only, id arrays only — see the note above.
+      "problem_record",
+    ],
+    schedule:
+      "ingest guard in-request at the store boundary; reconciliation cadence in policy quality.reconciliation_cadence_hours (a plain callable — no cron route and no workflow orchestrator wired in Wave 0)",
     kill_switch_ref: killRef("A09"),
   },
   {
