@@ -7,6 +7,10 @@ import {
   UsdAmount,
 } from "@/domain/shared/primitives";
 import { GeographyPlan, plannedPagesPerPeriod } from "@/domain/search/geography-plan";
+import {
+  DEFAULT_LANGUAGE_MINING_POLICY,
+  LanguageMiningPolicy,
+} from "@/domain/search/language-mining";
 import { ScoringPolicy, V1_SCORING_POLICY, weightSum } from "@/domain/search/scoring";
 import { MarketVocabulary, PRN_TRIAL_VOCABULARY } from "@/domain/search/vocabulary";
 
@@ -134,6 +138,37 @@ export const SeoFactoryPolicy = z
      * call individually estimable.
      */
     max_keywords_per_vendor_call: z.number().int().min(1).max(1000).default(1000),
+    /**
+     * PROGRESSIVE ENRICHMENT (C17) — cheap-broad-then-expensive-on-finalists.
+     *
+     * THE SPEC DESCRIBED THIS AS IF IT EXISTED. It did not: `runDiscovery`
+     * never called `getSerpSnapshot` or `getTrend`, `serp_snapshot_ids` was
+     * never appended to, `SerpSnapshot.weakness_note` was never produced, and
+     * the SERP-gap signal — the single largest weight in the research
+     * formula — had no data path at all. The audit's instruction was to wire
+     * it or say plainly it is not built, and never to describe unbuilt
+     * behaviour as built.
+     *
+     * IT IS WIRED, AND IT SHIPS OFF. 0 means the stage does not run, which
+     * reproduces today's behaviour exactly. Above 0, the top-N scored
+     * finalists get one SERP snapshot each, every call priced against the
+     * remaining budget by the same brake as every other call, and each
+     * snapshot persisted with its id appended to the record's
+     * serp_snapshot_ids. Turning it on is an owner's decision to spend more.
+     *
+     * WHAT IS STILL NOT BUILT, said plainly: nothing SCORES on SERP data.
+     * Enrichment persists evidence; `local_leverage` and the SERP-gap signal
+     * remain zero-weighted placeholders (see scoring.ts). Wiring the signal
+     * into the formula would be choosing a weight, which is Melissa's call.
+     */
+    enrich_finalists_top_n: z.number().int().min(0).max(100).default(0),
+    /**
+     * INTERNAL-LANGUAGE MINING (C11) — ships OFF, with no mining code anywhere.
+     * The RULE is what ships, enforced by test, for whenever it is turned on.
+     * TODO-ASK-OWNER (Melissa): the cohort size N, and whether customer-derived
+     * phrasing may ever become public page text at all. See language-mining.ts.
+     */
+    language_mining: LanguageMiningPolicy.default(DEFAULT_LANGUAGE_MINING_POLICY),
     serp_depth: z.number().int().min(1).max(100),
     include_trend_data: z.boolean(),
     allow_refresh_existing: z.boolean(),

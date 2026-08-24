@@ -159,15 +159,22 @@ callers are the adapter files and their tests. `serp_snapshot_ids` is never appe
 `SerpSnapshot.weakness_note` is never produced. `platform/adapters/search-console.ts` is
 imported by nothing. The SERP-gap signal has **no data path today**.
 
-**Decision: wire the minimal finalist-enrichment stage, behind the budget brake, DEFAULT OFF.**
-A new policy field `enrich_finalists_top_n` defaults to **0**, which reproduces today's
-behavior byte for byte. When an owner sets it > 0, the stage runs after scoring, on the top-N
-scored finalists only, each call pre-estimated against remaining budget and each snapshot
-persisted through `SnapshotStore.saveSerp` with its id appended to `serp_snapshot_ids`. It is
-tested both off (nothing changes) and on (bounded, brake-respecting).
+**Decision taken, and shipped: wire the minimal finalist-enrichment stage, behind the budget
+brake, DEFAULT OFF.** `SeoFactoryPolicy.enrich_finalists_top_n` defaults to **0**, which
+reproduces today's behavior exactly. Above 0, the stage runs after scoring on the top-N scored
+finalists only, each call pre-estimated against remaining budget by the same brake as every
+other call, and each snapshot persisted through `SnapshotStore.saveSerp` with its id appended
+to the record's `serp_snapshot_ids`. Tested off (nothing changes, no snapshots, empty ids), on
+(top-N only, provenance chain real), and brake-limited (stops mid-enrichment rather than
+overspending).
 
-It is therefore **built and provably exercisable, but inert until an owner turns it on**. The
-SERP *scoring* signal is NOT built — enrichment persists evidence; nothing scores on it yet.
+It is **built and provably exercisable, and inert until an owner turns it on**. The SERP
+*scoring* signal is **NOT built and is not claimed**: enrichment persists evidence, and a test
+asserts `scoring.ts` contains no reference to SERP data at all. Wiring the signal into the
+formula means choosing a weight, which is the owner's call.
+
+`src/platform/adapters/search-console.ts` remains imported by nothing. Section 3.2's Search
+Console ingest is **not implemented**, and nothing in this build implies otherwise.
 
 ---
 

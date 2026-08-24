@@ -91,6 +91,11 @@ export interface DiscoveryReport {
    */
   duplicate_intent_candidates: number;
   duplicate_intent_groups: number;
+  /**
+   * PROGRESSIVE ENRICHMENT (C17). How many top-scoring finalists received a
+   * SERP snapshot this run. 0 when the stage is off, which is the default.
+   */
+  finalists_enriched: number;
   /** Why the brake or the kill switch stopped spending, in order. */
   brake_reasons: string[];
   halted_by_kill_switch: boolean;
@@ -174,6 +179,7 @@ export async function runDiscovery(
     deferred_local_targets: 0,
     duplicate_intent_candidates: 0,
     duplicate_intent_groups: 0,
+    finalists_enriched: 0,
     brake_reasons: [],
     halted_by_kill_switch: false,
     error: null,
@@ -422,6 +428,31 @@ export async function runDiscovery(
     const seen: SearchOpportunity[] = portfolio.filter(
       (p) => !keywords.includes(p.keyword) // batch keywords are re-evaluated fresh
     );
+    // 5b. PROGRESSIVE ENRICHMENT (C17) — the expensive half, on FINALISTS only.
+    //     Cheap broad discovery ran above over the whole candidate pool; this
+    //     spends per-keyword money only on the top scorers, and only when the
+    //     owner has turned it on (enrich_finalists_top_n defaults to 0, which
+    //     reproduces the previous behaviour exactly). Every call goes through
+    //     the same pre-flight brake as every other call.
+    const serpIdsByOpportunity = new Map<string, string[]>();
+    let finalistsEnriched = 0;
+    for (const finalist of scoredBatch.slice(0, policy.enrich_finalists_top_n)) {
+      const gate = spendGate("serp_snapshot", 1);
+      if (!gate.ok) {
+        halt(gate.reason);
+        break;
+      }
+      const snapshot = await deps.adapter.getSerpSnapshot(finalist.opportunity.keyword, scope);
+      await deps.snapshots.saveSerp(snapshot);
+      vendorCost += snapshot.vendor_cost_usd ?? 0;
+      await recordCost("serp_snapshot", snapshot.vendor_cost_usd ?? 0, gate.estimate.rate_version);
+      serpIdsByOpportunity.set(finalist.opportunity.search_opportunity_id, [
+        ...finalist.opportunity.serp_snapshot_ids,
+        snapshot.serp_snapshot_id,
+      ]);
+      finalistsEnriched += 1;
+    }
+
     // THE CANNIBALIZATION PRE-GATE (C13). Runs BEFORE the recommendation loop,
     // over the whole batch at once, so the collision structure is a reported
     // fact rather than an inference from the MERGE count. It decides nothing:
@@ -440,6 +471,9 @@ export async function runDiscovery(
       const seedPrior = scored.opportunity.score_components?.seed_manual_score;
       const stored: SearchOpportunity = {
         ...scored.opportunity,
+        serp_snapshot_ids:
+          serpIdsByOpportunity.get(scored.opportunity.search_opportunity_id) ??
+          scored.opportunity.serp_snapshot_ids,
         opportunity_score: scored.score,
         score_version: scored.score_version,
         score_components: {
@@ -493,6 +527,7 @@ export async function runDiscovery(
       deferred_local_targets: deferredLocalTargets,
       duplicate_intent_candidates: duplicates.duplicate_candidates,
       duplicate_intent_groups: duplicates.groups.length,
+      finalists_enriched: finalistsEnriched,
       brake_reasons: brakeReasons,
       halted_by_kill_switch: haltedByKillSwitch,
       error: null,
