@@ -78,6 +78,69 @@ describe("client/server boundary", () => {
     }
   });
 
+  /**
+   * A04, Loop Spec Audit condition 10 — THE REVIEW SCREEN STAYS SERVER-SIDE.
+   *
+   * /admin/opportunities renders 96 scored rows: keywords, volumes, keyword
+   * difficulty, opportunity scores and score components. If the accept /
+   * reject / defer control ever becomes a "use client" component that receives
+   * opportunity ROWS as props, the whole candidate queue and the scoring
+   * formula ship in the page payload — the same leak class as the 19-step
+   * playbook graph in DiagnoseWalkthrough (Trial Build State lines 104-125).
+   *
+   * The rule the page must keep: a client component gets an ID and a status
+   * STRING. Anything richer is a leak. This checks both halves — the import
+   * paths that would pull the domain in, and the field names that would appear
+   * in a leaked row.
+   */
+  it("browser code never imports the search domain or A04's platform modules", () => {
+    for (const file of clientFiles) {
+      const content = readFileSync(file, "utf-8");
+      expect(content, file).not.toMatch(/domain\/search/);
+      expect(content, file).not.toMatch(/platform\/search/);
+      expect(content, file).not.toMatch(/platform\/admin\/data/);
+    }
+  });
+
+  /**
+   * SCOPED TO THE QUEUE AND THE MATH, NOT THE OWNER'S KNOBS. PolicyForm.tsx is
+   * a client component that names `min_opportunity_score`,
+   * `max_external_seo_spend_usd_month` and `allowed_categories` — and that is
+   * the policy EDITOR working as designed: those are the owner's own settings,
+   * typed by the owner, behind the admin gate, and a form has to name the field
+   * it edits. The leak class this guards is different: the 96-row candidate
+   * QUEUE and the scoring functions that rank it. Per-row measurements and
+   * scoring math never belong in a page payload; the thresholds the owner sets
+   * do. Word boundaries keep `max_keyword_difficulty` and `min_search_volume`
+   * (policy) distinct from `keyword_difficulty` and `volume_monthly` (row).
+   */
+  it("no opportunity row or score internal reaches a client component", () => {
+    const LEAKED_FIELDS = [
+      /\bopportunity_score\b/,
+      /\bscore_components\b/,
+      /\bkeyword_difficulty\b/,
+      /\bvolume_monthly\b/,
+      // NOT `problem_family_hint`: StartRequestForm.tsx carries ONE hint as
+      // landing context from the door page a homeowner arrived on. That is a
+      // single page's own context travelling with the visitor, not the ranked
+      // candidate queue — and it is already public on that page.
+      /\bSearchOpportunity\b/,
+      /\bscoreOpportunity\b/,
+      /\bqualifiesForNewPage\b/,
+      /\brecommend\(/,
+      // NOT `SeoFactoryPolicy`: PolicyForm.tsx names the contract in a comment
+      // explaining that the SERVER re-validates against it. Naming a
+      // server-side type in prose is not a leak; importing it is, and the
+      // domain/search import check above already forbids that.
+    ];
+    for (const file of clientFiles) {
+      const content = readFileSync(file, "utf-8");
+      for (const pattern of LEAKED_FIELDS) {
+        expect(content, `${file} names ${pattern}`).not.toMatch(pattern);
+      }
+    }
+  });
+
   it("no source file hard-codes a credential-shaped literal", () => {
     for (const file of allSrc) {
       const content = readFileSync(file, "utf-8");

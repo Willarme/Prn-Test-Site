@@ -42,6 +42,22 @@ export interface DevDb {
   repair_proposals: unknown[];
   repair_executions: unknown[];
   repair_reversal_snapshots: unknown[];
+
+  /**
+   * A04 owner decisions on search opportunities (migration 00011 — written,
+   * NOT applied). APPEND-ONLY and deliberately an OVERLAY: a decision must not
+   * rewrite data/factory/opportunities.json, which is committed, reproducible
+   * factory output that the next `npm run factory` regenerates wholesale — and
+   * regenerating it also regenerates A05's staged portfolio and A06's QA
+   * results (Loop Spec Audit condition 13). Decisions are joined onto the
+   * opportunity at read time instead, so the 96 committed records stay
+   * byte-identical and the decision history is the record.
+   *
+   * `unknown[]` for the same reason as the A09 arrays above: dev-db.ts is a
+   * generic container and must not depend on domain/search. Rows are parsed
+   * through the zod shape in domain/search/decision.ts on the way in and out.
+   */
+  opportunity_decisions: unknown[];
 }
 
 /**
@@ -75,6 +91,7 @@ function emptyDb(): DevDb {
     repair_proposals: [],
     repair_executions: [],
     repair_reversal_snapshots: [],
+    opportunity_decisions: [],
   };
 }
 

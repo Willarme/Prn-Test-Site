@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { isAdminUnlocked } from "@/platform/admin/auth";
+import { loadOpportunities } from "@/platform/admin/data";
 import { listApprovals, resolveApproval } from "@/platform/approvals/center";
+import { decideOpportunity } from "@/platform/search/opportunity-decisions";
 import { appendFindingStatus, findingById } from "@/platform/quality/issues";
 import { executeApprovedRepair } from "@/platform/quality/repairs";
 import { qualityStore } from "@/platform/quality/store";
@@ -31,8 +33,18 @@ import { qualityStore } from "@/platform/quality/store";
  * closed after it was filed.
  *
  * SCOPE. Kinds other than A09's resolve to APPROVED/REJECTED and nothing else
- * happens — there is no A04/A06 consumer yet, and inventing a side effect for
+ * happens — there is no A06 consumer yet, and inventing a side effect for
  * a producer that does not exist would be worse than leaving the hook honest.
+ *
+ * A04 ADDED ITS CONSUMER, 2026-08-24 (the branch this file anticipated). A04's
+ * accept and reject resolve their own item at the moment the owner clicks on
+ * /admin/opportunities, so they never arrive here PENDING. A DEFERRED
+ * opportunity does: deferral deliberately leaves the item open so it reads as a
+ * real to-do. Resolving it here therefore has to apply the decision to the
+ * opportunity, or the owner would clear the reminder without the opportunity
+ * moving — a decision that looks made and is not. It routes through the same
+ * `decideOpportunity` module as the button on the opportunities page, so there
+ * is ONE decision path with one set of consequences, not two.
  *
  * KNOWN LIMIT, stated rather than hidden: `resolveApproval` mutates A00's
  * in-process queue and fails soft to the database (migration 00007 is written,
@@ -99,6 +111,33 @@ export async function POST(request: Request): Promise<NextResponse> {
     const finding = await findingById(proposal.issue_id);
     if (finding) await appendFindingStatus(finding, "rejected");
     return NextResponse.json({ ok: true, status: resolved.status, repair: { outcome: "rejected" } });
+  }
+
+  // A04: a deferred opportunity decision resolved from this queue must actually
+  // move the opportunity, not just close the reminder.
+  if (resolved.approval_kind === "seo.opportunity_decision") {
+    const evidence = (resolved.evidence ?? {}) as { search_opportunity_id?: unknown };
+    const opportunityId =
+      typeof evidence.search_opportunity_id === "string" ? evidence.search_opportunity_id : null;
+    const opportunity = opportunityId
+      ? loadOpportunities().opportunities.find((o) => o.search_opportunity_id === opportunityId)
+      : undefined;
+    if (!opportunity) {
+      return NextResponse.json(
+        { ok: true, status: resolved.status, note: "no opportunity found for this item" },
+        { status: 200 }
+      );
+    }
+    const applied = await decideOpportunity({
+      opportunity,
+      kind: decision === "approve" ? "accept" : "reject",
+      decided_by: "owner",
+    });
+    return NextResponse.json({
+      ok: true,
+      status: resolved.status,
+      opportunity: { search_opportunity_id: opportunityId, status: applied.opportunity.status },
+    });
   }
 
   return NextResponse.json({ ok: true, status: resolved.status });

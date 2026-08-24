@@ -44,6 +44,14 @@ export const IntentType = z.enum([
 export const SearchOpportunity = z.object({
   search_opportunity_id: Id,
   schema_version: SchemaVersion,
+  /**
+   * Reserved — white-label approval condition (a), 2026-08-24, matching every
+   * A00 record (runs/ledger.ts, events/envelope.ts, approvals/center.ts,
+   * killswitch/index.ts). Default "prn"; NO tenant logic, routing or UI exists
+   * around it. OPTIONAL so the 96 committed records in data/factory/ keep
+   * parsing unchanged — adding an optional field is additive, never breaking.
+   */
+  tenant_id: z.string().min(1).optional(),
   keyword: z.string().min(1),
   intent_cluster_id: Id.nullable(),
   cluster_label: z.string().nullable(),
@@ -58,8 +66,25 @@ export const SearchOpportunity = z.object({
   intent_type: IntentType,
   opportunity_score: z.number().min(0).max(100).nullable(),
   score_components: z.record(z.number()).nullable(),
+  /** A04's OPINION. Never read as an approval — see domain/search/decision.ts. */
   recommendation: OpportunityRecommendation.nullable(),
+  /** The OWNER'S DECISION. `approved` here, and only here, gates page building. */
   status: OpportunityStatus,
+  /**
+   * Owner-decision provenance (coherence report seam 2). Set together on
+   * accept, cleared on reject/defer — a record can never carry an approval
+   * stamp while sitting in a non-approved status. Optional for the same
+   * additive reason as tenant_id.
+   */
+  approved_at: IsoDateTime.nullable().optional(),
+  approved_by: z.string().min(1).nullable().optional(),
+  /**
+   * Which scoring version produced `opportunity_score` (C12 / pre-answer 9).
+   * Absent means v1 — the 96 committed records were scored under
+   * SCORING_VERSION "1.0.0" before this field existed, and rescoring under a
+   * new version must DISCLOSE the version rather than silently rewrite history.
+   */
+  score_version: z.string().min(1).optional(),
   metric_snapshot_ids: z.array(Id),
   serp_snapshot_ids: z.array(Id),
   provenance: z.object({
