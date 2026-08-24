@@ -97,7 +97,65 @@ export const TRIAL_AGENT_REGISTRY: readonly AgentDefinition[] = [
       "Autonomous discovery via SeoDataAdapter (DataForSEO) + Search Console feedback; normalizes, clusters, scores; detects overlap/cannibalization; recommends NEW/EXPAND/MERGE/WATCH/REJECT. Cannot publish.",
     phase_band: "TRIAL",
     ...TBD,
+    /**
+     * A04 BUILD, 2026-08-24.
+     *
+     * `autonomy_level` stays "TBD" from the TBD spread above (Loop Spec Audit
+     * condition 12 and OD-10). A04's spec holds it at L2 and A04 follows that
+     * BEHAVIOUR exactly — it discovers, scores and RECOMMENDS, and it cannot
+     * publish and now cannot approve either: the accept/reject/defer gate
+     * (platform/search/opportunity-decisions.ts) is the owner's, and A04's own
+     * recommendation is explicitly not read as one. But canon carries two
+     * non-identical autonomy scales and the owners have not picked one, so no
+     * L-number is written here ahead of that decision.
+     *
+     * `allowed_capabilities` is `get_search_metrics` and stays exactly that:
+     * A04 makes NO AI/model call anywhere. Its scoring is deterministic Tier-0
+     * arithmetic; the one place a model could ever enter is language
+     * normalization and internal-language mining, and the mining path ships OFF
+     * (C11, policy language_mining.enabled = false).
+     *
+     * `data_access` / `write_access` are enumerated because the modules exist —
+     * observed facts, not a guess.
+     *
+     * WHAT A04 CAN AND CANNOT WRITE. It writes its own opportunity, snapshot,
+     * cost and decision records, and files Approval Center items. It writes
+     * NOTHING customer-owned: no problem_record, no evidence_object, no
+     * intake_answer, no consent_event, no job_packet. It writes NO page record
+     * of any kind and it cannot change publish state — A04's opportunity gate
+     * and A06's page publish gate are two separate gates and do not collapse.
+     * `search_opportunity` appears in write_access for the pipeline's upserts;
+     * `opportunity_decision` is the append-only owner-decision overlay
+     * (migration 00011, written NOT applied), deliberately separate so a
+     * decision never rewrites the committed factory artifact.
+     */
     allowed_capabilities: ["get_search_metrics"],
+    data_access: [
+      "search_opportunity",
+      "opportunity_decision",
+      "intent_cluster",
+      "seo_metric_snapshot",
+      "serp_snapshot",
+      "seo_factory_policy",
+      "vendor_cost_rate",
+      "usage_cost_event",
+      "agent_run",
+      "agent_run_ledger",
+      "approval_item",
+      "event_envelope",
+    ],
+    write_access: [
+      "search_opportunity",
+      "opportunity_decision",
+      "seo_metric_snapshot",
+      "serp_snapshot",
+      "usage_cost_event",
+      "agent_run",
+      "agent_run_ledger",
+      "approval_item",
+    ],
+    schedule:
+      "on-demand only — npm run factory (portfolio pass) and runDiscoveryOnPlatform (paid pass). NO cron route and no scheduler is wired, deliberately: a schedule would turn a manually-triggered pipeline capped at a vendor trial credit into an unattended spender (Loop Spec Audit pre-answer 2).",
     kill_switch_ref: killRef("A04"),
   },
   {
