@@ -31,35 +31,45 @@
           "kind": "intent_answer",
           "heading": "What this usually means",
           "body_md": "\"ac blowing warm air\" is a classic heating-and-cooling complaint pattern, and it usually traces to power, controls, airflow, or a component a technician can test quickly. The thermostat, a tripped breaker, a clogged filter, or a safety switch each produce symptoms that look identical from the hallway. A clear description of what the system does — and doesn't do — narrows it fast.",
-          "source_fact_bundle_ids": []
+          "source_fact_bundle_ids": [
+            "fb_content_bank_v1_hvac"
+          ]
         },
         {
           "block_id": "blk_safe_checks",
           "kind": "safe_checks",
           "heading": "Safe things to check first",
           "body_md": "- Thermostat: display on, correct mode, set point past room temperature; fresh batteries if it uses them.\n- Breaker panel: look for a tripped HVAC/air-handler breaker; reset it ONCE at most.\n- Filter: if it's gray and matted, replace it — a starved system can shut itself down.",
-          "source_fact_bundle_ids": []
+          "source_fact_bundle_ids": [
+            "fb_content_bank_v1_hvac"
+          ]
         },
         {
           "block_id": "blk_do_not",
           "kind": "do_not_do",
           "heading": "What not to do",
           "body_md": "- Don't keep resetting a breaker that re-trips.\n- Don't open the outdoor unit or its electrical compartment — capacitors hold a charge even unplugged.",
-          "source_fact_bundle_ids": []
+          "source_fact_bundle_ids": [
+            "fb_content_bank_v1_hvac"
+          ]
         },
         {
           "block_id": "blk_urgency",
           "kind": "when_urgency_changes",
           "heading": "When this becomes urgent",
           "body_md": "Urgent if there's a burning or electrical smell, visible sparking, or a breaker that immediately re-trips — and prioritize on dangerous-heat or hard-freeze days for anyone heat- or cold-sensitive in the home.",
-          "source_fact_bundle_ids": []
+          "source_fact_bundle_ids": [
+            "fb_content_bank_v1_hvac"
+          ]
         },
         {
           "block_id": "blk_who",
           "kind": "who_handles_it",
           "heading": "Who typically handles this",
           "body_md": "HVAC technicians handle this. If the trail leads to the breaker panel itself, it may cross into electrician territory — your packet helps route it right the first time.",
-          "source_fact_bundle_ids": []
+          "source_fact_bundle_ids": [
+            "fb_content_bank_v1_hvac"
+          ]
         }
       ],
       "safety_note_required": true,
@@ -91,7 +101,9 @@
         "state": "PASS",
         "reasons": []
       },
-      "source_fact_bundle_ids": [],
+      "source_fact_bundle_ids": [
+        "fb_content_bank_v1_hvac"
+      ],
       "created_at": "2026-08-14T18:00:00Z",
       "updated_at": null
     },
@@ -125,35 +137,45 @@
           "kind": "intent_answer",
           "heading": "What this usually means",
           "body_md": "\"furnace blowing cold air\" is a classic heating-and-cooling complaint pattern, and it usually traces to power, controls, airflow, or a component a technician can test quickly. The thermostat, a tripped breaker, a clogged filter, or a safety switch each produce symptoms that look identical from the hallway. A clear description of what the system does — and doesn't do — narrows it fast.",
-          "source_fact_bundle_ids": []
+          "source_fact_bundle_ids": [
+            "fb_content_bank_v1_hvac"
+          ]
         },
         {
           "block_id": "blk_safe_checks",
           "kind": "safe_checks",
           "heading": "Safe things to check first",
           "body_md": "- Thermostat: display on, correct mode, set point past room temperature; fresh batteries if it uses them.\n- Breaker panel: look for a tripped HVAC/air-handler breaker; reset it ONCE at most.\n- Filter: if it's gray and matted, replace it — a starved system can shut itself down.",
-          "source_fact_bundle_ids": []
+          "source_fact_bundle_ids": [
+            "fb_content_bank_v1_hvac"
+          ]
         },
         {
           "block_id": "blk_do_not",
           "kind": "do_not_do",
           "heading": "What not to do",
           "body_md": "- Don't keep resetting a breaker that re-trips.\n- Don't open the outdoor unit or its electrical compartment — capacitors hold a charge even unplugged.",
-          "source_fact_bundle_ids": []
+          "source_fact_bundle_ids": [
+            "fb_content_bank_v1_hvac"
+          ]
         },
         {
           "block_id": "blk_urgency",
           "kind": "when_urgency_changes",
           "heading": "When this becomes urgent",
           "body_md": "Urgent if there's a burning or electrical smell, visible sparking, or a breaker that immediately re-trips — and prioritize on dangerous-heat or hard-freeze days for anyone heat- or cold-sensitive in the home.",
-          "source_fact_bundle_ids": []
+          "source_fact_bundle_ids": [
+            "fb_content_bank_v1_hvac"
+          ]
         },
         {
           "block_id": "blk_who",
           "kind": "who_handles_it",
           "heading": "Who typically handles this",
           "body_md": "HVAC technicians handle this. If the trail leads to the breaker panel itself, it may cross into electrician territory — your packet helps route it right the first time.",
-          "source_fact_bundle_ids": []
+          "source_fact_bundle_ids": [
+            "fb_content_bank_v1_hvac"
+          ]
         }
       ],
       "safety_note_required": true,
@@ -185,7 +207,9 @@
         "state": "PASS",
         "reasons": []
       },
-      "source_fact_bundle_ids": [],
+      "source_fact_bundle_ids": [
+        "fb_content_bank_v1_hvac"
+      ],
       "created_at": "2026-08-14T18:00:00Z",
       "updated_at": null
     },
@@ -219,35 +243,45 @@
           "kind": "intent_answer",
           "heading": "What this usually means",
           "body_md": "\"ac freezing up\" is a classic heating-and-cooling complaint pattern, and it usually traces to power, controls, airflow, or a component a technician can test quickly. The thermostat, a tripped breaker, a clogged filter, or a safety switch each produce symptoms that look identical from the hallway. A clear description of what the system does — and doesn't do — narrows it fast.",
-          "source_fact_bundle_ids": []
+          "source_fact_bundle_ids": [
+            "fb_content_bank_v1_hvac"
+          ]
         },
         {
           "block_id": "blk_safe_checks",
           "kind": "safe_checks",
           "heading": "Safe things to check first",
           "body_md": "- Thermostat: display on, correct mode, set point past room temperature; fresh batteries if it uses them.\n- Breaker panel: look for a tripped HVAC/air-handler breaker; reset it ONCE at most.\n- Filter: if it's gray and matted, replace it — a starved system can shut itself down.",
-          "source_fact_bundle_ids": []
+          "source_fact_bundle_ids": [
+            "fb_content_bank_v1_hvac"
+          ]
         },
         {
           "block_id": "blk_do_not",
           "kind": "do_not_do",
           "heading": "What not to do",
           "body_md": "- Don't keep resetting a breaker that re-trips.\n- Don't open the outdoor unit or its electrical compartment — capacitors hold a charge even unplugged.",
-          "source_fact_bundle_ids": []
+          "source_fact_bundle_ids": [
+            "fb_content_bank_v1_hvac"
+          ]
         },
         {
           "block_id": "blk_urgency",
           "kind": "when_urgency_changes",
           "heading": "When this becomes urgent",
           "body_md": "Urgent if there's a burning or electrical smell, visible sparking, or a breaker that immediately re-trips — and prioritize on dangerous-heat or hard-freeze days for anyone heat- or cold-sensitive in the home.",
-          "source_fact_bundle_ids": []
+          "source_fact_bundle_ids": [
+            "fb_content_bank_v1_hvac"
+          ]
         },
         {
           "block_id": "blk_who",
           "kind": "who_handles_it",
           "heading": "Who typically handles this",
           "body_md": "HVAC technicians handle this. If the trail leads to the breaker panel itself, it may cross into electrician territory — your packet helps route it right the first time.",
-          "source_fact_bundle_ids": []
+          "source_fact_bundle_ids": [
+            "fb_content_bank_v1_hvac"
+          ]
         }
       ],
       "safety_note_required": true,
@@ -279,7 +313,9 @@
         "state": "PASS",
         "reasons": []
       },
-      "source_fact_bundle_ids": [],
+      "source_fact_bundle_ids": [
+        "fb_content_bank_v1_hvac"
+      ],
       "created_at": "2026-08-14T18:00:00Z",
       "updated_at": null
     },
@@ -313,35 +349,45 @@
           "kind": "intent_answer",
           "heading": "What this usually means",
           "body_md": "\"why is my ac not cooling\" is a classic heating-and-cooling complaint pattern, and it usually traces to power, controls, airflow, or a component a technician can test quickly. The thermostat, a tripped breaker, a clogged filter, or a safety switch each produce symptoms that look identical from the hallway. A clear description of what the system does — and doesn't do — narrows it fast.",
-          "source_fact_bundle_ids": []
+          "source_fact_bundle_ids": [
+            "fb_content_bank_v1_hvac"
+          ]
         },
         {
           "block_id": "blk_safe_checks",
           "kind": "safe_checks",
           "heading": "Safe things to check first",
           "body_md": "- Thermostat: display on, correct mode, set point past room temperature; fresh batteries if it uses them.\n- Breaker panel: look for a tripped HVAC/air-handler breaker; reset it ONCE at most.\n- Filter: if it's gray and matted, replace it — a starved system can shut itself down.",
-          "source_fact_bundle_ids": []
+          "source_fact_bundle_ids": [
+            "fb_content_bank_v1_hvac"
+          ]
         },
         {
           "block_id": "blk_do_not",
           "kind": "do_not_do",
           "heading": "What not to do",
           "body_md": "- Don't keep resetting a breaker that re-trips.\n- Don't open the outdoor unit or its electrical compartment — capacitors hold a charge even unplugged.",
-          "source_fact_bundle_ids": []
+          "source_fact_bundle_ids": [
+            "fb_content_bank_v1_hvac"
+          ]
         },
         {
           "block_id": "blk_urgency",
           "kind": "when_urgency_changes",
           "heading": "When this becomes urgent",
           "body_md": "Urgent if there's a burning or electrical smell, visible sparking, or a breaker that immediately re-trips — and prioritize on dangerous-heat or hard-freeze days for anyone heat- or cold-sensitive in the home.",
-          "source_fact_bundle_ids": []
+          "source_fact_bundle_ids": [
+            "fb_content_bank_v1_hvac"
+          ]
         },
         {
           "block_id": "blk_who",
           "kind": "who_handles_it",
           "heading": "Who typically handles this",
           "body_md": "HVAC technicians handle this. If the trail leads to the breaker panel itself, it may cross into electrician territory — your packet helps route it right the first time.",
-          "source_fact_bundle_ids": []
+          "source_fact_bundle_ids": [
+            "fb_content_bank_v1_hvac"
+          ]
         }
       ],
       "safety_note_required": true,
@@ -373,7 +419,9 @@
         "state": "PASS",
         "reasons": []
       },
-      "source_fact_bundle_ids": [],
+      "source_fact_bundle_ids": [
+        "fb_content_bank_v1_hvac"
+      ],
       "created_at": "2026-08-14T18:00:00Z",
       "updated_at": null
     },
@@ -407,35 +455,45 @@
           "kind": "intent_answer",
           "heading": "What this usually means",
           "body_md": "\"furnace not working\" is a classic heating-and-cooling complaint pattern, and it usually traces to power, controls, airflow, or a component a technician can test quickly. The thermostat, a tripped breaker, a clogged filter, or a safety switch each produce symptoms that look identical from the hallway. A clear description of what the system does — and doesn't do — narrows it fast.",
-          "source_fact_bundle_ids": []
+          "source_fact_bundle_ids": [
+            "fb_content_bank_v1_hvac"
+          ]
         },
         {
           "block_id": "blk_safe_checks",
           "kind": "safe_checks",
           "heading": "Safe things to check first",
           "body_md": "- Thermostat: display on, correct mode, set point past room temperature; fresh batteries if it uses them.\n- Breaker panel: look for a tripped HVAC/air-handler breaker; reset it ONCE at most.\n- Filter: if it's gray and matted, replace it — a starved system can shut itself down.",
-          "source_fact_bundle_ids": []
+          "source_fact_bundle_ids": [
+            "fb_content_bank_v1_hvac"
+          ]
         },
         {
           "block_id": "blk_do_not",
           "kind": "do_not_do",
           "heading": "What not to do",
           "body_md": "- Don't keep resetting a breaker that re-trips.\n- Don't open the outdoor unit or its electrical compartment — capacitors hold a charge even unplugged.",
-          "source_fact_bundle_ids": []
+          "source_fact_bundle_ids": [
+            "fb_content_bank_v1_hvac"
+          ]
         },
         {
           "block_id": "blk_urgency",
           "kind": "when_urgency_changes",
           "heading": "When this becomes urgent",
           "body_md": "Urgent if there's a burning or electrical smell, visible sparking, or a breaker that immediately re-trips — and prioritize on dangerous-heat or hard-freeze days for anyone heat- or cold-sensitive in the home.",
-          "source_fact_bundle_ids": []
+          "source_fact_bundle_ids": [
+            "fb_content_bank_v1_hvac"
+          ]
         },
         {
           "block_id": "blk_who",
           "kind": "who_handles_it",
           "heading": "Who typically handles this",
           "body_md": "HVAC technicians handle this. If the trail leads to the breaker panel itself, it may cross into electrician territory — your packet helps route it right the first time.",
-          "source_fact_bundle_ids": []
+          "source_fact_bundle_ids": [
+            "fb_content_bank_v1_hvac"
+          ]
         }
       ],
       "safety_note_required": true,
@@ -467,7 +525,9 @@
         "state": "PASS",
         "reasons": []
       },
-      "source_fact_bundle_ids": [],
+      "source_fact_bundle_ids": [
+        "fb_content_bank_v1_hvac"
+      ],
       "created_at": "2026-08-14T18:00:00Z",
       "updated_at": null
     },
@@ -501,35 +561,45 @@
           "kind": "intent_answer",
           "heading": "What this usually means",
           "body_md": "\"furnace short cycling\" is a classic heating-and-cooling complaint pattern, and it usually traces to power, controls, airflow, or a component a technician can test quickly. The thermostat, a tripped breaker, a clogged filter, or a safety switch each produce symptoms that look identical from the hallway. A clear description of what the system does — and doesn't do — narrows it fast.",
-          "source_fact_bundle_ids": []
+          "source_fact_bundle_ids": [
+            "fb_content_bank_v1_hvac"
+          ]
         },
         {
           "block_id": "blk_safe_checks",
           "kind": "safe_checks",
           "heading": "Safe things to check first",
           "body_md": "- Thermostat: display on, correct mode, set point past room temperature; fresh batteries if it uses them.\n- Breaker panel: look for a tripped HVAC/air-handler breaker; reset it ONCE at most.\n- Filter: if it's gray and matted, replace it — a starved system can shut itself down.",
-          "source_fact_bundle_ids": []
+          "source_fact_bundle_ids": [
+            "fb_content_bank_v1_hvac"
+          ]
         },
         {
           "block_id": "blk_do_not",
           "kind": "do_not_do",
           "heading": "What not to do",
           "body_md": "- Don't keep resetting a breaker that re-trips.\n- Don't open the outdoor unit or its electrical compartment — capacitors hold a charge even unplugged.",
-          "source_fact_bundle_ids": []
+          "source_fact_bundle_ids": [
+            "fb_content_bank_v1_hvac"
+          ]
         },
         {
           "block_id": "blk_urgency",
           "kind": "when_urgency_changes",
           "heading": "When this becomes urgent",
           "body_md": "Urgent if there's a burning or electrical smell, visible sparking, or a breaker that immediately re-trips — and prioritize on dangerous-heat or hard-freeze days for anyone heat- or cold-sensitive in the home.",
-          "source_fact_bundle_ids": []
+          "source_fact_bundle_ids": [
+            "fb_content_bank_v1_hvac"
+          ]
         },
         {
           "block_id": "blk_who",
           "kind": "who_handles_it",
           "heading": "Who typically handles this",
           "body_md": "HVAC technicians handle this. If the trail leads to the breaker panel itself, it may cross into electrician territory — your packet helps route it right the first time.",
-          "source_fact_bundle_ids": []
+          "source_fact_bundle_ids": [
+            "fb_content_bank_v1_hvac"
+          ]
         }
       ],
       "safety_note_required": true,
@@ -561,7 +631,9 @@
         "state": "PASS",
         "reasons": []
       },
-      "source_fact_bundle_ids": [],
+      "source_fact_bundle_ids": [
+        "fb_content_bank_v1_hvac"
+      ],
       "created_at": "2026-08-14T18:00:00Z",
       "updated_at": null
     }

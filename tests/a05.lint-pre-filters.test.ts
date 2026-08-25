@@ -248,19 +248,37 @@ describe("the pre-filter is not a second publish gate (coherence issue 6)", () =
 });
 
 /**
- * THE COMMITTED SIX, HONESTLY. They predate the provenance stub (step 3) and
- * carry empty source_fact_bundle_ids, so they WOULD be blocked by the urgency
- * check today. That is recorded here rather than hidden, because the fix is a
- * regeneration the owner triggers — not a hand-edit of generated output, and
- * not a weakened lint.
+ * THE COMMITTED SIX, AGAINST THE PRE-FILTER THAT SHIPPED WITH THEM.
+ *
+ * WHAT THIS BLOCK USED TO SAY: they predate the provenance stub, carry empty
+ * `source_fact_bundle_ids`, and are therefore "blocked only on the provenance
+ * half" — recorded openly, with the fix named as a regeneration the owner
+ * triggers. Inspection F1 is what that costs in practice: the OWNER'S EDIT PATH
+ * runs this same lint, correctly and by design, so a lint every shipped page
+ * failed meant the owner could not edit a single one of them. A guardrail that
+ * blocks the whole product is not protecting anyone.
+ *
+ * The provenance ids were backfilled once (see a05.provenance.test.ts for why
+ * the planned regeneration could not run). THE LINT IS UNCHANGED: the rule
+ * still blocks an unsourced urgency block, asserted immediately below.
  */
-describe("what the committed portfolio would do against the new pre-filter", () => {
-  it("passes directory framing, and is blocked only on the provenance half", () => {
+describe("the committed portfolio against the pre-filter", () => {
+  it("passes both halves now that its provenance is real", () => {
     for (const spec of loadStaged().specs) {
       expect(lintDirectoryFraming(spec as PageSpec), spec.canonical_path).toEqual([]);
-      const urgency = lintUrgencySlot(spec as PageSpec);
-      expect(urgency.map((f) => f.check), spec.canonical_path).toEqual(["urgency.sourced"]);
+      expect(lintUrgencySlot(spec as PageSpec), spec.canonical_path).toEqual([]);
+      expect(lintPageBeforeQa(spec as PageSpec).passed, spec.canonical_path).toBe(true);
     }
+  });
+
+  it("the rule itself is NOT weakened — strip the ids and it blocks again", () => {
+    const spec = loadStaged().specs[0] as PageSpec;
+    const stripped: PageSpec = {
+      ...spec,
+      content_blocks: spec.content_blocks.map((b) => ({ ...b, source_fact_bundle_ids: [] })),
+    };
+    expect(lintUrgencySlot(stripped).map((f) => f.check)).toEqual(["urgency.sourced"]);
+    expect(lintPageBeforeQa(stripped).passed).toBe(false);
   });
 
   it("regenerating one clears it — the pre-filter and the stub are one fix", () => {

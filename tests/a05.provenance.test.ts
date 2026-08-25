@@ -210,12 +210,33 @@ describe("the stub is HONEST about what it is", () => {
  * hand-editing a generated artifact to look compliant would be a lie in the
  * data. Their rendering is unaffected — IntentPageView never reads the field.
  */
-describe("the committed staged portfolio is untouched", () => {
-  it("still carries empty provenance, and nothing pretends otherwise", () => {
+/**
+ * THE COMMITTED PORTFOLIO, BACKFILLED (inspection F1/F2).
+ *
+ * THIS BLOCK USED TO ASSERT THE OPPOSITE: "still carries empty provenance, and
+ * nothing pretends otherwise". That was honest bookkeeping of a real gap, and
+ * it named a plan — the fix is "a regeneration the owner triggers", not a
+ * hand-edit. The plan could not run. Regeneration builds only from owner-
+ * approved opportunities and zero of the 96 committed opportunities carries an
+ * approval, so `npm run factory` deliberately REFUSES rather than wipe the
+ * portfolio. Meanwhile all seven shipped pages were uneditable (the owner's
+ * edit path runs this same lint) and six sat publish-eligible on a qa:PASS
+ * minted before provenance existed.
+ *
+ * SO THE IDS WERE BACKFILLED ONCE, DETERMINISTICALLY, AND THIS IS NOT A
+ * HAND-EDIT OF GENERATED OUTPUT: each id is the one `compilePageSpec` mints for
+ * that page today, and every committed door still reproduces byte-for-byte from
+ * the generator (asserted in a05.committed-artifacts.test.ts). Mechanically it
+ * is the regeneration that was planned, minus the QA and score churn a rebuild
+ * would have caused. No content string changed and the lint was not weakened.
+ */
+describe("the committed staged portfolio cites the bundles its copy came from", () => {
+  it("every committed door carries the content-bank bundle for its family", () => {
     const committed = loadStaged().specs;
     expect(committed).toHaveLength(6);
     for (const spec of committed) {
-      expect(spec.source_fact_bundle_ids).toEqual([]);
+      expect(spec.source_fact_bundle_ids, spec.page_spec_id).toEqual([contentBankBundleId("hvac")]);
+      expect(provenanceProblems(spec), spec.page_spec_id).toEqual([]);
     }
   });
 
