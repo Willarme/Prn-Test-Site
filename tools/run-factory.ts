@@ -14,7 +14,7 @@ import path from "node:path";
 import { importSeedRows, type SeedFile } from "../src/domain/search/importer";
 import { evaluatePortfolio } from "../src/domain/search/portfolio";
 import { buildCandidatePages, pageEligibleIntent } from "../src/domain/search/factory";
-import { qaCandidatePages } from "../src/domain/search/qa";
+import { applyQaVerdict, qaCandidatePages } from "../src/domain/search/qa";
 import { SAMPLE_PAGE_SPEC } from "../src/domain/search/fixtures/sample-page-spec";
 import { FilePolicyStore } from "../src/platform/stores/policy-file";
 import { opportunityDecisionStore } from "../src/platform/search/decision-store";
@@ -81,14 +81,15 @@ async function main() {
 
   // The handcrafted sample page is already staged; QA new candidates against it.
   const qa = qaCandidatePages(specs, [SAMPLE_PAGE_SPEC]);
-  const stagedSpecs = specs.map((spec) => {
-    const result = qa.find((r) => r.page_spec_id === spec.page_spec_id)!;
-    return {
-      ...spec,
-      qa: { state: result.state, reasons: result.reasons },
-      user_value_score: result.user_value_score,
-    };
-  });
+  /**
+   * THROUGH A06'S OWN WRITER, never by hand. `applyQaVerdict` is the one
+   * function in this codebase that writes a non-PENDING `qa.state` (coherence
+   * issue 5: A06 is its sole writer), and a standing test scans src/ and tools/
+   * to prove no second path exists. This loop used to spread the fields itself.
+   */
+  const stagedSpecs = specs.map((spec) =>
+    applyQaVerdict(spec, qa.find((r) => r.page_spec_id === spec.page_spec_id)!)
+  );
 
   /**
    * FAIL CLOSED BEFORE OVERWRITING A NON-EMPTY PORTFOLIO WITH AN EMPTY ONE.

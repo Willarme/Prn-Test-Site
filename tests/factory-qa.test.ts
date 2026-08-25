@@ -94,10 +94,22 @@ describe("A05 page factory", () => {
 });
 
 describe("A06 QA gate", () => {
+  /**
+   * `critic_ran: true` USED TO BE ASSERTED HERE, and it was false: the score
+   * came from a pure heuristic (`fixtureCritic`), which is the dishonest critic
+   * A06's own spec forbids (Loop Spec Audit condition C3 / pre-answer 7). The
+   * scoring function survives under its real name and still feeds
+   * user_value_score; what changed is that the result now says which stage
+   * produced what.
+   */
   it("passes the handcrafted sample page", () => {
     const [result] = qaCandidatePages([SAMPLE_PAGE_SPEC], []);
     expect(result.state).toBe("PASS");
-    expect(result.critic_ran).toBe(true);
+    expect(result.deterministic.state).toBe("PASS");
+    // No model is configured anywhere, so the critic is SKIPPED — never PASS.
+    expect(result.ai_critic.status).toBe("SKIPPED_NO_MODEL");
+    expect(result.overall).toBe("BLOCKED_PENDING_AI");
+    expect(result.heuristic_score).toBeGreaterThanOrEqual(60);
     expect(result.user_value_score).toBeGreaterThanOrEqual(60);
   });
 
@@ -138,7 +150,9 @@ describe("A06 QA gate", () => {
     });
     const [result] = qaCandidatePages([thin], []);
     expect(result.state).toBe("FAIL");
-    expect(result.critic_ran).toBe(false); // never pay a critic for a broken page
+    // Never pay a critic for a broken page — and NOT_RUN is not SKIPPED_NO_MODEL:
+    // the two reasons a critic did not run are different facts.
+    expect(result.ai_critic.status).toBe("NOT_RUN");
     expect(result.reasons.join(" ")).toMatch(/thin content/);
     expect(result.reasons.join(" ")).toMatch(/placeholder/);
   });

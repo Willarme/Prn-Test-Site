@@ -75,22 +75,37 @@ describe("the matcher moved without changing behaviour", () => {
 /**
  * THE INSPECTOR RULE (coherence issue 15, Master Todo T1-09). A06's QA module
  * must reimplement cannibalization independently — "an inspector that shares
- * its subject's logic is not an inspector". A06 does NOT do that yet; qa.ts
- * still reaches the shared matcher through recommend.ts, and rewriting it is
- * A06's build, not A04's. This test records the CURRENT state precisely so
- * A06's build has to change it deliberately, and so nobody reads the extraction
- * as having already solved the independence problem.
+ * its subject's logic is not an inspector".
+ *
+ * A04's build recorded this as an OPEN HANDOFF and pinned the then-current
+ * state: qa.ts still reached the shared matcher through recommend.ts. A06's
+ * build (2026-08-24) CLOSED it — `domain/search/qa-intent.ts` is A06's own
+ * matcher, a different mechanism end to end (greedy soft-Dice with an
+ * exact-match polarity class, against this file's suffix-stemmed Jaccard). The
+ * assertion therefore FLIPS here rather than being deleted: the handoff is done,
+ * and the test now guards the independence instead of the gap.
+ *
+ * The full A06-side scan (every A06 module, all three forbidden imports) lives
+ * in tests/a06.independence-and-sole-writer.test.ts.
  */
-describe("A06 independence — recorded, not yet achieved", () => {
+describe("A06 independence — achieved by A06's build", () => {
   const qa = readFileSync(join(process.cwd(), "src", "domain", "search", "qa.ts"), "utf-8");
 
-  it("A06's qa.ts still shares A04's matcher — the open handoff", () => {
-    expect(qa).toMatch(/sameIntentFamily/);
-    expect(qa).toMatch(/domain\/search\/recommend/);
+  it("A06's qa.ts no longer shares A04's matcher — the handoff is closed", () => {
+    expect(qa).not.toMatch(/sameIntentFamily/);
+    expect(qa).not.toMatch(/domain\/search\/recommend/);
+    expect(qa).not.toMatch(/domain\/search\/intent-family/);
   });
 
-  it("A06 does not import the page factory — the half that IS clean", () => {
+  it("A06 does not import the page factory either", () => {
     expect(qa).not.toMatch(/domain\/search\/factory/);
+  });
+
+  it("A06's own matcher is a DIFFERENT mechanism, not a copy of this one", () => {
+    const a06 = readFileSync(join(process.cwd(), "src", "domain", "search", "qa-intent.ts"), "utf-8");
+    // It must not import, and must not have copied, A04's exported surface.
+    expect(a06).not.toMatch(/sameIntentFamily|keywordTokens|intentFamilyKey/);
+    expect(a06).not.toMatch(/from "@\/domain\/search\/(recommend|intent-family|factory)"/);
   });
 });
 
