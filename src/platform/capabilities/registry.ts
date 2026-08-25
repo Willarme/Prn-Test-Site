@@ -57,7 +57,16 @@ export const CAPABILITY_REGISTRY: readonly CapabilityDefinition[] = [
   // capability, and aliasing it here would resurrect the key the prior decision
   // rejected.
   { capability_key: "seo.build_candidate_pages", version: V, risk_class: "R2", status: "TEST", input_schema_ref: "contracts://search/BuildInput", output_schema_ref: "contracts://search/PageSpec[]", required_scopes: ["agent.internal"], current_implementation: "deterministic", implementation_ref: "runPageFactory @ src/platform/search/page-factory-run.ts (compilePageSpec + content-bank-v1)", owning_agent_ids: ["A05"], aliases: ["create_page_spec", "update_page_spec"] },
-  { capability_key: "seo.qa_candidate_pages", version: V, risk_class: "R0", status: "TEST", input_schema_ref: "contracts://search/QaInput", output_schema_ref: "contracts://search/QaResult[]", required_scopes: ["agent.internal"] },
+  // A06 implementation binding, 2026-08-24 (Loop Spec Audit condition C2).
+  // The output contract is updated IN THE SAME CHANGE that grew `QaResult` into
+  // `PageQAResult` — the condition is explicit that A06 must "update that
+  // capability contract in the same change — never create a second parallel QA
+  // result type". `PageQAResult` is that same type grown in place, so this is a
+  // rename of the contract ref, not a second contract.
+  //
+  // Risk stays R0: QA reads a page and returns a verdict. It publishes nothing,
+  // and the R4 `seo.publish_page` entry below is still where release risk lives.
+  { capability_key: "seo.qa_candidate_pages", version: V, risk_class: "R0", status: "TEST", input_schema_ref: "contracts://search/QaInput", output_schema_ref: "contracts://search/PageQAResult[]", required_scopes: ["agent.internal"], current_implementation: "deterministic", implementation_ref: "qaCandidatePages @ src/domain/search/qa.ts, dispatched through runPageQaBatch @ src/platform/search/page-qa-run.ts", owning_agent_ids: ["A06"] },
   { capability_key: "seo.publish_page", version: V, risk_class: "R4", status: "TEST", input_schema_ref: "contracts://search/PublishInput", output_schema_ref: "contracts://search/IntentPage", required_scopes: ["admin.full"] },
 
   // --- Economics (#23 §8.2) ---

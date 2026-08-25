@@ -236,6 +236,58 @@ export const TRIAL_AGENT_REGISTRY: readonly AgentDefinition[] = [
       "Independent QA: cheap deterministic checks first, AI critic second. Factual/provenance/intent/accessibility/performance/schema/privacy. Human publish gate.",
     phase_band: "TRIAL",
     ...TBD,
+    /**
+     * A06 BUILD, 2026-08-24.
+     *
+     * `autonomy_level` stays "TBD" from the TBD spread above (Loop Spec Audit
+     * condition 12 and OD-10), for the same reason A04's and A05's do: canon
+     * carries two non-identical autonomy scales and the owners have not picked
+     * one. A06 follows the BEHAVIOUR its spec describes — it checks, it records a
+     * verdict, and it CANNOT PUBLISH.
+     *
+     * `allowed_capabilities` is `seo.qa_candidate_pages` and stays exactly that.
+     * A06 makes NO model call: `seo.critique_page` is deliberately NOT registered
+     * anywhere, following A05's precedent with `generate_page_copy` — registering
+     * a model capability nothing implements would be describing unbuilt
+     * behaviour as built. So `cost_usd: 0` on every A06 ledger row is measured,
+     * not a placeholder, and `ai_critic.status` is SKIPPED_NO_MODEL on every
+     * page.
+     *
+     * WHAT A06 CAN AND CANNOT WRITE. It writes `qa.state` and `qa.reasons` on a
+     * PageSpec — it is the SOLE writer of those two fields (coherence issue 5) —
+     * plus the STAGED->QA_PASS / STAGED->APPROVED lifecycle edges on its registry
+     * row, its own ledger rows, and the Approval Center items that put a page in
+     * the owner's publish queue. It writes NOTHING customer-owned.
+     *
+     * IT CANNOT PUBLISH, and `published_page` is absent from write_access to say
+     * so structurally. A06 produces `release_eligible`; the owner-gated route
+     * acts on it. The Approval Center item is the RECORD of the ask, never a
+     * second actuator (coherence issue 6).
+     *
+     * NO WAIVER PATH EXISTS. A hard blocker A06 raises has no override anywhere
+     * in this codebase, by decision (pre-answer 8) — which is also why the
+     * false-block-rate KPI is uncomputable rather than zero.
+     */
+    allowed_capabilities: ["seo.qa_candidate_pages"],
+    data_access: [
+      "staged_page_spec",
+      "intent_page",
+      "published_page",
+      "seo_factory_policy",
+      "fact_bundle",
+      "search_opportunity",
+      "agent_run_ledger",
+      "approval_item",
+      "event_envelope",
+    ],
+    write_access: [
+      "staged_page_spec",
+      "intent_page",
+      "agent_run_ledger",
+      "approval_item",
+    ],
+    schedule:
+      "on-demand only — runPageQaBatch (platform/search/page-qa-run.ts) called synchronously behind the durable-workflow interface seam (Loop Spec Audit pre-answer 4: 'Run it synchronously for now, behind the durable-workflow interface ... Do not build a job runner as part of A06'). A REFRESH->STAGED page re-enters QA automatically through the same entry point. NOT wired to the Durable Workflow Orchestrator, which A00 shipped deferred and interface-only. No cron route and no scheduler is wired.",
     kill_switch_ref: killRef("A06"),
   },
   {

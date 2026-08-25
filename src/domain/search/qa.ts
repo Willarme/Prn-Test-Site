@@ -853,11 +853,17 @@ function criticInput(spec: PageSpec, tenantId: string | undefined): AiCriticInpu
   };
 }
 
-function assemble(
-  spec: PageSpec,
+interface ResultIdentity {
+  page_spec_id: string;
+  tenant_id?: string;
+  heuristic_score: number;
+}
+
+function compose(
+  identity: ResultIdentity,
   deterministic: DeterministicStageResult,
   critic: AiCriticStageResult,
-  context: PageQaContext
+  gate: PageQaHumanGate
 ): PageQAResult {
   const findings = [...deterministic.findings, ...critic.findings];
   const blockers = findings.filter((f) => f.severity === "blocker");
@@ -876,7 +882,6 @@ function assemble(
         ? "PASS"
         : "BLOCKED_PENDING_AI";
 
-  const gate = context.human_gate ?? INTACT_HUMAN_GATE;
   const gateIntact = humanGateIntact(gate);
 
   const releaseReasons: string[] = [];
@@ -898,13 +903,11 @@ function assemble(
     );
   }
 
-  const score = deterministicHeuristicScore(spec);
+  const score = identity.heuristic_score;
 
   return {
-    page_spec_id: spec.page_spec_id,
-    ...(context.tenant_id ?? spec.tenant_id
-      ? { tenant_id: context.tenant_id ?? spec.tenant_id }
-      : {}),
+    page_spec_id: identity.page_spec_id,
+    ...(identity.tenant_id ? { tenant_id: identity.tenant_id } : {}),
     rule_set_version: A06_RULE_SET_VERSION,
     deterministic,
     ai_critic: critic,
@@ -917,6 +920,56 @@ function assemble(
     user_value_score: state === "PASS" ? score : null,
     heuristic_score: score,
   };
+}
+
+function assemble(
+  spec: PageSpec,
+  deterministic: DeterministicStageResult,
+  critic: AiCriticStageResult,
+  context: PageQaContext
+): PageQAResult {
+  return compose(
+    {
+      page_spec_id: spec.page_spec_id,
+      tenant_id: context.tenant_id ?? spec.tenant_id,
+      heuristic_score: deterministicHeuristicScore(spec),
+    },
+    deterministic,
+    critic,
+    context.human_gate ?? INTACT_HUMAN_GATE
+  );
+}
+
+/**
+ * RE-COMPOSE A RESULT ONCE A REAL CRITIC HAS RUN.
+ *
+ * The two stages are governed by two SEPARATE capabilities — the deterministic
+ * batch goes through the gateway as `seo.qa_candidate_pages`, and a real critic
+ * would go through it as its own capability — so the run mode gets the
+ * deterministic result first and folds the critic's verdict in afterwards. This
+ * is that fold, and it re-derives `overall`, `blockers`, `state`, `reasons` and
+ * `release_eligible` from BOTH stages rather than patching one field: a critic
+ * blocker must be able to fail a page that passed deterministically, and a
+ * partial update would silently leave `release_eligible` reading the wrong half.
+ *
+ * Today nothing calls it with a real verdict, because no critic capability is
+ * registered. It exists tested so the day one is, the fold is not improvised.
+ */
+export function withCriticStage(
+  result: PageQAResult,
+  critic: AiCriticStageResult,
+  gate: PageQaHumanGate = INTACT_HUMAN_GATE
+): PageQAResult {
+  return compose(
+    {
+      page_spec_id: result.page_spec_id,
+      tenant_id: result.tenant_id,
+      heuristic_score: result.heuristic_score ?? 0,
+    },
+    result.deterministic,
+    critic,
+    gate
+  );
 }
 
 /**

@@ -5,6 +5,8 @@ import {
   type AnalyzeResult,
 } from "@/domain/problem/fixture-engine";
 import type { EvidenceObject, ProblemRecord } from "@/domain/problem/contracts";
+import type { PageSpec } from "@/domain/search/pages";
+import { qaCandidatePages, type PageQaContext } from "@/domain/search/qa";
 import { TRIAL_AGENT_REGISTRY } from "@/platform/agents/registry";
 import { resolveCapability } from "@/platform/capabilities/registry";
 import { emitPlatformEvent } from "@/platform/events/emit";
@@ -67,6 +69,25 @@ const DETERMINISTIC_EXECUTORS: Record<string, (args: unknown) => unknown> = {
   generate_job_packet: (args) => {
     const a = args as { problem: ProblemRecord; evidence: EvidenceObject; now: string };
     return buildJobPacketFixture(a.problem, a.evidence, a.now);
+  },
+  /**
+   * A06's deterministic QA stage, 2026-08-24. It is a REAL implementation, not a
+   * stand-in: the whole rule set is deterministic by design (#23 §2.4 — cheap
+   * checks first, a critic only on passes), so routing it here gives A06's runs
+   * the registry lookup, the kill-switch check, the ledger row and the
+   * capability.invoked audit for free, with no model anywhere in the path.
+   *
+   * A real AI critic is a SEPARATE capability with its own gateway call; see
+   * platform/search/page-qa-critic.ts. Nothing is registered for it, so nothing
+   * can call one.
+   */
+  "seo.qa_candidate_pages": (args) => {
+    const a = args as {
+      specs: PageSpec[];
+      existing?: PageSpec[];
+      context?: PageQaContext;
+    };
+    return qaCandidatePages(a.specs, a.existing ?? [], a.context ?? {});
   },
 };
 
