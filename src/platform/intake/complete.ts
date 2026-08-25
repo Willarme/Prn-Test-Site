@@ -84,4 +84,23 @@ export async function regeneratePacket(requestId: string): Promise<void> {
   });
   if (!outcome.ok || !outcome.packet) return;
   await store.savePacket(outcome.packet);
+  /**
+   * THE CHAIN IS MAINTAINED (finding 3, 2026-08-25).
+   *
+   * Regeneration used to leave every version at `status: "current"` with
+   * `superseded_by: null` — six versions of one packet all claiming to be the
+   * current one, with only `packet_version` distinguishing them. The fields
+   * existed and nothing maintained them, which is worse than not having them:
+   * a reader that trusts `status` gets six answers to a single-answer question.
+   *
+   * NEW FIRST, THEN THE POINTER. The successor is written before the
+   * predecessor is told about it, so there is no instant where a stored packet
+   * points at one that does not exist. If this second call fails, the previous
+   * version stays `current` — a duplicate-current, which the next regeneration
+   * corrects — rather than a dangling pointer, which nothing corrects.
+   *
+   * The read path is untouched: newest-version-wins still decides what a
+   * homeowner sees, exactly as before.
+   */
+  await store.supersedePacket(ctx.journey.packet.job_packet_id, outcome.packet.job_packet_id);
 }

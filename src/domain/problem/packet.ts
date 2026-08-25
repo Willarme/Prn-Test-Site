@@ -220,14 +220,17 @@ export async function buildPacket(input: BuildPacketInput): Promise<BuildPacketO
     generation_run_id: call.run_id,
     status: "current" as const,
     /**
-     * FORWARD POINTER LEFT NULL, DELIBERATELY. Setting `superseded_by` on the
-     * PREVIOUS packet needs an UPDATE path RuntimeStore does not have — it has
-     * savePacket (append) and a newest-version-wins read. The backward chain is
-     * already complete and lossless: version N implies N-1. Inventing an update
-     * method to write a pointer nothing reads would be the expensive half of a
-     * feature with none of the value.
-     * TODO-ASK-OWNER (Joshua): whether the forward chain is worth a store
-     * method before a second consumer of the version history exists.
+     * NULL ON THE PACKET BEING BUILT, ALWAYS — it is the newest version, so
+     * nothing has replaced it yet. The forward pointer belongs to the PREVIOUS
+     * version and is written there, by the caller that stores this one
+     * (platform/intake/complete.ts), through `RuntimeStore.supersedePacket`.
+     *
+     * THAT PATH EXISTS NOW (finding 3, 2026-08-25). This note used to say the
+     * store had no UPDATE path and that a pointer nothing reads was not worth
+     * one. The consequence, once a real journey was driven, was six versions of
+     * one packet all sitting at `status: "current"` with `superseded_by: null`
+     * — the fields present, unmaintained, and answering a single-answer
+     * question six ways. Exactly one version per problem is current now.
      */
     superseded_by: null,
     /** The record beside the display — see the contract note on these two. */
