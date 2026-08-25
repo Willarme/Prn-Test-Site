@@ -53,6 +53,17 @@ export const PageSpec = z
   .object({
     page_spec_id: Id,
     schema_version: SchemaVersion,
+    /**
+     * Reserved — white-label condition C1 (A00 approval condition 1 names page
+     * templates explicitly), matching the pattern A00 shipped in six platform
+     * modules and A04 shipped on SearchOpportunity. Default "prn"; NO tenant
+     * logic, routing or UI exists around it.
+     *
+     * OPTIONAL so the six committed staged specs and the handcrafted sample
+     * keep parsing unchanged — adding an optional field is additive, never
+     * breaking, and the seven staged doors must render byte-identically.
+     */
+    tenant_id: z.string().min(1).optional(),
     page_id: Id,
     version: z.number().int().positive(),
     status: PageLifecycleStatus,
@@ -135,6 +146,8 @@ export type PageSpec = z.infer<typeof PageSpec>;
 export const IntentPage = z.object({
   page_id: Id,
   schema_version: SchemaVersion,
+  /** Reserved — white-label condition C1. Default "prn"; NO tenant logic. */
+  tenant_id: z.string().min(1).optional(),
   canonical_path: z.string().min(1),
   current_page_spec_id: Id.nullable(),
   lifecycle_status: PageLifecycleStatus,

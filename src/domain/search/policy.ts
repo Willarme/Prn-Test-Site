@@ -11,6 +11,10 @@ import {
   DEFAULT_LANGUAGE_MINING_POLICY,
   LanguageMiningPolicy,
 } from "@/domain/search/language-mining";
+import {
+  DEFAULT_PAGE_FACTORY_POLICY,
+  PageFactoryPolicy,
+} from "@/domain/search/page-factory-policy";
 import { ScoringPolicy, V1_SCORING_POLICY, weightSum } from "@/domain/search/scoring";
 import { MarketVocabulary, PRN_TRIAL_VOCABULARY } from "@/domain/search/vocabulary";
 
@@ -94,6 +98,17 @@ export const SeoFactoryPolicy = z
     page_eligible_intent_types: z
       .array(z.enum(["problem", "tool", "informational", "commercial", "unknown"]))
       .default(["problem"]),
+    /**
+     * A05's NAMESPACED SUB-BLOCK (C2/C3, coherence report seam 12). One policy
+     * object, three consumers, and now a declared split: A04 owns the document,
+     * A05 alone writes `page_factory.*`, and A06 will own `page_qa.*`.
+     *
+     * `.default()` for the same reason as `scoring` above: the committed
+     * data/seo-factory-policy.json predates this field, and a policy file that
+     * stops parsing is a policy file that stops protecting anything. The
+     * defaults reproduce the hardcoded literals byte for byte.
+     */
+    page_factory: PageFactoryPolicy.default(DEFAULT_PAGE_FACTORY_POLICY),
     discovery_scan_cadence: Cadence,
     search_console_ingest_cadence: Cadence,
     target_qualified_pages_per_period: z.number().int().min(0),

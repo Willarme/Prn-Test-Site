@@ -1,5 +1,10 @@
 import type { SearchOpportunity } from "@/domain/search/contracts";
 import { isOwnerApproved, type OpportunityDecision } from "@/domain/search/decision";
+import {
+  DEFAULT_PAGE_FACTORY_POLICY,
+  dataFamilyContent,
+  type PageFactoryPolicy,
+} from "@/domain/search/page-factory-policy";
 import { PageSpec } from "@/domain/search/pages";
 import { slugify } from "@/domain/search/importer";
 import { shortHash } from "@/domain/shared/hash";
@@ -83,6 +88,55 @@ const FAMILY_CONTENT: Record<string, FamilyContent> = {
 
 export interface FactoryDeps {
   now: () => string;
+  /**
+   * A05's namespaced policy sub-block (C2/C3, coherence seam 12). Optional and
+   * defaulted so every existing caller behaves identically: the defaults are
+   * byte-for-byte the literals that used to sit at factory.ts:120 and :149.
+   */
+  policy?: PageFactoryPolicy;
+  /**
+   * Reserved — white-label condition C1. Threaded through to the PageSpec when
+   * a caller supplies it; nothing branches on it.
+   */
+  tenant_id?: string;
+}
+
+/** `{keyword}` substitution — the one difference between data and code families. */
+function renderFamilyTemplate(template: string, keyword: string): string {
+  return template.split("{keyword}").join(keyword);
+}
+
+/**
+ * Resolve a family's content: DATA first (a policy-supplied family, C3), then
+ * the shipped hardcoded bank, then GENERIC. The shipped hvac/plumbing/
+ * electrical entries are untouched and `content_families` defaults to empty, so
+ * today every page resolves exactly as it did before.
+ */
+function resolveFamilyContent(
+  family: string | null,
+  policy: PageFactoryPolicy
+): { content: FamilyContent; safety_note_required: boolean; source: "policy_data" | "content_bank" | "generic" } {
+  const fromData = dataFamilyContent(policy, family);
+  if (fromData) {
+    return {
+      content: {
+        intent_answer: (kw: string) => renderFamilyTemplate(fromData.intent_answer, kw),
+        safe_checks: fromData.safe_checks,
+        do_not_do: fromData.do_not_do,
+        when_urgency_changes: fromData.when_urgency_changes,
+        who_handles_it: fromData.who_handles_it,
+      },
+      safety_note_required: fromData.safety_note_required,
+      source: "policy_data",
+    };
+  }
+  const banked = family ? FAMILY_CONTENT[family] : undefined;
+  return {
+    content: banked ?? GENERIC,
+    // The shipped rule, unchanged: these three families carry the safety note.
+    safety_note_required: family === "electrical" || family === "hvac" || family === "water_damage",
+    source: banked ? "content_bank" : "generic",
+  };
 }
 
 /** Word-start capitalization that leaves apostrophes alone ("won't", not "Won'T"). */
@@ -103,7 +157,9 @@ function buildTitle(kw: string): string {
 export function compilePageSpec(opportunity: SearchOpportunity, deps: FactoryDeps): PageSpec {
   const kw = opportunity.keyword;
   const family = opportunity.problem_family_hint;
-  const bank = (family && FAMILY_CONTENT[family]) || GENERIC;
+  const policy = deps.policy ?? DEFAULT_PAGE_FACTORY_POLICY;
+  const resolved = resolveFamilyContent(family, policy);
+  const bank = resolved.content;
   const slug = slugify(kw).replace(/_/g, "-");
   const pageId = `page_${slugify(kw)}_${shortHash(kw)}`;
   const now = deps.now();
@@ -112,6 +168,7 @@ export function compilePageSpec(opportunity: SearchOpportunity, deps: FactoryDep
   return PageSpec.parse({
     page_spec_id: `ps_${slugify(kw)}_v1`,
     schema_version: "1.0.0",
+    ...(deps.tenant_id ? { tenant_id: deps.tenant_id } : {}),
     page_id: pageId,
     version: 1,
     status: "STAGED",
@@ -122,7 +179,10 @@ export function compilePageSpec(opportunity: SearchOpportunity, deps: FactoryDep
     supporting_queries: [],
     problem_family: family,
     geography: opportunity.geography,
-    canonical_path: `/problems/${slug}`,
+    // C6: the FINAL PUBLIC path. Both routes key off it — findStagedByPath
+    // serves the staged view from it and findPublishedByPath the live one — so
+    // it is never a "/staged/" value. Only the PREFIX moved to policy (C2).
+    canonical_path: `${policy.canonical_path_prefix}${slug}`,
     title,
     meta_description: `${kw} — what it can mean, the few things that are safe to check yourself, what not to do, and when it becomes urgent.`.slice(0, 170),
     h1: kw.charAt(0).toUpperCase() + kw.slice(1),
@@ -137,7 +197,10 @@ export function compilePageSpec(opportunity: SearchOpportunity, deps: FactoryDep
       { block_id: "blk_urgency", kind: "when_urgency_changes", heading: "When this becomes urgent", body_md: bank.when_urgency_changes, source_fact_bundle_ids: [] },
       { block_id: "blk_who", kind: "who_handles_it", heading: "Who typically handles this", body_md: bank.who_handles_it, source_fact_bundle_ids: [] },
     ],
-    safety_note_required: family === "electrical" || family === "hvac" || family === "water_damage",
+    safety_note_required: resolved.safety_note_required,
+    // C12c: A05 emits NO structured data. The allow/deny discipline is written
+    // down in policy (page-factory-policy.ts) and enforced by the lint, but
+    // writing a rule down must not start emitting markup as a side effect.
     structured_data_plan: null,
     internal_links: [],
     intake_context: {
@@ -151,8 +214,9 @@ export function compilePageSpec(opportunity: SearchOpportunity, deps: FactoryDep
     user_value_score: null,
     indexed: true,
     noindex_reason: null,
-    template_id: "tpl_intent_page",
-    template_version: "1.0.0",
+    // C2: was a literal here; the value is unchanged.
+    template_id: policy.template_id,
+    template_version: policy.template_version,
     generation: { model: "content-bank-v1", prompt_id: null, prompt_version: null },
     experiment: { experiment_id: null, variant: null },
     qa: { state: "PENDING", reasons: [] },

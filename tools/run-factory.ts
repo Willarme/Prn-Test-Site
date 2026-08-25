@@ -61,7 +61,9 @@ async function main() {
   const { specs, skipped, not_new_page } = buildCandidatePages(
     problemNew,
     policy.max_new_pages_per_period,
-    { now: () => NOW },
+    // A05's namespaced policy sub-block (C2/C3): template identity, the
+    // canonical-path prefix and any data-supplied content families.
+    { now: () => NOW, policy: policy.page_factory },
     decisions
   );
 
