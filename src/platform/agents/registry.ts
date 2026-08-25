@@ -168,6 +168,62 @@ export const TRIAL_AGENT_REGISTRY: readonly AgentDefinition[] = [
       "Compiles approved SearchOpportunities into typed PageSpecs rendered by the one shared template. Never one-off page codebases; never consent language; never A01/A02 logic.",
     phase_band: "TRIAL",
     ...TBD,
+    /**
+     * A05 BUILD, 2026-08-24.
+     *
+     * `autonomy_level` stays "TBD" from the TBD spread above (Loop Spec Audit
+     * condition 12 and OD-10), for the same reason A04's does: canon carries
+     * two non-identical autonomy scales and the owners have not picked one. A05
+     * follows the BEHAVIOUR its spec describes — it compiles, stages and
+     * regenerates, and it cannot approve an opportunity, cannot pass QA and
+     * cannot publish.
+     *
+     * `allowed_capabilities` is `seo.build_candidate_pages` and stays exactly
+     * that. A05 makes NO AI/model call anywhere: generation is 100%
+     * content-bank (pre-answer 3, "ship 100% static"), so `cost_usd: 0` on
+     * every ledger row is measured, not a placeholder. `generate_page_copy`
+     * exists in the spec as a future capability contract and is deliberately
+     * NOT registered — registering a model capability nothing implements would
+     * be describing unbuilt behaviour as built.
+     *
+     * WHAT A05 CAN AND CANNOT WRITE. It writes page specs, page registry rows,
+     * its ledger rows and its Approval Center items (the template-change Impact
+     * Preview). It writes NOTHING customer-owned: no problem_record, no
+     * evidence_object, no intake_answer, no consent_event, no job_packet — the
+     * intake_context on a PageSpec is attribution travelling INTO the intake,
+     * never intake data coming out.
+     *
+     * IT CANNOT CHANGE PUBLISH STATE, and `published_page` is absent from
+     * write_access to say so structurally. A05 sets `qa.state` PENDING at
+     * creation and never again (coherence issue 5: A06 is the sole writer of
+     * PASS/FAIL); the owner alone owns QA_PASS -> PUBLISHED (lifecycle.ts:6).
+     *
+     * `search_opportunity` is READ-ONLY here. A05 consumes the owner's decision
+     * and never writes one — that is A04's write, and the two gates do not
+     * collapse.
+     */
+    allowed_capabilities: ["seo.build_candidate_pages"],
+    data_access: [
+      "search_opportunity",
+      "opportunity_decision",
+      "intent_cluster",
+      "seo_factory_policy",
+      "fact_bundle",
+      "staged_page_spec",
+      "intent_page",
+      "published_page",
+      "agent_run_ledger",
+      "approval_item",
+      "event_envelope",
+    ],
+    write_access: [
+      "staged_page_spec",
+      "intent_page",
+      "agent_run_ledger",
+      "approval_item",
+    ],
+    schedule:
+      "on-demand only — the owner-gated admin route POST /api/admin/pages/generate and a direct call from A04's approval flow, both idempotent on opportunity_id (Loop Spec Audit C9 / pre-answer 6). NOT wired to the Durable Workflow Orchestrator, which A00 shipped deferred and interface-only; choosing it would make A05 the first implementer of a durable-execution engine. No cron route and no scheduler is wired.",
     kill_switch_ref: killRef("A05"),
   },
   {

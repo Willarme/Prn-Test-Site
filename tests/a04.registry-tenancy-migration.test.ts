@@ -124,9 +124,19 @@ describe("migration 00011 — written, NOT applied, and parseable", () => {
     "utf-8"
   );
 
-  it("is the next number in sequence and nothing skipped it", () => {
+  /**
+   * UPDATED BY THE A05 BUILD. This asserted 00011 was the LAST migration in the
+   * directory, which pinned "A04 is the newest agent forever" rather than the
+   * property it was after. A05 added 00012 and it failed for no defect at all.
+   * The real property is sequence integrity: 00011 is A04's, it sits where it
+   * should, and no number was skipped by anyone.
+   */
+  it("is numbered 00011 and the migration sequence has no gaps", () => {
     const migrations = readdirSync(join(process.cwd(), "supabase/migrations")).sort();
-    expect(migrations[migrations.length - 1]).toBe("00011_opportunity_decision.sql");
+    expect(migrations).toContain("00011_opportunity_decision.sql");
+    const numbers = migrations.map((m) => Number(m.slice(0, 5)));
+    expect(numbers).toEqual(numbers.map((_, i) => i + 1));
+    expect(numbers).toContain(11);
   });
 
   it("EXTENDS the existing search_opportunity table rather than duplicating it", () => {
