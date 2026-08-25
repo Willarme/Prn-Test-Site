@@ -186,7 +186,7 @@ export const NOT_MEASURABLE_CHECKS: readonly QaSkippedCheck[] = [
   {
     check: "a11y.color_contrast",
     status: "SKIPPED_NOT_MEASURABLE",
-    why: "contrast is a property of computed styles in a rendered document. Measuring it needs a headless browser (or axe-core against a real DOM); this repo has vitest only. NOT measured, therefore NOT passed.",
+    why: "contrast is a property of computed styles in a rendered document. Measuring it needs a headless browser running an accessibility auditor against a real DOM; this repo has vitest only. NOT measured, therefore NOT passed.",
   },
   {
     check: "a11y.focus_and_screen_reader",
