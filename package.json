@@ -16,7 +16,9 @@
     "factory": "tsx tools/run-factory.ts",
     "seed:convert": "python tools/convert-seed-xlsx.py",
     "db:migrate": "tsx tools/db-migrate.ts",
-    "smoke:seo": "tsx tools/smoke-dataforseo.ts"
+    "smoke:seo": "tsx tools/smoke-dataforseo.ts",
+    "ai:models": "tsx tools/ai-models.ts",
+    "ai:smoke": "tsx tools/ai-smoke.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.112.3",
