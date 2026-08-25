@@ -248,6 +248,59 @@ export const A09_EVENT_NAMES = [
  */
 export const A01_EVENT_NAMES = ["problem.fact_extracted"] as const;
 
+/**
+ * A02 CUSTOMER VALUE / JOB PACKET — registered by A02's build, 2026-08-25,
+ * through A08's machinery rather than beside it. FLAGGED FOR OWNER RATIFICATION.
+ *
+ * ─── TWO NAMES. THE THIRD ONE THE SPEC ORDERS IS A SYNONYM. ────────────────
+ *
+ * A02's spec orders three events emitted that this dictionary does not carry.
+ * Only two of them are real gaps (Loop Spec Audit A02 condition 2, pre-answer 7;
+ * Trial Spec Audit §3 "A02 (2)"):
+ *
+ *   spec §5 / §7            registered here
+ *   problem.intake_completed  ->  problem.intake_completed   NEW — A02's own trigger
+ *   packet.regenerated        ->  packet.regenerated         NEW — the version chain
+ *   packet.shared             ->  packet.share_opened        ALREADY SHIPPED; NOT MINTED
+ *
+ * `packet.shared` is deliberately absent. The dictionary has carried
+ * `packet.share_opened` since #14A §18.2, it means the same moment, and minting
+ * a second spelling would create exactly the two-vocabularies-for-one-thing
+ * drift A09 exists to detect. A test asserts `packet.shared` never appears.
+ *
+ * ─── WHY problem.intake_completed IS NOT A SYNONYM OF packet.generated ─────
+ *
+ * They fire microseconds apart today and they are still different facts.
+ * `packet.generated` says an artifact now exists. `problem.intake_completed`
+ * says the HOMEOWNER finished — they stopped answering and the system had
+ * enough to proceed. The completion stage of the funnel is measured on the
+ * second, not the first: a packet generated for a person who abandoned the
+ * flow, and a packet generated for a person who finished it, are the same
+ * `packet.generated` and must never be the same completion number. A07's
+ * bottleneck walk has no edge at this stage without it, and events cannot be
+ * backfilled — a trial run without this name is a trial with no completion
+ * baseline, permanently.
+ *
+ * ─── WHY packet.regenerated IS NOT packet.generated WITH A FLAG ────────────
+ *
+ * Regeneration is the customer telling us the first packet was not good
+ * enough — they went back, changed an answer, and asked again. That is the
+ * highest-signal negative feedback the trial can collect, and A02's own success
+ * metric (regeneration rate) is uncomputable if it is folded into the
+ * generation count. The Agent Run Ledger's `trigger` field additionally records
+ * it, so nothing is lost if A08 later rejects this spelling.
+ *
+ * CONTEXT CARRIES IDS ONLY — problem_id, request_id, job_packet_id,
+ * packet_version. Nothing a homeowner typed travels in an envelope.
+ *
+ * TODO-ASK-OWNER (Joshua): ratify these two spellings, or rule otherwise — in
+ * which case A08 deprecates them forward rather than A02 renaming anything.
+ */
+export const A02_EVENT_NAMES = [
+  "problem.intake_completed",
+  "packet.regenerated",
+] as const;
+
 export const EVENT_NAMES = [
   ...CORE_EVENT_NAMES,
   ...SLICE_EVENT_NAMES,
@@ -256,5 +309,6 @@ export const EVENT_NAMES = [
   ...LOOP_SEAM_EVENT_NAMES,
   ...A09_EVENT_NAMES,
   ...A01_EVENT_NAMES,
+  ...A02_EVENT_NAMES,
 ] as const;
 export type EventName = (typeof EVENT_NAMES)[number];

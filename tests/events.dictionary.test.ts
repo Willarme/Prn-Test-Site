@@ -129,6 +129,11 @@ describe("dictionary census (counted from the file, not from a document)", () =>
       // to be synonyms of names already shipping and were not minted, so the
       // total moves 85 to 86 rather than 85 to 91.
       a01: 0,
+      // A02 build, 2026-08-25 — the third deliberate census change. A02's spec
+      // orders three names emitted that the dictionary lacked; the third
+      // (`packet.shared`) is a synonym of the shipped `packet.share_opened` and
+      // was deliberately not minted, so the total moves 86 to 88, not 86 to 89.
+      a02: 0,
     };
     for (const name of EVENT_NAMES) counts[seedGroupOf(name)] += 1;
     expect(counts.core_14a).toBe(SEED_CENSUS.core_14a);
@@ -138,6 +143,7 @@ describe("dictionary census (counted from the file, not from a document)", () =>
     expect(counts.loop_seam).toBe(SEED_CENSUS.loop_seam);
     expect(counts.a09).toBe(SEED_CENSUS.a09);
     expect(counts.a01).toBe(SEED_CENSUS.a01);
+    expect(counts.a02).toBe(SEED_CENSUS.a02);
     expect(EVENT_NAMES.length).toBe(
       SEED_CENSUS.core_14a +
         SEED_CENSUS.door_slice +
@@ -145,9 +151,10 @@ describe("dictionary census (counted from the file, not from a document)", () =>
         SEED_CENSUS.steward +
         SEED_CENSUS.loop_seam +
         SEED_CENSUS.a09 +
-        SEED_CENSUS.a01
+        SEED_CENSUS.a01 +
+        SEED_CENSUS.a02
     );
-    expect(EVENT_NAMES.length).toBe(86);
+    expect(EVENT_NAMES.length).toBe(88);
     expect(listMetricDefinitions().length).toBe(SEED_CENSUS.owner_gauges);
   });
 

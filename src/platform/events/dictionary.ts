@@ -10,6 +10,7 @@ import {
 } from "@/platform/events/definitions";
 import {
   A01_EVENT_NAMES,
+  A02_EVENT_NAMES,
   A09_EVENT_NAMES,
   CORE_EVENT_NAMES,
   EVENT_NAMES,
@@ -352,6 +353,24 @@ const EVENT_SEEDS: Record<string, EventSeed> = {
       "context.provenance",
     ],
   },
+
+  // ---- A02 customer value / job packet (see names.ts A02_EVENT_NAMES) ------
+  // TWO names, not three: `packet.shared` is NOT minted — the shipped
+  // `packet.share_opened` above already means that moment. Required context is
+  // IDS ONLY; a packet's contents are the homeowner's own words about their
+  // home and never travel in an envelope.
+  "problem.intake_completed": {
+    description:
+      "The homeowner finished intake and the system had enough to proceed. Distinct from packet.generated, which records that an artifact exists: a packet built for someone who abandoned the flow and a packet built for someone who finished it are the same packet.generated and must never be the same completion number.",
+    owner: "A02",
+    required: ["context.problem_id", "context.request_id"],
+  },
+  "packet.regenerated": {
+    description:
+      "A new packet version was produced for a problem that already had one — the customer changed an answer and asked again. Kept separate from packet.generated because regeneration rate is A02's own success metric and is uncomputable if the two are folded together.",
+    owner: "A02",
+    required: ["context.problem_id", "context.job_packet_id", "context.packet_version"],
+  },
 };
 
 /**
@@ -408,8 +427,13 @@ const OWNER_GAUGE_SEEDS: { metric_key: string; display_name: string }[] = [
  *                   gap; its other five proposed names map onto shipped ones and
  *                   were deliberately not minted. Second deliberate census
  *                   change: 85 to 86.
+ *   a02         2   problem.intake_completed + packet.regenerated (2026-08-25).
+ *                   THIRD deliberate census change, 86 to 88. A02's spec orders
+ *                   three; the third (`packet.shared`) is a synonym of the
+ *                   shipped `packet.share_opened` and was deliberately not
+ *                   minted, so the count moves by two rather than three.
  *   ----------------
- *   total      86   EventDefinitions, all seeded `approved` at version 1
+ *   total      88   EventDefinitions, all seeded `approved` at version 1
  *              11   MetricDefinitions, all seeded `proposed` at version 1
  */
 export const SEED_CENSUS = {
@@ -420,6 +444,7 @@ export const SEED_CENSUS = {
   loop_seam: 6,
   a09: 4,
   a01: 1,
+  a02: 2,
   owner_gauges: 11,
 } as const;
 
@@ -431,7 +456,8 @@ export type SeedGroup =
   | "steward"
   | "loop_seam"
   | "a09"
-  | "a01";
+  | "a01"
+  | "a02";
 
 export function seedGroupOf(name: string): SeedGroup {
   if ((CORE_EVENT_NAMES as readonly string[]).includes(name)) return "core_14a";
@@ -441,6 +467,7 @@ export function seedGroupOf(name: string): SeedGroup {
   if ((LOOP_SEAM_EVENT_NAMES as readonly string[]).includes(name)) return "loop_seam";
   if ((A09_EVENT_NAMES as readonly string[]).includes(name)) return "a09";
   if ((A01_EVENT_NAMES as readonly string[]).includes(name)) return "a01";
+  if ((A02_EVENT_NAMES as readonly string[]).includes(name)) return "a02";
   return "core_14a";
 }
 
