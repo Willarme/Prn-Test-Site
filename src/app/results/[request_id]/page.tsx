@@ -3,7 +3,12 @@ import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { FEATURE_CONCEPTS } from "@/domain/feature-lab/concepts";
-import type { JobPacket, ProblemRecord } from "@/domain/problem/contracts";
+import {
+  JOURNEY_COOKIE_NAME,
+  decodeJourneyCookie,
+  projectPacketForCookie,
+  type PacketCookieView,
+} from "@/domain/problem/journey-cookie";
 import { ACTIVE_PACKET_COPY, fillCopy } from "@/domain/problem/packet-copy";
 import { SAFETY_RULES } from "@/domain/problem/safety";
 import { recordCustomerEvent } from "@/platform/events/customer";
@@ -28,37 +33,40 @@ export default async function ResultsPage({
   const store = runtimeStore();
   const journey = await store.getJourney(request_id);
 
-  let problem: ProblemRecord | undefined = journey?.problem;
-  let packet: JobPacket | undefined = journey?.packet;
+  /**
+   * ONE RENDER TYPE, WHATEVER THE SOURCE (A02 step 8). The page renders a
+   * PacketCookieView — the allow-listed projection — so the store path and the
+   * cookie path are structurally identical, and a field that may not travel in
+   * a cookie cannot be rendered from the store path either and then quietly
+   * "needed" in the cookie later.
+   */
+  let packet: PacketCookieView | undefined = journey
+    ? projectPacketForCookie(journey.packet)
+    : undefined;
+  let safetyRuleId: string | null = journey?.problem.safety_rule_id ?? null;
   let fromCookie = false;
 
   // Fallback ONLY when there is no database configured (local dev / a preview
   // deploy without credentials): the journey rides in the tester own browser
   // cookie so the flow can still be walked end to end. Never used once the
-  // database is wired.
+  // database is wired. See domain/problem/journey-cookie.ts for exactly what
+  // may travel and why this is an accepted exposure rather than an absolute
+  // the code contradicts.
   if (!packet && store.kind === "file") {
-    const raw = (await cookies()).get("prn_last_journey")?.value;
-    if (raw) {
-      try {
-        const j = JSON.parse(Buffer.from(raw, "base64url").toString("utf-8")) as {
-          request_id: string;
-          problem: ProblemRecord;
-          packet: JobPacket;
-        };
-        if (j.request_id === request_id) {
-          problem = j.problem;
-          packet = j.packet;
-          fromCookie = true;
-        }
-      } catch {
-        /* ignore malformed cookie */
-      }
+    const payload = decodeJourneyCookie(
+      (await cookies()).get(JOURNEY_COOKIE_NAME)?.value,
+      request_id
+    );
+    if (payload) {
+      packet = payload.packet;
+      safetyRuleId = payload.safety_rule_id;
+      fromCookie = true;
     }
   }
 
-  if (!problem || !packet) notFound();
+  if (!packet) notFound();
 
-  const safetyRule = SAFETY_RULES.find((r) => r.safety_rule_id === problem.safety_rule_id) ?? null;
+  const safetyRule = SAFETY_RULES.find((r) => r.safety_rule_id === safetyRuleId) ?? null;
   const copySummary = packet.call_script;
   /**
    * PACKET COPY FROM CONFIG (Loop Spec Audit A02 condition 8). Every heading and

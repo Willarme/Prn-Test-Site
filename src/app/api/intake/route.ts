@@ -3,6 +3,11 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { DoorAttribution } from "@/domain/intake/contracts";
 import { analyzeProblemFixture } from "@/domain/problem/fixture-engine";
+import {
+  JOURNEY_COOKIE_NAME,
+  encodeJourneyCookie,
+  projectPacketForCookie,
+} from "@/domain/problem/journey-cookie";
 import { buildPacket } from "@/domain/problem/packet";
 import { checkSafety } from "@/domain/problem/safety";
 import { ACTIVE_DISCLOSURE, CONSENT_SCOPE_INTAKE } from "@/domain/privacy/disclosures";
@@ -286,15 +291,28 @@ export async function POST(request: Request): Promise<NextResponse> {
           },
   });
 
-  // No database configured (local dev or a preview deploy without keys):
-  // carry the journey in the requester own browser so the flow still works.
-  // Never set once the database is wired.
+  /**
+   * No database configured (local dev or a preview deploy without keys): carry
+   * the journey in the requester's own browser so the flow still works. Never
+   * set once the database is wired.
+   *
+   * NARROWED, 2026-08-25 (Loop Spec Audit A02 condition 6). This used to encode
+   * `{request_id, problem, packet}` WHOLESALE — the entire ProblemRecord
+   * (problem_summary, service_category, evidence_ids, claim_ids) and the entire
+   * packet, meaning every field any later agent added arrived in a browser
+   * cookie by default. It now carries an ALLOW-LIST: the one problem field the
+   * results page reads, and only the packet fields it renders. See
+   * domain/problem/journey-cookie.ts for the full reasoning, including why
+   * "narrow it to ids and rehydrate" is not available here.
+   */
   if (store.kind === "file") {
-    const payload = Buffer.from(
-      JSON.stringify({ request_id: requestId, problem, packet })
-    ).toString("base64url");
-    if (payload.length < 3800) {
-      res.cookies.set("prn_last_journey", payload, {
+    const payload = encodeJourneyCookie({
+      request_id: requestId,
+      safety_rule_id: problem.safety_rule_id,
+      packet: projectPacketForCookie(packet),
+    });
+    if (payload) {
+      res.cookies.set(JOURNEY_COOKIE_NAME, payload, {
         httpOnly: true,
         sameSite: "lax",
         secure: process.env.NODE_ENV === "production",
