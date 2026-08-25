@@ -203,6 +203,51 @@ export const A09_EVENT_NAMES = [
   "data_quality.repair_verified",
 ] as const;
 
+/**
+ * A01 CUSTOMER PROBLEM INTELLIGENCE — registered by A01's build, 2026-08-25,
+ * through A08's machinery rather than beside it. FLAGGED FOR OWNER RATIFICATION.
+ *
+ * ─── ONE NAME. THE OTHER FIVE WERE ALREADY HERE. ───────────────────────────
+ *
+ * A01's spec proposes six event names, none of which exist in this file. Five of
+ * them are synonyms of names this dictionary already carries, so A01 emits the
+ * shipped ones and mints nothing (Loop Spec Audit A01 condition 1, pre-answer
+ * 12 — "A01 should be stricter, not looser, than the platform was"):
+ *
+ *   spec §5                    emitted instead
+ *   problem.intake_started ->  intake.started
+ *   clarification.asked    ->  intake.clarifier_asked
+ *   clarification.answered ->  intake.clarifier_answered
+ *   safety.flagged         ->  safety.triggered
+ *   problem.classified     ->  problem.created / problem.updated
+ *
+ * ─── WHY THE SIXTH IS REAL AND NOT A SIXTH SYNONYM ─────────────────────────
+ *
+ * `problem.fact_extracted` has no ratified equivalent, and the gap is not
+ * cosmetic. Every other name above records something that happened to a REQUEST
+ * — it started, a question was asked, a record was written. This one records
+ * that a durable FactClaim now exists: a specific assertion, traceable to
+ * specific evidence, with a provenance and a confidence of its own. Folding it
+ * into `problem.updated` would make "we established a fact" and "a field on the
+ * record changed" the same event, and the first is the one the data-moat and
+ * data-quality lanes need to count. A01's own success metric ("useful unique
+ * fields captured") has no instrument without it.
+ *
+ * It is deliberately NOT `fact.extracted`: a top-level `fact.` domain would be a
+ * new family for one name, and the claim belongs to a problem. `problem.` is the
+ * domain already shipping `problem.created` / `problem.updated`, and the name
+ * passes the shipped domain.action regex.
+ *
+ * CONTEXT CARRIES IDS ONLY — claim_id, problem_id, claim_class, provenance. The
+ * fact's VALUE is a homeowner's own words about their home and never travels in
+ * an envelope; the definition in dictionary.ts states the required keys.
+ *
+ * TODO-ASK-OWNER (Joshua): ratify this spelling, or rule that A01's proposed
+ * `problem.fact_extracted` should be renamed — in which case A08 deprecates it
+ * forward rather than A01 renaming anything itself.
+ */
+export const A01_EVENT_NAMES = ["problem.fact_extracted"] as const;
+
 export const EVENT_NAMES = [
   ...CORE_EVENT_NAMES,
   ...SLICE_EVENT_NAMES,
@@ -210,5 +255,6 @@ export const EVENT_NAMES = [
   ...STEWARD_EVENT_NAMES,
   ...LOOP_SEAM_EVENT_NAMES,
   ...A09_EVENT_NAMES,
+  ...A01_EVENT_NAMES,
 ] as const;
 export type EventName = (typeof EVENT_NAMES)[number];

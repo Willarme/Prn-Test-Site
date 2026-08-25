@@ -124,6 +124,11 @@ describe("dictionary census (counted from the file, not from a document)", () =>
       // on purpose (names.ts A09_EVENT_NAMES); this group and the total moving
       // from 81 to 85 is the record of that decision, not a leak past the pin.
       a09: 0,
+      // A01 build, 2026-08-25 — the second deliberate census change, and a much
+      // smaller one on purpose. A01's spec proposed SIX names; five were found
+      // to be synonyms of names already shipping and were not minted, so the
+      // total moves 85 to 86 rather than 85 to 91.
+      a01: 0,
     };
     for (const name of EVENT_NAMES) counts[seedGroupOf(name)] += 1;
     expect(counts.core_14a).toBe(SEED_CENSUS.core_14a);
@@ -132,15 +137,17 @@ describe("dictionary census (counted from the file, not from a document)", () =>
     expect(counts.steward).toBe(SEED_CENSUS.steward);
     expect(counts.loop_seam).toBe(SEED_CENSUS.loop_seam);
     expect(counts.a09).toBe(SEED_CENSUS.a09);
+    expect(counts.a01).toBe(SEED_CENSUS.a01);
     expect(EVENT_NAMES.length).toBe(
       SEED_CENSUS.core_14a +
         SEED_CENSUS.door_slice +
         SEED_CENSUS.platform +
         SEED_CENSUS.steward +
         SEED_CENSUS.loop_seam +
-        SEED_CENSUS.a09
+        SEED_CENSUS.a09 +
+        SEED_CENSUS.a01
     );
-    expect(EVENT_NAMES.length).toBe(85);
+    expect(EVENT_NAMES.length).toBe(86);
     expect(listMetricDefinitions().length).toBe(SEED_CENSUS.owner_gauges);
   });
 

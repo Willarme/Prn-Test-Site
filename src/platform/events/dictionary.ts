@@ -9,6 +9,7 @@ import {
   RETENTION_CLASS_PLACEHOLDER,
 } from "@/platform/events/definitions";
 import {
+  A01_EVENT_NAMES,
   A09_EVENT_NAMES,
   CORE_EVENT_NAMES,
   EVENT_NAMES,
@@ -334,6 +335,23 @@ const EVENT_SEEDS: Record<string, EventSeed> = {
     owner: "A09",
     required: ["context.issue_id", "context.repair_kind"],
   },
+
+  // ---- A01 customer problem intelligence (see names.ts A01_EVENT_NAMES) ----
+  // The ONE name A01 needed that had no ratified equivalent; its other five map
+  // onto names this dictionary already carries. Required context is IDS AND
+  // CLASSIFICATIONS ONLY — the fact's value is a homeowner's own words about
+  // their home and never travels in an envelope.
+  "problem.fact_extracted": {
+    description:
+      "A FactClaim was established for a problem record: one assertion, traceable to its evidence, carrying its own provenance (supplied vs inferred) and its own confidence. Distinct from problem.updated, which records that the record changed — this records that a durable fact now exists.",
+    owner: "A01",
+    required: [
+      "context.problem_id",
+      "context.claim_id",
+      "context.claim_class",
+      "context.provenance",
+    ],
+  },
 };
 
 /**
@@ -386,8 +404,12 @@ const OWNER_GAUGE_SEEDS: { metric_key: string; display_name: string }[] = [
  *                   A09_EVENT_NAMES note in names.ts. DELIBERATE census change:
  *                   the pinned counts moved from 81 to 85 because four names
  *                   were added on purpose, not because a name slipped in.
+ *   a01         1   problem.fact_extracted (2026-08-25) — A01's ONE genuine
+ *                   gap; its other five proposed names map onto shipped ones and
+ *                   were deliberately not minted. Second deliberate census
+ *                   change: 85 to 86.
  *   ----------------
- *   total      85   EventDefinitions, all seeded `approved` at version 1
+ *   total      86   EventDefinitions, all seeded `approved` at version 1
  *              11   MetricDefinitions, all seeded `proposed` at version 1
  */
 export const SEED_CENSUS = {
@@ -397,6 +419,7 @@ export const SEED_CENSUS = {
   steward: 6,
   loop_seam: 6,
   a09: 4,
+  a01: 1,
   owner_gauges: 11,
 } as const;
 
@@ -407,7 +430,8 @@ export type SeedGroup =
   | "platform"
   | "steward"
   | "loop_seam"
-  | "a09";
+  | "a09"
+  | "a01";
 
 export function seedGroupOf(name: string): SeedGroup {
   if ((CORE_EVENT_NAMES as readonly string[]).includes(name)) return "core_14a";
@@ -416,6 +440,7 @@ export function seedGroupOf(name: string): SeedGroup {
   if ((STEWARD_EVENT_NAMES as readonly string[]).includes(name)) return "steward";
   if ((LOOP_SEAM_EVENT_NAMES as readonly string[]).includes(name)) return "loop_seam";
   if ((A09_EVENT_NAMES as readonly string[]).includes(name)) return "a09";
+  if ((A01_EVENT_NAMES as readonly string[]).includes(name)) return "a01";
   return "core_14a";
 }
 
