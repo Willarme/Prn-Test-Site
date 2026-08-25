@@ -141,19 +141,89 @@ export async function neverDoSuite(): Promise<Suite> {
       expectation:
         "NEVER expose registry, ledger, capability or approval data on a public route. Gate READS as rigorously as actions — a UI control hidden behind a gate while its data route stays reachable is the mistake",
       source: `${SPECS}A00 Shared Agent Platform.md §7 bullet 6`,
-      how: "Enumerates every API route under src/app/api and asserts each one that touches a registry, ledger, approval or kill-switch module calls isAdminUnlocked().",
+      /**
+       * HARNESS FIX, 2026-08-25 — the first version of this row measured
+       * TOUCHES and the expectation is about READS.
+       *
+       * It grepped every route for the NAME of a control-plane module and
+       * required `isAdminUnlocked()` on any that matched. `/api/intake` matched,
+       * because it imports `recordAgentRun` to write ONE audit row about the
+       * classification it just ran — the Wave-0 proof case, fail-soft by
+       * contract, and the row is never read back. Nothing about the ledger
+       * reaches the response, which carries `request_id`, `next` and `safety`.
+       *
+       * So the harness reported the intake route's own audit trail as an
+       * exposure, and would have kept doing so for ever — a permanent red row
+       * an owner learns to skip is worse than no row. Requiring an owner session
+       * on `/api/intake` is not a fix either: it would mean a homeowner needs
+       * the admin passcode to describe a leak.
+       *
+       * MEASURED PROPERLY NOW, and strictly harder than before:
+       *   - every public surface, not just API routes — an admin PAGE that
+       *     renders a registry is the same exposure as a route that serves it,
+       *     and `adminGate()` is the server-component form of the same gate;
+       *   - the imported SYMBOLS decide, not the module name. Everything except
+       *     the append-only audit/telemetry entry points counts as a read;
+       *   - and the one public surface that appends is checked for the thing
+       *     that would actually be a leak: nothing it got back from the control
+       *     plane appears in a response body.
+       */
+      how: "Enumerates every public surface under src/app (routes and server pages), reads which SYMBOLS each imports from a control-plane module, and requires an owner gate on every one that imports anything but an append-only audit write — then checks that what the appending surface got back never reaches a response body.",
       measure() {
-        const routes = filesUnder("src/app/api").filter((f) => f.path.endsWith("route.ts"));
-        const sensitive = /approvals\/center|runs\/ledger|agents\/registry|capabilities\/registry|killswitch|events\/steward/;
-        const touching = routes.filter((f) => sensitive.test(f.text));
-        const ungated = touching.filter((f) => !/isAdminUnlocked\(/.test(f.text));
+        const CONTROL =
+          /@\/platform\/(approvals\/center|runs\/ledger|agents\/registry|capabilities\/registry|killswitch|events\/steward)/;
+        /**
+         * The entry points that only APPEND. Each writes one audit or telemetry
+         * record, returns ids about the row it just wrote, and offers no way to
+         * read the control plane back. A public route may call these; that is
+         * what "the ledger audits the customer flow" means.
+         */
+        const APPEND_ONLY = new Set(["recordAgentRun", "emitPlatformEvent", "validateAndEmit"]);
+
+        const surfaces = filesUnder("src/app").filter(
+          (f) => f.path.endsWith("/route.ts") || f.path.endsWith("/page.tsx")
+        );
+        const gated = (text: string) => /isAdminUnlocked\(|adminGate\(/.test(text);
+        const underAdmin = (path: string) =>
+          path.startsWith("src/app/admin/") || path.startsWith("src/app/api/admin/");
+
+        const touching = surfaces
+          .map((f) => ({ file: f, symbols: importedFrom(f.text, CONTROL) }))
+          .filter((s) => s.symbols.length > 0);
+        const reading = touching.filter((s) => s.symbols.some((n) => !APPEND_ONLY.has(n)));
+        const appendingOnly = touching.filter((s) => !reading.includes(s));
+        const ungated = reading.filter((s) => !gated(s.file.text));
+        const outside = reading.filter((s) => !underAdmin(s.file.path));
+        const leaked = appendingOnly.flatMap((s) =>
+          boundNames(s.file.text, s.symbols)
+            .filter((name) => responseBodies(s.file.text).some((body) => wordIn(body, name)))
+            .map((name) => `${s.file.path}: ${name}`)
+        );
+
         return all([
-          [`${touching.length} route(s) touch platform control data`, touching.length > 0],
-          ["every one of them requires an unlocked owner session", ungated.length === 0, ungated.map((f) => f.path).join(", ")],
           [
-            "no route outside /api/admin touches them at all",
-            touching.every((f) => f.path.startsWith("src/app/api/admin/")),
-            touching.filter((f) => !f.path.startsWith("src/app/api/admin/")).map((f) => f.path).join(", "),
+            `${touching.length} public surface(s) touch a control-plane module`,
+            touching.length > 0,
+          ],
+          [
+            `${reading.length} of them READ control-plane data — the rest only append an audit row`,
+            reading.length > 0,
+            appendingOnly.map((s) => `${s.file.path} (${s.symbols.join(", ")})`).join(", "),
+          ],
+          [
+            "every reader requires an unlocked owner session",
+            ungated.length === 0,
+            ungated.map((s) => s.file.path).join(", "),
+          ],
+          [
+            "no reader lives outside the admin surface",
+            outside.length === 0,
+            outside.map((s) => s.file.path).join(", "),
+          ],
+          [
+            "and nothing the appending surfaces got back from the control plane reaches a response body",
+            leaked.length === 0,
+            leaked.join(" | "),
           ],
         ]);
       },
@@ -906,4 +976,65 @@ function trivialSchema() {
   return {
     safeParse: () => ({ success: false as const, error: { issues: [] } }),
   } as never;
+}
+
+/* --- reading a route the way a reviewer would, not the way grep does ------- */
+
+/** Every identifier a file imports from a module whose path matches `from`. */
+function importedFrom(text: string, from: RegExp): string[] {
+  const names: string[] = [];
+  const re = /import\s+(?:type\s+)?\{([^}]*)\}\s*from\s*"([^"]+)"/g;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(text)) !== null) {
+    if (!from.test(m[2])) continue;
+    for (const raw of m[1].split(",")) {
+      const name = raw.trim().replace(/^type\s+/, "").split(/\s+as\s+/)[0].trim();
+      if (name) names.push(name);
+    }
+  }
+  return names;
+}
+
+/** `const x = await recordAgentRun(...)` -> ["x"]. What a call was bound to. */
+function boundNames(text: string, calls: readonly string[]): string[] {
+  const names: string[] = [];
+  for (const call of calls) {
+    const re = new RegExp(
+      `(?:const|let|var)\\s+([A-Za-z_$][\\w$]*)\\s*=\\s*(?:await\\s+)?${call}\\s*\\(`,
+      "g"
+    );
+    let m: RegExpExecArray | null;
+    while ((m = re.exec(text)) !== null) names.push(m[1]);
+  }
+  return names;
+}
+
+/**
+ * The argument text of every `NextResponse.json(...)` in a file, matched with a
+ * paren counter rather than a regex — a response body is nested objects, and a
+ * regex that stops at the first `)` reads half of one and calls it clean.
+ */
+function responseBodies(text: string): string[] {
+  const bodies: string[] = [];
+  const marker = "NextResponse.json(";
+  let at = text.indexOf(marker);
+  while (at !== -1) {
+    let depth = 0;
+    let i = at + marker.length - 1;
+    const start = i + 1;
+    for (; i < text.length; i += 1) {
+      if (text[i] === "(") depth += 1;
+      else if (text[i] === ")") {
+        depth -= 1;
+        if (depth === 0) break;
+      }
+    }
+    bodies.push(text.slice(start, i));
+    at = text.indexOf(marker, i);
+  }
+  return bodies;
+}
+
+function wordIn(haystack: string, name: string): boolean {
+  return new RegExp(`\\b${name}\\b`).test(haystack);
 }
