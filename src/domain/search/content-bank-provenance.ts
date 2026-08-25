@@ -134,6 +134,84 @@ export function contentBankBundle(
   });
 }
 
+/* -------------------------------------------------------------------------- */
+/* THE HANDCRAFTED DOOR — the seventh page, which no content-bank entry wrote  */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * THE OTHER FIRST-PARTY SOURCE (inspection F1/F2).
+ *
+ * SIX of PRN's seven shipped doors were generated from the content bank, so
+ * citing a content-bank bundle on them is exactly true. The SEVENTH —
+ * `/problems/ac-not-turning-on`, the Wave-2 page handcrafted before the factory
+ * existed — was written by hand, block by block, and its copy appears in no
+ * content-bank entry. Its statements are longer, differently worded, and it
+ * carries a closing FAQ the bank has no fact for.
+ *
+ * SO IT DOES NOT CITE THE hvac BUNDLE. Pointing that page at `content bank:
+ * hvac` would claim its safety statement came from a source that says something
+ * else — a fabricated citation, which this module's whole header exists to
+ * refuse. It gets a bundle of its OWN, minted from its OWN authored copy: one
+ * fact per block, addressable by block_id, with an internal `prn://` pointer to
+ * where that statement actually lives.
+ *
+ * SAME EPISTEMICS AS THE CONTENT BANK, and no more. These are first-party,
+ * deterministic, in-repo statements PRN wrote. `confidence: "high"` is about
+ * provenance certainty — we know exactly where the words came from — never
+ * about clinical correctness. Nothing here reads a customer record; the copy is
+ * a static fixture in this repo.
+ */
+export const HANDCRAFTED_DOOR_SOURCE_TYPE = "handcrafted_door";
+export const HANDCRAFTED_DOOR_SOURCE_ID = "handcrafted_v1";
+export const HANDCRAFTED_DOOR_VERSION = 1;
+
+export function handcraftedDoorBundleId(doorKey: string): string {
+  return `fb_${HANDCRAFTED_DOOR_SOURCE_ID}_${doorKey}`;
+}
+
+export function handcraftedDoorFactId(doorKey: string, blockId: string): string {
+  return `fact_${HANDCRAFTED_DOOR_SOURCE_ID}_${doorKey}_${blockId}`;
+}
+
+/** Internal pointer to the block whose copy this is. Never an external URL. */
+export function handcraftedDoorSourceUrl(doorKey: string, blockId: string): string {
+  return `prn://handcrafted-door/v${HANDCRAFTED_DOOR_VERSION}/${doorKey}#${blockId}`;
+}
+
+/**
+ * Mint the FactBundle for ONE handcrafted door, from the page's own blocks.
+ *
+ * Deterministic and self-describing: the bundle is derived from the very text
+ * that cites it, so a bundle claiming to source a statement the page does not
+ * make cannot be constructed here.
+ */
+export function handcraftedDoorBundle(
+  doorKey: string,
+  blocks: ReadonlyArray<{ block_id: string; body_md: string }>,
+  options: ContentBankBundleOptions
+): FactBundle {
+  return FactBundle.parse({
+    fact_bundle_id: handcraftedDoorBundleId(doorKey),
+    schema_version: "1.0.0",
+    topic: `handcrafted door: ${doorKey}`,
+    geography: options.geography,
+    facts: blocks.map((block) => ({
+      fact_id: handcraftedDoorFactId(doorKey, block.block_id),
+      statement: block.body_md,
+      source_url: handcraftedDoorSourceUrl(doorKey, block.block_id),
+      source_type: HANDCRAFTED_DOOR_SOURCE_TYPE,
+      verified_at: options.created_at,
+      confidence: "high",
+    })),
+    rights_class: "first_party",
+    ttl_days: 180,
+    expires_at: null,
+    permitted_page_classes: ["intent_door"],
+    version: HANDCRAFTED_DOOR_VERSION,
+    created_at: options.created_at,
+  });
+}
+
 /**
  * PROVENANCE.PRESENT — the property this stub exists to make real. A page has
  * provenance when every content block cites at least one bundle AND the spec
