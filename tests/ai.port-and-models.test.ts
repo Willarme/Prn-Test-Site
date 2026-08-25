@@ -157,8 +157,10 @@ describe("the model catalogue is data, sourced and dated", () => {
   it("every derived dollar figure is TEST-labeled, vendor prices are not", () => {
     expect(estimateModelCall("stealth/ox-alpha", 100, 100).figure_label).toBe("TEST");
     expect(actualModelCost("stealth/ox-alpha", 100, 100).figure_label).toBe("TEST");
-    // The vendor's own price is a sourced fact and carries its source, not a TEST label.
-    expect(findModel("deepseek/deepseek-v4-flash")!.price_in_per_mtok).toBe(0.0886);
+    // The vendor's own price is a sourced fact and carries its source, not a TEST
+    // label — and it is the EXACT figure the live catalogue reports, not a
+    // rounded one. `npm run ai:models` caught the rounding on its first run.
+    expect(findModel("deepseek/deepseek-v4-flash")!.price_in_per_mtok).toBe(0.088606);
   });
 });
 

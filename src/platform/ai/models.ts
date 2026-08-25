@@ -28,7 +28,7 @@ import type { StructuredOutputMode } from "@/platform/ai/provider";
  * a vendor fact, so `TEST_FIGURE_LABEL` travels with it onto the ledger row and
  * into every report. See callModel.ts.
  *
- * ⚠ RE-PROBE BEFORE ANY REAL-MONEY DECISION. OpenRouter is a marketplace of 418
+ * ⚠ RE-PROBE BEFORE ANY REAL-MONEY DECISION. This is a marketplace of ~419
  * models whose prices vary per model and change without notice. A stale price
  * silently under-estimates every call, which is precisely how a cap gets blown.
  * `npm run ai:models` re-probes the live catalogue and prints the drift against
@@ -40,7 +40,7 @@ import type { StructuredOutputMode } from "@/platform/ai/provider";
 /** The date every price and capability flag below was read from the live API. */
 export const MODEL_CATALOGUE_PROBED_AT = "2026-08-25";
 export const MODEL_CATALOGUE_SOURCE =
-  "GET https://openrouter.ai/api/v1/models (live probe, 418 models)";
+  "GET https://openrouter.ai/api/v1/models (live probe, 419 models)";
 
 /** Stamped on every PRN-derived dollar figure — estimates, call costs, day totals. */
 export const TEST_FIGURE_LABEL = "TEST";
@@ -123,11 +123,19 @@ export const MODEL_CATALOGUE: readonly ModelConfig[] = [
     id: "deepseek/deepseek-v4-flash",
     provider: "openrouter",
     mode: "json_schema",
-    price_in_per_mtok: 0.0886,
-    price_out_per_mtok: 0.177,
-    context: 1_000_000,
+    /**
+     * THE EXACT FIGURES, and how they got here. These were first seeded from the
+     * probe's ROUNDED summary — $0.0886 / $0.177, context 1,000,000 — and
+     * `npm run ai:models` immediately flagged all three against the live
+     * catalogue. That is the drift script earning its place on its first run: a
+     * rounded price under-estimates every call by a fraction of a percent
+     * forever, and a rounded context window is simply wrong.
+     */
+    price_in_per_mtok: 0.088606,
+    price_out_per_mtok: 0.177212,
+    context: 1_048_576,
     allows_customer_data: false,
-    price_source: `${MODEL_CATALOGUE_SOURCE}, ${MODEL_CATALOGUE_PROBED_AT}: ~$0.0886/M in, ~$0.177/M out, structured_outputs supported`,
+    price_source: `${MODEL_CATALOGUE_SOURCE}, ${MODEL_CATALOGUE_PROBED_AT}: $0.088606/M in, $0.177212/M out, structured_outputs supported`,
     free: false,
   },
   {
@@ -136,7 +144,7 @@ export const MODEL_CATALOGUE: readonly ModelConfig[] = [
     mode: "json_schema",
     price_in_per_mtok: 0.14,
     price_out_per_mtok: 0.28,
-    context: 1_310_000,
+    context: 1_310_720,
     allows_customer_data: false,
     price_source: `${MODEL_CATALOGUE_SOURCE}, ${MODEL_CATALOGUE_PROBED_AT}: $0.14/M in, $0.28/M out, structured_outputs supported`,
     free: false,

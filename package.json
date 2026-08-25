@@ -17,6 +17,7 @@
     "seed:convert": "python tools/convert-seed-xlsx.py",
     "db:migrate": "tsx tools/db-migrate.ts",
     "smoke:seo": "tsx tools/smoke-dataforseo.ts",
+    "ai:policy": "tsx tools/ai-policy.ts",
     "ai:models": "tsx tools/ai-models.ts",
     "ai:smoke": "tsx tools/ai-smoke.ts"
   },
