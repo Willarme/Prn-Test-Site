@@ -63,9 +63,19 @@ export async function regeneratePacket(requestId: string): Promise<void> {
   const ctx = await loadJourneyContext(requestId);
   if (!ctx) return;
   const store = runtimeStore();
-  const [answers, diagnosis] = await Promise.all([
+  const [answers, diagnosis, claims] = await Promise.all([
     store.listIntakeAnswers(requestId),
     store.listDiagnosisAnswers(requestId),
+    /**
+     * A01's claims travel into every version, not just the first (finding 1).
+     * Without this, version 1 carried a `claim_basis` and every regeneration
+     * dropped it — so the CURRENT packet, which is the one every reader gets,
+     * was the one that could not say what it rested on.
+     *
+     * Nothing recomputes them: they are the claims A01 established for this
+     * problem, read back as they were written.
+     */
+    store.listClaims(ctx.journey.problem.problem_id),
   ]);
   const outcome = await buildPacket({
     problem: ctx.journey.problem,
@@ -74,6 +84,9 @@ export async function regeneratePacket(requestId: string): Promise<void> {
     playbook: ctx.playbook,
     answers,
     diagnosis,
+    // Absent still means "not recorded" — an empty array would claim the packet
+    // rests on no facts, which is a different statement.
+    ...(claims.length > 0 ? { claims } : {}),
     version: ctx.journey.packet.packet_version + 1,
     previous: ctx.journey.packet,
     now: nowIso(),

@@ -99,6 +99,13 @@ describe("the packet version chain is maintained", () => {
       expect(versions[i].status).toBe("superseded");
       expect(versions[i].superseded_by).toBe(versions[i + 1].job_packet_id);
     }
+
+    /**
+     * EVERY version carries A01's claim basis, not just the first. Regeneration
+     * used to drop it, which meant the CURRENT packet — the one every reader
+     * gets — was the only one that could not say what it rested on.
+     */
+    for (const v of versions) expect(v.claim_basis?.length).toBeGreaterThan(0);
   });
 
   it("the homeowner still sees the newest version — the read path did not change", async () => {
