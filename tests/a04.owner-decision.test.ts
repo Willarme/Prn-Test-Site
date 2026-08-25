@@ -188,6 +188,29 @@ describe("decisions are an append-only fold", () => {
     });
   }
 
+  /**
+   * THE TIE-BREAK, DETERMINISTICALLY (added by the A05 build).
+   *
+   * The end-to-end version of this pin below reproduced the same-second tie by
+   * making two back-to-back calls and trusting the wall clock. A05's build put
+   * real work inside the accept path — the page factory — which pushed the two
+   * calls into different seconds and made the pin flaky in the full suite but
+   * green in isolation. The property being pinned is the FOLD's behaviour on a
+   * tie, so it is asserted here with constructed timestamps, where no amount of
+   * downstream work can change the answer.
+   */
+  it("on an exact timestamp tie the LATER record wins — array order is decision order", () => {
+    const o = opportunity();
+    const sameSecond = [
+      decision("accept", "2026-08-21T10:00:00Z"),
+      decision("reject", "2026-08-21T10:00:00Z"),
+    ];
+    expect(effectiveStatus(o, sameSecond)).toBe("rejected");
+    expect(latestDecision("so_test_1", sameSecond)?.decision).toBe("reject");
+    // ...and the other way round, so this cannot pass by always picking reject.
+    expect(effectiveStatus(o, [...sameSecond].reverse())).toBe("approved");
+  });
+
   it("the latest decision wins", () => {
     const o = opportunity();
     const history = [
@@ -303,8 +326,19 @@ describe("decideOpportunity wires all four consequences", () => {
    */
   it("changing your mind appends rather than overwrites — same-second included", async () => {
     const o = opportunity();
-    await decideOpportunity({ opportunity: o, kind: "accept", decided_by: "owner" }, () => null);
-    await decideOpportunity({ opportunity: o, kind: "reject", decided_by: "owner" }, () => null);
+    // `build_page: false` (A05 build): accepting now also runs the page
+    // factory, and that work is enough to push the two calls into different
+    // seconds — which would quietly stop this reproducing the tie it exists
+    // for. The tie's own behaviour is pinned deterministically above; this
+    // stays an end-to-end check that a second decision APPENDS.
+    await decideOpportunity(
+      { opportunity: o, kind: "accept", decided_by: "owner", build_page: false },
+      () => null
+    );
+    await decideOpportunity(
+      { opportunity: o, kind: "reject", decided_by: "owner", build_page: false },
+      () => null
+    );
     const stored = await opportunityDecisionStore(() => null).list();
     expect(stored).toHaveLength(2);
     expect(stored[0].decided_at).toBe(stored[1].decided_at); // the tie is real

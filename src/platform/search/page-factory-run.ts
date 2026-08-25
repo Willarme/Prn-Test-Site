@@ -7,7 +7,12 @@ import {
   type PageFactoryPolicy,
 } from "@/domain/search/page-factory-policy";
 import { lintPageBeforeQa, type LintFinding } from "@/domain/search/page-lint";
-import { regeneratePage, stageNewPage } from "@/domain/search/page-registry";
+import {
+  applyOwnerEdit,
+  regeneratePage,
+  stageNewPage,
+  type OwnerEdit,
+} from "@/domain/search/page-registry";
 import type { IntentPage, PageSpec } from "@/domain/search/pages";
 import {
   serviceClientProvider,
@@ -125,6 +130,14 @@ export function cannibalizationConflict(
     (p) => p.canonical_path === canonicalPath && p.lifecycle_status !== "RETIRED"
   );
   if (pathClash) return `an existing page already occupies ${canonicalPath}`;
+  // Also against SPECS, not just registry rows: the six committed staged doors
+  // and the handcrafted sample predate the registry table entirely, so a
+  // registry-only check would happily build a second page on top of one of
+  // them.
+  const specPathClash = existingSpecs.find(
+    (s) => s.canonical_path === canonicalPath && s.status !== "RETIRED"
+  );
+  if (specPathClash) return `an existing page already occupies ${canonicalPath}`;
 
   const overlap = existingSpecs.find((s) => sameIntentFamily(s.primary_query, keyword));
   if (overlap) {
@@ -326,6 +339,105 @@ export async function runPageFactory(
   }
 
   return { run_id: runId, halted: null, staged, skipped, events };
+}
+
+export interface OwnerEditInput {
+  page: IntentPage;
+  previousSpec: PageSpec;
+  edit: OwnerEdit;
+  edited_by: string;
+  policy?: PageFactoryPolicy;
+  now?: () => string;
+}
+
+export interface OwnerEditResult {
+  spec: PageSpec | null;
+  page: IntentPage | null;
+  edited_fields: string[];
+  blocked: LintFinding[];
+}
+
+/**
+ * THE OWNER'S EDIT of a staged page's unique fields (done-when: "Admin can
+ * view/edit a staged page's unique fields").
+ *
+ * THE LINT STILL RUNS. An owner typing "compare providers and choose from
+ * hundreds of contractors" into a meta description is the same canon violation
+ * as the content bank producing it, and the guardrail that only applies to the
+ * machine is not a guardrail. A blocked edit changes nothing and returns the
+ * findings.
+ *
+ * NO KILL-SWITCH GATE HERE, ON PURPOSE — the same reasoning A04's decision path
+ * records. `checkKillSwitch("A05")` pauses THE AGENT: its generation runs. A
+ * human correcting a page the agent already produced is not agent activity, and
+ * a paused agent that also froze the owner's ability to fix its output would be
+ * exactly backwards.
+ *
+ * The edit is a NEW VERSION, never an in-place rewrite — see applyOwnerEdit for
+ * why that is a safety property rather than tidiness.
+ */
+export async function editStagedPage(
+  input: OwnerEditInput,
+  clientProvider: PlatformClientProvider = serviceClientProvider
+): Promise<OwnerEditResult> {
+  const now = input.now ?? nowIso;
+  const policy = input.policy ?? DEFAULT_PAGE_FACTORY_POLICY;
+
+  const result = applyOwnerEdit(
+    input.page,
+    input.previousSpec,
+    input.edit,
+    { now },
+    input.edited_by
+  );
+
+  const lint = lintPageBeforeQa(result.spec, policy);
+  if (!lint.passed) {
+    return { spec: null, page: null, edited_fields: [], blocked: lint.findings };
+  }
+
+  await pageRegistryStore(clientProvider).saveStagedPage(result.spec, result.page);
+
+  try {
+    await recordAgentRun(
+      {
+        agent_id: A05,
+        tenant_id: input.page.tenant_id ?? "prn",
+        trigger: "admin_action",
+        input_ids: [input.page.page_id],
+        capabilities_used: ["seo.build_candidate_pages"],
+        outputs_summary: {
+          page_id: result.spec.page_id,
+          page_spec_id: result.spec.page_spec_id,
+          version: result.spec.version,
+          edited_fields: result.edited_fields,
+          edited_by: input.edited_by,
+        },
+        cost_usd: 0,
+        actions_taken: [`page.owner_edited:${result.spec.page_id}`],
+      },
+      clientProvider
+    );
+  } catch {
+    /* provenance, never the gate */
+  }
+
+  await emitPageRefreshed(
+    {
+      page_id: result.spec.page_id,
+      page_spec_id: result.spec.page_spec_id,
+      version: String(result.spec.version),
+      reason: `owner edit: ${result.edited_fields.join(", ") || "no change"}`,
+    },
+    clientProvider
+  );
+
+  return {
+    spec: result.spec,
+    page: result.page,
+    edited_fields: result.edited_fields,
+    blocked: [],
+  };
 }
 
 export interface RegenerateInput {

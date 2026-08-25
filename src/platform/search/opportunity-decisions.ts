@@ -67,6 +67,15 @@ export interface DecideInput {
   decided_by: string;
   note?: string | null;
   tenant_id?: string;
+  /**
+   * A05's second run mode (condition C9 / pre-answer 6): "a direct call from
+   * A04's approval flow". Defaults ON for `accept` — an owner who accepts an
+   * opportunity has said the thing may become a page, and building a STAGED,
+   * noindexed, QA-PENDING page is the whole of what "eligible" means in
+   * practice. Set false to record the decision without building (the admin
+   * route can then run the factory separately).
+   */
+  build_page?: boolean;
 }
 
 export interface DecideResult {
@@ -75,6 +84,11 @@ export interface DecideResult {
   approval_id: string | null;
   run_id: string | null;
   event_status: string;
+  /**
+   * A05's outcome, when the accept path triggered it. `null` means A05 was not
+   * invoked at all (a reject/defer, or build_page: false).
+   */
+  page_build: { staged: string[]; skipped: number; halted: boolean } | null;
 }
 
 function nowIso(): string {
@@ -232,17 +246,69 @@ export async function decideOpportunity(
    * stamped, so callers in the same request see the full picture.
    */
   const stamped: OpportunityDecision = { ...decision, approval_id: approvalId, run_id: runId };
+  const updatedOpportunity: SearchOpportunity = {
+    ...opportunity,
+    status: decision.status_after,
+    approved_at: kind === "accept" ? decidedAt : null,
+    approved_by: kind === "accept" ? input.decided_by : null,
+    updated_at: decidedAt,
+  };
+
+  /**
+   * 5. A05's DIRECT TRIGGER — the second of its two run modes (C9 /
+   *    pre-answer 6: "an admin-triggered API route plus a direct call from
+   *    A04's approval flow, both idempotent on opportunity_id").
+   *
+   *    ACCEPT ONLY, and fail-soft. The decision is already durable; a page
+   *    factory that fell over must not take the owner's decision down with it,
+   *    and the admin route can always run the factory again — it is idempotent
+   *    on opportunity_id, so a retry cannot produce a second door.
+   *
+   *    DEFERRED IMPORT, the idiom this codebase already uses for the steward:
+   *    the run module reaches the approval center and the runtime store, and
+   *    nothing at module scope here needs it.
+   *
+   *    NOTHING BECOMES PUBLIC. The page lands STAGED, noindexed, qa.state
+   *    PENDING; A06 has to pass it and the owner has to publish it.
+   */
+  let pageBuild: DecideResult["page_build"] = null;
+  if (kind === "accept" && input.build_page !== false) {
+    try {
+      const [{ loadPageCorpus }, { runPageFactory }, { policyStore }] = await Promise.all([
+        import("@/platform/search/page-corpus"),
+        import("@/platform/search/page-factory-run"),
+        import("@/platform/admin/data"),
+      ]);
+      const corpus = await loadPageCorpus(clientProvider);
+      const policy = await policyStore().getActive();
+      const result = await runPageFactory(
+        {
+          opportunities: [updatedOpportunity],
+          existingPages: corpus.pages,
+          existingSpecs: corpus.specs,
+          policy: policy.page_factory,
+          maxPages: 1,
+          tenant_id: tenantId,
+          trigger: "admin_action",
+        },
+        clientProvider
+      );
+      pageBuild = {
+        staged: result.staged.map((s) => s.spec.page_id),
+        skipped: result.skipped.length,
+        halted: result.halted !== null,
+      };
+    } catch {
+      /* the decision already landed; the factory is downstream of it */
+    }
+  }
+
   return {
     decision: stamped,
-    opportunity: {
-      ...opportunity,
-      status: decision.status_after,
-      approved_at: kind === "accept" ? decidedAt : null,
-      approved_by: kind === "accept" ? input.decided_by : null,
-      updated_at: decidedAt,
-    },
+    opportunity: updatedOpportunity,
     approval_id: approvalId,
     run_id: runId,
     event_status: eventStatus,
+    page_build: pageBuild,
   };
 }

@@ -23,8 +23,10 @@ export default async function AdminPages() {
       <div className="eyebrow">A05 factory → A06 QA → your approval</div>
       <h1 className="d2">Pages</h1>
       <p className="lede" style={{ margin: "12px 0 10px" }}>
-        Every page here was built by the factory from an approved-NEW opportunity and checked by
-        QA. <strong>Nothing goes public without your Approve &amp; publish.</strong> Publishing puts a
+        Every page here was built by the factory from an opportunity{" "}
+        <strong>you approved</strong> in Opportunities — never from the agent&apos;s own
+        recommendation — and checked by QA.{" "}
+        <strong>Nothing goes public without your Approve &amp; publish.</strong> Publishing puts a
         page in the published set; actual public serving stays behind the master switch (
         <span className={`pill ${doorsFlag ? "pill-green" : "pill-amber"}`}>
           public serving {doorsFlag ? "ON" : "OFF until launch"}
@@ -70,6 +72,16 @@ export default async function AdminPages() {
                     <br />
                     <Link href={`/staged/${slug}`} className="mono" style={{ color: "var(--pink)" }}>
                       preview {s.canonical_path}
+                    </Link>
+                    <br />
+                    {/* Server-rendered edit surface (A05 done-when). No client
+                        component receives a PageSpec — condition C16. */}
+                    <Link
+                      href={`/admin/pages/${encodeURIComponent(s.page_spec_id)}`}
+                      className="mono"
+                      style={{ color: "var(--on-dark-mute)" }}
+                    >
+                      view / edit unique fields
                     </Link>
                   </td>
                   <td style={{ padding: "8px 10px" }}>{s.problem_family ?? "—"}</td>

@@ -9,7 +9,7 @@ import {
   DEFAULT_PAGE_FACTORY_POLICY,
   type PageFactoryPolicy,
 } from "@/domain/search/page-factory-policy";
-import { IntentPage, type PageSpec } from "@/domain/search/pages";
+import { IntentPage, PageSpec } from "@/domain/search/pages";
 
 /**
  * THE PAGE REGISTRY — A05's second write, and the lifecycle discipline around
@@ -164,6 +164,125 @@ export function regeneratePage(
   });
 
   return { page, spec, transitions, reason };
+}
+
+/* -------------------------------------------------------------------------- */
+/* THE OWNER'S EDIT                                                           */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * The UNIQUE fields of a page — the ones that are about this page and no other,
+ * and therefore the only ones an owner edits per-page rather than in the
+ * template or the content bank.
+ */
+export const OWNER_EDITABLE_FIELDS = [
+  "title",
+  "meta_description",
+  "h1",
+  "hero_headline",
+  "hero_subheadline",
+] as const;
+
+export interface OwnerEdit {
+  title?: string;
+  meta_description?: string;
+  h1?: string;
+  hero_headline?: string;
+  hero_subheadline?: string | null;
+}
+
+/**
+ * An owner edit produces a NEW PageSpec VERSION rather than mutating the
+ * existing one — and that is a safety property, not tidiness.
+ *
+ * Coherence report issue 5 assigns `PageSpec.qa.state` to A06 as its sole
+ * writer, with A05 setting PENDING "at creation and never writing it again".
+ * But the publish route gates on `qa.state === "PASS"`, so editing a PASSED
+ * page in place would leave a verdict attached to content it was never about —
+ * an owner could publish text no QA ever saw. Versioning resolves both at once:
+ * the edited page is a NEW spec, PENDING at CREATION, which is precisely the
+ * write A05 is allowed to make. The previous version keeps its own verdict and
+ * is not rewritten.
+ *
+ * The lifecycle hops are the same as any other restage, asserted the same way.
+ */
+export function applyOwnerEdit(
+  existing: IntentPage,
+  previousSpec: PageSpec,
+  edit: OwnerEdit,
+  deps: Pick<FactoryDeps, "now">,
+  editedBy: string
+): StageResult & { edited_fields: string[] } {
+  const hops = restagePath(existing.lifecycle_status);
+  const transitions: StageResult["transitions"] = [];
+  let cursor: PageLifecycleStatus = existing.lifecycle_status;
+  for (const next of hops) {
+    assertTransition(cursor, next);
+    transitions.push({ from: cursor, to: next });
+    cursor = next;
+  }
+
+  const edited: string[] = [];
+  const next = { ...previousSpec };
+  if (edit.title !== undefined && edit.title !== previousSpec.title) {
+    next.title = edit.title;
+    edited.push("title");
+  }
+  if (edit.meta_description !== undefined && edit.meta_description !== previousSpec.meta_description) {
+    next.meta_description = edit.meta_description;
+    edited.push("meta_description");
+  }
+  if (edit.h1 !== undefined && edit.h1 !== previousSpec.h1) {
+    next.h1 = edit.h1;
+    edited.push("h1");
+  }
+  const hero = { ...previousSpec.hero };
+  if (edit.hero_headline !== undefined && edit.hero_headline !== hero.headline) {
+    hero.headline = edit.hero_headline;
+    edited.push("hero_headline");
+  }
+  if (edit.hero_subheadline !== undefined && edit.hero_subheadline !== hero.subheadline) {
+    hero.subheadline = edit.hero_subheadline;
+    edited.push("hero_subheadline");
+  }
+  next.hero = hero;
+
+  const spec = PageSpec.parse({
+    ...next,
+    page_spec_id: `${previousSpec.page_spec_id.replace(/_v\d+$/, "")}_v${previousSpec.version + 1}`,
+    version: previousSpec.version + 1,
+    status: "STAGED",
+    qa: { state: "PENDING", reasons: [] },
+    user_value_score: null,
+    // The owner wrote this text, not the content bank. Recording that is what
+    // makes "who wrote this page" answerable later.
+    generation: { model: null, prompt_id: `owner_edit:${editedBy}`, prompt_version: null },
+    updated_at: deps.now(),
+  });
+
+  const page = IntentPage.parse({
+    ...existing,
+    current_page_spec_id: spec.page_spec_id,
+    lifecycle_status: "STAGED",
+  });
+
+  return { page, spec, transitions, edited_fields: edited };
+}
+
+/** A registry row for a spec that predates the registry table (the committed six). */
+export function registryRowFor(spec: PageSpec, createdAt: string): IntentPage {
+  return IntentPage.parse({
+    page_id: spec.page_id,
+    schema_version: SCHEMA_VERSION,
+    ...(spec.tenant_id ? { tenant_id: spec.tenant_id } : {}),
+    canonical_path: spec.canonical_path,
+    current_page_spec_id: spec.page_spec_id,
+    lifecycle_status: spec.status,
+    published_at: null,
+    retired_at: null,
+    redirect_to_path: null,
+    created_at: spec.created_at || createdAt,
+  });
 }
 
 /* -------------------------------------------------------------------------- */
