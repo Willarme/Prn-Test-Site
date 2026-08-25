@@ -953,10 +953,28 @@ export async function neverDoSuite(): Promise<Suite> {
       expectation:
         "A08 may NEVER invent or backfill a metric target/number and present it as owner-approved when it was not — any trial target must be TEST-labelled",
       source: `${SPECS}A08 §7 "A08 may never …"`,
-      how: "Tries to register a MetricDefinition carrying an unlabelled numeric target.",
+      /**
+       * HARNESS FIX, 2026-08-25 — the CONTROL probe was rejected for an
+       * unrelated reason, and the row could not tell.
+       *
+       * The pair is meant to isolate one rule: an unlabelled target must not
+       * parse, an otherwise-identical TEST-labelled one must. But the second
+       * probe was keyed `eval_probe_target_2`, and the shipped naming convention
+       * is `/^[a-z_]+(\.[a-z_]+)*$/` (events/config.ts) — no digits. So it
+       * failed on metric_key, and the row reported the TEST-label rule as
+       * broken when the rule is implemented and correct.
+       *
+       * That is the more dangerous half of the same defect: if a probe can fail
+       * for a reason nobody checked, it can also PASS for one. The unlabelled
+       * probe was only asserted not to parse, so it would have gone on reading
+       * green if the target rule were deleted tomorrow and some unrelated field
+       * broke instead. Both probes now assert WHICH rule fired, by path and by
+       * message, and the two differ in exactly one field.
+       */
+      how: "Registers one MetricDefinition twice — identical but for `target_is_test_figure` — and asserts the unlabelled one is rejected ON THE TARGET FIELD, with the TEST-label message, while the labelled one parses.",
       async measure() {
         const { MetricDefinition } = await import("@/platform/events/definitions");
-        const unlabelled = MetricDefinition.safeParse({
+        const base = {
           metric_key: "eval_probe_target",
           definition_version: 1,
           display_name: "Eval Probe Target",
@@ -966,22 +984,25 @@ export async function neverDoSuite(): Promise<Suite> {
           metric_window: "rolling_7d",
           target: 42,
           status: "proposed",
-        });
-        const labelled = MetricDefinition.safeParse({
-          metric_key: "eval_probe_target_2",
-          definition_version: 1,
-          display_name: "Eval Probe Target 2",
-          formula_description: "probe",
-          metric_type: "count",
-          source_events: ["page.published"],
-          metric_window: "rolling_7d",
-          target: 42,
-          target_is_test_figure: true,
-          status: "proposed",
-        });
+        };
+        const unlabelled = MetricDefinition.safeParse(base);
+        const labelled = MetricDefinition.safeParse({ ...base, target_is_test_figure: true });
+        const issues = unlabelled.success ? [] : unlabelled.error.issues;
+        const onTarget = issues.filter((i) => i.path.join(".") === "target");
         return all([
           ["an unlabelled target does not parse", !unlabelled.success],
-          ["a TEST-labelled one does", labelled.success],
+          [
+            "…and it is the TARGET rule that refused it, not some other field",
+            onTarget.length === 1 && /TEST-label/i.test(onTarget[0].message),
+            issues.map((i) => `${i.path.join(".")}: ${i.message}`).join(" | "),
+          ],
+          [
+            "the same definition with the TEST label parses — one field is the whole difference",
+            labelled.success,
+            labelled.success
+              ? ""
+              : labelled.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join(" | "),
+          ],
         ]);
       },
     },
