@@ -355,9 +355,10 @@ export const JobPacket = z.object({
      * The enforcement moved rather than vanished. The shipped words are
      * byte-identical and now live in domain/problem/packet-copy.ts, whose
      * `PacketCopyPackage` REFUSES at parse time any copy carrying a savings
-     * promise, a guarantee, a raw dollar figure or the word "lead" — the rules
-     * the literal was standing in for. This schema keeps the half it can
-     * honestly keep: a disclaimer must be PRESENT and non-empty.
+     * promise, a guarantee, a raw dollar figure or the forbidden sales word for
+     * a person (see FORBIDDEN_PACKET_COPY_PATTERNS) — the rules the literal was
+     * standing in for. This schema keeps the half it can honestly keep: a
+     * disclaimer must be PRESENT and non-empty.
      *
      * Deliberately NOT validated against the active package: a packet generated
      * under copy v1 must not stop parsing the day a deployment moves to v2.

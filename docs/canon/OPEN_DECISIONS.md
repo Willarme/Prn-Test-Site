@@ -6,6 +6,32 @@ come up, newest first. When decided, entries move to DECISIONS.md.
 
 ## Open
 
+- **OD-18 — Does the Job Packet show a homeowner a CONFIDENCE LEVEL at all, and
+  in what words?** (Melissa.) The packet today renders `inference · medium
+  confidence` next to the likely service category, because the frozen contract
+  has always carried a three-level enum and the page has always drawn it. That
+  was never a decision — it is what the fixture engine happened to produce in
+  Wave 0. Whether "MEDIUM CONFIDENCE" about a problem in someone's own house
+  reassures them or alarms them is homeowner psychology, and it rides with the
+  packet review already on your list (Owner To-Do item 1 / Master Todo T0-01).
+  A02's build changed NOTHING here on purpose: same enum, same rendering, same
+  words. Recorded because the Compendium lists it open (17.13/17.14) and the A02
+  spec does not carry it at all.
+- **OD-17 — What is the relationship between [[Work Compiler]] / [[Canonical
+  Work Object]] and the Job Packet?** Two canon documents describe objects that
+  sound like the packet under different names, and the Compendium records
+  (lines 197/199) that their relationship to A02 is stated nowhere, and that
+  neither may ever become a public synonym for "Job Packet". Nothing in the
+  trial is blocked: A02 builds `JobPacket`, the customer-facing name is Job
+  Packet, and no other name appears on any surface. But the collision needs a
+  ruling before any later agent starts producing a second work object beside the
+  packet — the cost of finding out afterwards is two vocabularies for one thing.
+- **OD-16 — The approval cadence for agent specs after A00.** (Master Todo
+  T0-18, Josh's queue.) A01 and A02 were both built "approved with conditions"
+  off audit documents rather than a signed-off spec, and that has worked — but
+  it is a process nobody has actually ratified, and it governs whether the
+  remaining agents may be approved the same way. Raised here because the A02
+  audit named it as a governing open decision rather than a build detail.
 - **OD-15 — Turning A06's AI critic on.** A06 ships with the critic INTERFACE
   and no critic: `seo.critique_page` is deliberately not in the capability
   registry, so `ai_critic.status` reads `SKIPPED_NO_MODEL` on every page and
