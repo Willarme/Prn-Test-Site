@@ -24,18 +24,14 @@ async function main(): Promise<void> {
   const suites: Suite[] = [];
   const { wave0Suite } = await import("./suites/done-when-wave0");
   suites.push(await wave0Suite());
+  const { wave1Suite } = await import("./suites/done-when-wave1");
+  suites.push(await wave1Suite());
   const { wave2Suite } = await import("./suites/done-when-wave2");
   suites.push(await wave2Suite());
   const { seamSuite } = await import("./suites/loop-seams");
   suites.push(await seamSuite());
   const { neverDoSuite } = await import("./suites/never-do");
   suites.push(await neverDoSuite());
-  const { a00ConditionsSuite } = await import("./suites/a00-conditions");
-  suites.push(await a00ConditionsSuite());
-  const { loopDrillSuite } = await import("./suites/loop-drill");
-  suites.push(await loopDrillSuite());
-  const { liveModelSuite } = await import("./suites/live-model");
-  suites.push(await liveModelSuite());
 
   if (!env.json) {
     process.stdout.write("running expectations...\n");

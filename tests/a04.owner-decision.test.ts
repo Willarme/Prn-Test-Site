@@ -352,19 +352,37 @@ describe("decideOpportunity wires all four consequences", () => {
    */
   it("changing your mind appends rather than overwrites — same-second included", async () => {
     const o = opportunity();
-    // `build_page: false` (A05 build): accepting now also runs the page
-    // factory, and that work is enough to push the two calls into different
-    // seconds — which would quietly stop this reproducing the tie it exists
-    // for. The tie's own behaviour is pinned deterministically above; this
-    // stays an end-to-end check that a second decision APPENDS.
-    await decideOpportunity(
-      { opportunity: o, kind: "accept", decided_by: "owner", build_page: false },
-      () => null
-    );
-    await decideOpportunity(
-      { opportunity: o, kind: "reject", decided_by: "owner", build_page: false },
-      () => null
-    );
+    /**
+     * `build_page: false` (A05 build): accepting now also runs the page
+     * factory, and that work is enough to push the two calls into different
+     * seconds — which would quietly stop this reproducing the tie it exists
+     * for. The tie's own behaviour is pinned deterministically above; this
+     * stays an end-to-end check that a second decision APPENDS.
+     *
+     * AND THE CLOCK IS HELD STILL, 2026-08-25. `build_page: false` made the tie
+     * LIKELY, not certain: on a loaded run the two calls still straddled a
+     * second boundary and this case failed intermittently — a flake in the one
+     * test whose whole point is the tie. Freezing the second makes the tie
+     * GUARANTEED, which is stricter than what was here, not looser: before, a
+     * run that missed the tie silently stopped exercising the regression.
+     */
+    const frozen = "2026-08-25T12:00:00Z";
+    const realToIso = Date.prototype.toISOString;
+    Date.prototype.toISOString = function toISOString(this: Date) {
+      return frozen.replace("Z", ".000Z");
+    };
+    try {
+      await decideOpportunity(
+        { opportunity: o, kind: "accept", decided_by: "owner", build_page: false },
+        () => null
+      );
+      await decideOpportunity(
+        { opportunity: o, kind: "reject", decided_by: "owner", build_page: false },
+        () => null
+      );
+    } finally {
+      Date.prototype.toISOString = realToIso;
+    }
     const stored = await opportunityDecisionStore(() => null).list();
     expect(stored).toHaveLength(2);
     expect(stored[0].decided_at).toBe(stored[1].decided_at); // the tie is real
