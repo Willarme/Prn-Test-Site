@@ -99,6 +99,17 @@ export interface ScanOptions {
    * own explanation reports the documentation as the violation.
    */
   codeOnly?: boolean;
+  /**
+   * Also blank the CONTENTS of string literals. `codeOnly` handles the comment
+   * half of the same problem, and on the first run of this harness the other
+   * half bit: NEVER-A06-2 scanned A06's modules for the word "override" and
+   * found three hits, every one of them the rule saying so — the constant that
+   * DECLARES no waiver exists, its own note, and the critic prompt's line
+   * forbidding the model to waive a finding. A rule stated in a string is not a
+   * mechanism, and a scan that cannot tell them apart reports the guardrail as
+   * the breach. Quote characters survive so a literal is still visible as one.
+   */
+  ignoreStrings?: boolean;
 }
 
 /** Strip // and /* *\/ comments, preserving line count so line numbers hold. */
@@ -165,12 +176,54 @@ export function stripComments(text: string): string {
   return out;
 }
 
+/**
+ * Blank the inside of every string and template literal, keeping the quotes and
+ * the line count. Comments go too — a string is only ever ignored alongside
+ * them, and doing both in one pass keeps the two state machines from disagreeing
+ * about where a literal starts.
+ */
+export function stripLiterals(text: string): string {
+  const noComments = stripComments(text);
+  let out = "";
+  let i = 0;
+  let quote: string | null = null;
+  while (i < noComments.length) {
+    const ch = noComments[i];
+    if (quote) {
+      if (ch === "\\") {
+        out += "  ";
+        i += 2;
+        continue;
+      }
+      if (ch === quote) {
+        quote = null;
+        out += ch;
+      } else out += ch === "\n" ? "\n" : " ";
+      i += 1;
+      continue;
+    }
+    if (ch === '"' || ch === "'" || ch === "`") {
+      quote = ch;
+      out += ch;
+      i += 1;
+      continue;
+    }
+    out += ch;
+    i += 1;
+  }
+  return out;
+}
+
 export function scan(pattern: RegExp, options: ScanOptions = {}): Hit[] {
   const hits: Hit[] = [];
   for (const file of sourceFiles()) {
     if (options.include && !options.include.test(file.path)) continue;
     if (options.exclude && options.exclude.test(file.path)) continue;
-    const text = options.codeOnly ? stripComments(file.text) : file.text;
+    const text = options.ignoreStrings
+      ? stripLiterals(file.text)
+      : options.codeOnly
+        ? stripComments(file.text)
+        : file.text;
     const lines = text.split(/\r?\n/);
     for (let i = 0; i < lines.length; i += 1) {
       const re = new RegExp(pattern.source, pattern.flags.replace("g", ""));

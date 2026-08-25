@@ -778,17 +778,52 @@ export async function neverDoSuite(): Promise<Suite> {
       expectation:
         "A06 CANNOT WAIVE ITS OWN BLOCKER — and no waiver mechanism was invented in its place",
       source: `${SPECS}A06 §7 bullet 2 ("hard blockers cannot be waived by the same agent"), §10.5 open decision`,
-      how: "Reads the declared waiver path and scans for any override/waive/force-publish code path.",
+      /**
+       * HARNESS FIX, 2026-08-25 — the scan reported the rule as the breach.
+       *
+       * It matched the word "waive" or "override" anywhere in A06's modules,
+       * with comments stripped but STRING LITERALS INTACT, and found exactly
+       * three hits, every one of them the guardrail stating itself:
+       *
+       *   qa.ts  export const A06_WAIVER_PATH = {          ← the declaration
+       *   qa.ts  note: "No waiver/override mechanism exists…"
+       *   page-qa-critic.ts  "You may not clear, waive, downgrade or comment
+       *                       on any finding raised before you."  ← the prompt
+       *                       that forbids the model to do it
+       *
+       * source.ts's own header warns about this ("a scan that cannot tell a rule
+       * from its own explanation reports the documentation as the violation")
+       * and `codeOnly` only ever solved the comment half. It now has an
+       * `ignoreStrings` half, and the pattern looks for a CALLABLE affordance —
+       * a waive/override/force-publish function, call or assignment — because a
+       * mechanism is something you can invoke, not a word.
+       *
+       * A second condition was added while here, since "no waiver exists" is a
+       * claim about behaviour and not only about names: nothing in these modules
+       * may reassign a finding's severity or filter blockers out of the release
+       * decision. An unnamed downgrade is a waiver with better manners.
+       */
+      how: "Reads the declared waiver path, then scans A06's modules — comments AND string literals blanked — for a callable override affordance, and for any code that reassigns a finding's severity or filters blockers away.",
       async measure() {
         const { A06_WAIVER_PATH } = await import("@/domain/search/qa");
-        const overrides = scan(/waive|override|force_publish|bypass_qa/i, {
-          include: /^src\/(domain\/search\/qa|platform\/search\/page-qa|app\/api\/admin\/pages)/,
-          codeOnly: true,
+        const a06 = /^src\/(domain\/search\/qa|platform\/search\/page-qa|app\/api\/admin\/pages)/;
+        const overrides = scan(
+          /\b(waive|waiver|waived|override|overrides|overridden|force_publish|forcePublish|bypass_qa|bypassQa)\b/i,
+          { include: a06, ignoreStrings: true }
+        );
+        const downgrades = scan(/severity\s*=[^=]|\.filter\([^)]*severity\s*!==\s*"blocker"/, {
+          include: a06,
+          ignoreStrings: true,
         });
         return all([
           ["no waiver path exists", A06_WAIVER_PATH.exists === false],
           ["…and the consequence is recorded honestly, not papered over", A06_WAIVER_PATH.false_block_rate_computable === false],
           ["no override code path was invented", overrides.length === 0, describeHits(overrides, 3).join(" | ")],
+          [
+            "…and nothing quietly downgrades a finding or filters blockers away instead",
+            downgrades.length === 0,
+            describeHits(downgrades, 3).join(" | "),
+          ],
         ]);
       },
     },
@@ -798,20 +833,69 @@ export async function neverDoSuite(): Promise<Suite> {
       expectation:
         "FAIL CLOSED — `ai_critic.status = 'SKIPPED_NO_MODEL'` must NOT be silently treated as a pass; and A06 is not allowed to cause a page to go live on its own during the trial",
       source: `${SPECS}A06 §7 "Fail closed" and "Autonomy level: L2"`,
-      how: "Asks `criticPassed()` about every non-PASS critic status, and asserts nothing in A06's modules calls the publish path.",
+      /**
+       * HARNESS FIX, 2026-08-25 — it caught a function's DEFINITION and called
+       * it a call.
+       *
+       * The scan looked for `setPublished(` or `emitPagePublished(` anywhere
+       * under A06's modules and hit
+       * `page-qa-events.ts:115  export async function emitPagePublished(`.
+       * That is the DECLARATION of A06's `page.published` emitter — the event
+       * A06 owns and the admin publish route fires after the owner clicks. Its
+       * own docstring reads "The owner published." A06 owning the emitter for an
+       * event about a human's action is the design (coherence issue 9 assigned
+       * `page.published` to whichever of A05/A06 built second, so the return leg
+       * would have a carrier at all); it is not A06 publishing anything.
+       *
+       * A definition is not an invocation, and the expectation is about who can
+       * CAUSE a page to go live. So it now measures CALL SITES across the whole
+       * of src/ — which is a wider net than the original, not a narrower one —
+       * and adds the two conditions that carry the actual guarantee: the sole
+       * publish route demands an unlocked owner session, and refuses without a
+       * release-eligible QA decision.
+       */
+      how: "Asks `criticPassed()` about every non-PASS critic status; finds every CALL SITE of setPublished/emitPagePublished across src/ and asserts none is in an A06 module; and reads the one route that has them for its owner gate and its QA condition.",
       async measure() {
         const { criticPassed } = await import("@/domain/search/qa");
         const statuses = ["SKIPPED_NO_MODEL", "NOT_RUN", "FAIL"] as const;
         const treatedAsPass = statuses.filter((s) =>
           criticPassed({ status: s, reason: "probe", findings: [], provider: null, cost_usd: null, latency_ms: null } as never)
         );
-        const a06Publishes = scan(/setPublished\(|emitPagePublished\(/, {
-          include: /^src\/(domain\/search\/qa|platform\/search\/page-qa)/,
+        /**
+         * CALLS ONLY. A declaration carries a return-type annotation and a
+         * `function` keyword; a call does not. Both the store's interface entry
+         * and its two implementations are declarations of the thing, and
+         * counting them as call sites is the same mistake this row is fixing.
+         */
+        const callSites = scan(/\b(setPublished|emitPagePublished)\s*\(/, {
+          include: /^src\//,
           codeOnly: true,
-        });
+        }).filter((h) => !/\bfunction\b/.test(h.text) && !/\)\s*:\s*\w/.test(h.text));
+        const a06Calls = callSites.filter((h) =>
+          /^src\/(domain\/search\/qa|platform\/search\/page-qa)/.test(h.path)
+        );
+        const elsewhere = callSites.filter(
+          (h) => !/app\/api\/admin\/pages\/publish\/route\.ts$/.test(h.path)
+        );
+        const publishRoute = readCode("src/app/api/admin/pages/publish/route.ts");
         return all([
           ["no non-PASS critic status counts as a pass", treatedAsPass.length === 0, treatedAsPass.join(", ")],
-          ["A06 never publishes anything itself", a06Publishes.length === 0, describeHits(a06Publishes, 3).join(" | ")],
+          [
+            `${callSites.length} call site(s) of the publish path exist at all`,
+            callSites.length > 0,
+            callSites.map((h) => `${h.path}:${h.line}`).join(", "),
+          ],
+          ["A06 never CALLS the publish path", a06Calls.length === 0, describeHits(a06Calls, 3).join(" | ")],
+          [
+            "…and the owner-gated publish route is the only thing that does",
+            elsewhere.length === 0,
+            describeHits(elsewhere, 3).join(" | "),
+          ],
+          ["that route requires an unlocked owner session", /isAdminUnlocked\(/.test(publishRoute)],
+          [
+            "…and refuses without a release-eligible QA decision",
+            /release_eligible/.test(publishRoute) && /status:\s*409/.test(publishRoute),
+          ],
         ]);
       },
     },
