@@ -2,7 +2,8 @@ import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { DoorAttribution } from "@/domain/intake/contracts";
-import { analyzeProblemFixture, buildJobPacketFixture } from "@/domain/problem/fixture-engine";
+import { analyzeProblemFixture } from "@/domain/problem/fixture-engine";
+import { buildPacket } from "@/domain/problem/packet";
 import { checkSafety } from "@/domain/problem/safety";
 import { ACTIVE_DISCLOSURE, CONSENT_SCOPE_INTAKE } from "@/domain/privacy/disclosures";
 import { detectFields } from "@/domain/intake/extract";
@@ -111,7 +112,41 @@ export async function POST(request: Request): Promise<NextResponse> {
     problem_family_hint: attribution.problem_family_hint,
     now,
   });
-  const packet = buildJobPacketFixture(problem, evidence, now);
+  /**
+   * CALL SITE 1 OF 3 (Trial Spec Audit HO-4), routed through A02, 2026-08-25.
+   *
+   * `lifecycle_events: "caller"` because THIS route owns the customer-attributed
+   * envelopes: the ones below carry `guest_session_id` and the door's
+   * `landing_path`, which A02 cannot see, and they land inside the same atomic
+   * journey write as the packet itself. A02 emits nothing for this generation —
+   * one generation, one `packet.generated`.
+   */
+  const packetOutcome = await buildPacket({
+    problem,
+    textEvidence: evidence,
+    now,
+    request_id: requestId,
+    trigger: "request",
+    lifecycle_events: "caller",
+  });
+  if (!packetOutcome.ok || !packetOutcome.packet) {
+    /**
+     * A02 IS PAUSED (kill switch) OR OTHERWISE REFUSED. There is no fallback
+     * here BY DESIGN — calling the builder directly would mean a kill switch on
+     * A02 stops nothing, which is the exact hole this build closed. The
+     * customer keeps their text and is told honestly, on the same shape the
+     * storage-failure path already uses (#14A 13.4: never lose their work).
+     */
+    return NextResponse.json(
+      {
+        error:
+          "We could not build your Job Packet just now. Your text is still here — please try again in a moment.",
+        detail: packetOutcome.refusal,
+      },
+      { status: 503 }
+    );
+  }
+  const packet = packetOutcome.packet;
 
   // A00 Agent Run Ledger (Wave-0 proof case): audit A01's classify_problem
   // run. IDs only — never the customer's description or evidence. Fail-soft
@@ -177,6 +212,14 @@ export async function POST(request: Request): Promise<NextResponse> {
     makeEvent("intake.started", guestSessionId, ctx, attribution.landing_path, now),
     makeEvent("consent.granted", guestSessionId, ctx, attribution.landing_path, now),
     makeEvent("problem.created", guestSessionId, ctx, attribution.landing_path, now),
+    /**
+     * THE COMPLETION EDGE (A02 step 2 / Trial Spec Audit §4 item 6). This is the
+     * moment the homeowner finished — they stopped typing and the system had
+     * enough to proceed — and until now the funnel had no instrument for it at
+     * all. Events cannot be backfilled: a trial run without this name has no
+     * completion baseline, permanently.
+     */
+    makeEvent("problem.intake_completed", guestSessionId, ctx, attribution.landing_path, now),
     makeEvent(
       "packet.generated",
       guestSessionId,

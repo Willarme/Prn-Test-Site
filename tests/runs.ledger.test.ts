@@ -65,10 +65,23 @@ describe("A00 agent run ledger", () => {
      * run, never one per event", so it scopes to A01 and pins A09's single row
      * alongside: a THIRD writer, or a second row from either, still fails here.
      */
+    /**
+     * A02 (Job Packet, 2026-08-25) is the THIRD writer, and its row is the
+     * point of that build rather than a leak past this pin: building the packet
+     * used to be a plain function call that produced no ledger row at all, so a
+     * kill switch on A02 stopped nothing. One row per agent run still holds —
+     * A01 classifies, A02 builds the packet, A09 validates the write, and a
+     * FOURTH writer or a second row from any of them still fails here.
+     */
     const a01Runs = runs.filter((r) => r.agent_id === "A01");
     expect(a01Runs.length).toBe(1);
+    expect(runs.filter((r) => r.agent_id === "A02").length).toBe(1);
     expect(runs.filter((r) => r.agent_id === "A09").length).toBe(1);
-    expect(runs.length).toBe(2);
+    expect(runs.length).toBe(3);
+    const a02Run = runs.find((r) => r.agent_id === "A02")!;
+    expect(a02Run.capabilities_used).toEqual(["generate_job_packet"]);
+    expect(a02Run.cost_usd).toBe(0);
+    expect(a02Run.tool_provider).toBe("deterministic-stand-in");
     const run = a01Runs[0];
     expect(AgentRunRecord.safeParse(run).success).toBe(true);
     expect(run.agent_id).toBe("A01");

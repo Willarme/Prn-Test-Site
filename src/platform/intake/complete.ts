@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import type { EvidenceObject } from "@/domain/problem/contracts";
-import { assemblePacket } from "@/domain/problem/packet-assembly";
+import { buildPacket } from "@/domain/problem/packet";
 import { findPlaybook, selectPlaybook } from "@/domain/intake/playbooks";
 import type { IntakePlaybook } from "@/domain/intake/playbook";
 import { runtimeStore, type Journey } from "@/platform/stores/runtime";
@@ -39,7 +39,26 @@ export async function loadJourneyContext(requestId: string): Promise<{
   return { journey, playbook, textEvidence, allEvidence };
 }
 
-/** Rebuild the packet from everything known and store it as the next version. */
+/**
+ * Rebuild the packet from everything known and store it as the next version.
+ *
+ * CALL SITE 2 OF 3 (Trial Spec Audit HO-4), routed through A02, 2026-08-25.
+ *
+ * This is the site the A02 spec never mentions and the one that mattered most:
+ * it called `assemblePacket` directly, which meant the RICHEST packet path in
+ * the product — the one that folds in the customer's answers, their photos and
+ * the guided-diagnosis trail — ran with no registry lookup, no kill-switch
+ * check, no ledger row and no event. Regeneration was invisible. It is now
+ * `buildPacket`, so it is governed like every other capability call and emits
+ * `packet.regenerated`.
+ *
+ * STILL RETURNS void, AND STILL NEVER THROWS. Its three callers (the answer
+ * route, the media route, and the page) treat regeneration as a
+ * best-effort refresh after the customer's own write has already succeeded — a
+ * governance refusal must not turn a saved photo into an error, so a refusal
+ * leaves the previous packet version standing, exactly as a missing journey
+ * always has.
+ */
 export async function regeneratePacket(requestId: string): Promise<void> {
   const ctx = await loadJourneyContext(requestId);
   if (!ctx) return;
@@ -48,7 +67,7 @@ export async function regeneratePacket(requestId: string): Promise<void> {
     store.listIntakeAnswers(requestId),
     store.listDiagnosisAnswers(requestId),
   ]);
-  const packet = assemblePacket({
+  const outcome = await buildPacket({
     problem: ctx.journey.problem,
     textEvidence: ctx.textEvidence,
     allEvidence: ctx.allEvidence,
@@ -56,8 +75,13 @@ export async function regeneratePacket(requestId: string): Promise<void> {
     answers,
     diagnosis,
     version: ctx.journey.packet.packet_version + 1,
+    previous: ctx.journey.packet,
     now: nowIso(),
+    request_id: requestId,
+    trigger: "request",
+    // New version, new id: the ledger keeps every packet the customer ever saw.
+    new_id: () => `jp_${randomUUID()}`,
   });
-  // New version, new id: the ledger keeps every packet the customer ever saw.
-  await store.savePacket({ ...packet, job_packet_id: `jp_${randomUUID()}` });
+  if (!outcome.ok || !outcome.packet) return;
+  await store.savePacket(outcome.packet);
 }
