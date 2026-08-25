@@ -81,6 +81,43 @@ export function resolveDiagnosis(
   };
 }
 
+/**
+ * THE ONE ARGUMENT SHAPE THE GOVERNED `generate_job_packet` CAPABILITY TAKES.
+ *
+ * Trial Spec Audit HO-4 names three live call sites and the A02 spec names
+ * none of them. Two of the three want different amounts of input: the intake
+ * route has a description and nothing else yet, while the "complete your
+ * packet" path has answers, attached media and a diagnosis trail. Registering
+ * two capabilities for that would put half of A02's work outside the governed
+ * door; making the richer one the only shape would force the intake route to
+ * fabricate empty answer arrays.
+ *
+ * So it is ONE capability with a discriminated argument. `assemble: true`
+ * selects the full path through assemblePacket; anything else is the base
+ * narrative, byte-identical to what buildJobPacketFixture always produced.
+ */
+export interface GenerateJobPacketBaseArgs {
+  problem: ProblemRecord;
+  evidence: EvidenceObject;
+  now: string;
+  copy?: PacketCopyPackage;
+}
+export type GenerateJobPacketArgs =
+  | GenerateJobPacketBaseArgs
+  | (AssembleInput & { assemble: true });
+
+export function generateJobPacket(args: GenerateJobPacketArgs): JobPacket {
+  if ("assemble" in args && args.assemble) return assemblePacket(args);
+  const base = args as GenerateJobPacketBaseArgs;
+  return buildJobPacketFixture(
+    base.problem,
+    base.evidence,
+    base.now,
+    undefined,
+    base.copy ?? ACTIVE_PACKET_COPY
+  );
+}
+
 export function assemblePacket(input: AssembleInput): JobPacket {
   const copy = input.copy ?? ACTIVE_PACKET_COPY;
   const base = buildJobPacketFixture(

@@ -1,14 +1,16 @@
 import {
   analyzeProblemFixture,
-  buildJobPacketFixture,
   type AnalyzeInput,
   type AnalyzeResult,
 } from "@/domain/problem/fixture-engine";
 import {
+  generateJobPacket,
+  type GenerateJobPacketArgs,
+} from "@/domain/problem/packet-assembly";
+import {
   selectNextClarifierDeterministic,
   type ClarifierInput,
 } from "@/domain/problem/clarifier";
-import type { EvidenceObject, ProblemRecord } from "@/domain/problem/contracts";
 import type { PageSpec } from "@/domain/search/pages";
 import { qaCandidatePages, type PageQaContext } from "@/domain/search/qa";
 import { TRIAL_AGENT_REGISTRY } from "@/platform/agents/registry";
@@ -84,10 +86,19 @@ const DETERMINISTIC_EXECUTORS: Record<string, (args: unknown) => unknown> = {
    */
   select_next_clarifier: (args) =>
     selectNextClarifierDeterministic(args as ClarifierInput),
-  generate_job_packet: (args) => {
-    const a = args as { problem: ProblemRecord; evidence: EvidenceObject; now: string };
-    return buildJobPacketFixture(a.problem, a.evidence, a.now);
-  },
+  /**
+   * A02, 2026-08-25 (Loop Spec Audit A02 conditions 3 and 4; Trial Spec Audit
+   * HO-4). This binding existed but reached only HALF the live packet path: it
+   * called buildJobPacketFixture, while the richest shipped implementation —
+   * assemblePacket, which folds in the customer's answers, their attached media
+   * and the guided-diagnosis trail — ran at platform/intake/complete.ts with no
+   * registry lookup, no kill-switch check, no ledger row and no event.
+   *
+   * `generateJobPacket` is the single dispatcher over both, so ALL THREE call
+   * sites now go through this one door and a kill switch on A02 actually stops
+   * A02. The base path is byte-identical to what it produced before.
+   */
+  generate_job_packet: (args) => generateJobPacket(args as GenerateJobPacketArgs),
   /**
    * A06's deterministic QA stage, 2026-08-24. It is a REAL implementation, not a
    * stand-in: the whole rule set is deterministic by design (#23 §2.4 — cheap

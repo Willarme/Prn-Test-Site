@@ -93,7 +93,29 @@ export const TRIAL_AGENT_REGISTRY: readonly AgentDefinition[] = [
       "Builds JobPacket JSON/HTML/PDF/private share. No overstatement; logs evidence basis and version.",
     phase_band: "TRIAL",
     ...TBD,
-    allowed_capabilities: ["build_job_packet"],
+    /**
+     * A02 BUILD, 2026-08-25 — the canonical key joins the alias (Loop Spec Audit
+     * A02 condition 4).
+     *
+     * The gateway's permission check accepts either the name the caller passed
+     * or the resolved canonical key, and this list held ONLY the alias
+     * `build_job_packet`. So a caller doing the correct thing — asking for the
+     * registered capability_key `generate_job_packet`, which is what
+     * capabilities/registry.ts actually registers — was BLOCKED, with a clean
+     * "not in A02's allowed list" refusal and a ledger row saying so. Exactly
+     * the failure A01 condition 6 found on select_next_clarifier.
+     *
+     * Both names stay. The alias is the A00-spec spelling and is asserted by
+     * tests/agents.registry.test.ts and tests/capabilities.registry.test.ts;
+     * removing it to "tidy up" would break the registry-agreement test that
+     * exists to keep these two lists one governed system rather than two.
+     *
+     * NO MODEL. A02's packet path is 100% deterministic by ruling (pre-answer
+     * 1: "do NOT wire one"), so unlike A01 there is no alternate
+     * implementation, no customer-data clearance question and no cost ceiling
+     * to park — the honest figure is $0 with provider "deterministic-stand-in".
+     */
+    allowed_capabilities: ["build_job_packet", "generate_job_packet"],
     schedule: "in-request",
     kill_switch_ref: killRef("A02"),
   },

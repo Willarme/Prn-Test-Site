@@ -48,7 +48,19 @@ export const CAPABILITY_REGISTRY: readonly CapabilityDefinition[] = [
    */
   { capability_key: "select_next_clarifier", version: V, risk_class: "R1", status: "TEST", input_schema_ref: "contracts://problem/ClarifierInput", output_schema_ref: "contracts://problem/ClarifierOutput", required_scopes: ["problem.own.read"], current_implementation: "deterministic", implementation_ref: "selectNextClarifierDeterministic @ src/domain/problem/clarifier.ts", owning_agent_ids: ["A01"], aliases: ["select_clarifying_questions"], alternate_implementations: [{ kind: "model", ref: "selectNextClarifierWithModel @ src/platform/problem/ai-clarifier.ts", enabled_policy_key: "select_next_clarifier", handles_customer_data: true, falls_back_to: "selectNextClarifierDeterministic — the playbook's own field order, unchanged" }] },
   // A00 implementation binding — alias "build_job_packet" is the A00-spec name.
-  { capability_key: "generate_job_packet", version: V, risk_class: "R2", status: "TEST", input_schema_ref: "contracts://packet/GenerateInput", output_schema_ref: "contracts://packet/JobPacket", required_scopes: ["problem.own.write"], current_implementation: "deterministic", implementation_ref: "buildJobPacketFixture (FixtureJobPacketBuilder) @ src/domain/problem/fixture-engine.ts", owning_agent_ids: ["A02"], aliases: ["build_job_packet"] },
+  /**
+   * A02 BUILD, 2026-08-25. `current_implementation` STAYS "deterministic" and
+   * there is NO alternate: Loop Spec Audit A02 pre-answer 1 rules "do NOT wire
+   * one" for the packet path, so unlike classify_home_problem this entry has no
+   * model row to carry. The honest ledger figures are cost $0, provider
+   * "deterministic-stand-in", model_id null on the packet.
+   *
+   * The implementation_ref now names BOTH halves of the live path. It used to
+   * name only the fixture builder, which is why the richer shipped
+   * implementation (assemblePacket, the one the /complete flow actually uses)
+   * ran outside the governed door — see the gateway executor note.
+   */
+  { capability_key: "generate_job_packet", version: V, risk_class: "R2", status: "TEST", input_schema_ref: "contracts://packet/GenerateInput", output_schema_ref: "contracts://packet/JobPacket", required_scopes: ["problem.own.write"], current_implementation: "deterministic", implementation_ref: "generateJobPacket @ src/domain/problem/packet-assembly.ts, dispatching buildJobPacketFixture (FixtureJobPacketBuilder) @ src/domain/problem/fixture-engine.ts and assemblePacket @ src/domain/problem/packet-assembly.ts", owning_agent_ids: ["A02"], aliases: ["build_job_packet"] },
   { capability_key: "get_job_packet", version: V, risk_class: "R1", status: "TEST", input_schema_ref: "contracts://packet/GetInput", output_schema_ref: "contracts://packet/JobPacket", required_scopes: ["problem.own.read"] },
   { capability_key: "create_trust_request", version: V, risk_class: "R3", status: "TEST", input_schema_ref: "contracts://trust/CreateRequestInput", output_schema_ref: "contracts://trust/TrustRequest", required_scopes: ["trust.request.send"] },
   { capability_key: "record_trust_response", version: V, risk_class: "R2", status: "TEST", input_schema_ref: "contracts://trust/ResponseInput", output_schema_ref: "contracts://trust/TrustResponse", required_scopes: [] },
