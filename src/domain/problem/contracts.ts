@@ -14,6 +14,38 @@ export const SafetyState = z.enum(["normal", "review", "urgent"]);
 export const ProblemRecord = z.object({
   problem_id: Id,
   schema_version: SchemaVersion,
+  /**
+   * RECONCILED, NOT REDEFINED — A01 build, 2026-08-25 (Loop Spec Audit A01
+   * conditions 5 and 7, pre-answer 7).
+   *
+   * The A01 spec's §4 proposes a DIFFERENT field set for this object
+   * (`user_language`, `normalized_class`, `clarifier_answers`, `safety_flags`,
+   * and a 0-1 `confidence` number). This record ships with field-name parity
+   * against the Build Kit's problem_record.schema.json and is imported by
+   * eleven files including the intake route, the results page and A02's
+   * packet-assembly. So the delta is REPORTED, not resolved, and the shipped
+   * names stay:
+   *
+   *   spec §4                shipped here           why the shipped name wins
+   *   user_language      ->  problem_summary        Build Kit parity, 11 importers
+   *   normalized_class   ->  service_category       same
+   *   clarifier_answers  ->  clarifiers_asked       same
+   *   safety_flags       ->  safety_state +         the flag AND the rule that
+   *                          safety_rule_id         raised it, not one blended field
+   *   confidence: number ->  high|medium|low        a three-value enum the packet
+   *                                                 already renders as words
+   *
+   * TODO-ASK-OWNER (Joshua): which vocabulary is canon long-term. That is a
+   * canon-precedence ruling, not a coding decision, and nothing is blocked by
+   * leaving it open — this record and the spec's describe the same object.
+   *
+   * `tenant_id` is the one ADDITION, per A00 approval condition 1 as carried
+   * into A01 condition 7: every core record carries an optional tenant, default
+   * "prn", with NO tenant logic anywhere. This is the first table that will hold
+   * real homeowner rows, and adding a NOT NULL tenant column to populated
+   * homeowner data later is the expensive version of this fix.
+   */
+  tenant_id: z.string().min(1).optional(),
   status: ProblemStatus,
   source_channel: SourceChannel,
   intake_session_id: Id.nullable(),
@@ -31,9 +63,14 @@ export const ProblemRecord = z.object({
 });
 export type ProblemRecord = z.infer<typeof ProblemRecord>;
 
+/** The default tenant every record carries until a second client exists. */
+export const DEFAULT_TENANT_ID = "prn";
+
 /** Raw supplied evidence — private by default, preserved verbatim. */
 export const EvidenceObject = z.object({
   evidence_id: Id,
+  /** Reserved — white-label condition C7. Default "prn"; NO tenant logic exists. */
+  tenant_id: z.string().min(1).optional(),
   kind: z.enum(["customer_text", "photo", "video", "voice_transcript"]),
   /** Text content, or the PRIVATE storage reference for media. Never a public URL. */
   content: z.string(),
