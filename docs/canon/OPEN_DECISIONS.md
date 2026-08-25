@@ -6,6 +6,31 @@ come up, newest first. When decided, entries move to DECISIONS.md.
 
 ## Open
 
+- **OD-15 — Turning A06's AI critic on.** A06 ships with the critic INTERFACE
+  and no critic: `seo.critique_page` is deliberately not in the capability
+  registry, so `ai_critic.status` reads `SKIPPED_NO_MODEL` on every page and
+  nothing has read any page for meaning. That is honest, and it is also why the
+  owner's publish queue shows `BLOCKED_PENDING_AI` rather than a green PASS.
+  Turning it on takes three deliberate things, in order: (1) which model, and
+  what it may cost per page — every PRN dollar is a TEST figure; (2) a
+  capability entry for `seo.critique_page` with a risk class and required
+  scopes; (3) an executor behind it. The gateway is the only permitted route, so
+  none of this can happen by accident. Not urgent: `release_eligible` does not
+  depend on the critic, because a human publishes every page.
+- **OD-14 — Who may waive an A06 hard blocker, and on what evidence.** Canon
+  says A06 cannot waive its own blockers, and A06's build deliberately built NO
+  waiver mechanism (Loop Spec Audit pre-answer 8: "Build no waiver mechanism").
+  So today a hard blocker has no lift anywhere in the codebase: the page is
+  refused until the defect is repaired. The Approval Center is the obvious
+  future home for an override, but nothing has specced who may grant one or what
+  evidence it needs, and an invented override is a hole in the one gate
+  protecting the public site. **The honest consequence, recorded rather than
+  papered over: A06's false-block-rate KPI is UNCOMPUTABLE, not zero** — with no
+  override event there is no way to count the blocks a human would have lifted.
+  Related: OD-10 said to revisit autonomy graduation "at the A06/publish wave";
+  A06's build did not move it — `publish_mode` stays `OWNER_APPROVAL`,
+  `human_approval_required` stays true, and `release_eligible` now fails closed
+  automatically if either changes.
 - **OD-13 — Guided-diagnosis economics need sourced prices.** The owner wants
   the walkthrough to end in a decision frame (rent a tester vs. paid diagnostic
   visit vs. buy the cheap part on a gamble) with dollar figures. Canon forbids
