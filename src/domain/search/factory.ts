@@ -6,6 +6,7 @@ import {
   dataFamilyContent,
   type PageFactoryPolicy,
 } from "@/domain/search/page-factory-policy";
+import { DEFAULT_PAGE_ELIGIBLE_INTENT_TYPES } from "@/domain/search/policy";
 import { PageSpec } from "@/domain/search/pages";
 import { slugify } from "@/domain/search/importer";
 import { shortHash } from "@/domain/shared/hash";
@@ -322,6 +323,49 @@ export function compilePageSpec(opportunity: SearchOpportunity, deps: FactoryDep
 export type NewPageEligibility =
   | { eligible: true; reason: null }
   | { eligible: false; reason: string };
+
+/**
+ * WHICH INTENTS MAY BECOME DOORS — `policy.page_eligible_intent_types`, as ONE
+ * predicate with ONE implementation (inspection F3).
+ *
+ * WHAT WENT WRONG. The rule was owner-visible policy that exactly one caller
+ * read: `tools/run-factory.ts`, the CLI that regenerates the committed
+ * portfolio. Neither shipped run mode — the admin route or A04's approval hook —
+ * went anywhere near it, because both call `runPageFactory` directly. Accepting
+ * a tool-intent opportunity in the Approval Center therefore built a door page:
+ * "Uuid Generator", complete with breaker-panel safety guidance, from the
+ * GENERIC content-bank family. The rule existed, was written down in owner-
+ * editable policy, and protected nothing an owner could actually reach.
+ *
+ * SO THE PREDICATE LIVES HERE AND THE ENFORCEMENT LIVES IN THE SHARED PATH.
+ * `runPageFactory` calls this on every candidate; the CLI calls the same
+ * function instead of its own `Set.has`. A future entry point inherits the rule
+ * by using the shared run, which is the only way a policy stays enforced.
+ *
+ * FAIL-CLOSED DEFAULT. `eligibleIntentTypes` defaults to the shipped
+ * `["problem"]` (one constant, shared with the policy schema's own default), so
+ * a caller that forgets to thread the policy through gets the shipped ruling
+ * rather than an open gate.
+ *
+ * THE STEERING RULING ITSELF IS STILL PARKED — TODO-ASK-OWNER (Melissa). This
+ * changes WHERE the existing value is enforced, never WHAT it is.
+ */
+export function pageEligibleIntent(
+  opportunity: Pick<SearchOpportunity, "intent_type">,
+  eligibleIntentTypes: readonly string[] = DEFAULT_PAGE_ELIGIBLE_INTENT_TYPES
+): NewPageEligibility {
+  if (eligibleIntentTypes.includes(opportunity.intent_type)) {
+    return { eligible: true, reason: null };
+  }
+  return {
+    eligible: false,
+    reason:
+      `intent_type "${opportunity.intent_type}" is not page-eligible — ` +
+      `policy.page_eligible_intent_types allows ${eligibleIntentTypes.join(", ") || "nothing"}. ` +
+      "Doors are PROBLEM-intent pages (D-3); a tool/calculator topic keeps its score and its place " +
+      "in the queue but never becomes a door. Widen the policy to change this.",
+  };
+}
 
 export function newPageEligibility(
   opportunity: Pick<SearchOpportunity, "search_opportunity_id" | "status" | "recommendation">,

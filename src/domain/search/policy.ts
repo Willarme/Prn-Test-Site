@@ -23,6 +23,19 @@ export const AutonomyStage = z.enum(["T0", "T1", "T2", "T3"]);
 export const IntentDistinctness = z.enum(["low", "medium", "high"]);
 
 /**
+ * THE SHIPPED STEERING VALUE — doors are PROBLEM-intent pages (D-3).
+ *
+ * Exported as a named constant because it now has TWO readers that must never
+ * disagree: the `page_eligible_intent_types` schema default below, and the
+ * generation run's fail-closed fallback (platform/search/page-factory-run.ts)
+ * for any caller that does not hand the policy in. Two hand-written `["problem"]`
+ * literals is exactly how a policy value and its enforcement drift apart.
+ *
+ * The VALUE is unchanged and the TODO-ASK-OWNER ruling below stays parked.
+ */
+export const DEFAULT_PAGE_ELIGIBLE_INTENT_TYPES = ["problem"] as const;
+
+/**
  * SeoFactoryPolicy — every A04/A05/A06 knob the owner can change in Admin
  * without a code deploy (#23 §1.3, SEO_DOORS spec Wave 1).
  *
@@ -94,10 +107,20 @@ export const SeoFactoryPolicy = z
      * the owner reviews is unchanged. Whoever rules on steering can then choose
      * between "exclude from pages" (this field), "exclude from the queue"
      * (a hard exclusion), or "they are fine" — without another build.
+     *
+     * WHERE IT IS ENFORCED, AND WHY THAT MOVED (inspection F3). For one build
+     * this field was read in exactly ONE place — tools/run-factory.ts, a CLI
+     * script neither shipped run mode calls. The admin route and A04's approval
+     * hook both went straight to `runPageFactory`, which had never heard of it,
+     * so an owner accepting "uuid generator" in the Approval Center got a door
+     * page carrying home-repair safety advice. A policy the shipped paths do not
+     * read is not a policy. Enforcement now lives in the SHARED generation path
+     * (platform/search/page-factory-run.ts), which every entry point goes
+     * through, and the CLI reads the same predicate instead of its own filter.
      */
     page_eligible_intent_types: z
       .array(z.enum(["problem", "tool", "informational", "commercial", "unknown"]))
-      .default(["problem"]),
+      .default([...DEFAULT_PAGE_ELIGIBLE_INTENT_TYPES]),
     /**
      * A05's NAMESPACED SUB-BLOCK (C2/C3, coherence report seam 12). One policy
      * object, three consumers, and now a declared split: A04 owns the document,

@@ -105,6 +105,10 @@ export async function POST(request: Request): Promise<NextResponse> {
       existingPages: corpus.pages,
       existingSpecs: corpus.specs,
       policy: policy.page_factory,
+      // WHICH INTENTS MAY BECOME DOORS (inspection F3). This route used to
+      // bypass `page_eligible_intent_types` entirely — it was read only by the
+      // CLI — so an owner-approved tool topic was built as a door here.
+      eligible_intent_types: policy.page_eligible_intent_types,
       maxPages: parsed.data.max_pages ?? policy.max_new_pages_per_period,
       trigger: "admin_action",
     });

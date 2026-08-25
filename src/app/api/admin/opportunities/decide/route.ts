@@ -54,6 +54,14 @@ export async function POST(request: Request): Promise<NextResponse> {
       status: result.opportunity.status,
       decision_id: result.decision.decision_id,
       approval_id: result.approval_id,
+      /**
+       * WHAT THE ACCEPT ACTUALLY BUILT (inspection F3). Accepting an
+       * opportunity triggers A05 directly, and until now the owner was told
+       * nothing about the outcome — including when policy refused the topic as
+       * ineligible for a door. Page ids and reason CODES only: no page copy and
+       * no scoring internals cross the wire, same rule as the generate route.
+       */
+      page_build: result.page_build,
     });
   } catch (err) {
     // The decision write is fail-LOUD by design: if it did not land, the owner

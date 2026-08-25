@@ -88,7 +88,18 @@ export interface DecideResult {
    * A05's outcome, when the accept path triggered it. `null` means A05 was not
    * invoked at all (a reject/defer, or build_page: false).
    */
-  page_build: { staged: string[]; skipped: number; halted: boolean } | null;
+  page_build: {
+    staged: string[];
+    skipped: number;
+    /**
+     * WHY nothing was built, by reason code (inspection F3). A bare count is
+     * how "policy refused this topic" and "it already had a page" become the
+     * same silence to whoever is watching. Reason codes only — never page copy,
+     * never scoring internals.
+     */
+    skipped_reasons: string[];
+    halted: boolean;
+  } | null;
 }
 
 function nowIso(): string {
@@ -287,6 +298,10 @@ export async function decideOpportunity(
           existingPages: corpus.pages,
           existingSpecs: corpus.specs,
           policy: policy.page_factory,
+          // WHICH INTENTS MAY BECOME DOORS (inspection F3). Accepting a
+          // tool-intent opportunity used to build a door page from this hook,
+          // because `page_eligible_intent_types` was read only by the CLI.
+          eligible_intent_types: policy.page_eligible_intent_types,
           maxPages: 1,
           tenant_id: tenantId,
           trigger: "admin_action",
@@ -296,6 +311,7 @@ export async function decideOpportunity(
       pageBuild = {
         staged: result.staged.map((s) => s.spec.page_id),
         skipped: result.skipped.length,
+        skipped_reasons: result.skipped.map((s) => s.reason),
         halted: result.halted !== null,
       };
     } catch {

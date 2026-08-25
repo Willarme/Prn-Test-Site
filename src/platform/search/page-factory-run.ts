@@ -1,6 +1,6 @@
 import type { SearchOpportunity } from "@/domain/search/contracts";
 import { isOwnerApproved, type OpportunityDecision } from "@/domain/search/decision";
-import { newPageEligibility } from "@/domain/search/factory";
+import { newPageEligibility, pageEligibleIntent } from "@/domain/search/factory";
 import { sameIntentFamily } from "@/domain/search/intent-family";
 import {
   DEFAULT_PAGE_FACTORY_POLICY,
@@ -63,6 +63,7 @@ const A05 = "A05";
 
 export type SkipReason =
   | "not_owner_approved"
+  | "ineligible_intent"
   | "not_new_page_eligible"
   | "already_has_page"
   | "cannibalizes_existing"
@@ -84,6 +85,17 @@ export interface GenerationRunInput {
   existingPages: readonly IntentPage[];
   existingSpecs: readonly PageSpec[];
   policy?: PageFactoryPolicy;
+  /**
+   * `policy.page_eligible_intent_types` — WHICH INTENTS MAY BECOME DOORS
+   * (inspection F3). It lives on the TOP-LEVEL SeoFactoryPolicy document (A04
+   * owns it) rather than in A05's `page_factory.*` sub-block, which is why it
+   * arrives as its own field instead of riding along on `policy` above.
+   *
+   * OMITTING IT IS FAIL-CLOSED, NOT OPEN: the shipped `["problem"]` ruling
+   * applies. A caller that forgets this gets PRN's current behaviour, never an
+   * unguarded factory — which is the failure this field exists to end.
+   */
+  eligible_intent_types?: readonly string[];
   maxPages: number;
   now?: () => string;
   tenant_id?: string;
@@ -197,6 +209,30 @@ export async function runPageFactory(
       });
       continue;
     }
+    /**
+     * 2b. WHICH INTENTS MAY BECOME DOORS (inspection F3) — the owner's
+     *     `page_eligible_intent_types`, enforced HERE because here is the one
+     *     place every entry point passes through. It used to be enforced only in
+     *     tools/run-factory.ts, so both shipped run modes walked straight past
+     *     it and an accepted "uuid generator" became a door page with
+     *     home-repair safety advice on it.
+     *
+     *     REPORTED BY NAME, NEVER DROPPED — its own `ineligible_intent` bucket,
+     *     for the same reason `not_new_page` exists: an owner decision that
+     *     produces no page must say so out loud. The owner said yes; policy says
+     *     this kind of topic is not a door. Both facts survive.
+     */
+    const intentVerdict = pageEligibleIntent(opportunity, input.eligible_intent_types);
+    if (!intentVerdict.eligible) {
+      skipped.push({
+        search_opportunity_id: opportunity.search_opportunity_id,
+        keyword: opportunity.keyword,
+        reason: "ineligible_intent",
+        detail: intentVerdict.reason,
+      });
+      continue;
+    }
+
     const eligibility = newPageEligibility(opportunity, decisions);
     if (!eligibility.eligible) {
       skipped.push({

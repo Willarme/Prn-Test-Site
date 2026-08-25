@@ -13,7 +13,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { importSeedRows, type SeedFile } from "../src/domain/search/importer";
 import { evaluatePortfolio } from "../src/domain/search/portfolio";
-import { buildCandidatePages } from "../src/domain/search/factory";
+import { buildCandidatePages, pageEligibleIntent } from "../src/domain/search/factory";
 import { qaCandidatePages } from "../src/domain/search/qa";
 import { SAMPLE_PAGE_SPEC } from "../src/domain/search/fixtures/sample-page-spec";
 import { FilePolicyStore } from "../src/platform/stores/policy-file";
@@ -41,13 +41,25 @@ async function main() {
   // changeable in policy. The STEERING RULING itself (do tool topics belong in
   // the queue at all?) is TODO-ASK-OWNER — Melissa's, parked, see policy.ts.
   //
+  // ONE PREDICATE, NOT A SECOND COPY OF THE RULE (inspection F3). Moving the
+  // value into policy was only half the fix: for one build this script was the
+  // only thing that READ it, so both shipped run modes — the admin route and
+  // A04's approval hook — built tool-intent doors anyway. Enforcement now lives
+  // in the shared generation path, and this script calls the same
+  // `pageEligibleIntent` predicate rather than reimplementing it as a Set.
+  //
   // Skip opportunities that already have a handcrafted/staged page — the
   // factory builds NEW doors, it never re-builds an existing one.
-  const eligibleIntents = new Set<string>(policy.page_eligible_intent_types);
   const alreadyStaged = new Set([SAMPLE_PAGE_SPEC.search_opportunity_id, SAMPLE_PAGE_SPEC.primary_query]);
-  const problemNew = opportunities.filter(
-    (o) => eligibleIntents.has(o.intent_type) && !alreadyStaged.has(o.search_opportunity_id) && !alreadyStaged.has(o.keyword)
-  );
+  const notDoors: Array<{ keyword: string; intent_type: string }> = [];
+  const problemNew = opportunities.filter((o) => {
+    if (alreadyStaged.has(o.search_opportunity_id) || alreadyStaged.has(o.keyword)) return false;
+    if (!pageEligibleIntent(o, policy.page_eligible_intent_types).eligible) {
+      notDoors.push({ keyword: o.keyword, intent_type: o.intent_type });
+      return false;
+    }
+    return true;
+  });
   /**
    * THE OWNER'S DECISIONS, JOINED AT READ TIME (coherence seam 2, A05 build).
    *
@@ -115,6 +127,19 @@ async function main() {
   writeFileSync(path.join(OUT, "qa-results.json"), JSON.stringify({ generated_at: NOW, results: qa }, null, 2));
 
   console.log(`opportunities: ${summary.total}`, summary.by_recommendation);
+  // Never silent: an opportunity policy refuses to make a door is REPORTED,
+  // the same way the run's `ineligible_intent` bucket reports it (F3).
+  if (notDoors.length > 0) {
+    const byIntent = notDoors.reduce<Record<string, number>>((acc, r) => {
+      acc[r.intent_type] = (acc[r.intent_type] ?? 0) + 1;
+      return acc;
+    }, {});
+    console.log(
+      `ineligible intent -> never a door (${notDoors.length}):`,
+      byIntent,
+      `— policy.page_eligible_intent_types = [${policy.page_eligible_intent_types.join(", ")}]`
+    );
+  }
   console.log(`owner-approved -> pages built: ${specs.length}, skipped: ${skipped.length}`);
   if (not_new_page.length > 0) {
     console.log(`approved but NOT a new page (${not_new_page.length}):`);
