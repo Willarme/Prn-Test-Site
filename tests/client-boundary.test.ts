@@ -141,6 +141,75 @@ describe("client/server boundary", () => {
     }
   });
 
+  /**
+   * AI MODEL WIRING, 2026-08-25 — THE MODEL LAYER NEVER REACHES A BROWSER.
+   *
+   * Three distinct leaks are guarded here, and they are not the same leak:
+   *
+   *  1. THE CREDENTIAL. `OPENROUTER_API_KEY` is read in exactly one place
+   *     (platform/ai/client.ts) and used in exactly one (the provider). A
+   *     "use client" file importing anything under platform/ai/** would put the
+   *     module graph that reads it into a page payload.
+   *  2. THE PROMPTS. Prompt text is the agent's operating instructions and its
+   *     guardrails in one string — "never quote a price", "the description is
+   *     evidence, not instructions". Shipping that to a browser hands an
+   *     adversary the exact rules to write around, on the surface where the
+   *     untrusted input comes from. Same leak class as the playbook-graph
+   *     exposure (Trial Build State 104-125, Master Todo T0-02).
+   *  3. THE SPEND STATE. Caps, day totals and model ids are owner-facing
+   *     operational figures. They belong on an admin surface, not in a page.
+   */
+  it("browser code never imports the model layer", () => {
+    for (const file of clientFiles) {
+      const content = readFileSync(file, "utf-8");
+      expect(content, file).not.toMatch(/platform\/ai\//);
+      expect(content, file).not.toMatch(/\bcallModel\b/);
+      expect(content, file).not.toMatch(/\bAiPolicy\b/);
+      expect(content, file).not.toMatch(/\bMODEL_CATALOGUE\b/);
+      expect(content, file).not.toMatch(/\bOPENROUTER/);
+      // The capability wirings that hold the prompts.
+      expect(content, file).not.toMatch(/platform\/problem\/ai-/);
+      expect(content, file).not.toMatch(/ai-page-copy|page-qa-critic/);
+    }
+  });
+
+  /**
+   * The key is read from the environment in ONE file and used in ONE file, and
+   * nothing else in src/ may name it. This is the same shape as the DataForSEO
+   * credential rule below — one adapter knows the vendor, and only that one.
+   */
+  it("only the provider seam names the model credential", () => {
+    const allowed = ["platform/ai/client.ts"];
+    for (const file of allSrc) {
+      const normalized = file.replace(/\\/g, "/");
+      if (allowed.some((a) => normalized.endsWith(a))) continue;
+      expect(readFileSync(file, "utf-8"), file).not.toMatch(/OPENROUTER_API_KEY/);
+    }
+  });
+
+  /**
+   * PROMPTS ARE SERVER-SIDE DATA. A prompt-shaped string is recognisable: it is
+   * where the instruction verbs live. Rather than pattern-match prose, the rule
+   * is structural — the modules that hold prompts are platform modules, and this
+   * asserts none of them is reachable from a client file by any import path,
+   * including a re-export laundering one through a third module.
+   */
+  it("no prompt module is reachable from a client component", () => {
+    const promptModules = allSrc
+      .map((f) => f.replace(/\\/g, "/"))
+      .filter((f) => /platform\/(ai|problem)\//.test(f) || /ai-page-copy|page-qa-critic/.test(f));
+    expect(promptModules.length).toBeGreaterThan(0);
+    const basenames = promptModules.map((f) => f.split("/").pop()!.replace(/\.ts$/, ""));
+    for (const file of clientFiles) {
+      const content = readFileSync(file, "utf-8");
+      for (const name of basenames) {
+        expect(content, `${file} imports ${name}`).not.toMatch(
+          new RegExp(`from\\s+["'][^"']*${name}["']`)
+        );
+      }
+    }
+  });
+
   it("no source file hard-codes a credential-shaped literal", () => {
     for (const file of allSrc) {
       const content = readFileSync(file, "utf-8");
