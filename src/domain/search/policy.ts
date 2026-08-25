@@ -15,6 +15,7 @@ import {
   DEFAULT_PAGE_FACTORY_POLICY,
   PageFactoryPolicy,
 } from "@/domain/search/page-factory-policy";
+import { PageQaPolicy } from "@/domain/search/qa-policy";
 import { ScoringPolicy, V1_SCORING_POLICY, weightSum } from "@/domain/search/scoring";
 import { MarketVocabulary, PRN_TRIAL_VOCABULARY } from "@/domain/search/vocabulary";
 
@@ -132,6 +133,24 @@ export const SeoFactoryPolicy = z
      * defaults reproduce the hardcoded literals byte for byte.
      */
     page_factory: PageFactoryPolicy.default(DEFAULT_PAGE_FACTORY_POLICY),
+    /**
+     * A06's NAMESPACED SUB-BLOCK (condition C8/C9, coherence report seam 12).
+     * The split is now complete: A04 owns the document, A05 alone writes
+     * `page_factory.*`, A06 alone writes `page_qa.*`.
+     *
+     * IT LIVES HERE AND NOT IN THE A00 POLICY STORE, per pre-answer 9: this
+     * document is runtime-editable (data/seo-factory-policy.json via
+     * FilePolicyStore, or SupabasePolicyStore when configured), and A06's
+     * Definition of Done requires a threshold change WITHOUT a code deploy. The
+     * A00 store is by design a versioned code module, so putting A06's
+     * thresholds there would make that DoD unachievable.
+     *
+     * `.default({})` and NOT a spelled-out object — the lesson A05's build
+     * recorded on `structured_data`: an outer default REPLACES the inner field
+     * defaults wholesale, which is how an empty deny list once shipped silently.
+     * `{}` lets every inner default stand.
+     */
+    page_qa: PageQaPolicy.default({}),
     discovery_scan_cadence: Cadence,
     search_console_ingest_cadence: Cadence,
     target_qualified_pages_per_period: z.number().int().min(0),

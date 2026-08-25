@@ -114,14 +114,34 @@ describe("issue 16 — the public staged listing is gate-ready, default unchange
     expect(flagEnabled("seo_doors_enabled")).toBe(false);
   });
 
-  it("the publish route still gates on an owner session AND qa.state PASS — one gate, unmoved", () => {
+  /**
+   * ONE GATE, REWIRED BY A06 — coherence report issue 6, condition C10.
+   *
+   * A05's build asserted the shipped form: an owner session plus an inline
+   * `spec.qa.state !== "PASS"` test, with "A05 added no second gate field beside
+   * it". A06's build rewired that in the same commit it introduced
+   * `release_eligible`, exactly as the condition requires: the route now reads
+   * ONE boolean and `qa.state` is a conjunct INSIDE it. So this assertion
+   * follows the gate rather than pinning its old spelling — what it must keep
+   * proving is that there is exactly one condition, and that A05 still adds
+   * nothing beside it.
+   *
+   * The 409 parity proof lives in tests/a06.one-publish-gate.test.ts.
+   */
+  it("the publish route gates on an owner session AND exactly one release condition", () => {
     const publish = readFileSync(
       join(process.cwd(), "src/app/api/admin/pages/publish/route.ts"),
       "utf-8"
     );
-    expect(publish).toMatch(/isAdminUnlocked\(\)/);
-    expect(publish).toMatch(/spec\.qa\.state !== "PASS"/);
-    // A05 added no second gate field beside it.
-    expect(publish).not.toMatch(/release_eligible|lint_passed|a05_/);
+    // Comments stripped, same as the homepage scan above: the route's header
+    // records what was removed, and naming it is not doing it.
+    const code = publish.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
+    expect(code).toMatch(/isAdminUnlocked\(\)/);
+    expect(code).toMatch(/!decision\.release_eligible/);
+    expect(code).toMatch(/status: 409/);
+    // The old gate is GONE, not living beside the new one.
+    expect(code).not.toMatch(/qa\.state/);
+    // And A05 still adds nothing of its own here.
+    expect(code).not.toMatch(/lint_passed|a05_|lintPageBeforeQa/);
   });
 });
