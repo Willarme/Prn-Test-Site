@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { adminGate } from "@/components/admin/AdminGate";
+import { QaVerdictPanel } from "@/components/admin/QaVerdict";
 import { lintPageBeforeQa } from "@/domain/search/page-lint";
 import { OWNER_EDITABLE_FIELDS } from "@/domain/search/page-registry";
 import { allStagedSpecs, policyStore } from "@/platform/admin/data";
+import { publishGate } from "@/platform/search/page-qa-gate";
 
 export const dynamic = "force-dynamic";
 
@@ -41,6 +43,12 @@ export default async function AdminEditPage({
 
   const policy = await policyStore().getActive();
   const lint = lintPageBeforeQa(spec, policy.page_factory);
+  /**
+   * A06's verdict, from the SAME function the publish route calls — the admin
+   * screen saying "ready" while the route returns 409 is exactly the drift the
+   * one-gate discipline exists to prevent, so this surface gets no shortcut.
+   */
+  const release = await publishGate({ page_spec_id: spec.page_spec_id });
   const blocked = typeof query.blocked === "string" ? query.blocked : null;
   const saved = typeof query.saved === "string" ? query.saved : null;
   const slug = spec.canonical_path.replace(/^\/[a-z0-9-]+\//, "");
@@ -78,6 +86,14 @@ export default async function AdminEditPage({
           <p style={{ margin: 0 }}>{blocked}</p>
         </div>
       )}
+      {release && (
+        <QaVerdictPanel
+          qa={release.decision.qa}
+          eligible={release.decision.release_eligible}
+          reasons={release.decision.reasons}
+        />
+      )}
+
       {lint.findings.length > 0 && (
         <div className="cell" style={{ marginBottom: 18 }}>
           <span className="tag">This page currently fails {lint.findings.length} wording check(s)</span>

@@ -117,6 +117,43 @@ export async function publishGate(input: PublishGateInput): Promise<PublishGateR
 }
 
 /**
+ * THE OWNER'S PUBLISH QUEUE, as the admin surface reads it — every staged page
+ * with the SAME decision the publish route will make.
+ *
+ * ONE COMPUTATION FOR THE WHOLE LIST, not one per row: the policy and the
+ * registry are read once. That matters for more than speed — a per-row read
+ * could show one page judged under a policy another page was not, and a queue
+ * whose rows disagree about the rules is worse than no queue.
+ *
+ * IT IS THE SAME FUNCTION THE ROUTE CALLS. The admin list showing "ready" while
+ * the route returns 409 (or the reverse) is exactly the class of drift the
+ * one-gate discipline exists to prevent, so the surface does not get its own
+ * shortcut.
+ */
+export async function publishQueueSnapshot(
+  clientProvider: PlatformClientProvider = serviceClientProvider
+): Promise<Array<{ spec: PageSpec; decision: ReleaseDecision }>> {
+  const specs = await allStagedSpecs();
+  const policy = await policyStore().getActive();
+  const registry = await pageRegistrySnapshot(specs, clientProvider);
+
+  return specs.map((spec) => ({
+    spec,
+    decision: evaluateReleaseForPublish(spec, {
+      existing: specs,
+      registry,
+      policy: policy.page_qa,
+      min_user_value_score: policy.min_user_value_score,
+      human_gate: {
+        publish_mode: policy.publish_mode,
+        human_approval_required: policy.human_approval_required,
+      },
+      tenant_id: spec.tenant_id,
+    }),
+  }));
+}
+
+/**
  * Close the Approval Center item A06's QA run filed for this page, recording
  * that the owner acted.
  *
