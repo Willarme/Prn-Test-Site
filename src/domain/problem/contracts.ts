@@ -334,8 +334,36 @@ export const JobPacket = z.object({
   symptoms_and_timing: z.string().nullable(),
   likely_service_category: z.object({
     value: z.string().nullable(),
+    /**
+     * ⚠ MELISSA-PARK — CONFIDENCE DISPLAY IS AN OPEN DECISION (Loop Spec Audit
+     * A02 condition 12a and pre-answer 11; Compendium 17.13/17.14). Whether a
+     * homeowner should be shown "MEDIUM CONFIDENCE" about a problem in their own
+     * house — and in what words — is homeowner psychology, not a coding call. The
+     * three-level enum and the existing rendering are LEFT EXACTLY AS THEY WERE.
+     * A02 changed nothing here and decided nothing here.
+     */
     confidence: z.enum(["high", "medium", "low"]),
-    note: z.literal("This is an inference from the description, not a diagnosis."),
+    /**
+     * A DISCLAIMER IS REQUIRED. WHICH SENTENCE IT IS, IS NOT (condition 8).
+     *
+     * This was `z.literal("This is an inference from the description, not a
+     * diagnosis.")` until 2026-08-25 — which made the packet honest by type and
+     * made a white-label deployment impossible by the same stroke: no client
+     * could change one word of the sentence without a schema change, and canon
+     * requires a per-client deployment to supply its own copy.
+     *
+     * The enforcement moved rather than vanished. The shipped words are
+     * byte-identical and now live in domain/problem/packet-copy.ts, whose
+     * `PacketCopyPackage` REFUSES at parse time any copy carrying a savings
+     * promise, a guarantee, a raw dollar figure or the word "lead" — the rules
+     * the literal was standing in for. This schema keeps the half it can
+     * honestly keep: a disclaimer must be PRESENT and non-empty.
+     *
+     * Deliberately NOT validated against the active package: a packet generated
+     * under copy v1 must not stop parsing the day a deployment moves to v2.
+     * `template_version` records which words a homeowner actually saw.
+     */
+    note: z.string().min(1),
   }),
   what_remains_unknown: z.array(z.string()),
   safe_prep_notes: z.array(z.string()),

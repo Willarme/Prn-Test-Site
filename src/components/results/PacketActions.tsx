@@ -1,13 +1,22 @@
 "use client";
 
 import { useState } from "react";
+import { ACTIVE_PACKET_COPY } from "@/domain/problem/packet-copy";
+
+/**
+ * PACKET CTA COPY FROM CONFIG (Loop Spec Audit A02 condition 8). The four
+ * button labels moved VERBATIM to domain/problem/packet-copy.ts. That module is
+ * pure typed DATA — no store, no adapter, no event dictionary, no env — so it
+ * crosses the client boundary safely (tests/client-boundary.test.ts).
+ */
+const A = ACTIVE_PACKET_COPY.actions;
 
 export function PacketActions({ copyText }: { copyText: string }) {
   const [copied, setCopied] = useState(false);
   return (
     <div className="no-print" style={{ display: "flex", gap: 12, flexWrap: "wrap", margin: "18px 0" }}>
       <button className="btn btn-pink btn-sm" onClick={() => window.print()}>
-        Print / Save as PDF
+        {A.download}
       </button>
       <button
         className="btn btn-ghost btn-sm"
@@ -17,7 +26,7 @@ export function PacketActions({ copyText }: { copyText: string }) {
           setTimeout(() => setCopied(false), 2000);
         }}
       >
-        {copied ? "Copied ✓" : "Copy 30-second summary"}
+        {copied ? A.copy_summary_done : A.copy_summary}
       </button>
     </div>
   );
@@ -33,7 +42,7 @@ export function AlreadyHaveSomeone({ callScript }: { callScript: string }) {
         Send them the whole story once, instead of re-explaining it on the phone.
       </p>
       <button className="btn btn-ghost btn-sm" onClick={() => setOpen(!open)}>
-        {open ? "Hide call script" : "Get the 30-second call script"}
+        {open ? A.hide_call_script : A.reveal_call_script}
       </button>
       {open && (
         <p style={{ marginTop: 14, fontStyle: "italic" }}>&ldquo;{callScript}&rdquo;</p>

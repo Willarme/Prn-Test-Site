@@ -6,6 +6,7 @@ import {
   ProblemRecord,
 } from "@/domain/problem/contracts";
 import { shortHash } from "@/domain/search/importer";
+import { ACTIVE_PACKET_COPY, fillCopy, type PacketCopyPackage } from "@/domain/problem/packet-copy";
 import {
   ACTIVE_PROBLEM_TAXONOMY,
   familyLabel,
@@ -84,20 +85,31 @@ export function analyzeProblemFixture(input: AnalyzeInput): AnalyzeResult {
   };
 }
 
+/**
+ * PACKET COPY FROM CONFIG, 2026-08-25 (Loop Spec Audit A02 condition 8).
+ *
+ * Every customer-facing sentence this builder used to hold as a string literal
+ * moved VERBATIM to domain/problem/packet-copy.ts. Same treatment, same reason
+ * and same shape as the taxonomy move above: the copy arrives as an optional
+ * trailing argument defaulting to the shipped package, so every existing call
+ * site produces identical words. A white-label client swaps a package.
+ */
 export function buildJobPacketFixture(
   problem: ProblemRecord,
   evidence: EvidenceObject,
   now: string,
-  taxonomy: ProblemTaxonomy = ACTIVE_PROBLEM_TAXONOMY
+  taxonomy: ProblemTaxonomy = ACTIVE_PROBLEM_TAXONOMY,
+  copy: PacketCopyPackage = ACTIVE_PACKET_COPY
 ): JobPacket {
   const family = problem.service_category;
   const label = familyLabel(family, taxonomy);
   const questions = questionsForFamily(family, taxonomy);
+  const c = copy.content;
 
   const unknowns = [
-    "Exact cause — a qualified provider should verify on site.",
-    ...(family ? [] : ["Which trade should handle this — the description fits more than one."]),
-    "Whether parts will be needed, and which.",
+    c.unknown_exact_cause,
+    ...(family ? [] : [c.unknown_which_trade]),
+    c.unknown_parts,
   ];
 
   const packet: JobPacket = {
@@ -105,26 +117,37 @@ export function buildJobPacketFixture(
     packet_version: 1,
     schema_version: "1.0.0",
     problem_id: problem.problem_id,
-    summary_plain: `Homeowner reports: ${evidence.content}`,
+    summary_plain: `${c.raw_statement_prefix}${evidence.content}`,
+    /**
+     * HC12 / condition 9 — THE HOMEOWNER'S OWN WORDS, UNTOUCHED. This array
+     * holds the raw description BYTE-IDENTICAL: no prefix, no truncation, no
+     * paraphrase, and nothing from the copy package reaches it. `summary_plain`
+     * above is the prefixed DISPLAY string and is a different field on purpose.
+     * tests/a02.verbatim-survival.test.ts asserts the byte-identity and asserts
+     * that "fixing" the prefix into this field would be caught.
+     */
     observed_statements: [evidence.content],
     symptoms_and_timing: null,
     likely_service_category: {
       value: label,
       confidence: problem.service_category_confidence ?? "low",
-      note: "This is an inference from the description, not a diagnosis.",
+      note: c.inference_disclaimer,
     },
     what_remains_unknown: unknowns,
-    safe_prep_notes: [
-      "Know where your main shutoffs are (water, breaker panel).",
-      "Clear access to the affected area so a provider can reach it easily.",
-    ],
+    safe_prep_notes: [...c.safe_prep_notes],
     questions_for_provider: questions,
-    call_script: `Hi — something happened at my home and I have an organized summary ready. In short: ${evidence.content.slice(0, 140)}${evidence.content.length > 140 ? "…" : ""}. I can send you the full Job Packet with details and photos. Are you able to take a look?`,
+    call_script: fillCopy(c.call_script_template, {
+      excerpt: `${evidence.content.slice(0, c.call_script_excerpt_max_chars)}${
+        evidence.content.length > c.call_script_excerpt_max_chars ? c.call_script_ellipsis : ""
+      }`,
+    }),
     collected_details: [],
     media_count: 0,
     diagnosis: null,
     generated_at: now,
     engine: "fixture",
+    /** Which copy package produced these words — see packet-copy.ts. */
+    template_version: copy.template_version,
   };
   return JobPacket.parse(packet);
 }

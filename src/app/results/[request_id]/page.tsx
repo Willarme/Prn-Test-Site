@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { FEATURE_CONCEPTS } from "@/domain/feature-lab/concepts";
 import type { JobPacket, ProblemRecord } from "@/domain/problem/contracts";
+import { ACTIVE_PACKET_COPY, fillCopy } from "@/domain/problem/packet-copy";
 import { SAFETY_RULES } from "@/domain/problem/safety";
 import { flagEnabled } from "@/platform/flags";
 import { runtimeStore } from "@/platform/stores/runtime";
@@ -58,6 +59,16 @@ export default async function ResultsPage({
 
   const safetyRule = SAFETY_RULES.find((r) => r.safety_rule_id === problem.safety_rule_id) ?? null;
   const copySummary = packet.call_script;
+  /**
+   * PACKET COPY FROM CONFIG (Loop Spec Audit A02 condition 8). Every heading and
+   * label inside the packet card below moved VERBATIM to
+   * domain/problem/packet-copy.ts — same words, sourced from a package a
+   * white-label deployment can swap. The page copy AROUND the packet (the hero,
+   * the three-paths section, the Feature Lab) is deliberately NOT moved: it is
+   * not packet copy, and the Trust wording in particular is owned elsewhere
+   * (#15 / OD-11).
+   */
+  const S = ACTIVE_PACKET_COPY.sections;
 
   return (
     <main>
@@ -96,15 +107,15 @@ export default async function ResultsPage({
       <section className="section section-light packet-print" style={{ paddingTop: 56 }}>
         <div className="wrap-narrow">
           <div className="card-light">
-            <span className="pill pill-pink no-print">Job Packet</span>
+            <span className="pill pill-pink no-print">{S.packet_label}</span>
             <PacketActions copyText={copySummary} />
             <div className="prose">
-              <h2>The problem, in your words</h2>
+              <h2>{S.problem_in_your_words}</h2>
               <p>{packet.summary_plain}</p>
 
               {(packet.collected_details.length > 0 || packet.media_count > 0) && (
                 <>
-                  <h2>Details supplied</h2>
+                  <h2>{S.details_supplied}</h2>
                   <ul>
                     {packet.collected_details.map((d, i) => (
                       <li key={i}>
@@ -113,8 +124,8 @@ export default async function ResultsPage({
                     ))}
                     {packet.media_count > 0 && (
                       <li>
-                        <strong>Photos/video attached:</strong> {packet.media_count} (shared privately with the
-                        provider you choose)
+                        <strong>{S.media_attached_label}</strong> {packet.media_count}{" "}
+                        {S.media_attached_note}
                       </li>
                     )}
                   </ul>
@@ -123,7 +134,7 @@ export default async function ResultsPage({
 
               {packet.diagnosis && (
                 <>
-                  <h2>Guided walkthrough findings</h2>
+                  <h2>{S.guided_walkthrough_findings}</h2>
                   <p>
                     <strong>{packet.diagnosis.outcome_title}</strong> — {packet.diagnosis.likely_cause}
                   </p>
@@ -134,41 +145,43 @@ export default async function ResultsPage({
                       </li>
                     ))}
                   </ul>
-                  <p className="hint">Note for the provider: {packet.diagnosis.provider_note}</p>
+                  <p className="hint">{S.provider_note_prefix} {packet.diagnosis.provider_note}</p>
                 </>
               )}
 
-              <h2>Likely service category</h2>
+              <h2>{S.likely_service_category}</h2>
               <p>
-                {packet.likely_service_category.value ?? "Not yet clear from the description"}{" "}
+                {packet.likely_service_category.value ?? S.service_category_unknown}{" "}
                 <span className="pill pill-amber">
-                  inference · {packet.likely_service_category.confidence} confidence
+                  {fillCopy(S.inference_badge_template, {
+                    confidence: packet.likely_service_category.confidence,
+                  })}
                 </span>
               </p>
               <p className="hint">{packet.likely_service_category.note}</p>
 
-              <h2>What remains unknown</h2>
+              <h2>{S.what_remains_unknown}</h2>
               <ul>
                 {packet.what_remains_unknown.map((u, i) => (
                   <li key={i}>{u}</li>
                 ))}
               </ul>
 
-              <h2>Useful preparation</h2>
+              <h2>{S.useful_preparation}</h2>
               <ul>
                 {packet.safe_prep_notes.map((n, i) => (
                   <li key={i}>{n}</li>
                 ))}
               </ul>
 
-              <h2>What a provider will likely ask — have these ready</h2>
+              <h2>{S.questions_for_provider}</h2>
               <ul>
                 {packet.questions_for_provider.map((q, i) => (
                   <li key={i}>{q}</li>
                 ))}
               </ul>
 
-              <h2>Your 30-second call script</h2>
+              <h2>{S.call_script}</h2>
               <p style={{ fontStyle: "italic" }}>&ldquo;{packet.call_script}&rdquo;</p>
             </div>
           </div>

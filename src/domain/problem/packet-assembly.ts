@@ -1,6 +1,11 @@
 import type { EvidenceObject, JobPacket, ProblemRecord } from "@/domain/problem/contracts";
 import { JobPacket as JobPacketSchema } from "@/domain/problem/contracts";
 import { buildJobPacketFixture } from "@/domain/problem/fixture-engine";
+import {
+  ACTIVE_PACKET_COPY,
+  fillCopy,
+  type PacketCopyPackage,
+} from "@/domain/problem/packet-copy";
 import type { DiagnosisAnswer, IntakeAnswer, IntakePlaybook } from "@/domain/intake/playbook";
 import { nextFor } from "@/domain/intake/playbook";
 
@@ -18,11 +23,18 @@ export interface AssembleInput {
   diagnosis: DiagnosisAnswer[];
   version: number;
   now: string;
+  /**
+   * PACKET COPY FROM CONFIG (condition 8). Optional and defaulted, so every
+   * existing call site produces identical words; a white-label deployment
+   * passes its own package.
+   */
+  copy?: PacketCopyPackage;
 }
 
 export function resolveDiagnosis(
   playbook: IntakePlaybook,
-  diagnosis: DiagnosisAnswer[]
+  diagnosis: DiagnosisAnswer[],
+  copy: PacketCopyPackage = ACTIVE_PACKET_COPY
 ): JobPacket["diagnosis"] {
   if (!playbook.first_step_id || diagnosis.length === 0) return null;
   const byStep = new Map(diagnosis.map((d) => [d.step_id, d]));
@@ -35,7 +47,12 @@ export function resolveDiagnosis(
     const step = playbook.diagnostic_steps.find((s) => s.step_id === current);
     const ans = byStep.get(current);
     if (!step || !ans) break;
-    stepsAnswered.push({ step: step.title, answer: ans.answer ?? (ans.evidence_id ? "photo attached" : "—") });
+    stepsAnswered.push({
+      step: step.title,
+      answer:
+        ans.answer ??
+        (ans.evidence_id ? copy.content.answer_photo_attached : copy.content.answer_none),
+    });
     const branch = nextFor(step, ans.answer ?? "any");
     if (!branch) break;
     if (branch.outcome_id) {
@@ -47,10 +64,10 @@ export function resolveDiagnosis(
   if (!outcomeId) {
     return stepsAnswered.length > 0
       ? {
-          outcome_title: "Walkthrough in progress",
-          likely_cause: "The customer started the guided walkthrough; see steps answered so far.",
+          outcome_title: copy.content.diagnosis_in_progress_title,
+          likely_cause: copy.content.diagnosis_in_progress_cause,
           steps_answered: stepsAnswered,
-          provider_note: "Guided diagnosis partially completed; findings listed.",
+          provider_note: copy.content.diagnosis_in_progress_provider_note,
         }
       : null;
   }
@@ -65,7 +82,14 @@ export function resolveDiagnosis(
 }
 
 export function assemblePacket(input: AssembleInput): JobPacket {
-  const base = buildJobPacketFixture(input.problem, input.textEvidence, input.now);
+  const copy = input.copy ?? ACTIVE_PACKET_COPY;
+  const base = buildJobPacketFixture(
+    input.problem,
+    input.textEvidence,
+    input.now,
+    undefined,
+    copy
+  );
   const labelFor = (key: string) =>
     input.playbook?.required_fields.find((f) => f.field_key === key)?.label ?? key;
 
@@ -74,19 +98,25 @@ export function assemblePacket(input: AssembleInput): JobPacket {
   for (const a of input.answers) latest.set(a.field_key, a);
   const collected = [...latest.values()].map((a) => ({
     label: labelFor(a.field_key),
-    value: a.value_text ?? (a.evidence_id ? "photo attached" : "provided"),
+    value:
+      a.value_text ??
+      (a.evidence_id ? copy.content.answer_photo_attached : copy.content.answer_provided),
     source: a.source,
   }));
 
   const media = input.allEvidence.filter((e) => e.kind === "photo" || e.kind === "video").length;
-  const diagnosis = input.playbook ? resolveDiagnosis(input.playbook, input.diagnosis) : null;
+  const diagnosis = input.playbook
+    ? resolveDiagnosis(input.playbook, input.diagnosis, copy)
+    : null;
 
   // Things we now know stop being "unknown"; provider questions already
   // answered drop off the ask list.
   // Key on field_key (stable), not the human label.
   const knownKeys = new Set([...latest.keys()]);
+  const walkthroughIncomplete =
+    diagnosis?.outcome_title === copy.content.diagnosis_in_progress_title;
   const unknowns = base.what_remains_unknown.filter(
-    (u) => !(diagnosis && /exact cause/i.test(u) && diagnosis.outcome_title !== "Walkthrough in progress")
+    (u) => !(diagnosis && u === copy.content.unknown_exact_cause && !walkthroughIncomplete)
   );
   const questions = base.questions_for_provider.filter((q) => {
     const ql = q.toLowerCase();
@@ -107,8 +137,10 @@ export function assemblePacket(input: AssembleInput): JobPacket {
     media_count: media,
     diagnosis,
     call_script:
-      diagnosis && diagnosis.outcome_title !== "Walkthrough in progress"
-        ? `${base.call_script} I also walked through a few checks — it looks like: ${diagnosis.likely_cause}`
+      diagnosis && !walkthroughIncomplete
+        ? `${base.call_script}${fillCopy(copy.content.call_script_diagnosis_suffix, {
+            likely_cause: diagnosis.likely_cause,
+          })}`
         : base.call_script,
     generated_at: input.now,
   });
