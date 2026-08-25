@@ -93,7 +93,13 @@ export const SAMPLE_PAGE_SPEC: PageSpec = PageSpec.parse({
   user_value_score: null,
   indexed: true,
   noindex_reason: null,
-  template_id: "tpl_intent_page",
+  // THE SHAPE THIS PAGE ACTUALLY HAS (inspection F4). It claimed
+  // "tpl_intent_page" while carrying a sixth block — the closing FAQ — that the
+  // factory never emits and that template never declared. tpl_intent_page_faq
+  // is that same shape plus the FAQ slot, registered in template.ts. Nothing
+  // renders from a TemplateSpec, so this changes no markup; it changes what the
+  // registry TRUTHFULLY describes.
+  template_id: "tpl_intent_page_faq",
   template_version: "1.0.0",
   generation: { model: null, prompt_id: null, prompt_version: null },
   experiment: { experiment_id: null, variant: null },

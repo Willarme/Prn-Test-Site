@@ -4,6 +4,7 @@ import { SAMPLE_PAGE_SPEC } from "@/domain/search/fixtures/sample-page-spec";
 import {
   TEMPLATE_REGISTRY,
   TPL_INTENT_PAGE,
+  TPL_INTENT_PAGE_FAQ,
   TemplateSpec,
   missingRequiredSlots,
   resolveTemplate,
@@ -174,6 +175,38 @@ describe("the registered template DESCRIBES the shipped output — anti-drift", 
     for (const spec of committed) {
       expect(templateMatchesBlocks(TPL_INTENT_PAGE, spec.content_blocks), spec.canonical_path).toEqual([]);
     }
+  });
+
+  /**
+   * EVERY SHIPPED PAGE, AGAINST THE TEMPLATE IT CLAIMS (inspection F4).
+   *
+   * The check above only ever looked at the six GENERATED doors, and the
+   * handcrafted sample was checked with `missingRequiredSlots` — which an EXTRA
+   * block satisfies trivially. So the sample claimed tpl_intent_page while
+   * carrying six blocks against its five slots, and the anti-drift suite passed.
+   * This resolves each page's OWN claim and matches against that.
+   */
+  it("every shipped page resolves the template it CLAIMS, and matches it", () => {
+    const shipped = [SAMPLE_PAGE_SPEC, ...loadStaged().specs];
+    expect(shipped).toHaveLength(7);
+    for (const spec of shipped) {
+      const template = resolveTemplate(spec.template_id, spec.template_version);
+      expect(template, `${spec.page_spec_id} claims ${spec.template_id}@${spec.template_version}`).not.toBeNull();
+      expect(templateMatchesBlocks(template!, spec.content_blocks), spec.page_spec_id).toEqual([]);
+      expect(missingRequiredSlots(template!, spec.content_blocks), spec.page_spec_id).toEqual([]);
+    }
+  });
+
+  it("the handcrafted door's template is the shipped shape PLUS a closing FAQ", () => {
+    expect(SAMPLE_PAGE_SPEC.template_id).toBe(TPL_INTENT_PAGE_FAQ.template_id);
+    expect(TPL_INTENT_PAGE_FAQ.blocks.map((b) => b.slot_id)).toEqual([
+      ...TPL_INTENT_PAGE.blocks.map((b) => b.slot_id),
+      "blk_faq",
+    ]);
+    // The factory's own output still matches the FIVE-slot template exactly —
+    // the extra slot describes the handcrafted page, never generated output.
+    const generated = compilePageSpec(approvedOpportunity(), { now: NOW });
+    expect(templateMatchesBlocks(TPL_INTENT_PAGE_FAQ, generated.content_blocks)).not.toEqual([]);
   });
 
   it("reports drift in words rather than silently passing", () => {

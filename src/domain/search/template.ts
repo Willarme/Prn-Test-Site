@@ -220,7 +220,57 @@ export const TPL_INTENT_PAGE: TemplateSpec = TemplateSpec.parse({
   created_at: "2026-08-24T00:00:00Z",
 });
 
-export const TEMPLATE_REGISTRY: readonly TemplateSpec[] = [TPL_INTENT_PAGE] as const;
+/**
+ * THE HANDCRAFTED WAVE-2 DOOR'S OWN SHAPE (inspection F4).
+ *
+ * WHAT WAS WRONG. `SAMPLE_PAGE_SPEC` claimed `template_id: "tpl_intent_page"`
+ * and carried SIX blocks against that template's five declared slots — it ends
+ * with a `blk_faq` the factory has never emitted. So the registry's one claim,
+ * "it says in data exactly what the shipped factory produces and the shipped
+ * renderer draws", was false for the very first page PRN ever built. The
+ * template test never caught it because it checked `missingRequiredSlots`
+ * (which an EXTRA block satisfies trivially) on the sample, and
+ * `templateMatchesBlocks` only on the six generated doors.
+ *
+ * WHY A SECOND TEMPLATE RATHER THAN AN OPTIONAL SLOT ON THE FIRST. The other
+ * available fix was to declare `blk_faq` as an optional slot on
+ * tpl_intent_page. That would make the registry describe output the factory
+ * never produces, and it would force `templateMatchesBlocks` to tolerate absent
+ * slots — and since four of tpl_intent_page's five slots are already
+ * `required: false`, a page carrying ONE block would then pass the anti-drift
+ * check. Loosening the drift detector to accommodate a mislabelled page is the
+ * opposite of what the check is for.
+ *
+ * The honest description is simply that the handcrafted door is a DIFFERENT
+ * SHAPE: the shipped intent-door sequence plus a closing FAQ. It is one page,
+ * built by hand before the factory existed, and it now says so. Nothing about
+ * it renders differently — `IntentPageView` draws `spec.content_blocks` in
+ * array order and has never read a template.
+ *
+ * `owner_approved: false` for the same reason as above: no template shape is
+ * approved (Melissa, verbatim: "I'm not approving these templates yet").
+ */
+export const TPL_INTENT_PAGE_FAQ: TemplateSpec = TemplateSpec.parse({
+  ...TPL_INTENT_PAGE,
+  template_id: "tpl_intent_page_faq",
+  display_name: "Intent door page + closing FAQ (handcrafted, Door Wave 2)",
+  blocks: [
+    ...TPL_INTENT_PAGE.blocks,
+    {
+      slot_id: "blk_faq",
+      kind: "faq",
+      custom_key: null,
+      label: "Closing FAQ",
+      default_heading: "Quick answers",
+      required: false,
+    },
+  ],
+});
+
+export const TEMPLATE_REGISTRY: readonly TemplateSpec[] = [
+  TPL_INTENT_PAGE,
+  TPL_INTENT_PAGE_FAQ,
+] as const;
 
 export function resolveTemplate(templateId: string, version?: string): TemplateSpec | null {
   return (
