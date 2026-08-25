@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { emitClarifierAnswered } from "@/domain/problem/capabilities";
 import { flagEnabled } from "@/platform/flags";
 import { loadJourneyContext, nowIso, regeneratePacket } from "@/platform/intake/complete";
 import { runtimeStore } from "@/platform/stores/runtime";
@@ -24,18 +25,38 @@ export async function POST(request: Request): Promise<NextResponse> {
   try {
     if (fields && fields.length > 0) {
       const valid = new Set(ctx.playbook.required_fields.map((f) => f.field_key));
+      const accepted = fields.filter((f) => valid.has(f.field_key));
       await store.saveIntakeAnswers(
-        fields
-          .filter((f) => valid.has(f.field_key))
-          .map((f) => ({
-            request_id,
-            field_key: f.field_key,
-            value_text: f.value.trim(),
-            evidence_id: null,
-            source: "typed" as const,
-            answered_at: now,
-          }))
+        accepted.map((f) => ({
+          request_id,
+          field_key: f.field_key,
+          value_text: f.value.trim(),
+          evidence_id: null,
+          source: "typed" as const,
+          answered_at: now,
+        }))
       );
+      /**
+       * A01 INSTRUMENT — `intake.clarifier_answered`, one per field actually
+       * accepted. These are the playbook's own required fields, which is exactly
+       * the candidate set the clarifier selects from, so an answer here is an
+       * answer to a question A01 asked. Fires AFTER the save, so the event
+       * records something that happened rather than something attempted, and
+       * only for fields that passed the allow-list. The field key travels; the
+       * homeowner's answer stays in the IntakeAnswer row.
+       *
+       * Fail-soft by emitPlatformEvent's contract — telemetry never costs a
+       * homeowner their work.
+       */
+      for (const f of accepted) {
+        await emitClarifierAnswered({
+          problem_id: ctx.journey.problem.problem_id,
+          request_id,
+          playbook_id: ctx.playbook.playbook_id,
+          field_key: f.field_key,
+          source: "typed",
+        });
+      }
     }
     if (step) {
       const known = ctx.playbook.diagnostic_steps.some((s) => s.step_id === step.step_id);

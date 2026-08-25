@@ -8,6 +8,10 @@ import {
   localMediaFile,
   mediaStore,
 } from "@/platform/adapters/media-storage";
+import {
+  emitClarifierAnswered,
+  reclassifyOnNewEvidence,
+} from "@/domain/problem/capabilities";
 import { photoCapDecisionFor } from "@/domain/problem/evidence-caps";
 import { loadJourneyContext, nowIso, regeneratePacket } from "@/platform/intake/complete";
 import { runtimeStore } from "@/platform/stores/runtime";
@@ -134,6 +138,43 @@ export async function POST(request: Request): Promise<NextResponse> {
         action_request_id: null,
       },
     ]).catch(() => {});
+
+    /**
+     * A01 INSTRUMENTS on the evidence path.
+     *
+     * `intake.clarifier_answered` — a photo of a rating plate IS an answer to a
+     * question the playbook asked, and counting only typed answers would make
+     * intake friction look worse for the people who did the harder thing.
+     * Emitted only when the upload actually satisfies a required field.
+     *
+     * `problem.updated` — re-classification, emitted by reclassifyOnNewEvidence
+     * ONLY IF the classification moved. New evidence is the right moment to
+     * re-check; a photo that confirms what we already thought is not a change,
+     * and emitting on every upload would make this a second name for
+     * intake.evidence_added.
+     */
+    const answeredFieldKeys = isStep
+      ? (ctx.playbook.diagnostic_steps.find((s) => s.step_id === meta.data.target.slice(5))
+          ?.satisfies_fields ?? [])
+      : [meta.data.target];
+    for (const fieldKey of answeredFieldKeys) {
+      await emitClarifierAnswered({
+        problem_id: ctx.journey.problem.problem_id,
+        request_id: meta.data.request_id,
+        playbook_id: ctx.playbook.playbook_id,
+        field_key: fieldKey,
+        source: "photo",
+      });
+    }
+    await reclassifyOnNewEvidence({
+      existing: ctx.journey.problem,
+      description: ctx.textEvidence.content,
+      intake_session_id: ctx.journey.session.intake_session_id,
+      problem_family_hint: ctx.journey.session.attribution.problem_family_hint,
+      now,
+      trigger: "evidence_added",
+    });
+
     await regeneratePacket(meta.data.request_id);
   } catch (err) {
     return NextResponse.json(

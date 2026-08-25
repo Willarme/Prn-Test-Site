@@ -9,7 +9,7 @@ import type {
   FactClaim,
   ProblemRecord,
 } from "@/domain/problem/contracts";
-import type { AnalyzeInput, AnalyzeResult } from "@/domain/problem/fixture-engine";
+import { analyzeProblemFixture, type AnalyzeInput, type AnalyzeResult } from "@/domain/problem/fixture-engine";
 import { SAFETY_PACKAGE_VERSION, checkSafety } from "@/domain/problem/safety";
 import { ACTIVE_PROBLEM_TAXONOMY } from "@/domain/problem/taxonomy";
 import { detectFields } from "@/domain/intake/extract";
@@ -521,4 +521,127 @@ export function compareClassification(
       service_category_confidence: fresh.service_category_confidence,
     },
   };
+}
+
+// ---------------------------------------------------------------------------
+// THE INSTRUMENTS A01 OWNS
+// ---------------------------------------------------------------------------
+
+/**
+ * WHY THESE GO IN NOW, BEFORE ANYTHING READS THEM.
+ *
+ * Events are append-only history and CANNOT BE BACKFILLED (Trial Spec Audit §4).
+ * A01's clarifier and re-classification instruments had zero producers in the
+ * whole repo: grepping outside the dictionary files, `intake.clarifier_asked`
+ * returned 0 and `problem.updated` returned 0. A question answered during the
+ * proving run that nothing recorded is gone, and A07's first KpiSnapshot would
+ * then have no baseline to compare against — it would correctly report
+ * `material_change: unknown` and teach its owner nothing.
+ *
+ * Every name below is already registered and seeded. Nothing here mints one.
+ * All emission is fail-soft by `emitPlatformEvent`'s own contract: telemetry
+ * never breaks a homeowner's journey.
+ */
+
+export interface ClarifierAnsweredInput {
+  problem_id: string;
+  request_id: string;
+  playbook_id: string;
+  /** The playbook field the answer satisfies — the question's identity. */
+  field_key: string;
+  /** How it was answered. A photo of a rating plate IS an answer. */
+  source: "typed" | "photo" | "auto_detected";
+  guest_session_id?: string | null;
+  tenant_id?: string;
+}
+
+/**
+ * `intake.clarifier_answered` — one per field the homeowner actually answered.
+ *
+ * THE FIELD KEY TRAVELS; THE ANSWER DOES NOT. The value is the homeowner's own
+ * words about their own home, and it lives in the IntakeAnswer row where it
+ * belongs. What an instrument needs is which question got answered and how,
+ * because the measure this feeds is intake friction — how much unpaid work the
+ * product asked for, and how much of it people did.
+ */
+export async function emitClarifierAnswered(input: ClarifierAnsweredInput): Promise<void> {
+  await emitPlatformEvent({
+    event_name: "intake.clarifier_answered",
+    agent_id: "A01",
+    context: {
+      problem_id: input.problem_id,
+      request_id: input.request_id,
+      playbook_id: input.playbook_id,
+      field_key: input.field_key,
+      source: input.source,
+    },
+    privacy_class: "internal",
+    cost_usd: 0,
+    ...(input.tenant_id ? { tenant_id: input.tenant_id } : {}),
+  });
+}
+
+export interface ReclassifyOnNewEvidenceInput {
+  existing: ProblemRecord;
+  /** The customer text the classification is derived from. */
+  description: string;
+  intake_session_id: string | null;
+  problem_family_hint: string | null;
+  now: string;
+  /** What prompted the re-check, for the event's context. */
+  trigger: string;
+  tenant_id?: string;
+}
+
+/**
+ * RE-CLASSIFY ON NEW EVIDENCE, and emit `problem.updated` ONLY IF IT MOVED.
+ *
+ * ─── WHAT THIS DOES AND DOES NOT FIRE ON ───────────────────────────────────
+ *
+ * It emits when a fresh deterministic classification disagrees with the stored
+ * one. It does not emit when new evidence arrives and the classification stands,
+ * because "a photo was attached" is already `intake.evidence_added` and an event
+ * that fires on every upload would make `problem.updated` a synonym for it. Two
+ * names for one fact is exactly the metric drift A08 and A09 exist to catch.
+ *
+ * ─── AND IT WILL BE QUIET FOR NOW. THAT IS THE HONEST STATE. ───────────────
+ *
+ * Today the only classification input is the customer's original text, so a
+ * re-check over the same text agrees with itself and nothing is emitted. The
+ * instrument is here anyway because it is the SEAM: the day A01 reads a photo,
+ * or a clarifier answer becomes classification input, this fires with no wiring
+ * change and A07 has history from that day rather than from whenever someone
+ * remembered. A silent instrument that is correct beats a chatty one that is
+ * not, and the alternative — emitting `problem.updated` on every upload to make
+ * the graph look alive — would put a wrong number in front of an owner.
+ */
+export async function reclassifyOnNewEvidence(
+  input: ReclassifyOnNewEvidenceInput
+): Promise<ReclassifyOutcome> {
+  const fresh = analyzeProblemFixture({
+    description: input.description,
+    intake_session_id: input.intake_session_id,
+    problem_family_hint: input.problem_family_hint,
+    now: input.now,
+  }).problem;
+  const outcome = compareClassification(input.existing, fresh);
+  if (!outcome.changed) return outcome;
+
+  await emitPlatformEvent({
+    event_name: "problem.updated",
+    agent_id: "A01",
+    context: {
+      problem_id: input.existing.problem_id,
+      change: "reclassified",
+      trigger: input.trigger,
+      changed_fields: outcome.changed_fields.join(","),
+      // Classifications, not customer content: a trade name is our label.
+      from: outcome.before.service_category ?? "none",
+      to: outcome.after.service_category ?? "none",
+    },
+    privacy_class: "internal",
+    cost_usd: 0,
+    ...(input.tenant_id ? { tenant_id: input.tenant_id } : {}),
+  });
+  return outcome;
 }
