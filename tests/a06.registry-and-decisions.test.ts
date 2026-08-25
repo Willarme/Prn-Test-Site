@@ -131,10 +131,24 @@ describe("registry entries — one governed system, not two lists", () => {
  * which is the same failure mode as a second QA type and a second publish gate.
  */
 describe("no migration — A06 needs no table of its own", () => {
-  it("the migration head is unchanged: A05's 00012 is still the last one", () => {
+  it("A06 added no migration of its own — and still has not", () => {
+    /**
+     * WHAT THIS PIN IS ACTUALLY FOR, restated when A02 moved the head
+     * (2026-08-25). The claim being guarded is "A06 needs no table", not "no
+     * migration may ever be added again". A02's 00013 adds ONE nullable column
+     * to A00's `admin_audit` for A10's Owner Hours — nothing to do with page QA
+     * — so the pin now names the tables A06 must not have invented, which is
+     * what the surrounding block argues, rather than a file count that any
+     * later agent's unrelated migration would trip.
+     */
     const migrations = readdirSync(join(ROOT, "supabase", "migrations")).sort();
-    expect(migrations[migrations.length - 1]).toBe("00012_page_registry.sql");
-    expect(migrations.some((m) => m.startsWith("00013"))).toBe(false);
+    for (const forbidden of ["page_qa", "qa_result", "qa_decision", "defect"]) {
+      expect(
+        migrations.filter((m) => m.includes(forbidden)),
+        `A06 must own no ${forbidden} table`
+      ).toEqual([]);
+    }
+    expect(migrations).toContain("00012_page_registry.sql");
   });
 
   it("A06's durable state is entirely in tables that already exist", () => {

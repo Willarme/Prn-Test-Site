@@ -91,6 +91,11 @@ describe("A08 reconciliation — the seed list vs what src/ already emits", () =
     // Files that only DEFINE or TEST the mechanism carry no literal names.
     const mechanism = [
       "platform/events/emit.ts",
+      // A02's customer-attributed emitter (2026-08-25). Same category as
+      // emit.ts: it BUILDS envelopes and holds no literal name of its own —
+      // every name it carries arrives typed as EventName from its callers,
+      // which this scan reads like any other caller.
+      "platform/events/customer.ts",
       "platform/events/steward.ts",
       "platform/events/definitions.ts",
       "platform/events/names.ts",

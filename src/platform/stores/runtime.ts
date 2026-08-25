@@ -32,7 +32,27 @@ export interface AuditEntry {
   action: string;
   target: string;
   detail: string | null;
+  /**
+   * HOW LONG THE OWNER SPENT ON IT — added by A02's build, 2026-08-25, for A10
+   * (Trial Spec Audit §4 item 5).
+   *
+   * A10's Owner Hours is "the number the whole one-person-company constraint
+   * answers to", and the audit's verdict on it is blunt: it is PERMANENTLY
+   * uncomputable, because `appendAudit` carried `{at, action, target, detail}`
+   * and no duration anywhere in the repo. Audit rows are append-only history —
+   * a duration not recorded when the owner did the work cannot be recovered
+   * later — so the field has to exist BEFORE the trial runs, not when A10 is
+   * built.
+   *
+   * OPTIONAL, so every existing caller keeps working unchanged and a caller
+   * with nothing honest to record writes nothing rather than a zero. Absent
+   * means "not measured"; 0 would mean "took no time", which is never true.
+   */
+  duration_ms?: number | null;
 }
+
+/** One-shot warning flag for the admin_audit.duration_ms compatibility shim. */
+let auditDurationMissLogged = false;
 
 export interface RecordJourneyInput {
   session: SessionRow;
@@ -340,8 +360,38 @@ class SupabaseRuntimeStore implements RuntimeStore {
     return (data ?? []).map((r) => r.spec as PageSpec);
   }
 
+  /**
+   * FORWARD-COMPATIBLE WITH A COLUMN THAT MAY NOT BE APPLIED YET.
+   *
+   * `duration_ms` arrives with migration 00013. Migrations are applied as a
+   * separate, human-coordinated step, so between this commit and that apply the
+   * column does not exist — and a plain insert carrying it would FAIL, turning
+   * an owner's publish click into a 500 over a telemetry field. So the duration
+   * is sent when it is known, and a schema-cache/unknown-column rejection
+   * retries once without it. Every other error still throws exactly as before.
+   *
+   * The shim is deletable the day `npm run db:migrate -- --status` reports
+   * 00013 applied; it is not load-bearing for anything but that window.
+   */
   async appendAudit(entry: AuditEntry): Promise<void> {
-    throwOn((await this.db.from("admin_audit").insert(entry)).error, "append audit");
+    const { duration_ms, ...core } = entry;
+    if (duration_ms == null) {
+      throwOn((await this.db.from("admin_audit").insert(core)).error, "append audit");
+      return;
+    }
+    const first = (await this.db.from("admin_audit").insert({ ...core, duration_ms })).error;
+    if (!first) return;
+    const missingColumn = /duration_ms|schema cache|column .* does not exist|PGRST204/i.test(
+      `${first.message} ${first.code ?? ""}`
+    );
+    if (!missingColumn) throwOn(first, "append audit");
+    if (!auditDurationMissLogged) {
+      auditDurationMissLogged = true;
+      console.warn(
+        "[runtime-store] admin_audit.duration_ms not present — apply supabase/migrations/00013_admin_audit_duration.sql. Recording the entry without its duration."
+      );
+    }
+    throwOn((await this.db.from("admin_audit").insert(core)).error, "append audit");
   }
 
   async listAudit(limit = 50): Promise<AuditEntry[]> {

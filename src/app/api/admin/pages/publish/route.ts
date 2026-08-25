@@ -46,6 +46,23 @@ import { runtimeStore } from "@/platform/stores/runtime";
 const Body = z.object({
   page_spec_id: z.string().min(1),
   action: z.enum(["publish", "unpublish"]),
+  /**
+   * OWNER TIME ON THIS DECISION, in milliseconds — measured in the browser from
+   * the moment the control rendered to the moment it was clicked, and recorded
+   * onto the audit row (Trial Spec Audit §4 item 5).
+   *
+   * WHAT IT IS, EXACTLY, so nobody later reads it as something it is not: time
+   * with this decision on screen. It is NOT total owner time, it is not
+   * reviewing time away from the page, and it is deliberately not the request
+   * handler's latency — that would be machine time wearing a person's label,
+   * and an Owner Hours average polluted with server milliseconds is worse than
+   * no number at all.
+   *
+   * UNTRUSTED, SO BOUNDED. It comes from a browser. Anything non-finite,
+   * negative, or longer than four hours is dropped rather than stored, and the
+   * action proceeds either way; absent means "not measured", never 0.
+   */
+  owner_ms: z.number().int().positive().max(4 * 60 * 60 * 1000).optional(),
 });
 
 export async function POST(request: Request): Promise<NextResponse> {
@@ -73,6 +90,7 @@ export async function POST(request: Request): Promise<NextResponse> {
       action: `page.${parsed.data.action}`,
       target: spec.page_id,
       detail: spec.canonical_path,
+      duration_ms: parsed.data.owner_ms ?? null,
     });
   } catch (err) {
     return NextResponse.json(

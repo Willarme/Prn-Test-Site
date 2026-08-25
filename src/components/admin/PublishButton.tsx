@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 export function PublishButton({
@@ -17,6 +17,16 @@ export function PublishButton({
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
+  /**
+   * OWNER HOURS, MEASURED WHERE IT ACTUALLY HAPPENS (Trial Spec Audit §4 item
+   * 5). A10's Owner Hours is the number the one-person-company constraint
+   * answers to, and it was permanently uncomputable because nothing anywhere
+   * recorded a duration. The server cannot know how long a person looked at a
+   * decision; this control can. Elapsed time from render to click, sent with
+   * the action and stored on the audit row — the server bounds it, because a
+   * browser-supplied number is untrusted input.
+   */
+  const shownAt = useRef(Date.now());
 
   async function act(action: "publish" | "unpublish") {
     setBusy(true);
@@ -24,7 +34,11 @@ export function PublishButton({
     const res = await fetch("/api/admin/pages/publish", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ page_spec_id: pageSpecId, action }),
+      body: JSON.stringify({
+        page_spec_id: pageSpecId,
+        action,
+        owner_ms: Math.max(1, Date.now() - shownAt.current),
+      }),
     });
     const data = await res.json().catch(() => ({}));
     setBusy(false);

@@ -6,6 +6,7 @@ import { FEATURE_CONCEPTS } from "@/domain/feature-lab/concepts";
 import type { JobPacket, ProblemRecord } from "@/domain/problem/contracts";
 import { ACTIVE_PACKET_COPY, fillCopy } from "@/domain/problem/packet-copy";
 import { SAFETY_RULES } from "@/domain/problem/safety";
+import { recordCustomerEvent } from "@/platform/events/customer";
 import { flagEnabled } from "@/platform/flags";
 import { runtimeStore } from "@/platform/stores/runtime";
 import { AlreadyHaveSomeone, PacketActions } from "@/components/results/PacketActions";
@@ -70,6 +71,35 @@ export default async function ResultsPage({
    */
   const S = ACTIVE_PACKET_COPY.sections;
 
+  /**
+   * packet.viewed — REGISTERED SINCE #14A §18.2, EMITTED BY NOTHING UNTIL NOW
+   * (Trial Spec Audit §4: grepping for a producer outside the dictionary files
+   * returned zero). This page is `force-dynamic`, so a render IS a view, and a
+   * server-rendered view is the only reading that does not depend on a browser
+   * cooperating.
+   *
+   * TIME-CRITICAL, WHICH IS WHY IT SHIPS WITH A02 RATHER THAN WITH A07: events
+   * are append-only history. A packet view during the trial that nobody
+   * recorded is gone permanently, and A07's first KpiSnapshot would then have
+   * no baseline to compare against.
+   *
+   * Awaited but fail-soft by contract — recordCustomerEvent never throws, so
+   * this cannot stop a homeowner seeing their packet.
+   */
+  await recordCustomerEvent({
+    event_name: "packet.viewed",
+    guest_session_id: journey?.session.guest_session_id ?? null,
+    context: {
+      request_id,
+      problem_id: packet.problem_id,
+      job_packet_id: packet.job_packet_id,
+      packet_version: String(packet.packet_version),
+      source: fromCookie ? "browser_fallback" : "store",
+    },
+    landing_path: `/results/${request_id}`,
+    versions: { schema: packet.schema_version, engine: packet.engine },
+  });
+
   return (
     <main>
       {safetyRule && (
@@ -108,7 +138,7 @@ export default async function ResultsPage({
         <div className="wrap-narrow">
           <div className="card-light">
             <span className="pill pill-pink no-print">{S.packet_label}</span>
-            <PacketActions copyText={copySummary} />
+            <PacketActions copyText={copySummary} requestId={request_id} />
             <div className="prose">
               <h2>{S.problem_in_your_words}</h2>
               <p>{packet.summary_plain}</p>
@@ -201,7 +231,7 @@ export default async function ResultsPage({
             Three ways forward. Your call.
           </h2>
           <div className="grid3">
-            <AlreadyHaveSomeone callScript={packet.call_script} />
+            <AlreadyHaveSomeone callScript={packet.call_script} requestId={request_id} />
             {/* Descriptive-neutral copy only: #15 owns Trust wording (OD-11). */}
             <div className="cell">
               <span className="tag">Path 2 · In build</span>

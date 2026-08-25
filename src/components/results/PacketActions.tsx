@@ -11,16 +11,52 @@ import { ACTIVE_PACKET_COPY } from "@/domain/problem/packet-copy";
  */
 const A = ACTIVE_PACKET_COPY.actions;
 
-export function PacketActions({ copyText }: { copyText: string }) {
+/**
+ * THE INSTRUMENTS FOR THE TWO THINGS ONLY A BROWSER CAN SEE (Trial Spec Audit
+ * §4). Printing and copying happen entirely in the page, so the packet's own
+ * buttons are the only honest producer of `packet.downloaded` and
+ * `packet.share_opened` — three registered names that nothing in this repo has
+ * ever emitted. The canonical event dictionary is server-only by rule
+ * (tests/client-boundary.test.ts), so this posts to /api/packet-activity rather
+ * than importing any of it into the browser bundle.
+ *
+ * FIRE-AND-FORGET, ALWAYS. The customer's click does its job first and the
+ * telemetry rides behind it: no await before window.print(), no error surfaced,
+ * no state depending on the response. A homeowner never loses a click to an
+ * event that could not be written.
+ */
+function note(requestId: string | null, action: "downloaded" | "share_opened", surface: string) {
+  if (!requestId) return;
+  void fetch("/api/packet-activity", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ request_id: requestId, action, surface }),
+  }).catch(() => {});
+}
+
+export function PacketActions({
+  copyText,
+  requestId = null,
+}: {
+  copyText: string;
+  requestId?: string | null;
+}) {
   const [copied, setCopied] = useState(false);
   return (
     <div className="no-print" style={{ display: "flex", gap: 12, flexWrap: "wrap", margin: "18px 0" }}>
-      <button className="btn btn-pink btn-sm" onClick={() => window.print()}>
+      <button
+        className="btn btn-pink btn-sm"
+        onClick={() => {
+          note(requestId, "downloaded", "print_pdf");
+          window.print();
+        }}
+      >
         {A.download}
       </button>
       <button
         className="btn btn-ghost btn-sm"
         onClick={async () => {
+          note(requestId, "share_opened", "copy_call_script");
           await navigator.clipboard.writeText(copyText);
           setCopied(true);
           setTimeout(() => setCopied(false), 2000);
@@ -32,7 +68,13 @@ export function PacketActions({ copyText }: { copyText: string }) {
   );
 }
 
-export function AlreadyHaveSomeone({ callScript }: { callScript: string }) {
+export function AlreadyHaveSomeone({
+  callScript,
+  requestId = null,
+}: {
+  callScript: string;
+  requestId?: string | null;
+}) {
   const [open, setOpen] = useState(false);
   return (
     <div className="cell">
@@ -41,7 +83,14 @@ export function AlreadyHaveSomeone({ callScript }: { callScript: string }) {
       <p style={{ margin: "8px 0 14px" }}>
         Send them the whole story once, instead of re-explaining it on the phone.
       </p>
-      <button className="btn btn-ghost btn-sm" onClick={() => setOpen(!open)}>
+      <button
+        className="btn btn-ghost btn-sm"
+        onClick={() => {
+          // Only the REVEAL is a share opening; hiding it again is not a second one.
+          if (!open) note(requestId, "share_opened", "reveal_call_script");
+          setOpen(!open);
+        }}
+      >
         {open ? A.hide_call_script : A.reveal_call_script}
       </button>
       {open && (
