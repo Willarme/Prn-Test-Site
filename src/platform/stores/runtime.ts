@@ -161,9 +161,60 @@ function throwOn(error: { message: string } | null, what: string): void {
   if (error) throw new Error(`${what}: ${error.message}`);
 }
 
+/**
+ * A COLUMN OR TABLE THIS BUILD WRITES THAT THE DATABASE DOES NOT HAVE YET.
+ *
+ * Migrations are applied as a separate, human-coordinated step in this project
+ * (every migration since 00006 says so in its own header), so between a commit
+ * and that apply the schema is genuinely older than the code. That window is
+ * not hypothetical: driving the running app on 2026-08-25 turned a homeowner's
+ * intake into a 503 reading "Could not find the 'tenant_id' column of
+ * 'evidence_object'" — a telemetry-grade field taking down the customer path.
+ *
+ * The shim below is the SAME one `appendAudit` already carries for migration
+ * 00013's `duration_ms`, and it is deletable on exactly the same terms: the day
+ * `npm run db:migrate -- --status` reports 00014 and 00015 applied, nothing
+ * here is load-bearing.
+ */
+function missingSchema(error: { message: string; code?: string } | null): boolean {
+  if (!error) return false;
+  return /schema cache|column .* does not exist|relation .* does not exist|PGRST20[45]|42P01|42703|does not exist/i.test(
+    `${error.message} ${error.code ?? ""}`
+  );
+}
+
+/** One warning per pending migration per process, never one per request. */
+const pendingMigrationLogged = new Set<string>();
+function warnPending(what: string, migration: string): void {
+  if (pendingMigrationLogged.has(migration)) return;
+  pendingMigrationLogged.add(migration);
+  console.warn(
+    `[runtime-store] ${what} — apply supabase/migrations/${migration}. Proceeding without it; the customer journey is unaffected.`
+  );
+}
+
 class SupabaseRuntimeStore implements RuntimeStore {
   readonly kind = "supabase" as const;
   private db = client();
+
+  /**
+   * Insert a row that carries `tenant_id`, on a database that may not have the
+   * column yet. The tenant is the FIRST thing dropped and the only thing
+   * dropped — every other error still throws exactly as before, because a
+   * failed evidence write is a lost homeowner record and must not be swallowed.
+   */
+  private async insertWithOptionalTenant(
+    table: "evidence_object" | "problem_record",
+    row: Record<string, unknown>,
+    what: string
+  ): Promise<void> {
+    const first = (await this.db.from(table).insert(row)).error;
+    if (!first) return;
+    if (!missingSchema(first)) throwOn(first, what);
+    warnPending(`${table}.tenant_id is not present`, "00015_core_record_tenancy.sql");
+    const { tenant_id: _dropped, ...withoutTenant } = row;
+    throwOn((await this.db.from(table).insert(withoutTenant)).error, what);
+  }
 
   async recordJourney(input: RecordJourneyInput): Promise<void> {
     const { session, consent, packet, events } = input;
@@ -171,40 +222,38 @@ class SupabaseRuntimeStore implements RuntimeStore {
     const evidence = withTenant(input.evidence);
     // Raw evidence first, then the record that references it, then the packet
     // derived from it: the provenance chain is never written out of order.
-    throwOn(
-      (
-        await this.db.from("evidence_object").insert({
-          evidence_id: evidence.evidence_id,
-          tenant_id: evidence.tenant_id,
-          kind: evidence.kind,
-          content: evidence.content,
-          privacy: evidence.privacy,
-          captured_at: evidence.captured_at,
-        })
-      ).error,
+    await this.insertWithOptionalTenant(
+      "evidence_object",
+      {
+        evidence_id: evidence.evidence_id,
+        tenant_id: evidence.tenant_id,
+        kind: evidence.kind,
+        content: evidence.content,
+        privacy: evidence.privacy,
+        captured_at: evidence.captured_at,
+      },
       "insert evidence"
     );
-    throwOn(
-      (
-        await this.db.from("problem_record").insert({
-          problem_id: problem.problem_id,
-          tenant_id: problem.tenant_id,
-          schema_version: problem.schema_version,
-          status: problem.status,
-          source_channel: problem.source_channel,
-          intake_session_id: problem.intake_session_id,
-          problem_summary: problem.problem_summary,
-          service_category: problem.service_category,
-          service_category_confidence: problem.service_category_confidence,
-          safety_state: problem.safety_state,
-          safety_rule_id: problem.safety_rule_id,
-          evidence_ids: problem.evidence_ids,
-          claim_ids: problem.claim_ids,
-          clarifiers_asked: problem.clarifiers_asked,
-          created_at: problem.created_at,
-          updated_at: problem.updated_at,
-        })
-      ).error,
+    await this.insertWithOptionalTenant(
+      "problem_record",
+      {
+        problem_id: problem.problem_id,
+        tenant_id: problem.tenant_id,
+        schema_version: problem.schema_version,
+        status: problem.status,
+        source_channel: problem.source_channel,
+        intake_session_id: problem.intake_session_id,
+        problem_summary: problem.problem_summary,
+        service_category: problem.service_category,
+        service_category_confidence: problem.service_category_confidence,
+        safety_state: problem.safety_state,
+        safety_rule_id: problem.safety_rule_id,
+        evidence_ids: problem.evidence_ids,
+        claim_ids: problem.claim_ids,
+        clarifiers_asked: problem.clarifiers_asked,
+        created_at: problem.created_at,
+        updated_at: problem.updated_at,
+      },
       "insert problem"
     );
     throwOn(
@@ -260,17 +309,30 @@ class SupabaseRuntimeStore implements RuntimeStore {
      * order, and BEFORE the fail-soft telemetry below, because these are
      * durable facts rather than instrumentation.
      */
+    /**
+     * AND THE TABLES MAY NOT EXIST YET (migration 00014). A pending migration
+     * must not turn a homeowner's intake into a 503 — #14A 13.4 is "never lose
+     * their work", and their work is the record, the evidence and the packet,
+     * all three of which are already committed above. So a missing table is
+     * warned about once, loudly, naming the migration, and the journey
+     * continues. Every OTHER failure still throws.
+     *
+     * THE HONEST COST, STATED: until 00014 is applied on a Supabase deployment,
+     * A01 produces claims and a derivation that are returned, evented and NOT
+     * PERSISTED. On the file-backed store — which is what the trial actually
+     * runs on — they are persisted today.
+     */
     if (input.claims && input.claims.length > 0) {
-      throwOn(
-        (await this.db.from("fact_claim").insert(input.claims.map((c) => withTenant(c)))).error,
-        "insert claims"
-      );
+      const error = (await this.db.from("fact_claim").insert(input.claims.map((c) => withTenant(c))))
+        .error;
+      if (error && !missingSchema(error)) throwOn(error, "insert claims");
+      if (error) warnPending("fact_claim does not exist", "00014_fact_claim_provenance.sql");
     }
     if (input.derivation) {
-      throwOn(
-        (await this.db.from("derivation_record").insert(withTenant(input.derivation))).error,
-        "insert derivation"
-      );
+      const error = (await this.db.from("derivation_record").insert(withTenant(input.derivation)))
+        .error;
+      if (error && !missingSchema(error)) throwOn(error, "insert derivation");
+      if (error) warnPending("derivation_record does not exist", "00014_fact_claim_provenance.sql");
     }
     // Telemetry must never invalidate a journey that is already committed:
     // a failed event insert would send the customer a retry that duplicates
@@ -484,20 +546,19 @@ class SupabaseRuntimeStore implements RuntimeStore {
 
   async attachEvidence(problemId: string, raw: EvidenceObject): Promise<void> {
     const evidence = withTenant(raw);
-    throwOn(
-      (
-        await this.db.from("evidence_object").insert({
-          evidence_id: evidence.evidence_id,
-          tenant_id: evidence.tenant_id,
-          kind: evidence.kind,
-          content: evidence.content,
-          privacy: evidence.privacy,
-          captured_at: evidence.captured_at,
-          mime: evidence.mime ?? null,
-          bytes: evidence.bytes ?? null,
-          field_key: evidence.field_key ?? null,
-        })
-      ).error,
+    await this.insertWithOptionalTenant(
+      "evidence_object",
+      {
+        evidence_id: evidence.evidence_id,
+        tenant_id: evidence.tenant_id,
+        kind: evidence.kind,
+        content: evidence.content,
+        privacy: evidence.privacy,
+        captured_at: evidence.captured_at,
+        mime: evidence.mime ?? null,
+        bytes: evidence.bytes ?? null,
+        field_key: evidence.field_key ?? null,
+      },
       "insert evidence"
     );
     const { data: problem, error } = await this.db
@@ -577,12 +638,21 @@ class SupabaseRuntimeStore implements RuntimeStore {
     );
   }
 
+  /**
+   * A TABLE THAT DOES NOT EXIST YET READS AS EMPTY, and empty is the truthful
+   * answer: nothing was stored there. It is not the same as "this problem has
+   * no claims", and the warning says which migration would tell them apart.
+   */
   async listClaims(problemId: string): Promise<FactClaim[]> {
     const { data, error } = await this.db
       .from("fact_claim")
       .select("*")
       .eq("problem_id", problemId)
       .order("created_at", { ascending: true });
+    if (error && missingSchema(error)) {
+      warnPending("fact_claim does not exist", "00014_fact_claim_provenance.sql");
+      return [];
+    }
     if (error) throw new Error(`list claims: ${error.message}`);
     return (data ?? []) as FactClaim[];
   }
@@ -593,6 +663,10 @@ class SupabaseRuntimeStore implements RuntimeStore {
       .select("*")
       .eq("problem_id", problemId)
       .order("created_at", { ascending: true });
+    if (error && missingSchema(error)) {
+      warnPending("derivation_record does not exist", "00014_fact_claim_provenance.sql");
+      return [];
+    }
     if (error) throw new Error(`list derivations: ${error.message}`);
     return (data ?? []) as DerivationRecord[];
   }
