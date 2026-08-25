@@ -152,28 +152,39 @@ export async function POST(request: Request): Promise<NextResponse> {
      * re-check; a photo that confirms what we already thought is not a change,
      * and emitting on every upload would make this a second name for
      * intake.evidence_added.
+     *
+     * WRAPPED, BECAUSE THE FILE IS ALREADY SAVED BY NOW. Everything above this
+     * point is the homeowner's work; everything in here is telemetry. Inside the
+     * outer try/catch, a throw here would return "we could not save that file"
+     * for a file that WAS saved — the worst possible lie to tell someone who is
+     * mid-journey. emitPlatformEvent never throws by contract; this is the belt
+     * to that braces.
      */
-    const answeredFieldKeys = isStep
-      ? (ctx.playbook.diagnostic_steps.find((s) => s.step_id === meta.data.target.slice(5))
-          ?.satisfies_fields ?? [])
-      : [meta.data.target];
-    for (const fieldKey of answeredFieldKeys) {
-      await emitClarifierAnswered({
-        problem_id: ctx.journey.problem.problem_id,
-        request_id: meta.data.request_id,
-        playbook_id: ctx.playbook.playbook_id,
-        field_key: fieldKey,
-        source: "photo",
+    try {
+      const answeredFieldKeys = isStep
+        ? (ctx.playbook.diagnostic_steps.find((s) => s.step_id === meta.data.target.slice(5))
+            ?.satisfies_fields ?? [])
+        : [meta.data.target];
+      for (const fieldKey of answeredFieldKeys) {
+        await emitClarifierAnswered({
+          problem_id: ctx.journey.problem.problem_id,
+          request_id: meta.data.request_id,
+          playbook_id: ctx.playbook.playbook_id,
+          field_key: fieldKey,
+          source: "photo",
+        });
+      }
+      await reclassifyOnNewEvidence({
+        existing: ctx.journey.problem,
+        description: ctx.textEvidence.content,
+        intake_session_id: ctx.journey.session.intake_session_id,
+        problem_family_hint: ctx.journey.session.attribution.problem_family_hint,
+        now,
+        trigger: "evidence_added",
       });
+    } catch {
+      /* instruments are never worth a homeowner's upload */
     }
-    await reclassifyOnNewEvidence({
-      existing: ctx.journey.problem,
-      description: ctx.textEvidence.content,
-      intake_session_id: ctx.journey.session.intake_session_id,
-      problem_family_hint: ctx.journey.session.attribution.problem_family_hint,
-      now,
-      trigger: "evidence_added",
-    });
 
     await regeneratePacket(meta.data.request_id);
   } catch (err) {

@@ -48,14 +48,18 @@ export async function POST(request: Request): Promise<NextResponse> {
        * Fail-soft by emitPlatformEvent's contract — telemetry never costs a
        * homeowner their work.
        */
-      for (const f of accepted) {
-        await emitClarifierAnswered({
-          problem_id: ctx.journey.problem.problem_id,
-          request_id,
-          playbook_id: ctx.playbook.playbook_id,
-          field_key: f.field_key,
-          source: "typed",
-        });
+      try {
+        for (const f of accepted) {
+          await emitClarifierAnswered({
+            problem_id: ctx.journey.problem.problem_id,
+            request_id,
+            playbook_id: ctx.playbook.playbook_id,
+            field_key: f.field_key,
+            source: "typed",
+          });
+        }
+      } catch {
+        /* the answers are already saved; telemetry never takes them back */
       }
     }
     if (step) {

@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
@@ -196,13 +196,11 @@ describe("A01 — does NOT decide whether mining happens", () => {
   it("lives OUTSIDE domain/search, so A04's structural guard stays intact", () => {
     for (const dir of ["src/domain/search", "src/platform/search"]) {
       const full = join(process.cwd(), dir);
-      const walk = (d: string): string[] => {
-        const { readdirSync, statSync } = require("node:fs") as typeof import("node:fs");
-        return readdirSync(d).flatMap((name) => {
+      const walk = (d: string): string[] =>
+        readdirSync(d).flatMap((name) => {
           const p = join(d, name);
           return statSync(p).isDirectory() ? walk(p) : p.endsWith(".ts") ? [p] : [];
         });
-      };
       for (const file of walk(full)) {
         const content = readFileSync(file, "utf-8");
         expect(content, file).not.toMatch(/language-corpus/);
