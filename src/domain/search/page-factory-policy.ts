@@ -98,7 +98,8 @@ export const PageFactoryPolicy = z.object({
       max_links: z.number().int().min(0).max(20).default(5),
       require_existing_target: z.literal(true).default(true),
     })
-    .default({ max_links: 5, require_existing_target: true }),
+    // Same rule as structured_data below: `{}` so the inner defaults stand.
+    .default({}),
   /**
    * Structured-data allow/deny (C12c, restoring the §7 guardrail §11 dropped).
    * The ALLOW list ships EMPTY: factory.ts emits `structured_data_plan: null`
@@ -132,7 +133,11 @@ export const PageFactoryPolicy = z.object({
           "OpeningHoursSpecification",
         ]),
     })
-    .default({ allowed_types: [], denied_types: [] }),
+    // `.default({})` and NOT a spelled-out object: an outer default REPLACES
+    // the inner field defaults wholesale, so `.default({allowed_types: [],
+    // denied_types: []})` silently shipped an EMPTY deny list and the
+    // LocalBusiness guard never fired. Caught by its own test.
+    .default({}),
 });
 export type PageFactoryPolicy = z.infer<typeof PageFactoryPolicy>;
 
