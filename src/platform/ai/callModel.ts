@@ -364,6 +364,48 @@ async function gate<T>(
   const day = utcDay(deps.now());
   const today = await deps.spend.read(day);
   const capabilitySoFar = today.by_capability[capabilityKey] ?? 0;
+  /**
+   * EXHAUSTION IS ITS OWN REFUSAL, CHECKED BEFORE THE ADDITIVE ONE.
+   *
+   * The additive test below asks "would this call push us past the cap". That is
+   * the right question for a priced model and the WRONG one at the boundary,
+   * because it answers "no" for a call estimated at $0 — and every model this
+   * policy currently names is priced $0/$0 (stealth/ox-alpha, models.ts). So a
+   * capability whose ledger says the day's cap is already spent could keep
+   * calling for ever, each call adding zero and leaving the total exactly at the
+   * cap. A cap that only ever compares a sum can be stepped over in increments
+   * of nothing.
+   *
+   * A04 §7 says spend caps are HARD and that exhaustion stops enrichment
+   * CLEANLY. Exhausted means spent, not overspent. So once the ledger reaches
+   * the cap the next call is refused whatever it is estimated to cost:
+   *
+   *   - $0 is a PRICE, not a licence. models.ts says in its own header that
+   *     these prices are a third party's, read on a date, and change without
+   *     notice; treating today's zero as permission to call without limit is
+   *     exactly the fail-open spend.ts argues against ("a cap that fails open is
+   *     worse than no cap, because it reports a number the owner believes").
+   *   - and the post-call re-check bounds an overshoot to ONE call only if the
+   *     call AFTER the overshoot is refused. `>` at equality is the hole that
+   *     lets a second one through.
+   *
+   * The eval harness found this: it exhausted a real ledger against the shipped
+   * cap and the next call still reached the provider factory (NEVER-A04-3).
+   */
+  if (capabilitySoFar >= capPolicy.daily_cap_usd) {
+    return fail(
+      "over_budget",
+      `"${capabilityKey}" has spent ${TEST_FIGURE_LABEL} $${capabilitySoFar} today, which exhausts its daily cap of $${capPolicy.daily_cap_usd} — refused before the network whatever this call is estimated to cost`,
+      { model_id: model.id, day }
+    );
+  }
+  if (today.total_usd >= policy.global_daily_budget_usd) {
+    return fail(
+      "over_budget",
+      `all capabilities have spent ${TEST_FIGURE_LABEL} $${today.total_usd} today, which exhausts the global daily budget of $${policy.global_daily_budget_usd} — refused before the network whatever this call is estimated to cost`,
+      { model_id: model.id, day }
+    );
+  }
   if (capabilitySoFar + estimate.estimated_usd > capPolicy.daily_cap_usd) {
     return fail(
       "over_budget",

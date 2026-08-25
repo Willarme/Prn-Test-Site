@@ -345,6 +345,73 @@ describe("the budget is checked before the call and re-checked after it", () => 
     expect(calls).toHaveLength(0);
   });
 
+  /**
+   * THE EXHAUSTION BOUNDARY, ON THE MODEL THE POLICY ACTUALLY NAMES.
+   *
+   * Every budget test above swaps in a PRICED model to make the sum cross the
+   * cap. That is what hid this: the shipped policy names stealth/ox-alpha, which
+   * the catalogue prices $0/$0, so the additive test `spent + 0 > cap` answers
+   * "no" for ever once the ledger sits exactly on the cap. The expected-outcome
+   * harness exhausted a real ledger against the shipped cap and watched the next
+   * call sail through to the provider factory (NEVER-A04-3).
+   *
+   * A04 §7: spend caps are HARD and exhaustion stops enrichment CLEANLY.
+   * Exhausted means SPENT, not overspent.
+   */
+  it("a capability whose cap is exactly exhausted is refused even on a $0-priced model", async () => {
+    const spend = new MemorySpendLedger();
+    const policy = enabledPolicy();
+    const cap = policy.capabilities["seo.critique_page"].daily_cap_usd;
+    await spend.record("2026-08-25", "seo.critique_page", cap);
+    let providerConstructions = 0;
+    const result = await callModel({
+      ...criticCall(),
+      deps: {
+        policy,
+        policyStore: new MemoryAiPolicyStore(policy),
+        spend,
+        now: () => new Date("2026-08-25T12:00:00Z"),
+        provider: () => {
+          providerConstructions += 1;
+          return null;
+        },
+      },
+    });
+    expect(result.ok).toBe(false);
+    if (result.ok) throw new Error("unreachable");
+    expect(result.reason).toBe("over_budget");
+    expect(result.detail).toMatch(/daily cap/);
+    // The brake is BEFORE the network: the provider factory is never reached,
+    // so the refusal cannot be mistaken for "there was no key anyway".
+    expect(providerConstructions).toBe(0);
+    // …and the shipped model really is the free one, or this proves nothing.
+    expect(policy.capabilities["seo.critique_page"].model_id).toBe("stealth/ox-alpha");
+  });
+
+  it("an exhausted GLOBAL budget refuses a capability that has spent nothing itself", async () => {
+    const spend = new MemorySpendLedger();
+    const policy = enabledPolicy();
+    await spend.record("2026-08-25", "generate_page_copy", policy.global_daily_budget_usd);
+    const { provider, calls } = fakeProvider([okReply('{"ok":true,"note":"x"}')]);
+    const result = await callModel({ ...criticCall(), deps: deps(provider, policy, spend) });
+    expect(result.ok).toBe(false);
+    if (result.ok) throw new Error("unreachable");
+    expect(result.reason).toBe("over_budget");
+    expect(result.detail).toMatch(/global daily budget/);
+    expect(calls).toHaveLength(0);
+  });
+
+  it("one cent under the cap still runs — the brake is exhaustion, not caution", async () => {
+    const spend = new MemorySpendLedger();
+    const policy = enabledPolicy();
+    const cap = policy.capabilities["seo.critique_page"].daily_cap_usd;
+    await spend.record("2026-08-25", "seo.critique_page", cap - 0.01);
+    const { provider, calls } = fakeProvider([okReply('{"ok":true,"note":"x"}')]);
+    const result = await callModel({ ...criticCall(), deps: deps(provider, policy, spend) });
+    expect(result.ok).toBe(true);
+    expect(calls).toHaveLength(1);
+  });
+
   it("the GLOBAL budget stops a capability that is still inside its own cap", async () => {
     const spend = new MemorySpendLedger();
     await spend.record("2026-08-25", "generate_page_copy", 0.999999);
