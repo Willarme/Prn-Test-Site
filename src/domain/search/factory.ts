@@ -1,4 +1,5 @@
-import type { SearchOpportunity } from "@/domain/search/contracts";
+import type { FactBundle, SearchOpportunity } from "@/domain/search/contracts";
+import { contentBankBundle } from "@/domain/search/content-bank-provenance";
 import { isOwnerApproved, type OpportunityDecision } from "@/domain/search/decision";
 import {
   DEFAULT_PAGE_FACTORY_POLICY,
@@ -8,6 +9,7 @@ import {
 import { PageSpec } from "@/domain/search/pages";
 import { slugify } from "@/domain/search/importer";
 import { shortHash } from "@/domain/shared/hash";
+import type { GeographyScope } from "@/domain/shared/primitives";
 
 /**
  * A05 Intent-Door Page Factory (Door Wave 3): compiles an OWNER-APPROVED
@@ -112,12 +114,17 @@ function renderFamilyTemplate(template: string, keyword: string): string {
  * electrical entries are untouched and `content_families` defaults to empty, so
  * today every page resolves exactly as it did before.
  */
-function resolveFamilyContent(
-  family: string | null,
-  policy: PageFactoryPolicy
-): { content: FamilyContent; safety_note_required: boolean; source: "policy_data" | "content_bank" | "generic" } {
+interface ResolvedFamily {
+  content: FamilyContent;
+  safety_note_required: boolean;
+  source: "policy_data" | "content_bank" | "generic";
+  /** The content-bank entry key this resolved to — also the provenance bundle key. */
+  family_key: string;
+}
+
+function resolveFamilyContent(family: string | null, policy: PageFactoryPolicy): ResolvedFamily {
   const fromData = dataFamilyContent(policy, family);
-  if (fromData) {
+  if (fromData && family) {
     return {
       content: {
         intent_answer: (kw: string) => renderFamilyTemplate(fromData.intent_answer, kw),
@@ -128,6 +135,7 @@ function resolveFamilyContent(
       },
       safety_note_required: fromData.safety_note_required,
       source: "policy_data",
+      family_key: family,
     };
   }
   const banked = family ? FAMILY_CONTENT[family] : undefined;
@@ -136,7 +144,57 @@ function resolveFamilyContent(
     // The shipped rule, unchanged: these three families carry the safety note.
     safety_note_required: family === "electrical" || family === "hvac" || family === "water_damage",
     source: banked ? "content_bank" : "generic",
+    family_key: banked && family ? family : GENERIC_FAMILY_KEY,
   };
+}
+
+/**
+ * PROVENANCE (coherence report issue 7). The content bank is a real source, so
+ * it gets a real FactBundle and every block cites it.
+ *
+ * The scope stamp is the honest part: PRN's shipped families carry US-specific
+ * safety instructions, so their bundle says `national/US`. A client's
+ * data-supplied family states nothing about scope, so its bundle carries null
+ * rather than inheriting PRN's market by accident.
+ */
+const GENERIC_FAMILY_KEY = "generic";
+const US_NATIONAL: GeographyScope = { mode: "national", country: "US" };
+
+function bundleForFamily(resolved: ResolvedFamily, keyword: string, now: string): FactBundle {
+  return contentBankBundle(
+    resolved.family_key,
+    {
+      intent_answer: resolved.content.intent_answer(keyword),
+      safe_checks: resolved.content.safe_checks,
+      do_not_do: resolved.content.do_not_do,
+      when_urgency_changes: resolved.content.when_urgency_changes,
+      who_handles_it: resolved.content.who_handles_it,
+    },
+    {
+      geography: resolved.source === "policy_data" ? null : US_NATIONAL,
+      created_at: now,
+    }
+  );
+}
+
+/**
+ * Every content-bank entry that exists, as FactBundles — the provenance
+ * registry an admin surface can read and the thing A01-derived bundles will
+ * eventually stand beside. `keyword` only shapes the intent_answer statement.
+ */
+export function listContentBankBundles(
+  policy: PageFactoryPolicy = DEFAULT_PAGE_FACTORY_POLICY,
+  now = "2026-08-24T00:00:00Z"
+): FactBundle[] {
+  const keys = new Set<string>([
+    GENERIC_FAMILY_KEY,
+    ...Object.keys(FAMILY_CONTENT),
+    ...Object.keys(policy.content_families),
+  ]);
+  return [...keys].map((key) => {
+    const resolved = resolveFamilyContent(key === GENERIC_FAMILY_KEY ? null : key, policy);
+    return bundleForFamily(resolved, `{keyword}`, now);
+  });
 }
 
 /** Word-start capitalization that leaves apostrophes alone ("won't", not "Won'T"). */
@@ -164,6 +222,7 @@ export function compilePageSpec(opportunity: SearchOpportunity, deps: FactoryDep
   const pageId = `page_${slugify(kw)}_${shortHash(kw)}`;
   const now = deps.now();
   const title = buildTitle(kw);
+  const bundleId = bundleForFamily(resolved, kw, now).fact_bundle_id;
 
   return PageSpec.parse({
     page_spec_id: `ps_${slugify(kw)}_v1`,
@@ -190,12 +249,16 @@ export function compilePageSpec(opportunity: SearchOpportunity, deps: FactoryDep
       headline: kw.charAt(0).toUpperCase() + kw.slice(1) + "?",
       subheadline: "What this usually involves, what's safe to check, and one organized next step.",
     },
+    // PROVENANCE (issue 7): every block cites the content-bank FactBundle its
+    // statement actually came from. `provenance.present` is now a real,
+    // passing property with a real source; converting to A01-derived bundles
+    // later swaps these ids and touches no schema.
     content_blocks: [
-      { block_id: "blk_intent_answer", kind: "intent_answer", heading: "What this usually means", body_md: bank.intent_answer(kw), source_fact_bundle_ids: [] },
-      { block_id: "blk_safe_checks", kind: "safe_checks", heading: "Safe things to check first", body_md: bank.safe_checks, source_fact_bundle_ids: [] },
-      { block_id: "blk_do_not", kind: "do_not_do", heading: "What not to do", body_md: bank.do_not_do, source_fact_bundle_ids: [] },
-      { block_id: "blk_urgency", kind: "when_urgency_changes", heading: "When this becomes urgent", body_md: bank.when_urgency_changes, source_fact_bundle_ids: [] },
-      { block_id: "blk_who", kind: "who_handles_it", heading: "Who typically handles this", body_md: bank.who_handles_it, source_fact_bundle_ids: [] },
+      { block_id: "blk_intent_answer", kind: "intent_answer", heading: "What this usually means", body_md: bank.intent_answer(kw), source_fact_bundle_ids: [bundleId] },
+      { block_id: "blk_safe_checks", kind: "safe_checks", heading: "Safe things to check first", body_md: bank.safe_checks, source_fact_bundle_ids: [bundleId] },
+      { block_id: "blk_do_not", kind: "do_not_do", heading: "What not to do", body_md: bank.do_not_do, source_fact_bundle_ids: [bundleId] },
+      { block_id: "blk_urgency", kind: "when_urgency_changes", heading: "When this becomes urgent", body_md: bank.when_urgency_changes, source_fact_bundle_ids: [bundleId] },
+      { block_id: "blk_who", kind: "who_handles_it", heading: "Who typically handles this", body_md: bank.who_handles_it, source_fact_bundle_ids: [bundleId] },
     ],
     safety_note_required: resolved.safety_note_required,
     // C12c: A05 emits NO structured data. The allow/deny discipline is written
@@ -220,7 +283,7 @@ export function compilePageSpec(opportunity: SearchOpportunity, deps: FactoryDep
     generation: { model: "content-bank-v1", prompt_id: null, prompt_version: null },
     experiment: { experiment_id: null, variant: null },
     qa: { state: "PENDING", reasons: [] },
-    source_fact_bundle_ids: [],
+    source_fact_bundle_ids: [bundleId],
     created_at: now,
     updated_at: null,
   });
