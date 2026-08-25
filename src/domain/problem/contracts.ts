@@ -262,12 +262,70 @@ export const DerivationRecord = z.object({
 export type DerivationRecord = z.infer<typeof DerivationRecord>;
 
 /**
+ * PACKET STATUS — canon's `status` field, added by A02 (2026-08-25).
+ *
+ * `current` is what every packet this repo has ever produced is: the newest
+ * version for a problem is the one the results page renders (the store's own
+ * "newest version wins" read rule, stores/runtime.ts). `superseded` is what a
+ * version becomes when a later one is chained onto it, and `draft` exists
+ * because canon names it — nothing produces one yet, and A02 does not invent a
+ * draft workflow to justify the value.
+ */
+export const PacketStatus = z.enum(["draft", "current", "superseded"]);
+export type PacketStatus = z.infer<typeof PacketStatus>;
+
+/**
  * Job-Ready Packet (#14A §5.1). Every section that is inference carries an
  * inference label; the packet never invents facts, never guarantees savings,
  * and never claims a diagnosis.
+ *
+ * ─── FROZEN. NOTHING HERE IS RENAMED. (A02 build, 2026-08-25) ──────────────
+ *
+ * Loop Spec Audit A02 condition 1 and pre-answer 6, and Trial Spec Audit HO-4,
+ * all rule the same way and this file obeys all three: the A02 spec's §11
+ * "canon-sourced fields (do not rename)" block would rename two fields that are
+ * live and imported across the app, and renaming them would break
+ * app/results/[request_id]/page.tsx, domain/problem/packet-assembly.ts,
+ * platform/gateway/index.ts and the capability registry's output_schema_ref —
+ * i.e. it would destroy the exact "swap without touching pages, intake, or
+ * results" seam the spec names as the thing to protect.
+ *
+ * So the CANON-ALIAS MAPPING is recorded instead of applied:
+ *
+ *   canon / spec §11        shipped here        why the shipped name wins
+ *   packet_id           ->  job_packet_id       live, 4+ importers, in the
+ *                                               capability registry's schema ref
+ *   source_problem_id   ->  problem_id          same; also the join key every
+ *                                               store and every event uses
+ *
+ * TODO-ASK-OWNER (Joshua): ratify this code-vs-canon naming divergence. It is
+ * deliberate, it is the audit's own recommendation, and the same divergence
+ * will recur in every later agent that touches JobPacket — so it wants a ruling
+ * once rather than a re-litigation per agent.
+ *
+ * ─── WHAT A02 ADDED, AND WHY EVERY ADDITION IS OPTIONAL ────────────────────
+ *
+ * The canon fields below (`superseded_by`, `claim_basis`, `evidence_basis`,
+ * `generation_run_id`, `uncertainty_notes`, `safety_notes`, `template_version`,
+ * `status`, `privacy_marking`, `model_id`) are named by canon and returned zero
+ * hits in this contract before this commit. They are added OPTIONAL so that
+ * every packet already written — in the dev store, in job_packet rows, in the
+ * A09 quality fixtures, in a base64 cookie from last week — still parses. A
+ * required field here would have been a silent data migration disguised as a
+ * schema edit.
+ *
+ * `incident_id` is DELIBERATELY ABSENT (pre-answer 4): nothing in the trial
+ * needs it, `problem_id` already carries the link, and inventing a foreign-key
+ * name now is exactly the guess the spec's own HC11 exists to prevent.
  */
 export const JobPacket = z.object({
   job_packet_id: Id,
+  /**
+   * Reserved — white-label condition C7 / A02 pre-answer 8. Default "prn"; NO
+   * tenant logic, routing or UI exists around it. Same treatment as
+   * ProblemRecord, EvidenceObject, FactClaim and the six platform modules.
+   */
+  tenant_id: z.string().min(1).optional(),
   packet_version: z.number().int().positive(),
   schema_version: SchemaVersion,
   problem_id: Id,
@@ -299,5 +357,85 @@ export const JobPacket = z.object({
     .default(null),
   generated_at: IsoDateTime,
   engine: z.enum(["fixture", "production"]),
+
+  // -------------------------------------------------------------------------
+  // CANON FIELDS ADDED BY A02, 2026-08-25 — ALL OPTIONAL. See the header.
+  // -------------------------------------------------------------------------
+
+  /**
+   * THE VERSION CHAIN. `packet_version` has always said WHICH version this is;
+   * nothing said which version replaced it. Null (or absent) means "not
+   * superseded" — the store's newest-version-wins read is unchanged and this
+   * field never drives it, so a chain that is never written costs nothing.
+   */
+  superseded_by: Id.nullable().optional(),
+  /** See PacketStatus. Absent on every packet written before this commit. */
+  status: PacketStatus.optional(),
+  /**
+   * THE BASIS FIELDS — which FactClaims and which EvidenceObjects this packet
+   * rests on. IDS ONLY, never content: the packet already carries the words it
+   * shows, and duplicating evidence bodies into a second object is how a
+   * private corpus quietly acquires a second copy.
+   *
+   * A02 populates these from A01's FactClaim/DerivationRecord output when it is
+   * present, and leaves them absent when it is not. Absent means "not recorded",
+   * NEVER "no basis" — the difference matters, which is why they are optional
+   * rather than defaulting to [].
+   */
+  claim_basis: z.array(Id).optional(),
+  evidence_basis: z.array(Id).optional(),
+  /** Agent Run Ledger id of the run that produced this version. */
+  generation_run_id: Id.nullable().optional(),
+  /**
+   * Canon's own names for two things the packet already SHOWS but never
+   * recorded structurally: what is not known, and what the safety gate said.
+   * `what_remains_unknown` and the results page's safety banner are the display;
+   * these are the record. Kept separate rather than merged, so a later change to
+   * how unknowns are worded cannot silently rewrite the audit trail.
+   */
+  uncertainty_notes: z.array(z.string()).optional(),
+  safety_notes: z.array(z.string()).optional(),
+  /**
+   * Which packet template version produced this packet — the field the
+   * white-label copy package (domain/problem/packet-copy.ts) stamps, so "which
+   * words did this homeowner actually see" is answerable from the row.
+   */
+  template_version: z.string().nullable().optional(),
+  /**
+   * The model that produced it, or null. Null is the SHIPPED value and the
+   * honest one: the packet path is 100% deterministic (Loop Spec Audit A02
+   * pre-answer 1 — "do NOT wire one"), so there is no model to name.
+   */
+  model_id: z.string().nullable().optional(),
+  /**
+   * Canon's privacy marking. A packet is a private customer artifact; the value
+   * A02 writes is "USER_PRIVATE", the same spelling FactClaim.privacy_class uses,
+   * so the four colliding privacy vocabularies recorded in claims.ts
+   * PRIVACY_CLASS_MAPPING gain no fifth member here.
+   */
+  privacy_marking: PrivacyClass.optional(),
 });
 export type JobPacket = z.infer<typeof JobPacket>;
+
+/**
+ * THE CANON-ALIAS MAPPING, as data rather than only as prose — so the divergence
+ * is greppable, testable, and cannot be quietly "fixed" by a later build session
+ * that reads only the spec.
+ */
+export const JOB_PACKET_CANON_ALIASES: readonly {
+  canon_name: string;
+  shipped_name: keyof JobPacket;
+  reason: string;
+}[] = [
+  {
+    canon_name: "packet_id",
+    shipped_name: "job_packet_id",
+    reason:
+      "live and imported by results page, packet-assembly, gateway and the capability registry's output_schema_ref",
+  },
+  {
+    canon_name: "source_problem_id",
+    shipped_name: "problem_id",
+    reason: "the join key every store, event context and quality invariant already uses",
+  },
+] as const;
