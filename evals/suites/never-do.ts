@@ -23,7 +23,8 @@ export async function neverDoSuite(): Promise<Suite> {
     { TRIAL_AGENT_REGISTRY },
     { capability_call },
     { engageKillSwitch, releaseKillSwitch, checkKillSwitch },
-    { PLATFORM_POLICY_SETTINGS },
+    { PLATFORM_POLICY_SETTINGS, requirePolicyNumber },
+    { PLAYBOOKS },
     { DEFAULT_AI_POLICY, AiPolicy },
     { MODEL_CATALOGUE, TEST_FIGURE_LABEL },
     { callModel },
@@ -44,6 +45,7 @@ export async function neverDoSuite(): Promise<Suite> {
     import("@/platform/gateway"),
     import("@/platform/killswitch"),
     import("@/platform/policy/store"),
+    import("@/domain/intake/playbooks"),
     import("@/platform/ai/policy"),
     import("@/platform/ai/models"),
     import("@/platform/ai/callModel"),
@@ -385,23 +387,89 @@ export async function neverDoSuite(): Promise<Suite> {
       expectation:
         "the running total of clarifying questions stays within the configured ceiling — every further question is unpaid work asked of someone who has already answered enough",
       source: `${SPECS}A01 §7 "Admin/control-plane knobs: max clarification questions"; Master Todo T1-04 "the running total stays within the configured question ceiling"`,
-      how: "Asks the deterministic selector for a question when the cap is already reached, and confirms the cap is checked BEFORE candidates are assembled — a branch the model never reaches.",
+      /**
+       * HARNESS FIX, 2026-08-25 — this row failed against a field that has
+       * never existed and an ordering it was not reading.
+       *
+       * TWO SEPARATE MISTAKES, and the cap was innocent of both:
+       *
+       *   1. It asserted `atCap.next_field_key === null`. `ClarifierSelection`
+       *      has no such field — the question it selects is `ask`. So the
+       *      assertion read `undefined`, compared it to `null`, and reported the
+       *      cap as broken. It would have failed identically if the cap were
+       *      perfect, which it is: `selectNextClarifierDeterministic` returns
+       *      `ask: null` at the ceiling, with a reason that names it.
+       *
+       *   2. It measured "the cap is checked before candidates are assembled"
+       *      as `indexOf("capReached(") < indexOf("clarifierCandidates(")` over
+       *      the WHOLE FILE — which compares where the two functions are
+       *      DECLARED, not the order in which they are CALLED. `clarifierCandidates`
+       *      is exported above `capReached` in that file, so the condition was
+       *      reporting alphabetical-ish source layout as a guardrail failure.
+       *
+       * The probe was also fed an object that is not a `ClarifierInput` at all
+       * (`playbook_open_fields`, cast through `as never`), which only "worked"
+       * because the cap short-circuits before anything reads the playbook. A
+       * probe that cannot tell a working cap from a missing input proves
+       * nothing, so it now uses a real shipped playbook and the SHIPPED ceiling
+       * out of the policy store, and checks the below-cap case too — a null that
+       * is null for every input is not a cap.
+       */
+      how: "Asks the deterministic selector for a question at the shipped ceiling using a real playbook, checks a question IS selected one below it, and reads the call order inside both selector bodies to confirm the cap is checked before candidates are assembled and before the model is reached.",
       measure() {
+        const playbook = PLAYBOOKS[0];
+        const cap = requirePolicyNumber("intake.max_clarifying_questions");
         const atCap = selectNextClarifierDeterministic({
-          asked_count: 3,
-          max_questions: 3,
-          playbook_open_fields: [
-            { field_key: "leak_location", prompt: "Where is the water coming from?", tier: "CORE", value_reason: "diagnostic_accuracy" },
-          ],
+          playbook,
           answered_field_keys: [],
-        } as never);
-        const clarifier = readCode("src/domain/problem/clarifier.ts");
+          asked_count: cap,
+          max_questions: cap,
+        });
+        const belowCap = selectNextClarifierDeterministic({
+          playbook,
+          answered_field_keys: [],
+          asked_count: cap - 1,
+          max_questions: cap,
+        });
+        /**
+         * Call order INSIDE each function body, not declaration order in the
+         * file. The model path is the one that matters: at the ceiling no
+         * candidates are assembled, no prompt is built and no call is made, so
+         * "the model cannot exceed the cap" is a branch it never reaches rather
+         * than a rule it is asked to respect.
+         */
+        const deterministicBody = functionBody(
+          readCode("src/domain/problem/clarifier.ts"),
+          "selectNextClarifierDeterministic"
+        );
+        const modelBody = functionBody(
+          readCode("src/platform/problem/ai-clarifier.ts"),
+          "selectNextClarifier"
+        );
+        const before = (body: string, first: string, second: string) => {
+          const a = body.indexOf(first);
+          const b = body.indexOf(second);
+          return a !== -1 && b !== -1 && a < b;
+        };
         const aiClarifier = readCode("src/platform/problem/ai-clarifier.ts");
         return all([
-          ["the cap predicate exists", capReached(3, 3) === true],
-          ["at the cap, no further question is selected", atCap.next_field_key === null, JSON.stringify(atCap.next_field_key)],
+          ["the cap predicate exists", capReached(cap, cap) === true, `ceiling ${cap}`],
+          ["at the cap, no further question is selected", atCap.ask === null, JSON.stringify(atCap.ask)],
           ["the reason names the ceiling", /ceiling/i.test(atCap.reason)],
-          ["the cap is checked before candidates are assembled", clarifier.indexOf("capReached(") < clarifier.indexOf("clarifierCandidates(")],
+          [
+            "…and one below the cap a question IS selected — the null is the cap's doing, not the probe's",
+            belowCap.ask !== null,
+            belowCap.ask ? `asks ${belowCap.ask.field_key}` : belowCap.reason,
+          ],
+          [
+            "the cap is checked before candidates are assembled",
+            before(deterministicBody, "capReached(", "clarifierCandidates("),
+          ],
+          [
+            "…and on the model path it is checked before any model is consulted",
+            before(modelBody, "capReached(", "clarifierCandidates(") &&
+              before(modelBody, "capReached(", "callModel("),
+          ],
           [
             "the model picks from a CLOSED ENUM of playbook keys — it cannot write a question",
             /z\.enum\(/.test(aiClarifier),
@@ -1033,6 +1101,46 @@ function responseBodies(text: string): string[] {
     at = text.indexOf(marker, i);
   }
   return bodies;
+}
+
+/**
+ * The BODY of one named function, brace-counted.
+ *
+ * Several expectations here are about the ORDER two things happen in — the kill
+ * switch before execution, the cap before the model. Measured over a whole file
+ * that becomes the order two functions are DECLARED in, which is a fact about
+ * source layout and nothing else. NEVER-A01-4 failed for exactly that reason on
+ * this harness's first run.
+ */
+function functionBody(text: string, name: string): string {
+  const decl = new RegExp(`function\\s+${name}\\s*\\(`).exec(text);
+  if (!decl) return "";
+  /**
+   * Skip the PARAMETER LIST before hunting for the body brace. A default
+   * argument is a brace — `options: ClarifierOptions = {}` — and taking the
+   * first `{` after the declaration lands inside it, yielding an empty body and
+   * a condition that fails for a reason that has nothing to do with the rule.
+   */
+  let parens = 0;
+  let i = decl.index + decl[0].length - 1;
+  for (; i < text.length; i += 1) {
+    if (text[i] === "(") parens += 1;
+    else if (text[i] === ")") {
+      parens -= 1;
+      if (parens === 0) break;
+    }
+  }
+  const open = text.indexOf("{", i);
+  if (open === -1) return "";
+  let depth = 0;
+  for (let i = open; i < text.length; i += 1) {
+    if (text[i] === "{") depth += 1;
+    else if (text[i] === "}") {
+      depth -= 1;
+      if (depth === 0) return text.slice(open + 1, i);
+    }
+  }
+  return text.slice(open + 1);
 }
 
 function wordIn(haystack: string, name: string): boolean {
