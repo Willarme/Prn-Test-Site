@@ -8,6 +8,7 @@ import {
   localMediaFile,
   mediaStore,
 } from "@/platform/adapters/media-storage";
+import { photoCapDecisionFor } from "@/domain/problem/evidence-caps";
 import { loadJourneyContext, nowIso, regeneratePacket } from "@/platform/intake/complete";
 import { runtimeStore } from "@/platform/stores/runtime";
 
@@ -43,6 +44,24 @@ export async function POST(request: Request): Promise<NextResponse> {
   }
   const ctx = await loadJourneyContext(meta.data.request_id);
   if (!ctx) return NextResponse.json({ error: "Unknown request" }, { status: 404 });
+
+  /**
+   * THE 4-PHOTO CAP, ENFORCED SERVER-SIDE (Loop Spec Audit A01 condition 13).
+   * Counted from the evidence already on the ProblemRecord and checked BEFORE
+   * the file is stored, so a refused upload leaves nothing behind — no object in
+   * the bucket, no EvidenceObject, no answered field, no regenerated packet.
+   * The number lives in the policy store, never here.
+   */
+  const isPhoto = !file.type.startsWith("video/");
+  if (isPhoto) {
+    const cap = photoCapDecisionFor(ctx.allEvidence);
+    if (!cap.allowed) {
+      return NextResponse.json(
+        { error: cap.message, photos: cap.current, max_photos: cap.max },
+        { status: 409 }
+      );
+    }
+  }
 
   const now = nowIso();
   const evidenceId = `ev_${randomUUID()}`;

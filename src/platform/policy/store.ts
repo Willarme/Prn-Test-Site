@@ -96,6 +96,35 @@ export const PLATFORM_POLICY_SETTINGS: readonly PolicySetting[] = [
     value: 5,
     version: 1,
   },
+  {
+    key: "intake.max_photos_per_request",
+    level: "COMPANY",
+    /**
+     * THE 4-PHOTO CAP — the one hard cap in A01's set that IS decided, and the
+     * only number in this block that is not a placeholder.
+     *
+     * WHY IT IS A REAL DECISION AND NOT A GUESS. The standing decision of 20 Aug
+     * (crew log) is that hard caps must exist, and it names this one: max 4
+     * pictures per request. A01's spec repeats it in §3, §10 and §11's HARD
+     * CONSTRAINTS as though it were in force. It was not: before this commit no
+     * photo-count cap existed anywhere in src/, so an unbounded number of
+     * uploads was accepted per request. Loop Spec Audit condition 13 exists
+     * precisely because a decided cap nobody built is a decision that did not
+     * happen.
+     *
+     * WHAT IS STILL PARKED, AND STAYS PARKED. Video LENGTH and the number of AI
+     * calls per request are explicitly undetermined — the same audit says do not
+     * invent numbers for either. So there is no video-length key and no
+     * AI-call-count key here; adding one with a plausible value would convert a
+     * parked question into a shipped limit nobody chose.
+     *
+     * TODO-ASK-OWNER (Melissa): maximum video length, maximum AI calls per
+     * request, and whether the photo cap counts videos too (it does not today —
+     * this cap is about pictures, which is what was decided).
+     */
+    value: 4,
+    version: 1,
+  },
   /**
    * A08 dictionary tunables (A08 §10 requires these be configuration, not
    * hard-coded constants). The two NAMING PATTERNS cannot live here — this
