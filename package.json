@@ -2,7 +2,7 @@
   "name": "property-response-network",
   "version": "0.0.1",
   "private": true,
-  "description": "Property Response Network \u2014 Black Car trial. One repo, one canonical data model, one shared capability layer.",
+  "description": "Property Response Network — Black Car trial. One repo, one canonical data model, one shared capability layer.",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -19,7 +19,8 @@
     "smoke:seo": "tsx tools/smoke-dataforseo.ts",
     "ai:policy": "tsx tools/ai-policy.ts",
     "ai:models": "tsx tools/ai-models.ts",
-    "ai:smoke": "tsx tools/ai-smoke.ts"
+    "ai:smoke": "tsx tools/ai-smoke.ts",
+    "evals": "tsx evals/run.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.112.3",
