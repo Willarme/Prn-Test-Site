@@ -65,6 +65,37 @@ export const PLATFORM_POLICY_SETTINGS: readonly PolicySetting[] = [
     value: 25 * 1024 * 1024, // 25 MB — short phone clips fit (value unchanged in the A00 migration)
     version: 1,
   },
+  {
+    key: "intake.max_clarifying_questions",
+    level: "COMPANY",
+    /**
+     * THE CEILING ON CLARIFYING QUESTIONS — the mechanism A01's mandate needs,
+     * with a number that is NOT a decision.
+     *
+     * WHY THE MECHANISM SHIPS AND THE NUMBER DOES NOT. A01's whole argument is
+     * that every clarifying question is unpaid work extracted from an anxious
+     * customer, so a real enforced ceiling is buildable now and belongs in code.
+     * The VALUE is a homeowner-experience judgement and is Melissa's
+     * (Loop Spec Audit A01 pre-answer 11, verbatim: "read it from config with a
+     * TODO-ASK-OWNER default, never a guessed integer presented as a limit").
+     *
+     * 5 IS AN OBSERVED CONSTANT, NOT A CHOSEN LIMIT. It is the `.slice(0, 5)`
+     * already shipping in buildJobPacketFixture's question list. Reproducing a
+     * number the codebase already enforces is not the same as inventing one.
+     *
+     * TODO-ASK-OWNER (Melissa): the real ceiling.
+     *
+     * WHERE IT LIVES, and the one deviation worth naming: the audit's A01
+     * pre-answer 10 points A01's admin knobs at the runtime-editable pattern.
+     * The knobs that need to move at 2am — model choice, enablement, spend — do
+     * live there (platform/ai/policy.ts). This one is a reproduction of shipped
+     * behaviour that nobody needs to change without a deploy, and it sits beside
+     * `intake.media_max_bytes`, the other intake ceiling, in the store whose own
+     * test guarantees it stays a plain number.
+     */
+    value: 5,
+    version: 1,
+  },
   /**
    * A08 dictionary tunables (A08 §10 requires these be configuration, not
    * hard-coded constants). The two NAMING PATTERNS cannot live here — this

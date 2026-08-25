@@ -4,6 +4,10 @@ import {
   type AnalyzeInput,
   type AnalyzeResult,
 } from "@/domain/problem/fixture-engine";
+import {
+  selectNextClarifierDeterministic,
+  type ClarifierInput,
+} from "@/domain/problem/clarifier";
 import type { EvidenceObject, ProblemRecord } from "@/domain/problem/contracts";
 import type { PageSpec } from "@/domain/search/pages";
 import { qaCandidatePages, type PageQaContext } from "@/domain/search/qa";
@@ -66,6 +70,20 @@ export type CapabilityCallResult<T = unknown> =
  */
 const DETERMINISTIC_EXECUTORS: Record<string, (args: unknown) => unknown> = {
   classify_home_problem: (args) => analyzeProblemFixture(args as AnalyzeInput),
+  /**
+   * REGISTERED 2026-08-25 — the third of the three failures Loop Spec Audit A01
+   * condition 6 named. `select_next_clarifier` has been a registered capability
+   * since Wave 0 with no owner, no alias and no executor, so every call returned
+   * "no Wave-0 executor registered". The other two (the alias and A01's allowed
+   * list) are closed in the two registries; this closes the last one.
+   *
+   * It is a REAL implementation, not a stand-in: choosing the next question is
+   * deterministic by design — the playbook's own field order, CORE before
+   * HELPFUL, under a policy ceiling — and the model-backed alternate only ever
+   * REORDERS this same list. See domain/problem/clarifier.ts.
+   */
+  select_next_clarifier: (args) =>
+    selectNextClarifierDeterministic(args as ClarifierInput),
   generate_job_packet: (args) => {
     const a = args as { problem: ProblemRecord; evidence: EvidenceObject; now: string };
     return buildJobPacketFixture(a.problem, a.evidence, a.now);

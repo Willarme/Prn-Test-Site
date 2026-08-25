@@ -5,6 +5,7 @@ import {
   actualModelCost,
   estimateModelCall,
   findModel,
+  MODEL_CATALOGUE,
   TEST_FIGURE_LABEL,
   type ModelConfig,
 } from "@/platform/ai/models";
@@ -127,6 +128,14 @@ export type CallModelResult<T> = CallModelSuccess<T> | CallModelFailure;
 
 export interface CallModelDeps {
   provider?: AiProviderFactory;
+  /**
+   * The model catalogue to price and configure against. Injectable for the same
+   * reason `estimateVendorCall` takes a rates list: a test must be able to
+   * exercise a model configuration that does not exist in the shipped
+   * catalogue — notably one CLEARED for customer data, which no real model is,
+   * because clearing one is an owner decision this build does not make.
+   */
+  catalogue?: readonly ModelConfig[];
   policyStore?: AiPolicyStore;
   /** Supply a policy directly and the store is not consulted. */
   policy?: AiPolicy;
@@ -237,6 +246,7 @@ async function gate<T>(
   input: CallModelInput<T>,
   deps: Required<Pick<CallModelDeps, "policyStore" | "spend" | "now">> & {
     policy?: AiPolicy;
+    catalogue?: readonly ModelConfig[];
   }
 ): Promise<{ ok: true; gate: Gate } | { ok: false; failure: CallModelFailure }> {
   const fail = async (
@@ -304,7 +314,7 @@ async function gate<T>(
   }
 
   // 5. The model must be in the catalogue, or it is unpriced and therefore unrunnable.
-  const model = findModel(capPolicy.model_id);
+  const model = findModel(capPolicy.model_id, deps.catalogue ?? MODEL_CATALOGUE);
   if (!model) {
     return fail(
       "unknown_model",
@@ -338,7 +348,8 @@ async function gate<T>(
   const estimate = estimateModelCall(
     model.id,
     input.system.length + input.user.length,
-    capPolicy.max_output_tokens
+    capPolicy.max_output_tokens,
+    deps.catalogue ?? MODEL_CATALOGUE
   );
   if (!estimate.known) {
     return fail("over_budget", estimate.basis, { model_id: model.id });
@@ -418,6 +429,7 @@ export async function callModel<T>(input: CallModelInput<T>): Promise<CallModelR
     spend: deps.spend ?? spendLedger(),
     now: deps.now ?? (() => new Date()),
     policy: deps.policy,
+    catalogue: deps.catalogue,
   };
 
   let gated: Awaited<ReturnType<typeof gate<T>>>;
@@ -543,7 +555,12 @@ export async function callModel<T>(input: CallModelInput<T>): Promise<CallModelR
    * from the tokens actually used. Either way the label is TEST, because it is a
    * PRN figure derived from a vendor fact.
    */
-  const derived = actualModelCost(model.id, usage.prompt_tokens, usage.completion_tokens);
+  const derived = actualModelCost(
+    model.id,
+    usage.prompt_tokens,
+    usage.completion_tokens,
+    resolved.catalogue ?? MODEL_CATALOGUE
+  );
   const spentUsd =
     usage.reported_cost_usd !== null
       ? usage.reported_cost_usd
