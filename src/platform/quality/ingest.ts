@@ -265,6 +265,15 @@ export function applyQualityGuard(inner: RuntimeStore, deps: GuardDeps = {}): Ru
     saveDiagnosisAnswer: inner.saveDiagnosisAnswer.bind(inner),
     listDiagnosisAnswers: inner.listDiagnosisAnswers.bind(inner),
     listEvidence: inner.listEvidence.bind(inner),
+    listClaims: inner.listClaims.bind(inner),
+    listDerivations: inner.listDerivations.bind(inner),
+    /**
+     * SUPERSESSION IS A PASSTHROUGH, not a validated write. It sets two fields
+     * on a packet A09 already validated when it was written, and validating a
+     * record again on the way to being retired would raise findings about a
+     * version nobody will look at again.
+     */
+    supersedePacket: inner.supersedePacket.bind(inner),
 
     // --- validated writes --------------------------------------------------
     async recordJourney(input: RecordJourneyInput): Promise<void> {

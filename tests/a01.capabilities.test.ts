@@ -262,12 +262,35 @@ describe("A01 — the file it was told not to touch", () => {
     );
   });
 
-  it("no customer page, intake route or results page imports the new module", () => {
-    for (const file of [
-      "src/app/api/intake/route.ts",
-      "src/platform/intake/complete.ts",
-      "src/domain/problem/packet-assembly.ts",
-    ]) {
+  /**
+   * REWRITTEN 2026-08-25 (finding 1). This case used to assert that the intake
+   * route did NOT import A01's surface — i.e. it pinned the fact that A01's
+   * production surface had no live callers at all. That was the finding: a
+   * production surface nothing calls is a rehearsal, and the two instruments it
+   * owns could not fire anywhere in the running app.
+   *
+   * The invariant the case was REACHING for is intact and is what it pins now:
+   * A01 wraps the fixture engine rather than replacing it, and the live path
+   * goes THROUGH A01's surface rather than around it. The packet path is
+   * unchanged and still does not import it — A02 owns that side.
+   */
+  it("the live intake route goes THROUGH A01's surface, not around it", () => {
+    const route = readFileSync(join(process.cwd(), "src/app/api/intake/route.ts"), "utf-8");
+    expect(route).toMatch(/from "@\/domain\/problem\/capabilities"/);
+    expect(route).toMatch(/classifyProblem\(/);
+    expect(route).toMatch(/selectClarifier\(/);
+    // The whole point: no direct CALL to the implementation, which would mean a
+    // kill switch on A01 stops nothing. (The name may still appear in the note
+    // recording what this route used to do — a check that cannot tell a rule
+    // from its own explanation reports the documentation as the violation.)
+    expect(route).not.toMatch(/analyzeProblemFixture\s*\(/);
+    expect(route).not.toMatch(/import .*analyzeProblemFixture/);
+    // And it asks for the deterministic answer explicitly — AI flags stay off.
+    expect(route).toMatch(/allow_model: false/);
+  });
+
+  it("A02's packet path still does not import A01's surface", () => {
+    for (const file of ["src/platform/intake/complete.ts", "src/domain/problem/packet-assembly.ts"]) {
       const content = readFileSync(join(process.cwd(), file), "utf-8");
       expect(content, file).not.toMatch(/domain\/problem\/capabilities/);
     }

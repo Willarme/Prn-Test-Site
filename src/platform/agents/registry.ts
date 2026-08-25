@@ -78,8 +78,29 @@ export const TRIAL_AGENT_REGISTRY: readonly AgentDefinition[] = [
      * A05's and A06's capabilities, which see page copy and never customer text,
      * can be enabled on it today. Clearing a model for customer data is an owner
      * decision (TODO-ASK-OWNER: Joshua + Melissa).
+     *
+     * ─── THE CANONICAL KEYS JOIN THE ALIASES, 2026-08-25 (finding 1) ────────
+     *
+     * This list held ONLY aliases. `classify_problem` and
+     * `select_clarifying_questions` are the A00-spec spellings; the keys
+     * capabilities/registry.ts actually REGISTERS are `classify_home_problem`
+     * and `select_next_clarifier`. The gateway's permission check accepts the
+     * name the caller passed OR the resolved canonical key, and neither of the
+     * canonical keys was here — so a caller doing the correct thing, asking for
+     * the registered capability_key, was BLOCKED with "not in A01's allowed
+     * list" and a ledger row saying so.
+     *
+     * This is the SAME class of bug A02 hit and fixed on `generate_job_packet`
+     * (see A02's entry below). All four names stay: the aliases are asserted by
+     * tests/agents.registry.test.ts and tests/capabilities.registry.test.ts,
+     * which keep these two registries one governed system rather than two.
      */
-    allowed_capabilities: ["classify_problem", "select_clarifying_questions"],
+    allowed_capabilities: [
+      "classify_problem",
+      "classify_home_problem",
+      "select_clarifying_questions",
+      "select_next_clarifier",
+    ],
     schedule: "in-request",
     kill_switch_ref: killRef("A01"),
   },

@@ -60,10 +60,17 @@ describe("A00 event + metric spine", () => {
     const res = await intakePost(intakeRequest("Water heater is leaking from the bottom seam"));
     expect(res.status).toBe(200);
 
-    // A09's ingest guard now writes its own validation-batch row after A01's,
-    // so "the last run" is no longer "the intake run". Scope to A01.
-    const a01Runs = recentAgentRuns().filter((r) => r.agent_id === "A01");
-    const run = a01Runs[a01Runs.length - 1];
+    /**
+     * A09's ingest guard writes its own validation-batch row, and since A01's
+     * production surface became the live path (finding 1, 2026-08-25) A01
+     * itself writes several: one classification plus one per clarifying
+     * question it selected. So neither "the last run" nor "the last A01 run" is
+     * the classification. Scope to the run that ran the classify capability —
+     * which is the run `agent.run_completed` is about.
+     */
+    const run = recentAgentRuns().find(
+      (r) => r.agent_id === "A01" && r.capabilities_used.includes("classify_home_problem")
+    )!;
     const events = readDevDb().events.filter((e) => e.event_name === "agent.run_completed");
     expect(events.length).toBe(1);
     const envelope = events[0];

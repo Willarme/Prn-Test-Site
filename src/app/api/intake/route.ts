@@ -2,7 +2,8 @@ import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { DoorAttribution } from "@/domain/intake/contracts";
-import { analyzeProblemFixture } from "@/domain/problem/fixture-engine";
+import { classifyProblem, selectClarifier } from "@/domain/problem/capabilities";
+import { DEFAULT_TENANT_ID } from "@/domain/problem/contracts";
 import {
   JOURNEY_COOKIE_NAME,
   encodeJourneyCookie,
@@ -15,7 +16,7 @@ import { detectFields } from "@/domain/intake/extract";
 import { selectPlaybook } from "@/domain/intake/playbooks";
 import { emitPlatformEvent } from "@/platform/events/emit";
 import { flagEnabled } from "@/platform/flags";
-import { recordAgentRun } from "@/platform/runs/ledger";
+import { requirePolicyNumber } from "@/platform/policy/store";
 import { runtimeStore } from "@/platform/stores/runtime";
 import type { EventEnvelope } from "@/platform/events/envelope";
 
@@ -111,12 +112,67 @@ export async function POST(request: Request): Promise<NextResponse> {
   const requestId = `rq_${randomUUID()}`;
 
   const analyzeStarted = Date.now();
-  const { problem, evidence } = analyzeProblemFixture({
-    description,
-    intake_session_id: intakeSessionId,
-    problem_family_hint: attribution.problem_family_hint,
-    now,
-  });
+  /**
+   * A01'S PRODUCTION SURFACE IS THE LIVE PATH (finding 1, 2026-08-25).
+   *
+   * This called `analyzeProblemFixture` directly. The deterministic analyzer is
+   * STILL the implementation — it is what the gateway's executor runs — but the
+   * call now goes through A01's capability surface, which means the journey
+   * below gets four things it never had: the governed door (registry lookup,
+   * kill switch, ledger row, `capability.invoked`), the FactClaims this
+   * homeowner's own words support, the DerivationRecord naming what produced
+   * them, and `problem.fact_extracted` per claim.
+   *
+   * NOTHING THE HOMEOWNER SEES CHANGES. Same classification, same
+   * ProblemRecord, same packet, same page — `claim_ids` is populated where it
+   * used to be `[]`, and that field reaches no customer surface.
+   *
+   * `allow_model: false` — DELIBERATE AND NOT A DEFAULT. A01's model-backed
+   * alternate ships flag-off and is refused before any network call because it
+   * handles customer data, so consulting it here would buy one refusal row per
+   * intake and nothing else. The live path asks for the deterministic answer
+   * and says so.
+   *
+   * `resolve_fields` — the playbook is chosen by service_category, which does
+   * not exist until the classification returns. A01's own flowchart puts the
+   * Playbook Resolver after Classify for that reason. `selectPlaybook` is pure
+   * and deterministic over (description, category), so the second call below
+   * returns the identical playbook.
+   */
+  const classified = await classifyProblem(
+    {
+      description,
+      intake_session_id: intakeSessionId,
+      problem_family_hint: attribution.problem_family_hint,
+      now,
+    },
+    {
+      allow_model: false,
+      tenant_id: DEFAULT_TENANT_ID,
+      input_ids: [requestId, intakeSessionId],
+      resolve_fields: (p) => selectPlaybook(description, p.service_category).required_fields,
+    }
+  );
+  if (!classified.ok || !classified.result) {
+    /**
+     * A01 IS PAUSED (kill switch) OR OTHERWISE REFUSED — and there is no
+     * fallback to the analyzer here, for the same reason the packet path has
+     * none below: calling the implementation directly would mean a kill switch
+     * on A01 stops nothing, which is the hole this wiring closes. The customer
+     * keeps their text and is told honestly.
+     */
+    return NextResponse.json(
+      {
+        error:
+          "We could not read your request just now. Your text is still here — please try again in a moment.",
+        detail: classified.refusal,
+      },
+      { status: 503 }
+    );
+  }
+  const { problem, evidence } = classified.result;
+  const claims = classified.claims;
+  const derivation = classified.derivation;
   /**
    * CALL SITE 1 OF 3 (Trial Spec Audit HO-4), routed through A02, 2026-08-25.
    *
@@ -133,6 +189,13 @@ export async function POST(request: Request): Promise<NextResponse> {
     request_id: requestId,
     trigger: "request",
     lifecycle_events: "caller",
+    /**
+     * A01's claims reach A02's `claim_basis` for the first time. Absent used to
+     * mean "A01's surface is not wired in"; it now means "this build
+     * established none", which is the honest distinction that field was written
+     * to carry.
+     */
+    claims,
   });
   if (!packetOutcome.ok || !packetOutcome.packet) {
     /**
@@ -153,33 +216,30 @@ export async function POST(request: Request): Promise<NextResponse> {
   }
   const packet = packetOutcome.packet;
 
-  // A00 Agent Run Ledger (Wave-0 proof case): audit A01's classify_problem
-  // run. IDs only — never the customer's description or evidence. Fail-soft
-  // by contract: recordAgentRun never throws and never alters this flow.
-  const platformRun = await recordAgentRun({
-    agent_id: "A01",
-    trigger: "request",
-    input_ids: [requestId, intakeSessionId, problem.problem_id],
-    capabilities_used: ["classify_problem"],
-    tool_provider: "deterministic-stand-in",
-    outputs_summary: {
-      problem_id: problem.problem_id,
-      job_packet_id: packet.job_packet_id,
-      safety_state: problem.safety_state,
-    },
-    cost_usd: 0, // deterministic path — becomes a TEST-labeled real figure once a model is wired
-    latency_ms: Date.now() - analyzeStarted,
-  });
-  // A00 Event Spine proof case: one envelope per platform run, linked by
-  // agent_run_id. "agent.run_completed" is an EXISTING canonical A08-owned
-  // name (#14A §18.2) — no new name invented here. Fail-soft telemetry.
+  /**
+   * A00 Agent Run Ledger (Wave-0 proof case): A01's classification run.
+   *
+   * THE ROW IS THE GATEWAY'S NOW, NOT A SECOND ONE WRITTEN HERE. This block
+   * used to call `recordAgentRun` by hand with `capabilities_used:
+   * ["classify_problem"]` and a provider it asserted rather than observed —
+   * which was the only ledger evidence A01 ran, because A01 ran as a plain
+   * function call. Now that the call goes through `capability_call`, the
+   * gateway writes that row from what actually happened (the resolved canonical
+   * key, the real provider, the measured latency). Writing a second row here
+   * would double-count A01's runs and break the one-row-per-agent-run property
+   * the ledger exists to provide.
+   *
+   * A00 Event Spine proof case: one envelope per platform run, linked by
+   * agent_run_id. "agent.run_completed" is an EXISTING canonical A08-owned name
+   * (#14A §18.2) — no new name invented here. Fail-soft telemetry.
+   */
   await emitPlatformEvent({
     event_name: "agent.run_completed",
     agent_id: "A01",
-    agent_run_id: platformRun.run_id,
+    agent_run_id: classified.run_id,
     context: { intake_session_id: intakeSessionId, problem_id: problem.problem_id },
-    versions: { schema: "1.0.0", engine: "fixture", capability: "classify_problem" },
-    duration_ms: platformRun.latency_ms ?? null,
+    versions: { schema: "1.0.0", engine: classified.engine, capability: "classify_home_problem" },
+    duration_ms: Date.now() - analyzeStarted,
     cost_usd: 0,
   });
 
@@ -194,6 +254,67 @@ export async function POST(request: Request): Promise<NextResponse> {
     source: "auto_detected" as const,
     answered_at: now,
   }));
+
+  /**
+   * THE CLARIFYING QUESTIONS — selected by A01, under A01's ceiling, and
+   * recorded (finding 1).
+   *
+   * WHAT IS BEING COUNTED. The next screen (`/complete/[request_id]`) presents
+   * exactly the playbook's required fields, green-checked for the ones the
+   * homeowner's own words already answered. So the questions actually asked of
+   * this person are the OPEN ones — and that is the set this loop walks, in
+   * A01's own priority order (CORE before HELPFUL, then the playbook's
+   * editorial order), stopping at `intake.max_clarifying_questions`.
+   *
+   * WHY A LOOP AND NOT ONE CALL. A01's KPI is median questions per completed
+   * request, and its whole mandate is that every question is unpaid work asked
+   * of an anxious person. An instrument that emitted once per intake would
+   * report the same number no matter how much was asked, which is the metric
+   * saying nothing while looking like it says something.
+   *
+   * A field already ASKED joins the "no longer a candidate" set — that is what
+   * `answered_field_keys` selects against — so no question is selected twice.
+   *
+   * FAIL-SOFT. This is instrumentation of questions the page will present
+   * regardless: if selection or emission fails, the homeowner's journey is
+   * untouched. Nothing here changes what they are shown.
+   */
+  try {
+    const maxQuestions = requirePolicyNumber("intake.max_clarifying_questions");
+    const settled = new Set(detected.map((d) => d.field_key));
+    /**
+     * The loop stops at the smaller of the ceiling and the number of open
+     * fields — so it makes one governed call PER QUESTION and never a final
+     * call that exists only to be told there is nothing left. An audit row for
+     * "asked nothing" is noise in the one ledger an owner reads to see what the
+     * agents actually did. The ceiling is still enforced by `selectClarifier`
+     * itself, which checks it before the gateway; this bound only avoids a
+     * wasted call.
+     */
+    const open = playbook.required_fields.filter((f) => !settled.has(f.field_key)).length;
+    const limit = Math.min(open, maxQuestions);
+    let askedCount = 0;
+    while (askedCount < limit) {
+      const selection = await selectClarifier(
+        {
+          playbook,
+          answered_field_keys: [...settled],
+          asked_count: askedCount,
+          max_questions: maxQuestions,
+        },
+        {
+          allow_model: false,
+          request_id: requestId,
+          tenant_id: DEFAULT_TENANT_ID,
+        }
+      );
+      if (!selection.ok || !selection.ask) break;
+      settled.add(selection.ask.field_key);
+      askedCount += 1;
+    }
+  } catch {
+    /* telemetry never costs a homeowner their intake */
+  }
 
   const consent = {
     consent_event_id: `ce_${randomUUID()}`,
@@ -258,6 +379,14 @@ export async function POST(request: Request): Promise<NextResponse> {
       evidence,
       packet,
       events,
+      /**
+       * A01's durable facts land in the SAME write as the record they are
+       * about. A claim whose ProblemRecord was never stored, or a record whose
+       * `claim_ids` point at rows that do not exist, is a broken provenance
+       * chain — and the chain is the whole reason these objects exist.
+       */
+      claims,
+      derivation,
     });
     if (detected.length > 0) {
       try {

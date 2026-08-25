@@ -43,20 +43,26 @@ describe("A01 — C8: the RLS seam", () => {
     }
   });
 
-  it("A01 added no data-access module at all this wave — and that is the record", () => {
+  it("A01 still owns no data-access module — it produces, the store persists", () => {
     /**
      * A01 writes the first homeowner-OWNED rows in the product, so it is the
-     * first place a real request-scoped RLS policy could exist. Nothing here
-     * persists FactClaim or DerivationRecord yet: they are produced, returned
-     * and evented, and the durable table is deliberately not minted in the same
-     * change as the object.
+     * first place a real request-scoped RLS policy could exist.
      *
-     * TODO-ASK-OWNER (Joshua): a fact_claim / derivation_record migration needs
-     * an owner-scoped policy decision, not just a CREATE TABLE — who reads a
-     * homeowner's claims, under whose credential, and whether the homeowner can
-     * read their own. Copying 00003's deny-all + service-role grant would make
-     * the answer "nobody but us, forever" by default, on the one table where
-     * that default is worth a conversation.
+     * UPDATED 2026-08-25 (finding 1). FactClaim and DerivationRecord ARE now
+     * persisted — they had to be, because A01's surface became the live intake
+     * path and an object produced on the customer path and stored nowhere is a
+     * fact PRN established and then lost. What has NOT changed, and is what this
+     * case actually guards, is WHERE that happens: A01 produces and returns
+     * them, the intake route hands them to RuntimeStore inside the same journey
+     * write, and no A01 module reaches a table itself. That is the seam A00's
+     * approval asked for — data access accepts a PlatformClientProvider rather
+     * than importing the service client — and it stays intact.
+     *
+     * TODO-ASK-OWNER (Joshua): migration 00014 ships the two tables with
+     * 00003's deny-all + service-role posture, which is the SAFE default and
+     * not the considered one. Who reads a homeowner's claims, under whose
+     * credential, and whether the homeowner can read their own, is still an
+     * owner-scoped policy decision rather than a CREATE TABLE.
      */
     for (const file of A01_FILES) {
       const content = read(file);

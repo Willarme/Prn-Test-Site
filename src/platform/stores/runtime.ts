@@ -2,7 +2,14 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import type { IntakeSession } from "@/domain/intake/contracts";
 import type { DiagnosisAnswer, IntakeAnswer } from "@/domain/intake/playbook";
 import type { ConsentEvent, DisclosureVersion } from "@/domain/privacy/contracts";
-import type { EvidenceObject, JobPacket, ProblemRecord } from "@/domain/problem/contracts";
+import type {
+  DerivationRecord,
+  EvidenceObject,
+  FactClaim,
+  JobPacket,
+  ProblemRecord,
+} from "@/domain/problem/contracts";
+import { DEFAULT_TENANT_ID } from "@/domain/problem/contracts";
 import type { PageSpec } from "@/domain/search/pages";
 import type { EventEnvelope } from "@/platform/events/envelope";
 import { applyQualityGuard } from "@/platform/quality/ingest";
@@ -61,6 +68,22 @@ export interface RecordJourneyInput {
   evidence: EvidenceObject;
   packet: JobPacket;
   events: EventEnvelope[];
+  /**
+   * A01'S DURABLE FACTS — written inside the SAME journey write as the record
+   * they are about (finding 1, 2026-08-25).
+   *
+   * They arrive here rather than through a method of their own because a claim
+   * that outlives its ProblemRecord, or a record whose `claim_ids` point at rows
+   * that were never written, is a broken provenance chain — and the chain is the
+   * entire reason these objects exist. One write, or neither.
+   *
+   * OPTIONAL, because a caller with nothing to record must write nothing:
+   * absent means "this path established no facts", which is a different
+   * statement from "this path established none" only in that the second would
+   * be a claim. Every existing caller keeps working unchanged.
+   */
+  claims?: readonly FactClaim[];
+  derivation?: DerivationRecord | null;
 }
 
 export interface RuntimeStore {
@@ -89,6 +112,39 @@ export interface RuntimeStore {
   listEvidence(problemId: string): Promise<EvidenceObject[]>;
   /** Store a regenerated packet version (newest version wins on read). */
   savePacket(packet: JobPacket): Promise<void>;
+
+  // --- A01 provenance (finding 1) ------------------------------------------
+  /** A01's FactClaims for one problem, in the order they were established. */
+  listClaims(problemId: string): Promise<FactClaim[]>;
+  /** The DerivationRecords naming what produced those claims. */
+  listDerivations(problemId: string): Promise<DerivationRecord[]>;
+
+  // --- A02 version chain (finding 3) ---------------------------------------
+  /**
+   * Mark one packet version superseded and point it at the version that
+   * replaced it. The forward half of the chain; the backward half (version N
+   * implies N-1) was always there.
+   */
+  supersedePacket(previousPacketId: string, supersededBy: string): Promise<void>;
+}
+
+/**
+ * THE TENANT, APPLIED AT THE WRITE BOUNDARY (finding 2, 2026-08-25).
+ *
+ * `tenant_id` has been optional on ProblemRecord and EvidenceObject since A01's
+ * build, reserved by A00 approval condition 1 — and NOTHING POPULATED IT. A
+ * field that is never written is not reserved, it is decorative: the column
+ * would ship empty and the expensive version of this fix is adding a NOT NULL
+ * tenant to populated homeowner rows later.
+ *
+ * It is defaulted HERE, at the store, for the same reason A09's guard hooks
+ * here: one place covers every writer and a new caller cannot forget. A record
+ * that already names a tenant keeps it — this fills a blank, it never
+ * overwrites. THERE IS NO TENANT LOGIC ANYWHERE: nothing reads this to route,
+ * filter, or authorise, and this function is the whole of the mechanism.
+ */
+function withTenant<T extends { tenant_id?: string }>(record: T): T {
+  return record.tenant_id ? record : { ...record, tenant_id: DEFAULT_TENANT_ID };
 }
 
 // ---------------------------------------------------------------------------
@@ -110,13 +166,16 @@ class SupabaseRuntimeStore implements RuntimeStore {
   private db = client();
 
   async recordJourney(input: RecordJourneyInput): Promise<void> {
-    const { session, consent, problem, evidence, packet, events } = input;
+    const { session, consent, packet, events } = input;
+    const problem = withTenant(input.problem);
+    const evidence = withTenant(input.evidence);
     // Raw evidence first, then the record that references it, then the packet
     // derived from it: the provenance chain is never written out of order.
     throwOn(
       (
         await this.db.from("evidence_object").insert({
           evidence_id: evidence.evidence_id,
+          tenant_id: evidence.tenant_id,
           kind: evidence.kind,
           content: evidence.content,
           privacy: evidence.privacy,
@@ -129,6 +188,7 @@ class SupabaseRuntimeStore implements RuntimeStore {
       (
         await this.db.from("problem_record").insert({
           problem_id: problem.problem_id,
+          tenant_id: problem.tenant_id,
           schema_version: problem.schema_version,
           status: problem.status,
           source_channel: problem.source_channel,
@@ -194,6 +254,24 @@ class SupabaseRuntimeStore implements RuntimeStore {
       ).error,
       "insert session"
     );
+    /**
+     * A01's claims and the derivation that produced them — after the record and
+     * the evidence they both reference, so the chain is never written out of
+     * order, and BEFORE the fail-soft telemetry below, because these are
+     * durable facts rather than instrumentation.
+     */
+    if (input.claims && input.claims.length > 0) {
+      throwOn(
+        (await this.db.from("fact_claim").insert(input.claims.map((c) => withTenant(c)))).error,
+        "insert claims"
+      );
+    }
+    if (input.derivation) {
+      throwOn(
+        (await this.db.from("derivation_record").insert(withTenant(input.derivation))).error,
+        "insert derivation"
+      );
+    }
     // Telemetry must never invalidate a journey that is already committed:
     // a failed event insert would send the customer a retry that duplicates
     // their ProblemRecord and their consent row.
@@ -404,11 +482,13 @@ class SupabaseRuntimeStore implements RuntimeStore {
     return (data ?? []) as AuditEntry[];
   }
 
-  async attachEvidence(problemId: string, evidence: EvidenceObject): Promise<void> {
+  async attachEvidence(problemId: string, raw: EvidenceObject): Promise<void> {
+    const evidence = withTenant(raw);
     throwOn(
       (
         await this.db.from("evidence_object").insert({
           evidence_id: evidence.evidence_id,
+          tenant_id: evidence.tenant_id,
           kind: evidence.kind,
           content: evidence.content,
           privacy: evidence.privacy,
@@ -496,6 +576,58 @@ class SupabaseRuntimeStore implements RuntimeStore {
       "insert packet version"
     );
   }
+
+  async listClaims(problemId: string): Promise<FactClaim[]> {
+    const { data, error } = await this.db
+      .from("fact_claim")
+      .select("*")
+      .eq("problem_id", problemId)
+      .order("created_at", { ascending: true });
+    if (error) throw new Error(`list claims: ${error.message}`);
+    return (data ?? []) as FactClaim[];
+  }
+
+  async listDerivations(problemId: string): Promise<DerivationRecord[]> {
+    const { data, error } = await this.db
+      .from("derivation_record")
+      .select("*")
+      .eq("problem_id", problemId)
+      .order("created_at", { ascending: true });
+    if (error) throw new Error(`list derivations: ${error.message}`);
+    return (data ?? []) as DerivationRecord[];
+  }
+
+  /**
+   * THE FORWARD POINTER. The packet body is the jsonb column, so the two fields
+   * are rewritten inside it — read, merge, write, and only for the one row.
+   * A version that is already superseded is left exactly as it is: the first
+   * successor is the true one, and a re-run must not rewrite history.
+   */
+  async supersedePacket(previousPacketId: string, supersededBy: string): Promise<void> {
+    const { data, error } = await this.db
+      .from("job_packet")
+      .select("packet")
+      .eq("job_packet_id", previousPacketId)
+      .maybeSingle();
+    if (error) throw new Error(`load packet to supersede: ${error.message}`);
+    if (!data) return;
+    const previous = data.packet as JobPacket;
+    if (previous.status === "superseded") return;
+    const updated: JobPacket = {
+      ...previous,
+      status: "superseded",
+      superseded_by: supersededBy,
+    };
+    throwOn(
+      (
+        await this.db
+          .from("job_packet")
+          .update({ packet: updated })
+          .eq("job_packet_id", previousPacketId)
+      ).error,
+      "supersede packet"
+    );
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -509,10 +641,12 @@ class FileRuntimeStore implements RuntimeStore {
     updateDevDb((db) => {
       db.intake_sessions.push(input.session);
       db.consent_events.push(input.consent);
-      db.problems.push(input.problem);
-      db.evidence.push(input.evidence);
+      db.problems.push(withTenant(input.problem));
+      db.evidence.push(withTenant(input.evidence));
       db.packets.push(input.packet);
       db.events.push(...input.events);
+      for (const claim of input.claims ?? []) db.fact_claims.push(withTenant(claim));
+      if (input.derivation) db.derivation_records.push(withTenant(input.derivation));
     });
   }
 
@@ -594,7 +728,8 @@ class FileRuntimeStore implements RuntimeStore {
     return [...readDevDb().admin_audit].reverse().slice(0, limit);
   }
 
-  async attachEvidence(problemId: string, evidence: EvidenceObject): Promise<void> {
+  async attachEvidence(problemId: string, raw: EvidenceObject): Promise<void> {
+    const evidence = withTenant(raw);
     updateDevDb((db) => {
       db.evidence.push(evidence);
       const p = db.problems.find((x) => x.problem_id === problemId);
@@ -635,6 +770,25 @@ class FileRuntimeStore implements RuntimeStore {
   async savePacket(packet: JobPacket): Promise<void> {
     updateDevDb((db) => {
       db.packets.push(packet);
+    });
+  }
+
+  async listClaims(problemId: string): Promise<FactClaim[]> {
+    return readDevDb().fact_claims.filter((c) => c.problem_id === problemId);
+  }
+
+  async listDerivations(problemId: string): Promise<DerivationRecord[]> {
+    return readDevDb().derivation_records.filter((d) => d.problem_id === problemId);
+  }
+
+  async supersedePacket(previousPacketId: string, supersededBy: string): Promise<void> {
+    updateDevDb((db) => {
+      const previous = db.packets.find((p) => p.job_packet_id === previousPacketId);
+      // Already superseded: the first successor is the true one, and a re-run
+      // must not rewrite history.
+      if (!previous || previous.status === "superseded") return;
+      previous.status = "superseded";
+      previous.superseded_by = supersededBy;
     });
   }
 }

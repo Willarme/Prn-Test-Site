@@ -1,6 +1,12 @@
 import { mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import type { EvidenceObject, JobPacket, ProblemRecord } from "@/domain/problem/contracts";
+import type {
+  DerivationRecord,
+  EvidenceObject,
+  FactClaim,
+  JobPacket,
+  ProblemRecord,
+} from "@/domain/problem/contracts";
 import type { ConsentEvent } from "@/domain/privacy/contracts";
 import type { IntakeSession } from "@/domain/intake/contracts";
 import type { IntentPage, PageSpec } from "@/domain/search/pages";
@@ -19,6 +25,14 @@ export interface DevDb {
   evidence: EvidenceObject[];
   packets: JobPacket[];
   events: EventEnvelope[];
+  /**
+   * A01's durable provenance objects (migration 00014 — written, applied as a
+   * separate human-coordinated step). Typed properly rather than as `unknown[]`
+   * because dev-db.ts already depends on domain/problem for the three records
+   * these two are the provenance OF; there is no new dependency to avoid.
+   */
+  fact_claims: FactClaim[];
+  derivation_records: DerivationRecord[];
   staged_specs: PageSpec[];
   /**
    * A05 Page Registry rows (migration 00012 — applied 2026-08-25). The
@@ -91,6 +105,8 @@ function emptyDb(): DevDb {
     evidence: [],
     packets: [],
     events: [],
+    fact_claims: [],
+    derivation_records: [],
     staged_specs: [],
     intent_pages: [],
     intake_answers: [],

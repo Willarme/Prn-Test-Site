@@ -9,7 +9,7 @@ import type {
   FactClaim,
   ProblemRecord,
 } from "@/domain/problem/contracts";
-import { analyzeProblemFixture, type AnalyzeInput, type AnalyzeResult } from "@/domain/problem/fixture-engine";
+import type { AnalyzeInput, AnalyzeResult } from "@/domain/problem/fixture-engine";
 import { SAFETY_PACKAGE_VERSION, checkSafety } from "@/domain/problem/safety";
 import { ACTIVE_PROBLEM_TAXONOMY } from "@/domain/problem/taxonomy";
 import { detectFields } from "@/domain/intake/extract";
@@ -35,9 +35,25 @@ import {
  * that file are bound by PATH STRING in the capability registry's
  * `implementation_ref`, and its header carries a promise to the rest of the
  * repo: the swap happens "without touching pages, intake, or results". So
- * nothing here edits it, and nothing here is wired into /start, /complete or
- * /results this wave. This is the production implementation standing ready
- * behind the same contract, which is what HO-3 asks for.
+ * nothing here edits it. This is the production implementation standing behind
+ * the same contract, which is what HO-3 asks for.
+ *
+ * ─── AND IT IS THE LIVE PATH, 2026-08-25 (finding 1) ───────────────────────
+ *
+ * It was not. This file shipped with ZERO live callers: `api/intake/route.ts`
+ * called `analyzeProblemFixture` directly, so a real customer journey produced
+ * no FactClaim, no DerivationRecord (`claim_ids: []` on every stored record),
+ * and neither `problem.fact_extracted` nor `intake.clarifier_asked` could fire
+ * anywhere in the running app. A production surface with no callers is a
+ * rehearsal, and the instruments it owns are append-only history that cannot be
+ * backfilled — a trial run without them has no baseline, permanently.
+ *
+ * The intake route now goes through `classifyProblem` and `selectClarifier`.
+ * NOTHING A HOMEOWNER SEES CHANGED: the classification underneath is the same
+ * deterministic analyzer producing the same ProblemRecord, the same packet and
+ * the same page. What changed is the record behind it — governed, claimed,
+ * derived and instrumented. The AI flags stay off; `allow_model: false` on that
+ * call site means the model-backed alternate is not even asked.
  *
  * ─── WHAT THIS ADDS THAT THE PIECES DID NOT HAVE ───────────────────────────
  *
@@ -94,9 +110,29 @@ export interface ClassifyProblemOptions extends ClassifyOptions {
    * never that they are guessed.
    */
   fields?: readonly FieldRequirement[];
+  /**
+   * THE SAME THING, RESOLVED FROM THE CLASSIFICATION INSTEAD OF BEFORE IT.
+   *
+   * Which fields matter depends on which trade this is, and the trade is not
+   * known until the classification returns — A01's own §3 flowchart puts the
+   * Playbook Resolver AFTER Classify for exactly this reason. A caller that
+   * already knows its field list passes `fields`; a caller whose playbook is
+   * chosen by `service_category` (the live intake route) passes this instead,
+   * and the resolution happens at the one moment both facts exist.
+   *
+   * It runs at step 4, after the classification and before any claim is minted.
+   * `fields` wins when both are given.
+   */
+  resolve_fields?: (problem: ProblemRecord) => readonly FieldRequirement[];
   /** Deterministic id source, so a test can pin claim ids. */
   new_id?: () => string;
   tenant_id?: string;
+  /**
+   * Canonical IDS the governed call should record as its inputs — never raw
+   * text. Defaults to the intake session alone; the live route adds its
+   * request_id so a ledger row can be joined back to the journey it served.
+   */
+  input_ids?: readonly string[];
 }
 
 export interface ClassifyProblemOutcome {
@@ -198,7 +234,11 @@ export async function classifyProblem(
     agent_id: "A01",
     capability: "classify_problem",
     args: input,
-    input_ids: input.intake_session_id ? [input.intake_session_id] : [],
+    input_ids: options.input_ids
+      ? [...options.input_ids]
+      : input.intake_session_id
+        ? [input.intake_session_id]
+        : [],
     trigger: "request",
   });
   if (!gated.ok) {
@@ -250,15 +290,9 @@ export async function classifyProblem(
    *    most consequential guess A01 makes, and leaving it off the claim ledger
    *    while recording smaller ones would be exactly backwards.
    */
+  const fields = options.fields ?? options.resolve_fields?.(result.problem) ?? [];
   const claims: FactClaim[] = [
-    ...suppliedClaims(
-      result.problem,
-      result.evidence,
-      options.fields ?? [],
-      newId,
-      input.now,
-      tenantId
-    ),
+    ...suppliedClaims(result.problem, result.evidence, fields, newId, input.now, tenantId),
   ];
   if (result.problem.service_category) {
     claims.push(
@@ -316,9 +350,21 @@ export async function classifyProblem(
     tenant_id: tenantId,
   });
 
+  /**
+   * THE RECORD A01 HANDS BACK carries the claim ids it just established and,
+   * when the caller named a tenant, that tenant — on BOTH halves. The
+   * deterministic analyzer cannot stamp them: it is bound by path string in the
+   * capability registry and promises the rest of the repo it will not change
+   * (HO-3), so the tenant is applied here, to A01's own output, and again as a
+   * default at the store boundary so no writer can omit it.
+   */
   const withClaims: AnalyzeResult = {
-    evidence: result.evidence,
-    problem: { ...result.problem, claim_ids: claims.map((c) => c.claim_id) },
+    evidence: { ...result.evidence, ...(tenantId ? { tenant_id: tenantId } : {}) },
+    problem: {
+      ...result.problem,
+      ...(tenantId ? { tenant_id: tenantId } : {}),
+      claim_ids: claims.map((c) => c.claim_id),
+    },
   };
 
   // 6. EMIT. Ids and classifications only — never the claim's value.
@@ -618,12 +664,45 @@ export interface ReclassifyOnNewEvidenceInput {
 export async function reclassifyOnNewEvidence(
   input: ReclassifyOnNewEvidenceInput
 ): Promise<ReclassifyOutcome> {
-  const fresh = analyzeProblemFixture({
-    description: input.description,
-    intake_session_id: input.intake_session_id,
-    problem_family_hint: input.problem_family_hint,
-    now: input.now,
-  }).problem;
+  /**
+   * THROUGH THE GOVERNED DOOR TOO, 2026-08-25 (finding 1). This called
+   * `analyzeProblemFixture` directly, which meant a re-classification — a
+   * second, unlogged classification of the same homeowner's words — ran with no
+   * registry lookup, no kill-switch check, no ledger row and no
+   * `capability.invoked` envelope. A kill switch on A01 stopped the first
+   * classification and not this one.
+   *
+   * A REFUSAL REPORTS NO CHANGE, and that is the only safe answer: the
+   * comparison could not be made, so claiming the classification moved would
+   * emit `problem.updated` on the strength of a run that never happened.
+   */
+  const gated = await capability_call<AnalyzeResult>({
+    agent_id: "A01",
+    capability: "classify_home_problem",
+    args: {
+      description: input.description,
+      intake_session_id: input.intake_session_id,
+      problem_family_hint: input.problem_family_hint,
+      now: input.now,
+    },
+    input_ids: [input.existing.problem_id],
+    trigger: "request",
+  });
+  if (!gated.ok) {
+    return {
+      changed: false,
+      changed_fields: [],
+      before: {
+        service_category: input.existing.service_category,
+        service_category_confidence: input.existing.service_category_confidence,
+      },
+      after: {
+        service_category: input.existing.service_category,
+        service_category_confidence: input.existing.service_category_confidence,
+      },
+    };
+  }
+  const fresh = gated.output.problem;
   const outcome = compareClassification(input.existing, fresh);
   if (!outcome.changed) return outcome;
 

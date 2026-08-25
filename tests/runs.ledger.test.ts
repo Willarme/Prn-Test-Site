@@ -9,11 +9,13 @@ import {
   recordAgentRun,
   resetAgentRunLedgerForTests,
 } from "@/platform/runs/ledger";
+import { readDevDb } from "@/platform/stores/dev-db";
 
 /**
  * A00 §9 step 3 — Agent Run Ledger proof case: the intake route's real
- * classify_problem call writes EXACTLY ONE AgentRunRecord, without changing
- * the route's observable output (the intake-flow suite still covers that).
+ * governed capability calls write EXACTLY ONE AgentRunRecord EACH, without
+ * changing the route's observable output (the intake-flow suite still covers
+ * that).
  */
 let intakePost: (req: Request) => Promise<Response>;
 
@@ -73,21 +75,45 @@ describe("A00 agent run ledger", () => {
      * A01 classifies, A02 builds the packet, A09 validates the write, and a
      * FOURTH writer or a second row from any of them still fails here.
      */
+    /**
+     * A01'S ROWS ARE NOW THE GATEWAY'S, AND THERE IS MORE THAN ONE (finding 1,
+     * 2026-08-25). The route used to hand-write a single A01 row asserting
+     * `capabilities_used: ["classify_problem"]` and a provider it had not
+     * observed, because A01 ran as a plain function call. The live path now goes
+     * through A01's capability surface, so every row below was written by
+     * `capability_call` from what actually happened: ONE classification, then
+     * one row per clarifying question A01 selected under the ceiling.
+     *
+     * THE PIN IS UNCHANGED IN SUBSTANCE — one ledger row per agent RUN, never
+     * one per event, and no writer nobody accounted for. It is expressed against
+     * the run count A01 actually performs rather than a literal, so it still
+     * fails on a second row for one run, and it is now checked against the
+     * emitted `intake.clarifier_asked` envelopes: a selection that left a ledger
+     * row but no instrument (or the reverse) fails here.
+     */
     const a01Runs = runs.filter((r) => r.agent_id === "A01");
-    expect(a01Runs.length).toBe(1);
+    const classifyRuns = a01Runs.filter((r) => r.capabilities_used.includes("classify_home_problem"));
+    const clarifierRuns = a01Runs.filter((r) => r.capabilities_used.includes("select_next_clarifier"));
+    const asked = readDevDb().events.filter((e) => e.event_name === "intake.clarifier_asked");
+    expect(classifyRuns.length).toBe(1);
+    expect(clarifierRuns.length).toBe(asked.length);
+    expect(clarifierRuns.length).toBeGreaterThan(0);
+    // Every A01 row is one of those two — no unaccounted A01 run.
+    expect(a01Runs.length).toBe(classifyRuns.length + clarifierRuns.length);
     expect(runs.filter((r) => r.agent_id === "A02").length).toBe(1);
     expect(runs.filter((r) => r.agent_id === "A09").length).toBe(1);
-    expect(runs.length).toBe(3);
+    expect(runs.length).toBe(a01Runs.length + 2);
     const a02Run = runs.find((r) => r.agent_id === "A02")!;
     expect(a02Run.capabilities_used).toEqual(["generate_job_packet"]);
     expect(a02Run.cost_usd).toBe(0);
     expect(a02Run.tool_provider).toBe("deterministic-stand-in");
-    const run = a01Runs[0];
+    const run = classifyRuns[0];
     expect(AgentRunRecord.safeParse(run).success).toBe(true);
     expect(run.agent_id).toBe("A01");
     expect(run.trigger).toBe("request");
     expect(run.tool_provider).toBe("deterministic-stand-in");
-    expect(run.capabilities_used).toEqual(["classify_problem"]);
+    // The resolved canonical key, observed — not the alias the route asserted.
+    expect(run.capabilities_used).toEqual(["classify_home_problem"]);
     expect(run.tenant_id).toBe("prn"); // reserved field, default only — no tenant logic
     expect(run.cost_usd).toBe(0); // deterministic path costs nothing
     expect(run.run_id).toMatch(/^ar_/);
