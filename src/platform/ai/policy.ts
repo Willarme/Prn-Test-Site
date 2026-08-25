@@ -74,7 +74,19 @@ export const AiCapabilityPolicy = z.object({
   max_cost_per_call_usd: UsdAmount,
   /** TEST. Refuse once this capability's spend today has reached this. */
   daily_cap_usd: UsdAmount,
-  /** Output ceiling, and therefore the number the pre-call estimate prices against. */
+  /**
+   * Output ceiling, and therefore the number the pre-call estimate prices
+   * against.
+   *
+   * ⚠ IT IS ALSO A CORRECTNESS SETTING, NOT ONLY A COST ONE, and that was
+   * MEASURED rather than reasoned about. The first live smoke on
+   * stealth/ox-alpha with a 100-token ceiling returned `finish_reason: length`
+   * and NO CONTENT AT ALL: the model spent its entire output budget before
+   * emitting the object. The same call at 800 succeeded using 449 output tokens
+   * — for a reply with two fields in it. So a ceiling set for cost can silently
+   * become a ceiling that makes every call fail validation, and the numbers
+   * below are sized from that measurement.
+   */
   max_output_tokens: z.number().int().min(1).max(32_000).default(1_200),
 });
 export type AiCapabilityPolicy = z.infer<typeof AiCapabilityPolicy>;
@@ -92,7 +104,19 @@ export const AiPolicy = z
      * uses (a master boolean above an already-empty allow-list).
      */
     enabled: z.boolean().default(false),
-    /** Per-call wall-clock budget. A model that has not answered by here is a timeout. */
+    /**
+     * Per-call wall-clock budget. A model that has not answered by here is a
+     * timeout.
+     *
+     * ⚠ MEASURED, AND IT MATTERS MORE THAN IT LOOKS. The live smoke's trivial
+     * two-field call took 13.2 SECONDS on stealth/ox-alpha. This value stays at
+     * 30s and is deliberately NOT raised, because A01 runs IN-REQUEST while a
+     * homeowner waits: a longer budget would not fix a slow model, it would just
+     * make the homeowner wait longer before falling back to a deterministic
+     * answer that was always available. The right response to a 13-second model
+     * on the intake path is an owner decision about the model, not a bigger
+     * timeout here. TODO-ASK-OWNER (Joshua + Melissa).
+     */
     request_timeout_ms: z.number().int().min(1_000).max(120_000).default(30_000),
     /**
      * How many times a json_object-mode reply that failed zod validation may be
@@ -163,33 +187,41 @@ export const DEFAULT_AI_POLICY: AiPolicy = AiPolicy.parse({
   // can blow through by accident is not a cap.
   global_daily_budget_usd: 1,
   capabilities: {
+    /**
+     * EVERY `max_output_tokens` BELOW IS SIZED FROM THE LIVE SMOKE, 2026-08-25:
+     * stealth/ox-alpha spent 449 output tokens answering a two-field schema. A
+     * ceiling that looks generous against the SIZE of the answer is not
+     * necessarily generous against the tokens the model spends reaching it.
+     */
     classify_home_problem: {
       enabled: false,
       model_id: "stealth/ox-alpha",
       max_cost_per_call_usd: 0.02,
       daily_cap_usd: 0.25,
-      max_output_tokens: 800,
+      max_output_tokens: 1_600,
     },
     select_next_clarifier: {
       enabled: false,
       model_id: "stealth/ox-alpha",
       max_cost_per_call_usd: 0.01,
       daily_cap_usd: 0.25,
-      max_output_tokens: 400,
+      // Was 400 — under the measured floor. A cheap-looking ceiling that
+      // guarantees `finish_reason: length` is not a saving.
+      max_output_tokens: 1_200,
     },
     generate_page_copy: {
       enabled: false,
       model_id: "stealth/ox-alpha",
       max_cost_per_call_usd: 0.05,
       daily_cap_usd: 0.5,
-      max_output_tokens: 2_000,
+      max_output_tokens: 3_000,
     },
     "seo.critique_page": {
       enabled: false,
       model_id: "stealth/ox-alpha",
       max_cost_per_call_usd: 0.03,
       daily_cap_usd: 0.5,
-      max_output_tokens: 1_200,
+      max_output_tokens: 2_000,
     },
   },
   effective_from: "2026-08-25T00:00:00Z",

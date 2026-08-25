@@ -242,10 +242,21 @@ export function createOpenRouterProvider(apiKey: string): ModelProvider {
 
           const raw = choice?.message?.content;
           if (typeof raw !== "string" || raw.trim().length === 0) {
+            /**
+             * A `length` finish with no content is a TRUNCATION, and the fix is a
+             * number rather than a retry: the model spent its whole output budget
+             * before emitting the object. Measured on stealth/ox-alpha during the
+             * live smoke — 100 output tokens produced no content at all — so the
+             * detail names the cause instead of leaving an owner to guess at
+             * "invalid JSON" for a reply that was never JSON in the first place.
+             */
+            const truncated = finish === "length";
             return {
               ok: false,
               reason: "invalid_json",
-              detail: `the reply carried no content (finish_reason=${String(finish)})`,
+              detail: truncated
+                ? "the model hit its output ceiling before emitting any content (finish_reason=length) — raise max_output_tokens for this capability in the AI policy"
+                : `the reply carried no content (finish_reason=${String(finish)})`,
               provider: OPENROUTER_PROVIDER_ID,
               attempts,
             };

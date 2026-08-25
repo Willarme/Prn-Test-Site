@@ -281,6 +281,26 @@ describe("the provider never throws, and never leaks the key", () => {
     expect(result.attempts).toBe(1);
   });
 
+  /**
+   * FOUND BY THE LIVE SMOKE, 2026-08-25, not by reading. A 100-token ceiling on
+   * stealth/ox-alpha returned `finish_reason: length` with no content at all —
+   * the model spent its whole output budget before emitting the object. The
+   * detail has to name that, because "invalid JSON" sends an owner looking for a
+   * parsing bug in a reply that was never JSON to begin with.
+   */
+  it("a truncated reply names the ceiling as the cause, not the JSON", async () => {
+    globalThis.fetch = vi.fn(async () =>
+      jsonResponse({ choices: [{ message: { content: "" }, finish_reason: "length" }] })
+    ) as unknown as typeof fetch;
+
+    const result = await createOpenRouterProvider(SECRET).complete(input());
+    expect(result.ok).toBe(false);
+    if (result.ok) throw new Error("unreachable");
+    expect(result.reason).toBe("invalid_json");
+    expect(result.detail).toMatch(/output ceiling/);
+    expect(result.detail).toMatch(/max_output_tokens/);
+  });
+
   it("a content-filter stop is `refused`, never an empty pass", async () => {
     globalThis.fetch = vi.fn(async () =>
       jsonResponse({ choices: [{ message: { content: null }, finish_reason: "content_filter" }] })
