@@ -57,11 +57,23 @@ export interface OpportunityDecisionStore {
  */
 const MIGRATION = "supabase/migrations/00011_opportunity_decision.sql";
 
-function fail(what: string, message: string): never {
+/**
+ * `kind` added by the A05 build, found by running the real app. Both paths
+ * shared one message, so a failed LIST — a pure read — reported "Your decision
+ * was NOT recorded." A05's generate route quotes this cause verbatim to the
+ * owner, and a read failure claiming a lost write is a message that
+ * contradicts itself at exactly the moment someone is trying to understand
+ * what went wrong.
+ */
+function fail(what: string, message: string, kind: "read" | "write"): never {
   const missingTable = /opportunity_decision/.test(message) && /schema cache|does not exist/i.test(message);
+  const consequence =
+    kind === "write"
+      ? "Your decision was NOT recorded."
+      : "No decision could be read, so nothing that depends on your approvals can run.";
   throw new Error(
     missingTable
-      ? `${what}: the opportunity_decision table does not exist yet. Apply ${MIGRATION} (written, NOT applied) to enable owner decisions. Your decision was NOT recorded.`
+      ? `${what}: the opportunity_decision table does not exist yet. Apply ${MIGRATION} (written, NOT applied) to enable owner decisions. ${consequence}`
       : `${what}: ${message}`
   );
 }
@@ -87,7 +99,7 @@ class SupabaseOpportunityDecisionStore implements OpportunityDecisionStore {
       approval_id: decision.approval_id,
       run_id: decision.run_id,
     });
-    if (error) fail("record opportunity decision", error.message);
+    if (error) fail("record opportunity decision", error.message, "write");
   }
 
   async list(): Promise<OpportunityDecision[]> {
@@ -96,7 +108,7 @@ class SupabaseOpportunityDecisionStore implements OpportunityDecisionStore {
       .select("*")
       .order("decided_at", { ascending: true })
       .limit(2000);
-    if (error) fail("list opportunity decisions", error.message);
+    if (error) fail("list opportunity decisions", error.message, "read");
     return (data ?? []).map((row) => OpportunityDecision.parse(row));
   }
 }

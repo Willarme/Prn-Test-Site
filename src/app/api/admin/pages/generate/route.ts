@@ -39,7 +39,37 @@ export async function POST(request: Request): Promise<NextResponse> {
   const parsed = Body.safeParse((await request.json().catch(() => null)) ?? {});
   if (!parsed.success) return NextResponse.json({ error: "invalid" }, { status: 400 });
 
-  const decisions = (await opportunityDecisionStore().list()) as OpportunityDecision[];
+  /**
+   * READING THE OWNER'S DECISIONS IS THE FIRST THING, AND IT FAILS CLOSED.
+   *
+   * FOUND BY RUNNING THE REAL APP, not by the tests — which all inject
+   * `() => null` as the client provider and therefore only ever exercise the
+   * FILE backend. With Supabase configured from .env.local and migration 00011
+   * written-but-not-applied, this `.list()` threw straight out of the route and
+   * returned a bare 500 carrying A04's WRITE message: "Your decision was NOT
+   * recorded." Nothing was being recorded; this is a read.
+   *
+   * Worse than the wrong words: "the decisions could not be read" and "nobody
+   * has approved anything" must never look the same to this route. The first is
+   * a broken dependency and the second is a normal empty queue, and quietly
+   * treating one as the other is how an agent ends up building from an
+   * incomplete picture of what the owner said. So an unreadable decision store
+   * refuses the run, names the migration, and builds nothing.
+   */
+  let decisions: OpportunityDecision[];
+  try {
+    decisions = (await opportunityDecisionStore().list()) as OpportunityDecision[];
+  } catch (err) {
+    return NextResponse.json(
+      {
+        error:
+          "Could not read the owner's opportunity decisions, so no page was built. " +
+          "A05 builds only from opportunities you approved, and it cannot tell which those are right now. " +
+          `Underlying cause: ${err instanceof Error ? err.message : String(err)}`,
+      },
+      { status: 503 }
+    );
+  }
   const all = loadOpportunities().opportunities;
   const candidates = parsed.data.search_opportunity_id
     ? all.filter((o) => o.search_opportunity_id === parsed.data.search_opportunity_id)

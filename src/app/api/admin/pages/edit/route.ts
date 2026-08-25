@@ -27,13 +27,18 @@ const Body = z.object({
   hero_subheadline: z.string(),
 });
 
-function back(pageSpecId: string, params: Record<string, string>): NextResponse {
+/**
+ * Redirect back to the page the form was posted from, resolved against the
+ * REQUEST's own origin. An env-var fallback (NEXT_PUBLIC_SITE_URL, defaulting
+ * to localhost:3000) was the first version and it is wrong on every host that
+ * is not that one — an owner on a preview deployment or a non-default port
+ * would be bounced somewhere else entirely. The request already knows where it
+ * came from.
+ */
+function back(request: Request, pageSpecId: string, params: Record<string, string>): NextResponse {
   const query = new URLSearchParams(params).toString();
   return NextResponse.redirect(
-    new URL(
-      `/admin/pages/${encodeURIComponent(pageSpecId)}?${query}`,
-      process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"
-    ),
+    new URL(`/admin/pages/${encodeURIComponent(pageSpecId)}?${query}`, request.url),
     { status: 303 }
   );
 }
@@ -80,11 +85,11 @@ export async function POST(request: Request): Promise<NextResponse> {
     });
 
     if (result.blocked.length > 0) {
-      return back(parsed.data.page_spec_id, {
+      return back(request, parsed.data.page_spec_id, {
         blocked: result.blocked.map((f) => `${f.check} @ ${f.where}: ${f.message}`).join(" | "),
       });
     }
-    return back(result.spec!.page_spec_id, {
+    return back(request, result.spec!.page_spec_id, {
       saved: result.edited_fields.join(",") || "nothing changed",
     });
   } catch (err) {

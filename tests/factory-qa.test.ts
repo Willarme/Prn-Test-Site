@@ -38,9 +38,13 @@ describe("A05 page factory", () => {
   it("builds only owner-approved, new-page-eligible candidates, up to the hard cap", () => {
     const mixed = [
       acOpp, // approved + NEW
+      // EXPAND names a DIFFERENT ACTION on an existing page (C18), so an owner
+      // approval does not turn it into a new door. WATCH and REJECT would
+      // build — the owner overrode A04's opinion, which is what the decision
+      // path is for.
       {
         ...seedOpps.find((o) => o.keyword === "electrical burning smell")!,
-        recommendation: "WATCH" as const,
+        recommendation: "EXPAND" as const,
         status: "approved" as const,
       },
       {

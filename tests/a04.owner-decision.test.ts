@@ -167,6 +167,32 @@ describe("the agent's opinion is not the owner's decision", () => {
     expect(result.not_new_page).toEqual([]);
   });
 
+  /**
+   * THE OWNER OVERRIDES THE AGENT — the correction found by exercising the real
+   * admin flow. An earlier version of the eligibility rule let only "NEW"
+   * through and reported WATCH/REJECT as non-builds, which is seam 2 upside
+   * down: the owner clicks Accept and A04's OPINION silently vetoes it. Only
+   * EXPAND and MERGE block, because those name a DIFFERENT ACTION on an
+   * existing page rather than a weaker yes.
+   */
+  it("SEAM 2: owner approval BEATS a WATCH or REJECT recommendation", () => {
+    for (const rec of ["WATCH", "REJECT"] as const) {
+      const approved = opportunity({ recommendation: rec, status: "approved" });
+      const result = buildCandidatePages([approved], 10, { now: () => "2026-08-24T00:00:00Z" });
+      expect(result.specs.length, rec).toBe(1);
+      expect(result.not_new_page, rec).toEqual([]);
+    }
+  });
+
+  it("only EXPAND and MERGE block an owner-approved build — they are different actions", () => {
+    for (const rec of ["EXPAND", "MERGE"] as const) {
+      const approved = opportunity({ recommendation: rec, status: "approved" });
+      const result = buildCandidatePages([approved], 10, { now: () => "2026-08-24T00:00:00Z" });
+      expect(result.specs.length, rec).toBe(0);
+      expect(result.not_new_page[0].recommendation, rec).toBe(rec);
+    }
+  });
+
   it("owner approval with NO recommendation at all still builds", () => {
     const approved = opportunity({ recommendation: null, status: "approved" });
     const { specs } = buildCandidatePages([approved], 10, { now: () => "2026-08-24T00:00:00Z" });

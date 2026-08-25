@@ -339,3 +339,39 @@ describe("A05 never sets monetization_eligible true (C15)", () => {
     }
   });
 });
+
+/**
+ * FOUND BY EDITING A PAGE IN THE RUNNING APP, not by the tests above.
+ *
+ * `findStagedByPath` used `.find()` — the FIRST match. Correct while every
+ * canonical path had exactly one PageSpec, and silently wrong the moment A05
+ * could produce a second version: the owner edited the copy, clicked Preview,
+ * and saw their OLD text, because v1 sits before v2 in the list.
+ */
+describe("the staged preview serves the NEWEST version of a page", () => {
+  it("returns v2 after an edit, not v1 — in list order, which is v1 first", async () => {
+    const { page, spec } = stageNewPage(opp({ status: "approved" }), { now: NOW });
+    const edited = applyOwnerEdit(page, spec, { h1: "Edited heading" }, { now: NOW }, "owner");
+    expect(edited.spec.version).toBe(2);
+    expect(edited.spec.canonical_path).toBe(spec.canonical_path);
+
+    const { newestByVersion } = await import("@/domain/search/page-store");
+    // The exact shape the lookup sees: both versions, same path, v1 first.
+    const served = newestByVersion([spec, edited.spec]);
+    expect(served?.version).toBe(2);
+    expect(served?.h1).toBe("Edited heading");
+    // ...and order-independent.
+    expect(newestByVersion([edited.spec, spec])?.version).toBe(2);
+  });
+
+  it("returns null for a path with nothing at it", async () => {
+    const { newestByVersion } = await import("@/domain/search/page-store");
+    expect(newestByVersion([])).toBeNull();
+  });
+
+  it("with one version per path it returns exactly what it always did", async () => {
+    const { findStagedByPath } = await import("@/domain/search/page-store");
+    const served = await findStagedByPath(SAMPLE_PAGE_SPEC.canonical_path);
+    expect(served?.page_spec_id).toBe(SAMPLE_PAGE_SPEC.page_spec_id);
+  });
+});

@@ -334,15 +334,35 @@ export function newPageEligibility(
         "not owner-approved — A04's recommendation is an opinion, not a decision (coherence seam 2)",
     };
   }
+  /**
+   * WHICH RECOMMENDATIONS BLOCK A BUILD — and the line is narrower than it
+   * first looks. Found by exercising the real admin flow, not by reading.
+   *
+   * The first version of this switch let ONLY "NEW" and null through and
+   * reported WATCH and REJECT as non-builds. That is seam 2 reintroduced
+   * upside down: the owner clicks Accept, whose stated impact in the Approval
+   * Center is "This opportunity becomes eligible for page building", and A04's
+   * OPINION then silently vetoes it. Making the agent's opinion the gate is the
+   * exact defect this whole build exists to remove; it does not become correct
+   * by pointing the other way.
+   *
+   * So the split is by what the recommendation MEANS, not by how much A04 liked
+   * the keyword:
+   *
+   *   EXPAND / MERGE  name a DIFFERENT ACTION on an EXISTING page. They are not
+   *                   a weaker "yes" to a new page — C18 is explicit that
+   *                   EXPAND means grow an existing page, and that a build
+   *                   which ignores this "will either silently drop EXPAND
+   *                   events or start creating duplicate pages from them."
+   *
+   *   WATCH / REJECT  are A04 saying "not now" and "no". The owner has just
+   *                   said yes, and an owner override is precisely what the
+   *                   decision path is for. The disagreement is not lost: it is
+   *                   recorded on the decision itself as
+   *                   `recommendation_at_decision`, which is how anyone later
+   *                   learns whether the scoring is any good.
+   */
   switch (opportunity.recommendation) {
-    // NEW is the quota-eligible recommendation. `null` is an owner approval
-    // with no agent opinion attached at all, which the shipped decision tests
-    // already treat as a complete approval ("it does not need a recommendation
-    // at all", a04.owner-decision.test.ts) — there is no opinion here saying
-    // the work is something other than a new page.
-    case "NEW":
-    case null:
-      return { eligible: true, reason: null };
     case "EXPAND":
       return {
         eligible: false,
@@ -355,15 +375,9 @@ export function newPageEligibility(
         reason:
           "approved as MERGE — folds into an existing page rather than creating a second door",
       };
+    // NEW, WATCH, REJECT, or no recommendation at all. The owner approved it.
     default:
-      // WATCH / REJECT. The owner approving something A04 argued against is a
-      // real disagreement and worth surfacing; it is not a mandate to spend the
-      // new-page quota on it, because no owner control exists today that says
-      // "build this as NEW" over a WATCH/REJECT recommendation.
-      return {
-        eligible: false,
-        reason: `owner-approved but A04 recommended ${opportunity.recommendation} — the new-page quota is NEW-only, so this is reported rather than built`,
-      };
+      return { eligible: true, reason: null };
   }
 }
 
