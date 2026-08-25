@@ -20,7 +20,7 @@ import {
 import { capability_call } from "@/platform/gateway";
 import { checkKillSwitch } from "@/platform/killswitch";
 import { recordAgentRun } from "@/platform/runs/ledger";
-import { criticConfigured, gatewayAiCritic } from "@/platform/search/page-qa-critic";
+import { createModelPageCritic, criticEnabled } from "@/platform/search/page-qa-critic";
 import {
   emitPageDefectFound,
   emitPageDefectRepaired,
@@ -184,12 +184,18 @@ export async function runPageQaBatch(
   let results = call.output;
 
   /**
-   * 3. THE CRITIC STAGE, folded in — a SEPARATE capability with its own gateway
-   *    call. Nothing runs today because none is registered, and the loop is
-   *    skipped rather than pretended: `criticConfigured()` is false, so no page
-   *    pays for a call that cannot happen.
+   * 3. THE CRITIC STAGE, folded in — a SEPARATE capability with its own governed
+   *    call (platform/ai/callModel.ts). The gate asked here is ENABLEMENT, not
+   *    registration: a registered contract must never silently start a stage, so
+   *    while `seo.critique_page` is disabled in the runtime AI policy — its
+   *    shipped state — the loop is skipped entirely and no page pays for a call
+   *    policy has already refused.
+   *
+   *    THE CRITIC'S RULE SET IS PER-TENANT DATA (`page_qa.critic_rules`), read
+   *    from the same policy block as every other A06 threshold.
    */
-  if (criticConfigured()) {
+  if (await criticEnabled()) {
+    const criticAdapter = createModelPageCritic({ rules: context.policy?.critic_rules });
     const folded: PageQAResult[] = [];
     for (const result of results) {
       const spec = input.specs.find((s) => s.page_spec_id === result.page_spec_id);
@@ -209,7 +215,7 @@ export async function runPageQaBatch(
           hero_subheadline: spec.hero.subheadline,
           blocks: spec.content_blocks,
         },
-        gatewayAiCritic,
+        criticAdapter,
         { deterministic_blocked: false }
       );
       folded.push(withCriticStage(result, critic, gate));

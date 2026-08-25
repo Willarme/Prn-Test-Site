@@ -15,10 +15,38 @@ export const CAPABILITY_REGISTRY: readonly CapabilityDefinition[] = [
   // A00 implementation binding: the deterministic stand-in behind the same
   // contract production A01 will implement. Alias "classify_problem" is the
   // A00-spec name for this same capability.
-  { capability_key: "classify_home_problem", version: V, risk_class: "R1", status: "TEST", input_schema_ref: "contracts://problem/ClassifyInput", output_schema_ref: "contracts://problem/ClassifyOutput", required_scopes: ["problem.own.write"], current_implementation: "deterministic", implementation_ref: "analyzeProblemFixture (FixtureProblemAnalyzer) @ src/domain/problem/fixture-engine.ts", owning_agent_ids: ["A01"], aliases: ["classify_problem"] },
+  /**
+   * MODEL WIRING, 2026-08-25. `current_implementation` STAYS "deterministic" —
+   * the fixture analyzer is what runs today, is what runs while the flag is off
+   * (its shipped state), and is the fallback for every refusal path. The model is
+   * registered as an ALTERNATE, which is what it is.
+   *
+   * `handles_customer_data: true` — this capability's whole input is the
+   * homeowner's own words. It is therefore refused on any model whose config does
+   * not say `allows_customer_data: true`, BEFORE any network call, and every
+   * seeded model ships uncleared. On stealth/ox-alpha this capability cannot run
+   * at all, by design.
+   */
+  { capability_key: "classify_home_problem", version: V, risk_class: "R1", status: "TEST", input_schema_ref: "contracts://problem/ClassifyInput", output_schema_ref: "contracts://problem/ClassifyOutput", required_scopes: ["problem.own.write"], current_implementation: "deterministic", implementation_ref: "analyzeProblemFixture (FixtureProblemAnalyzer) @ src/domain/problem/fixture-engine.ts", owning_agent_ids: ["A01"], aliases: ["classify_problem"], alternate_implementations: [{ kind: "model", ref: "classifyHomeProblemWithModel @ src/platform/problem/ai-classify.ts", enabled_policy_key: "classify_home_problem", handles_customer_data: true, falls_back_to: "analyzeProblemFixture — the deterministic classification, unchanged" }] },
   { capability_key: "create_problem_record", version: V, risk_class: "R2", status: "TEST", input_schema_ref: "contracts://problem/CreateInput", output_schema_ref: "contracts://problem/ProblemRecord", required_scopes: ["problem.own.write"] },
   { capability_key: "add_problem_evidence", version: V, risk_class: "R2", status: "TEST", input_schema_ref: "contracts://problem/EvidenceInput", output_schema_ref: "contracts://problem/EvidenceObject", required_scopes: ["problem.own.write"] },
-  { capability_key: "select_next_clarifier", version: V, risk_class: "R1", status: "TEST", input_schema_ref: "contracts://problem/ClarifierInput", output_schema_ref: "contracts://problem/ClarifierOutput", required_scopes: ["problem.own.read"] },
+  /**
+   * BINDING FILLED IN, 2026-08-25 — Loop Spec Audit A01 condition 6, verbatim:
+   * "register `select_clarifying_questions` as an alias of
+   * `select_next_clarifier`, add it to A01's allowed_capabilities, and register
+   * the executor." All three land here and in the agent registry and the gateway.
+   * Before this, the entry had no owner, no alias and no executor, so every one
+   * of the three failure modes the audit predicted was live.
+   *
+   * The deterministic implementation is NOT new content: it walks the shipped
+   * playbook's own `required_fields`, in the order that file already declares,
+   * and falls back to the shipped question bank. Nothing about which question a
+   * homeowner is asked changed when this was bound.
+   *
+   * `handles_customer_data: true` — the model sees what the homeowner has
+   * already said in order to choose what to ask next.
+   */
+  { capability_key: "select_next_clarifier", version: V, risk_class: "R1", status: "TEST", input_schema_ref: "contracts://problem/ClarifierInput", output_schema_ref: "contracts://problem/ClarifierOutput", required_scopes: ["problem.own.read"], current_implementation: "deterministic", implementation_ref: "selectNextClarifierDeterministic @ src/domain/problem/clarifier.ts", owning_agent_ids: ["A01"], aliases: ["select_clarifying_questions"], alternate_implementations: [{ kind: "model", ref: "selectNextClarifierWithModel @ src/platform/problem/ai-clarifier.ts", enabled_policy_key: "select_next_clarifier", handles_customer_data: true, falls_back_to: "selectNextClarifierDeterministic — the playbook's own field order, unchanged" }] },
   // A00 implementation binding — alias "build_job_packet" is the A00-spec name.
   { capability_key: "generate_job_packet", version: V, risk_class: "R2", status: "TEST", input_schema_ref: "contracts://packet/GenerateInput", output_schema_ref: "contracts://packet/JobPacket", required_scopes: ["problem.own.write"], current_implementation: "deterministic", implementation_ref: "buildJobPacketFixture (FixtureJobPacketBuilder) @ src/domain/problem/fixture-engine.ts", owning_agent_ids: ["A02"], aliases: ["build_job_packet"] },
   { capability_key: "get_job_packet", version: V, risk_class: "R1", status: "TEST", input_schema_ref: "contracts://packet/GetInput", output_schema_ref: "contracts://packet/JobPacket", required_scopes: ["problem.own.read"] },
@@ -67,6 +95,46 @@ export const CAPABILITY_REGISTRY: readonly CapabilityDefinition[] = [
   // Risk stays R0: QA reads a page and returns a verdict. It publishes nothing,
   // and the R4 `seo.publish_page` entry below is still where release risk lives.
   { capability_key: "seo.qa_candidate_pages", version: V, risk_class: "R0", status: "TEST", input_schema_ref: "contracts://search/QaInput", output_schema_ref: "contracts://search/PageQAResult[]", required_scopes: ["agent.internal"], current_implementation: "deterministic", implementation_ref: "qaCandidatePages @ src/domain/search/qa.ts, dispatched through runPageQaBatch @ src/platform/search/page-qa-run.ts", owning_agent_ids: ["A06"] },
+  /**
+   * REGISTERED 2026-08-25, AND THE PRIOR REFUSAL IS WORTH RECORDING. A05's build
+   * deliberately did NOT register this key, with the reason: "registering a model
+   * capability nothing implements would be describing unbuilt behaviour as
+   * built." That reason has expired — something implements it now — and the entry
+   * is honest for the same discipline that kept it out before.
+   *
+   * IT DOES NOT REPLACE THE CONTENT BANK. `current_implementation: "model"` is
+   * accurate for THIS key, but the key is an alternate WRITER inside page
+   * building: `seo.build_candidate_pages` still compiles the spec, and its
+   * content-bank family text is what ships whenever this is off, refused, or
+   * fails a lint. `falls_back_to` names it.
+   *
+   * `handles_customer_data: false` — a PageSpec carries no customer data by
+   * contract ("doors, not brains"), and the brief this capability is shown is
+   * approved FactBundles plus the page's own copy.
+   *
+   * R2, not R4: it writes draft copy into a STAGED spec. Publishing is
+   * `seo.publish_page` below and stays where release risk lives.
+   */
+  { capability_key: "generate_page_copy", version: V, risk_class: "R2", status: "TEST", input_schema_ref: "contracts://search/PageCopyBrief", output_schema_ref: "contracts://search/PageCopyDraft", required_scopes: ["agent.internal"], current_implementation: "model", implementation_ref: "generatePageCopyWithModel @ src/platform/search/ai-page-copy.ts", owning_agent_ids: ["A05"], alternate_implementations: [{ kind: "model", ref: "generatePageCopyWithModel @ src/platform/search/ai-page-copy.ts", enabled_policy_key: "generate_page_copy", handles_customer_data: false, falls_back_to: "the content bank inside compilePageSpec @ src/domain/search/factory.ts — byte-identical to today's pages" }] },
+  /**
+   * THE SLOT A06 STUBBED, FILLED — 2026-08-25.
+   *
+   * A06's build left `seo.critique_page` unregistered on the same reasoning A05
+   * used, and wrote down exactly what turning the critic on would take: "an owner
+   * decision on which model and what it may cost; a capability entry for
+   * `seo.critique_page` with a risk class and required scopes; and an executor
+   * behind it." The owner made the first decision; this is the second; the third
+   * is platform/search/ai-page-critic.ts.
+   *
+   * WHAT DOES NOT CHANGE. `ai_critic.status` is still SKIPPED_NO_MODEL on every
+   * page while the flag is off, because `criticEnabled()` now asks whether the
+   * critic is ENABLED, not merely whether a contract exists for it. Registering a
+   * capability must not silently start a stage.
+   *
+   * R0 — the critic reads a page and returns findings. It cannot publish, cannot
+   * clear a blocker and cannot set release_eligible.
+   */
+  { capability_key: "seo.critique_page", version: V, risk_class: "R0", status: "TEST", input_schema_ref: "contracts://search/AiCriticInput", output_schema_ref: "contracts://search/AiCriticOutput", required_scopes: ["agent.internal"], current_implementation: "model", implementation_ref: "modelPageCritic @ src/platform/search/page-qa-critic.ts", owning_agent_ids: ["A06"], alternate_implementations: [{ kind: "model", ref: "modelPageCritic @ src/platform/search/page-qa-critic.ts", enabled_policy_key: "seo.critique_page", handles_customer_data: false, falls_back_to: "NO_MODEL_CRITIC — ai_critic.status SKIPPED_NO_MODEL, which is never treated as a pass" }] },
   { capability_key: "seo.publish_page", version: V, risk_class: "R4", status: "TEST", input_schema_ref: "contracts://search/PublishInput", output_schema_ref: "contracts://search/IntentPage", required_scopes: ["admin.full"] },
 
   // --- Economics (#23 §8.2) ---

@@ -45,6 +45,39 @@ export type CapabilityImplementationKind = z.infer<typeof CapabilityImplementati
  *    the platform gateway can resolve spec names without renaming anything
  *    an existing reader depends on.
  */
+/**
+ * AN IMPLEMENTATION THAT EXISTS BESIDE THE CURRENT ONE, not instead of it
+ * (AI model wiring, 2026-08-25).
+ *
+ * `current_implementation` answers "what runs today". When a model is wired
+ * behind a capability that already has a deterministic implementation, the
+ * deterministic one does NOT stop being the answer: it stays the default, it
+ * stays the fallback for every refusal path, and it stays what runs while the
+ * capability's flag is off — which is its shipped state. Overwriting
+ * `current_implementation` would have said the opposite, and said it in the one
+ * place a reader goes to find out what is actually running.
+ *
+ * So a model registers as an ALTERNATE, carrying the two facts that decide
+ * whether it may run at all:
+ *
+ *   enabled_policy_key   the capability key in the runtime AiPolicy document
+ *                        whose `enabled` flag turns this implementation on. It
+ *                        ships false; a deploy is not required to change it.
+ *   handles_customer_data whether this implementation would send a homeowner's
+ *                        own words to a third party. It is what the privacy rule
+ *                        reads — a TRUE here means the call is refused unless the
+ *                        model's config says `allows_customer_data: true`.
+ */
+export const AlternateImplementation = z.object({
+  kind: CapabilityImplementationKind,
+  ref: z.string().min(1),
+  enabled_policy_key: z.string().min(1),
+  handles_customer_data: z.boolean(),
+  /** What answers this capability when the alternate is off, refused or failing. */
+  falls_back_to: z.string().min(1),
+});
+export type AlternateImplementation = z.infer<typeof AlternateImplementation>;
+
 export const CapabilityDefinition = z.object({
   capability_key: z.string().regex(/^[a-z_]+(\.[a-z_]+)*$/),
   version: z.string().min(1),
@@ -57,6 +90,7 @@ export const CapabilityDefinition = z.object({
   implementation_ref: z.string().min(1).optional(),
   owning_agent_ids: z.array(z.string().regex(/^A\d{2}$/)).optional(),
   aliases: z.array(z.string().regex(/^[a-z_]+(\.[a-z_]+)*$/)).optional(),
+  alternate_implementations: z.array(AlternateImplementation).optional(),
 });
 export type CapabilityDefinition = z.infer<typeof CapabilityDefinition>;
 

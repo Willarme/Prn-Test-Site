@@ -14,7 +14,7 @@ import type { QaFinding } from "@/domain/search/qa-types";
  * second half is what actually ships.
  *
  * IT IS NEVER WIRED INTO A PRODUCTION PATH, and a test asserts that. The run
- * mode's critic is `gatewayAiCritic`, which reports SKIPPED_NO_MODEL because no
+ * mode's critic is `modelPageCritic`, which reports SKIPPED_NO_MODEL because no
  * critic capability is registered. A stub that could reach a real QA run would
  * be the fake critic this whole build exists to prevent — the same trap
  * `fixtureCritic` fell into by shipping inside the rule set.

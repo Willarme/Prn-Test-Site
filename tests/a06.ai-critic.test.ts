@@ -16,7 +16,12 @@ import {
   runPageQaSync,
   type AICritic,
 } from "@/domain/search/qa";
-import { criticConfigured, gatewayAiCritic, PAGE_CRITIC_CAPABILITY } from "@/platform/search/page-qa-critic";
+import {
+  criticCapabilityRegistered,
+  criticEnabled,
+  modelPageCritic,
+  PAGE_CRITIC_CAPABILITY,
+} from "@/platform/search/page-qa-critic";
 import { CAPABILITY_REGISTRY } from "@/platform/capabilities/registry";
 
 /**
@@ -46,13 +51,25 @@ function withCopy(copy: string): PageSpec {
 }
 
 describe("with no model configured — SKIPPED_NO_MODEL, and it is never a pass", () => {
-  it("no critic capability is registered, so nothing is wired", () => {
-    expect(criticConfigured()).toBe(false);
-    expect(CAPABILITY_REGISTRY.map((c) => c.capability_key)).not.toContain(PAGE_CRITIC_CAPABILITY);
+  /**
+   * WHAT THIS USED TO ASSERT: "no critic capability is registered, so nothing is
+   * wired." True until 2026-08-25, when one was implemented and registered.
+   *
+   * The protection moves to the distinction that carries the weight now:
+   * REGISTRATION IS NOT ENABLEMENT. A registered contract must never silently
+   * start a stage, so the run mode asks whether the critic is ENABLED, and it
+   * ships off. Everything below this line — SKIPPED_NO_MODEL on every real page,
+   * never a pass, never invoked after a deterministic blocker — is unchanged and
+   * still passing, which is the actual claim worth making.
+   */
+  it("a critic capability is registered, and it is OFF", async () => {
+    expect(criticCapabilityRegistered()).toBe(true);
+    expect(CAPABILITY_REGISTRY.map((c) => c.capability_key)).toContain(PAGE_CRITIC_CAPABILITY);
+    expect(await criticEnabled()).toBe(false);
   });
 
   it("the gateway adapter reports SKIPPED_NO_MODEL and says what that does NOT mean", async () => {
-    const result = await gatewayAiCritic.critique({
+    const result = await modelPageCritic.critique({
       page_spec_id: SAMPLE_PAGE_SPEC.page_spec_id,
       primary_query: SAMPLE_PAGE_SPEC.primary_query,
       title: SAMPLE_PAGE_SPEC.title,
@@ -75,7 +92,7 @@ describe("with no model configured — SKIPPED_NO_MODEL, and it is never a pass"
   });
 
   it("a deterministically clean page reads BLOCKED_PENDING_AI, never a bare green PASS", async () => {
-    const result = await runPageQa(SAMPLE_PAGE_SPEC, { critic: gatewayAiCritic });
+    const result = await runPageQa(SAMPLE_PAGE_SPEC, { critic: modelPageCritic });
     expect(result.deterministic.state).toBe("PASS");
     expect(result.ai_critic.status).toBe("SKIPPED_NO_MODEL");
     expect(result.overall).toBe("BLOCKED_PENDING_AI");
@@ -90,7 +107,7 @@ describe("with no model configured — SKIPPED_NO_MODEL, and it is never a pass"
     for (const spec of all) {
       const result = await runPageQa(spec, {
         existing: all.filter((s) => s !== spec),
-        critic: gatewayAiCritic,
+        critic: modelPageCritic,
       });
       expect(result.ai_critic.status, spec.page_spec_id).toBe("SKIPPED_NO_MODEL");
     }

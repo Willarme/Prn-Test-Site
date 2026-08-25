@@ -59,7 +59,27 @@ export const TRIAL_AGENT_REGISTRY: readonly AgentDefinition[] = [
       "Turns text/voice/photos/page context into a versioned ProblemRecord; selects minimal clarifiers; separates supplied facts from inference; safety-gate aware.",
     phase_band: "TRIAL",
     ...TBD,
-    allowed_capabilities: ["classify_problem"],
+    /**
+     * MODEL WIRING, 2026-08-25.
+     *
+     * `select_clarifying_questions` joins the list per Loop Spec Audit A01
+     * condition 6, which named all three failures the missing binding caused:
+     * the alias resolved to nothing, the capability was not in A01's allowed
+     * list, and no executor was registered. All three are closed.
+     *
+     * BOTH OF A01'S CAPABILITIES HANDLE HOMEOWNER TEXT, so both are governed by
+     * the privacy rule in platform/ai/callModel.ts: a model-backed run is refused
+     * before any network call unless the model's config says
+     * `allows_customer_data: true`, and every seeded model ships uncleared.
+     *
+     * CONSEQUENCE, STATED PLAINLY: on stealth/ox-alpha — the model the owner is
+     * starting on, free because prompts may be retained — A01 CANNOT run on a
+     * model at all. It falls back to the deterministic analyzer and says why.
+     * A05's and A06's capabilities, which see page copy and never customer text,
+     * can be enabled on it today. Clearing a model for customer data is an owner
+     * decision (TODO-ASK-OWNER: Joshua + Melissa).
+     */
+    allowed_capabilities: ["classify_problem", "select_clarifying_questions"],
     schedule: "in-request",
     kill_switch_ref: killRef("A01"),
   },
@@ -178,13 +198,24 @@ export const TRIAL_AGENT_REGISTRY: readonly AgentDefinition[] = [
      * regenerates, and it cannot approve an opportunity, cannot pass QA and
      * cannot publish.
      *
-     * `allowed_capabilities` is `seo.build_candidate_pages` and stays exactly
-     * that. A05 makes NO AI/model call anywhere: generation is 100%
-     * content-bank (pre-answer 3, "ship 100% static"), so `cost_usd: 0` on
-     * every ledger row is measured, not a placeholder. `generate_page_copy`
-     * exists in the spec as a future capability contract and is deliberately
-     * NOT registered — registering a model capability nothing implements would
-     * be describing unbuilt behaviour as built.
+     * `allowed_capabilities` WAS `seo.build_candidate_pages` alone, with the
+     * note: "A05 makes NO AI/model call anywhere ... `generate_page_copy` exists
+     * in the spec as a future capability contract and is deliberately NOT
+     * registered — registering a model capability nothing implements would be
+     * describing unbuilt behaviour as built."
+     *
+     * MODEL WIRING, 2026-08-25: that reason has expired, and only that reason.
+     * `generate_page_copy` is now implemented, registered and allowed — and
+     * DISABLED, like every model-backed capability in this build. While the flag
+     * is off, generation is still 100% content-bank and `cost_usd: 0` on every
+     * A05 ledger row is still measured rather than a placeholder, because no
+     * model call happens. Model-written copy that fails A05's lint or A06's
+     * deterministic checks is REJECTED and the content bank is used instead, so
+     * no model text can reach the publish path by passing through.
+     *
+     * `handles_customer_data: false` on the capability: a PageSpec carries no
+     * customer data by contract, and the brief the model sees is approved
+     * FactBundles plus the page's own copy.
      *
      * WHAT A05 CAN AND CANNOT WRITE. It writes page specs, page registry rows,
      * its ledger rows and its Approval Center items (the template-change Impact
@@ -202,7 +233,7 @@ export const TRIAL_AGENT_REGISTRY: readonly AgentDefinition[] = [
      * and never writes one — that is A04's write, and the two gates do not
      * collapse.
      */
-    allowed_capabilities: ["seo.build_candidate_pages"],
+    allowed_capabilities: ["seo.build_candidate_pages", "generate_page_copy"],
     data_access: [
       "search_opportunity",
       "opportunity_decision",
@@ -245,13 +276,26 @@ export const TRIAL_AGENT_REGISTRY: readonly AgentDefinition[] = [
      * one. A06 follows the BEHAVIOUR its spec describes — it checks, it records a
      * verdict, and it CANNOT PUBLISH.
      *
-     * `allowed_capabilities` is `seo.qa_candidate_pages` and stays exactly that.
-     * A06 makes NO model call: `seo.critique_page` is deliberately NOT registered
-     * anywhere, following A05's precedent with `generate_page_copy` — registering
-     * a model capability nothing implements would be describing unbuilt
-     * behaviour as built. So `cost_usd: 0` on every A06 ledger row is measured,
-     * not a placeholder, and `ai_critic.status` is SKIPPED_NO_MODEL on every
-     * page.
+     * `allowed_capabilities` WAS `seo.qa_candidate_pages` alone, with the note:
+     * "A06 makes NO model call: `seo.critique_page` is deliberately NOT
+     * registered anywhere ... registering a model capability nothing implements
+     * would be describing unbuilt behaviour as built."
+     *
+     * MODEL WIRING, 2026-08-25: implemented, registered, allowed — and DISABLED.
+     * A06's own build wrote down what turning the critic on would take (an owner
+     * decision on model and cost, a capability entry, an executor); all three now
+     * exist and the flag is the fourth thing, held off.
+     *
+     * WHILE THE FLAG IS OFF NOTHING MOVED. `criticEnabled()` now asks whether
+     * the critic is ENABLED rather than merely whether a contract exists for it,
+     * so `ai_critic.status` is still SKIPPED_NO_MODEL on every page and
+     * `cost_usd: 0` on every A06 ledger row is still measured. Registering a
+     * capability must not silently start a stage.
+     *
+     * WHAT THE CRITIC MAY DO WHEN IT IS ON: ADD findings. It cannot clear a
+     * blocker, cannot set release_eligible and cannot publish — the fold in
+     * qa.ts re-derives the verdict from BOTH stages, so a critic finding can only
+     * make a page less releasable, never more.
      *
      * WHAT A06 CAN AND CANNOT WRITE. It writes `qa.state` and `qa.reasons` on a
      * PageSpec — it is the SOLE writer of those two fields (coherence issue 5) —
@@ -268,7 +312,7 @@ export const TRIAL_AGENT_REGISTRY: readonly AgentDefinition[] = [
      * in this codebase, by decision (pre-answer 8) — which is also why the
      * false-block-rate KPI is uncomputable rather than zero.
      */
-    allowed_capabilities: ["seo.qa_candidate_pages"],
+    allowed_capabilities: ["seo.qa_candidate_pages", "seo.critique_page"],
     data_access: [
       "staged_page_spec",
       "intent_page",

@@ -27,12 +27,25 @@ describe("A05's registry entry", () => {
     expect(a05.autonomy_level).toBe("TBD");
   });
 
-  it("claims exactly one capability and no model access", () => {
-    expect(a05.allowed_capabilities).toEqual(["seo.build_candidate_pages"]);
-    // generate_page_copy is a future contract in the spec, deliberately NOT
-    // registered: registering a model capability nothing implements would be
-    // describing unbuilt behaviour as built.
-    expect(a05.allowed_capabilities).not.toContain("generate_page_copy");
+  /**
+   * WHAT THIS TEST USED TO ASSERT: "claims exactly one capability and no model
+   * access ... generate_page_copy is a future contract in the spec, deliberately
+   * NOT registered: registering a model capability nothing implements would be
+   * describing unbuilt behaviour as built."
+   *
+   * That reason expired on 2026-08-25 when one was implemented, and only that
+   * reason. What replaces it is the guarantee that actually matters: the model
+   * copy writer is registered, allowed, and DISABLED — and a06/a05 tests prove
+   * every published page is byte-identical while it is.
+   */
+  it("claims its page builder and its copy writer, and the copy writer ships OFF", async () => {
+    expect(a05.allowed_capabilities).toEqual([
+      "seo.build_candidate_pages",
+      "generate_page_copy",
+    ]);
+    const { DEFAULT_AI_POLICY } = await import("@/platform/ai/policy");
+    expect(DEFAULT_AI_POLICY.enabled).toBe(false);
+    expect(DEFAULT_AI_POLICY.capabilities.generate_page_copy.enabled).toBe(false);
   });
 
   it("data and write access are enumerated, not left as backfill gaps", () => {

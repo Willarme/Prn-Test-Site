@@ -66,7 +66,7 @@ describe("the run is routed through the AI/Tool Gateway (condition C6)", () => {
 
   it("the Agent Registry lists it back — one governed system, not two lists", () => {
     const a06 = TRIAL_AGENT_REGISTRY.find((a) => a.agent_id === "A06")!;
-    expect(a06.allowed_capabilities).toEqual(["seo.qa_candidate_pages"]);
+    expect(a06.allowed_capabilities).toEqual(["seo.qa_candidate_pages", "seo.critique_page"]);
     // A06 cannot publish, and write_access says so structurally.
     expect(a06.write_access).not.toContain("published_page");
     expect(a06.write_access).toContain("staged_page_spec");

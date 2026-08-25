@@ -78,9 +78,32 @@ describe("registry entries — one governed system, not two lists", () => {
     expect(resolveCapability("seo.qa_candidate_pages")!.owning_agent_ids).toContain("A06");
   });
 
-  it("no critic capability is registered — A06 makes no model call", () => {
-    expect(resolveCapability("seo.critique_page")).toBeNull();
-    expect(a06.allowed_capabilities).toEqual(["seo.qa_candidate_pages"]);
+  /**
+   * WHAT THIS TEST USED TO ASSERT, and why it changed. It read "no critic
+   * capability is registered — A06 makes no model call", which was the honest
+   * statement of a repo where nothing implemented one: registering a contract
+   * nothing implements is describing unbuilt behaviour as built.
+   *
+   * The AI model wiring (2026-08-25) implemented one, so the entry is now honest
+   * and the assertion moves to the thing that actually protects A06: registration
+   * is NOT enablement. The critic is registered, owned by A06, allowed to A06 —
+   * and OFF, and the tests below prove A06's output is unchanged while it is.
+   */
+  it("the critic capability is registered, owned by A06, and R0 — it cannot publish", () => {
+    const critic = resolveCapability("seo.critique_page")!;
+    expect(critic).not.toBeNull();
+    expect(critic.owning_agent_ids).toEqual(["A06"]);
+    expect(critic.risk_class).toBe("R0");
+    expect(critic.status).toBe("TEST");
+    expect(a06.allowed_capabilities).toEqual(["seo.qa_candidate_pages", "seo.critique_page"]);
+  });
+
+  it("the critic's registration names what runs when it does NOT run", () => {
+    const critic = resolveCapability("seo.critique_page")!;
+    const alternate = critic.alternate_implementations![0];
+    expect(alternate.enabled_policy_key).toBe("seo.critique_page");
+    expect(alternate.handles_customer_data).toBe(false);
+    expect(alternate.falls_back_to).toMatch(/SKIPPED_NO_MODEL/);
   });
 });
 

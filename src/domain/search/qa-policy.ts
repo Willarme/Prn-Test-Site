@@ -131,7 +131,38 @@ export const DEFAULT_BLOCKER_CHECKS: readonly A06CheckId[] = [
   "a11y.link_text_non_empty",
 ] as const;
 
+/**
+ * THE RULES THE AI CRITIC IS HELD TO — as DATA, not as prose compiled into the
+ * adapter (condition C8: "white-label the RULE SET, not just the fixtures").
+ *
+ * These defaults are PRN's canon voice rules, restated as instructions a reviewer
+ * can act on. They are DEFAULTS precisely so a second client's deployment can
+ * swap them in this document rather than fork A06 — the critic prompt takes its
+ * vocabulary from here, and platform/ai/** carries no market vocabulary at all.
+ *
+ * REDUNDANT ON PURPOSE, like every other A06 check. The deterministic stage
+ * already pattern-matches these families and A05 pre-filters them again. A
+ * pattern list and a reader that share one implementation fail together on the
+ * one input neither covers; three independent passes catch each other's gaps.
+ */
+export const DEFAULT_CRITIC_RULES: readonly string[] = [
+  "The page must answer, on the page itself, the search intent it claims to serve. A page that redirects the question to a form or a phone call has not answered it.",
+  "No manufactured urgency: no countdowns, no scarcity, no 'act now', and no implied damage or cost that is not evidenced in the copy itself.",
+  "No comparison-shopping or directory framing: the page offers one clear next step, never a browsable list of providers to choose between.",
+  "No prices, cost ranges, or money figures of any kind in customer-facing copy.",
+  "No claim about anyone's credentials, verification, vetting, licensing or insurance — including implied ones.",
+  "No guarantees of outcome, and no superlatives about price or quality.",
+  "No ratings, reviews, star markup, or counts of either.",
+  "Every factual statement must be something the page's own copy supports. Flag any statement that reads as a fact but is traceable to nothing.",
+  "Safety guidance must describe the hazard and what to do about it. It must never be used as a pressure device.",
+] as const;
+
 export const PageQaPolicy = z.object({
+  /**
+   * The critic's rule set, per tenant. Empty means the critic has nothing to
+   * check against, which A06 treats as a configuration error rather than a pass.
+   */
+  critic_rules: z.array(z.string().min(1)).default([...DEFAULT_CRITIC_RULES]),
   /**
    * WHICH CHECKS MUST RUN. Defaults to every id A06 implements. A tenant may
    * narrow this; A06 reports any required id it does not recognise rather than
