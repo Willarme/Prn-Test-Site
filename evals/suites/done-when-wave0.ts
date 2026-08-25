@@ -738,28 +738,43 @@ export async function wave0Suite(): Promise<Suite> {
         "nightly reconciliation catches a manufactured cross-source mismatch IN STAGING",
       source: `${TODO} §T1-03 "Done when" clause 3 (second half)`,
       /**
-       * STILL BLOCKED — but on a different thing, because half the old reason
-       * was retired on 2026-08-25 and the other half was never the real one.
+       * STILL BLOCKED, on the LAST of three prerequisites — and the row has now
+       * been wrong-in-the-same-direction twice, so it is worth writing down what
+       * actually moved rather than letting the wording drift again.
        *
-       * The old prerequisite read "a deployed staging environment WITH THE
-       * SUPABASE MIGRATIONS APPLIED — this repo has one source (the file
-       * backend) until 00006+ are applied". The migrations are applied, so a
-       * second source now exists. That did not unblock this clause, and it is
-       * worth being precise about why rather than moving the row to PASS:
+       * PREREQUISITE 1, RETIRED 2026-08-25: "a deployed staging environment WITH
+       * THE SUPABASE MIGRATIONS APPLIED — this repo has one source (the file
+       * backend) until 00006+ are applied". The migrations are applied. A second
+       * source exists. Gone.
        *
-       *   `runReconciliation()` HAS NO CALLER. Not a cron route, not an admin
-       *   action, not a tool under tools/ — the only invocations anywhere in the
-       *   repo are in tests/quality.reconciliation.test.ts, and the module's own
-       *   header says why: the Durable Workflow Orchestrator is
-       *   DEFERRED_INTERFACE_ONLY, so the function was deliberately written as
-       *   a plain callable waiting for something to schedule it.
+       * PREREQUISITE 2, RETIRED 2026-08-25: `runReconciliation()` HAD NO CALLER.
+       * Not a cron route, not an admin action, not a tool — the only invocations
+       * anywhere were in tests/quality.reconciliation.test.ts, so the sweeps had
+       * never looked at a real store. An owner-gated trigger now exists
+       * (src/app/api/admin/quality/reconcile/route.ts, with a button in the A09
+       * section of the cockpit), it runs through the kill switch, and it writes
+       * one Agent Run Ledger row per run. Gone.
        *
-       * "NIGHTLY reconciliation catches a manufactured mismatch IN STAGING" is
-       * therefore two missing things, and this row now names both instead of a
-       * migration that has since landed. The scan below is what will notice the
-       * day the first one arrives.
+       * PREREQUISITE 3, WHAT IS ACTUALLY LEFT: A CADENCE. The clause says
+       * "NIGHTLY reconciliation", and nightly is a claim about something running
+       * with nobody awake. A button a human presses is not that, however
+       * correctly it is wired. No scheduler, cron entry or timer was added, ON
+       * PURPOSE — inventing one to turn this row green would have made the row
+       * assert something untrue, which is the exact failure A09 exists to
+       * prevent.
+       *
+       * SO THE MEASURE BELOW GOT STRICTER, NOT LOOSER. It used to return PASS
+       * for ANY caller, which means the trigger just built would have flipped
+       * this row to PASS and quietly claimed a nightly run that does not happen.
+       * It now separates a human trigger from an automatic one and only the
+       * second can pass. A row that would have passed today under the old
+       * measure and does not under the new one is the measure being fixed.
+       *
+       * (Scope note, pre-existing: `scan` only walks src/, so the `tools/`
+       * branch of the include has never actually matched anything. Left as-is —
+       * nothing under tools/ calls the pass either.)
        */
-      how: "Reads the reconciliation check set, then scans the whole repo outside tests for anything that actually INVOKES the nightly pass — the clause needs a run, not a definition.",
+      how: "Reads the reconciliation check set, finds everything that INVOKES the pass, and then asks the question the clause actually asks: can any of those callers fire without a human? An owner-gated route is a trigger, not a cadence.",
       measure() {
         if (RECONCILIATION_CHECKS.length === 0) return fail("no reconciliation checks are defined");
         const callers = scan(/runReconciliation\s*\(/, {
@@ -767,19 +782,42 @@ export async function wave0Suite(): Promise<Suite> {
           exclude: /platform\/quality\/reconciliation\.ts$/,
           codeOnly: true,
         });
-        return callers.length === 0
-          ? blocked(
-              `${RECONCILIATION_CHECKS.length} reconciliation checks are defined, unit-covered, and now have two real sources to compare — the Supabase migrations were applied 2026-08-25 — but nothing in src/ or tools/ invokes runReconciliation(), so no nightly pass has ever run`,
-              "a scheduler or entry point that calls runReconciliation() on a schedule (the module is a plain idempotent callable by design — WORKFLOW_ORCHESTRATOR_STATUS is DEFERRED_INTERFACE_ONLY), plus one deployed environment for it to run in",
-              [
-                "ok    5 checks defined, including the cross-source sweep",
-                "ok    a second source now exists — migrations applied 2026-08-25",
-                "FAIL  nothing outside tests/ calls runReconciliation() — the pass has no trigger",
-              ]
-            )
-          : pass(
-              `the nightly pass has ${callers.length} caller(s): ${callers.map((c) => `${c.path}:${c.line}`).join(", ")}`
-            );
+        if (callers.length === 0) {
+          return blocked(
+            `${RECONCILIATION_CHECKS.length} reconciliation checks are defined and unit-covered, but nothing in src/ invokes runReconciliation(), so no pass has ever run outside a test`,
+            "an entry point that calls runReconciliation() at all, and then a cadence that fires it without a human",
+            [
+              "FAIL  nothing outside tests/ calls runReconciliation() — the pass has no trigger",
+            ]
+          );
+        }
+        // A caller only counts as a CADENCE if something other than a person can
+        // fire it. An owner-gated admin route is the opposite of that by design.
+        const ownerGated = callers.filter(
+          (c) => /^src\/app\/api\/admin\//.test(c.path) && /isAdminUnlocked\(/.test(readSource(c.path))
+        );
+        const callerPaths = new Set(callers.map((c) => c.path));
+        const automation = scan(/setInterval\(|node-cron|CronJob|@vercel\/cron|export const revalidate/, {
+          include: /^src\//,
+          codeOnly: true,
+        }).filter((h) => callerPaths.has(h.path));
+        const automatic = callers.filter((c) => !ownerGated.some((g) => g.path === c.path));
+
+        if (automation.length > 0 || automatic.length > 0) {
+          return pass(
+            `the pass has ${callers.length} caller(s) and at least one can fire without a human: ${[...automation, ...automatic].map((c) => `${c.path}:${c.line}`).join(", ")}`
+          );
+        }
+        return blocked(
+          `HALF MET, and the retired half is real work. ${RECONCILIATION_CHECKS.length} checks are defined, two real sources exist to compare (migrations applied 2026-08-25), and the pass now HAS a trigger — ${ownerGated.map((c) => `${c.path}:${c.line}`).join(", ")}, owner-gated, kill-switch-checked, one ledger row per run. What is missing is the word NIGHTLY: every caller needs a human to press it, so the pass still never runs on its own`,
+          "a cadence — something that invokes runReconciliation() with nobody awake (the module is a plain idempotent callable by design, and takes a date-stamped run_key precisely so a scheduled retry cannot double-write; WORKFLOW_ORCHESTRATOR_STATUS is still DEFERRED_INTERFACE_ONLY, so this needs either that orchestrator or a platform scheduler), plus one deployed environment for it to run in",
+          [
+            `ok    ${RECONCILIATION_CHECKS.length} checks defined, including the cross-source sweep`,
+            "ok    a second source now exists — migrations applied 2026-08-25",
+            `ok    the pass has a real caller — ${ownerGated.length} owner-gated trigger(s), proved end to end in tests/quality.reconcile-trigger.test.ts`,
+            "FAIL  nothing fires it without a human — no scheduler, no cron entry, no timer, deliberately",
+          ]
+        );
       },
     },
     {

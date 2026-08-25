@@ -1,4 +1,5 @@
 import { adminGate } from "@/components/admin/AdminGate";
+import { ReconciliationRun } from "@/components/admin/ReconciliationRun";
 import Link from "next/link";
 import { loadOpportunities, allStagedSpecs, publishedPageIds } from "@/platform/admin/data";
 import { runtimeStore } from "@/platform/stores/runtime";
@@ -115,7 +116,30 @@ export default async function AdminOverview() {
         it tried.
       */}
       <div className="cell" style={{ marginBottom: 30 }}>
-        <span className="tag">Data quality · A09</span>
+        <div
+          style={{
+            display: "flex",
+            gap: 12,
+            alignItems: "baseline",
+            justifyContent: "space-between",
+            flexWrap: "wrap",
+          }}
+        >
+          <span className="tag">Data quality · A09</span>
+          {/*
+            THE TRIGGER (T1-03 clause 3, second half). `runReconciliation()`
+            had no caller anywhere outside tests, so the reconciliation sweeps
+            had never run against real data. This button is that caller, and it
+            lives HERE rather than on a new screen for the same reason the rest
+            of this section does: canon says A09's findings surface in the
+            cockpit and A09 gets no dashboard of its own.
+
+            IT IS A BUTTON, NOT A CADENCE, and the difference is not cosmetic.
+            Nothing schedules this pass; an owner runs it. "Nightly" remains
+            genuinely outstanding and eval row T1-03.3 still says so.
+          */}
+          <ReconciliationRun />
+        </div>
         {quality.could_not_verify ? (
           <p style={{ margin: "8px 0" }}>
             <span className="pill pill-amber">COULD NOT VERIFY</span>{" "}

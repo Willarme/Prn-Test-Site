@@ -3,6 +3,7 @@ import {
   type PlatformClientProvider,
 } from "@/platform/db/client";
 import { currentEventDefinition } from "@/platform/events/dictionary";
+import { checkKillSwitch } from "@/platform/killswitch";
 import { requirePolicyNumber } from "@/platform/policy/store";
 import type { InvariantRule } from "@/platform/quality/invariants";
 import {
@@ -32,6 +33,18 @@ import { runtimeStore } from "@/platform/stores/runtime";
  * the deferred orchestrator, and two tests pin that — here, and the
  * "no Wave-0/1 code path imports it" scan in tests/workflows.interface.test.ts,
  * which A09 must keep passing.
+ *
+ * IT NOW HAS ONE CALLER, AND EXACTLY ONE: the owner-gated route
+ * src/app/api/admin/quality/reconcile/route.ts, behind a button in the A09
+ * section of the /admin cockpit. Until 2026-08-25 nothing outside tests called
+ * this at all, so no pass had ever run outside a test process — the checks
+ * below were defined, unit-covered and unreachable.
+ *
+ * WHAT IS STILL MISSING, said plainly so nobody reads the button as the whole
+ * job: A CADENCE. "Nightly reconciliation" means something runs without a human
+ * awake, and a button a human presses is not that. No scheduler, cron entry or
+ * timer was added — deliberately. The honest state is "an owner can run it on
+ * demand; nothing runs it on its own", and eval row T1-03.3 says exactly that.
  *
  * IDEMPOTENCY AT THE RUN LEVEL, so a retry cannot double-write findings. Every
  * run carries a `run_key`; a repeat of a key already completed in this process
@@ -127,7 +140,8 @@ export type ReconciliationVerdict =
   | "clean"
   | "findings_recorded"
   | "could_not_verify"
-  | "skipped_duplicate_run";
+  | "skipped_duplicate_run"
+  | "halted_by_kill_switch";
 
 export interface ReconciliationReport {
   run_key: string;
@@ -139,6 +153,13 @@ export interface ReconciliationReport {
   verdict: ReconciliationVerdict;
   /** rule_id -> findings raised. IDs and counts only. */
   by_check: Record<string, number>;
+  /**
+   * Set ONLY when the A09 kill switch stopped this call before any work. Null
+   * on every other path, including a run that failed — "a human paused me" and
+   * "I tried and could not verify" are different facts and a caller must be
+   * able to tell them apart without parsing a string.
+   */
+  halted: { scope: "GLOBAL" | "AGENT"; reason: string | null } | null;
   tolerance_pct: number;
   /**
    * FALSE when the backend could not enumerate everything a sweep needs — and
@@ -189,6 +210,13 @@ function tolerancePct(): number {
 /**
  * THE PASS. One call, no orchestrator, no cron wiring, no side effects beyond
  * findings, quarantine markers and one ledger row. Never throws.
+ *
+ * ONE LEDGER ROW PER RUN, NOT PER FINDING. The single `recordAgentRun` call at
+ * the bottom carries the whole run — checks_run, findings_created, by_check,
+ * the verdict — because the unit of machine labour being audited is the pass,
+ * not each thing it noticed. The findings are their own durable records.
+ * The two paths that write NO row are the two that did not run: halted by the
+ * kill switch, and skipped as a duplicate run key.
  */
 export async function runReconciliation(
   options: ReconciliationOptions = {}
@@ -208,9 +236,33 @@ export async function runReconciliation(
     quarantined: 0,
     verdict: "clean",
     by_check: {},
+    halted: null,
     tolerance_pct: tolerance,
     scan_complete: false,
   };
+
+  /**
+   * THE KILL SWITCH IS A HARD STOP, SYNCHRONOUSLY, BEFORE ANY WORK — the same
+   * shape A05 uses in platform/search/page-factory-run.ts. It lives HERE and
+   * not on the admin route on purpose: governance has to travel with the pass,
+   * so the day a scheduler is finally wired it inherits the stop instead of
+   * having to remember it.
+   *
+   * BEFORE THE IDEMPOTENCY GUARD, and the order is load-bearing. A halted call
+   * did no work, so it must not burn its run key — otherwise pausing A09 and
+   * then releasing it would leave the night's key already "completed", and the
+   * real run behind it would return skipped_duplicate_run and write nothing.
+   * A pause would silently become a skipped night.
+   *
+   * NO LEDGER ROW EITHER, for the same reason: nothing ran. The switch's own
+   * platform.kill_switch_engaged envelope is the record that a human paused it.
+   */
+  const kill = checkKillSwitch(A09, clientProvider);
+  if (kill.engaged) {
+    report.verdict = "halted_by_kill_switch";
+    report.halted = { scope: kill.scope ?? "GLOBAL", reason: kill.reason ?? null };
+    return report;
+  }
 
   if (completedRunKeys.has(runKey)) {
     report.verdict = "skipped_duplicate_run";
