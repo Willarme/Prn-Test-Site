@@ -44,7 +44,19 @@ export const CAPABILITY_REGISTRY: readonly CapabilityDefinition[] = [
   // alias "get_search_metrics" is the A00-spec name for this capability.
   { capability_key: "seo.refresh_metrics", version: V, risk_class: "R0", status: "TEST", input_schema_ref: "contracts://search/RefreshInput", output_schema_ref: "contracts://search/SeoMetricSnapshot[]", required_scopes: ["agent.internal"], current_implementation: "external_adapter", implementation_ref: "DataForSeoAdapter @ src/platform/adapters/dataforseo.ts", owning_agent_ids: ["A04"], aliases: ["get_search_metrics"] },
   { capability_key: "seo.ingest_search_console", version: V, risk_class: "R0", status: "TEST", input_schema_ref: "contracts://search/IngestInput", output_schema_ref: "contracts://search/PagePerformanceDaily[]", required_scopes: ["agent.internal"] },
-  { capability_key: "seo.build_candidate_pages", version: V, risk_class: "R2", status: "TEST", input_schema_ref: "contracts://search/BuildInput", output_schema_ref: "contracts://search/PageSpec[]", required_scopes: ["agent.internal"] },
+  // A05 implementation binding, 2026-08-24 (Loop Spec Audit C8 / pre-answer 8).
+  // §11 mandates registering create_page_spec / search_page_spec /
+  // update_page_spec as "these exact capability names". The prior decision
+  // recorded three lines above already maps those same #14A §11.1 words onto
+  // this refined set, and rejects a separate search capability — so the two are
+  // reconciled the way A00 reconciled classify_problem/classify_home_problem
+  // and get_search_metrics/seo.refresh_metrics: as ALIASES on the existing
+  // entry, resolved by resolveCapability(). Verbatim naming satisfied, prior
+  // decision kept, zero new keys. `search_page_spec` is deliberately NOT an
+  // alias: admin PageSpec search is a UI query over the registry, not a
+  // capability, and aliasing it here would resurrect the key the prior decision
+  // rejected.
+  { capability_key: "seo.build_candidate_pages", version: V, risk_class: "R2", status: "TEST", input_schema_ref: "contracts://search/BuildInput", output_schema_ref: "contracts://search/PageSpec[]", required_scopes: ["agent.internal"], current_implementation: "deterministic", implementation_ref: "runPageFactory @ src/platform/search/page-factory-run.ts (compilePageSpec + content-bank-v1)", owning_agent_ids: ["A05"], aliases: ["create_page_spec", "update_page_spec"] },
   { capability_key: "seo.qa_candidate_pages", version: V, risk_class: "R0", status: "TEST", input_schema_ref: "contracts://search/QaInput", output_schema_ref: "contracts://search/QaResult[]", required_scopes: ["agent.internal"] },
   { capability_key: "seo.publish_page", version: V, risk_class: "R4", status: "TEST", input_schema_ref: "contracts://search/PublishInput", output_schema_ref: "contracts://search/IntentPage", required_scopes: ["admin.full"] },
 

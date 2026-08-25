@@ -1,0 +1,127 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+import { describe, expect, it } from "vitest";
+import { CAPABILITY_REGISTRY, resolveCapability } from "@/platform/capabilities/registry";
+import { DEFAULT_FLAGS, flagEnabled } from "@/platform/flags";
+
+/**
+ * A05 steps 11 and 12 — capability aliases (C8 / pre-answer 8) and the public
+ * staged listing (coherence report issue 16).
+ */
+
+describe("C8 — aliases on the shipped keys, not three new capabilities", () => {
+  it("create_page_spec and update_page_spec resolve to seo.build_candidate_pages", () => {
+    expect(resolveCapability("create_page_spec")?.capability_key).toBe("seo.build_candidate_pages");
+    expect(resolveCapability("update_page_spec")?.capability_key).toBe("seo.build_candidate_pages");
+  });
+
+  it("NO new capability key was added", () => {
+    const keys = CAPABILITY_REGISTRY.map((c) => c.capability_key);
+    expect(keys).not.toContain("create_page_spec");
+    expect(keys).not.toContain("update_page_spec");
+    expect(keys).not.toContain("search_page_spec");
+  });
+
+  /**
+   * The prior decision, recorded in the registry itself, rejects a separate
+   * search capability ("Admin PageSpec search is an admin-UI query over the
+   * registry, not a separate capability"). Aliasing it here would resurrect the
+   * key that decision refused.
+   */
+  it("search_page_spec is deliberately NOT aliased", () => {
+    expect(resolveCapability("search_page_spec")).toBeNull();
+  });
+
+  it("the entry now names its implementation and its owning agent", () => {
+    const cap = resolveCapability("seo.build_candidate_pages")!;
+    expect(cap.owning_agent_ids).toEqual(["A05"]);
+    expect(cap.current_implementation).toBe("deterministic");
+    expect(cap.implementation_ref).toMatch(/runPageFactory/);
+  });
+
+  it("A05's capability is still TEST, not LIVE — no wave gate was moved", () => {
+    expect(resolveCapability("seo.build_candidate_pages")!.status).toBe("TEST");
+  });
+
+  it("the three A05-relevant seo keys are unchanged in risk class", () => {
+    expect(resolveCapability("seo.build_candidate_pages")!.risk_class).toBe("R2");
+    expect(resolveCapability("seo.qa_candidate_pages")!.risk_class).toBe("R0");
+    expect(resolveCapability("seo.publish_page")!.risk_class).toBe("R4");
+  });
+});
+
+describe("issue 16 — the public staged listing is gate-ready, default unchanged", () => {
+  const homepage = readFileSync(join(process.cwd(), "src/app/page.tsx"), "utf-8");
+  /**
+   * Comments stripped for the leak scan. The homepage's own comment ENUMERATES
+   * the fields that must never render there, and naming a thing to forbid it is
+   * not rendering it — the same distinction A08's client-boundary test draws
+   * about PolicyForm. The scan is about what the JSX emits.
+   */
+  const rendered = homepage.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
+
+  it("the flag exists and DEFAULTS TO TODAY'S BEHAVIOUR", () => {
+    expect(flagEnabled("staged_listing_public")).toBe(true);
+    const flag = DEFAULT_FLAGS.find((f) => f.flag_key === "staged_listing_public")!;
+    expect(flag.decision_ref).not.toBeNull();
+  });
+
+  it("the homepage consults it — both the query and the render", () => {
+    expect(homepage).toMatch(/flagEnabled\("staged_listing_public"\)/);
+    expect(homepage).toMatch(/showStagedListing \? await allStagedSpecs\(\) : \[\]/);
+    expect(homepage).toMatch(/\{showStagedListing && \(/);
+  });
+
+  /**
+   * THE RULE THAT HOLDS FLAG OR NO FLAG. The h1, the path and the QA STATE were
+   * already public before this build. Nothing A05 or A06 added in Wave 2 may
+   * join them.
+   */
+  it("nothing NEW from A05 or A06 can render on the public homepage", () => {
+    for (const leak of [
+      // NOT a bare /reasons/: the hero copy legitimately reads "suggest one
+      // provider with reasons". The leak is the FIELD ACCESS, not the word.
+      /qa\.reasons/,
+      /\.reasons\b/,
+      /source_fact_bundle_ids/,
+      /user_value_score/,
+      /lintPageBeforeQa|page-lint/,
+      /findings/,
+      /provenanceProblems|content-bank-provenance/,
+      /opportunity_score|score_components/,
+      /generation\./,
+      /template_version/,
+      /search_opportunity_id/,
+    ]) {
+      expect(rendered, `homepage renders ${leak}`).not.toMatch(leak);
+    }
+  });
+
+  it("the listing still shows exactly what it showed before: h1, path, QA state", () => {
+    expect(homepage).toMatch(/\{s\.h1\}/);
+    expect(homepage).toMatch(/s\.canonical_path\.replace/);
+    expect(homepage).toMatch(/\{s\.qa\.state\}/);
+  });
+
+  it("/staged/[slug] still hardcodes robots noindex — layer one of the two-layer model", () => {
+    const staged = readFileSync(join(process.cwd(), "src/app/staged/[slug]/page.tsx"), "utf-8");
+    expect(staged).toMatch(/robots:\s*\{\s*index:\s*false,\s*follow:\s*false\s*\}/);
+  });
+
+  it("/problems/[slug] is still gated on seo_doors_enabled — layer two", () => {
+    const problems = readFileSync(join(process.cwd(), "src/app/problems/[slug]/page.tsx"), "utf-8");
+    expect(problems).toMatch(/seo_doors_enabled/);
+    expect(flagEnabled("seo_doors_enabled")).toBe(false);
+  });
+
+  it("the publish route still gates on an owner session AND qa.state PASS — one gate, unmoved", () => {
+    const publish = readFileSync(
+      join(process.cwd(), "src/app/api/admin/pages/publish/route.ts"),
+      "utf-8"
+    );
+    expect(publish).toMatch(/isAdminUnlocked\(\)/);
+    expect(publish).toMatch(/spec\.qa\.state !== "PASS"/);
+    // A05 added no second gate field beside it.
+    expect(publish).not.toMatch(/release_eligible|lint_passed|a05_/);
+  });
+});

@@ -1,12 +1,24 @@
 import Link from "next/link";
 import { FEATURE_CONCEPTS } from "@/domain/feature-lab/concepts";
 import { allStagedSpecs } from "@/platform/admin/data";
+import { flagEnabled } from "@/platform/flags";
 
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
   // UI only — zero business logic lives in this layer.
-  const staged = await allStagedSpecs();
+  //
+  // COHERENCE ISSUE 16, gate-ready: the staged listing below is public and
+  // unauthenticated. The flag defaults to TODAY'S BEHAVIOUR (on) because
+  // nothing customer-visible changes without an owner; flipping
+  // `staged_listing_public` to false in platform/flags.ts hides it with no code
+  // change. See that flag's comment for the decision Josh and Melissa owe.
+  //
+  // The rule that holds either way: only h1, canonical_path and the QA STATE
+  // may render here. No qa.reasons, no lint findings, no provenance, no
+  // scoring — nothing A05 or A06 added in Wave 2 becomes public by accident.
+  const showStagedListing = flagEnabled("staged_listing_public");
+  const staged = showStagedListing ? await allStagedSpecs() : [];
   return (
     <main>
       <section className="section">
@@ -75,16 +87,18 @@ export default async function Home() {
               </div>
             </div>
           </div>
-          <div className="cell" style={{ marginTop: 1 }}>
-            <span className="tag">Staged door pages ({staged.length}) — pending QA + your approval</span>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-              {staged.map((s) => (
-                <Link key={s.page_spec_id} href={`/staged/${s.canonical_path.replace(/^\/problems\//, "")}`} className="chip">
-                  {s.h1} <span className={`pill ${s.qa.state === "PASS" ? "pill-green" : s.qa.state === "FAIL" ? "pill-pink" : "pill-amber"}`}>{s.qa.state}</span>
-                </Link>
-              ))}
+          {showStagedListing && (
+            <div className="cell" style={{ marginTop: 1 }}>
+              <span className="tag">Staged door pages ({staged.length}) — pending QA + your approval</span>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                {staged.map((s) => (
+                  <Link key={s.page_spec_id} href={`/staged/${s.canonical_path.replace(/^\/problems\//, "")}`} className="chip">
+                    {s.h1} <span className={`pill ${s.qa.state === "PASS" ? "pill-green" : s.qa.state === "FAIL" ? "pill-pink" : "pill-amber"}`}>{s.qa.state}</span>
+                  </Link>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </section>
     </main>
