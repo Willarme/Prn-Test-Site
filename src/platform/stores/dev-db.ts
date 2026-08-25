@@ -3,7 +3,7 @@ import { dirname, join } from "node:path";
 import type { EvidenceObject, JobPacket, ProblemRecord } from "@/domain/problem/contracts";
 import type { ConsentEvent } from "@/domain/privacy/contracts";
 import type { IntakeSession } from "@/domain/intake/contracts";
-import type { PageSpec } from "@/domain/search/pages";
+import type { IntentPage, PageSpec } from "@/domain/search/pages";
 import type { EventEnvelope } from "@/platform/events/envelope";
 
 /**
@@ -20,6 +20,16 @@ export interface DevDb {
   packets: JobPacket[];
   events: EventEnvelope[];
   staged_specs: PageSpec[];
+  /**
+   * A05 Page Registry rows (migration 00012 — written, NOT applied). The
+   * `staged_page_spec` table has existed since migration 00002; the REGISTRY
+   * row — page_id, canonical_path, current_page_spec_id, lifecycle_status —
+   * had no table anywhere, which is why 00012 exists and why the earlier waves
+   * could not express "this page is at STAGED" as anything but a field on a
+   * spec. One row per page, updated in place as the lifecycle moves; the
+   * append-only record of WHY it moved is the event stream and the run ledger.
+   */
+  intent_pages: IntentPage[];
   intake_answers: Array<{ request_id: string; field_key: string; value_text: string | null; evidence_id: string | null; source: string; answered_at: string }>;
   diagnosis_answers: Array<{ request_id: string; step_id: string; answer: string | null; evidence_id: string | null; answered_at: string }>;
   /** page_ids the OWNER published from Admin (QA PASS required). */
@@ -82,6 +92,7 @@ function emptyDb(): DevDb {
     packets: [],
     events: [],
     staged_specs: [],
+    intent_pages: [],
     intake_answers: [],
     diagnosis_answers: [],
     published_page_ids: [],
