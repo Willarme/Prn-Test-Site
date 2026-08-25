@@ -92,6 +92,23 @@ describe("issue 16 — the public staged listing is gate-ready, default unchange
       /generation\./,
       /template_version/,
       /search_opportunity_id/,
+      /**
+       * EXTENDED BY A06's BUILD (condition C11, pre-answer 12). A06's verdicts
+       * are richer than anything A05 produced — findings that quote a matched
+       * fragment, repair instructions aimed at A05, a blocker list, a critic
+       * status, the rule set's own version. All admin-only. The full sweep
+       * across EVERY unauthenticated route is
+       * tests/a06.public-exposure.test.ts; these keep the homepage pinned in the
+       * same test A05 pinned it in.
+       */
+      /release_eligible|release_reasons/,
+      /\bblockers\b/,
+      /repair_instructions/,
+      /ai_critic|heuristic_score/,
+      /rule_set_version/,
+      /checks_skipped|checks_run/,
+      /page-qa-run|page-qa-gate|page-qa-critic/,
+      /runPageQa|evaluateReleaseForPublish|qaCandidatePages/,
     ]) {
       expect(rendered, `homepage renders ${leak}`).not.toMatch(leak);
     }
