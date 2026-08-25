@@ -6,6 +6,12 @@ import {
   ProblemRecord,
 } from "@/domain/problem/contracts";
 import { shortHash } from "@/domain/search/importer";
+import {
+  ACTIVE_PROBLEM_TAXONOMY,
+  familyLabel,
+  questionsForFamily,
+  type ProblemTaxonomy,
+} from "@/domain/problem/taxonomy";
 
 /**
  * FixtureProblemAnalyzer / FixtureJobPacketBuilder — the deterministic
@@ -16,52 +22,16 @@ import { shortHash } from "@/domain/search/importer";
  * Honesty rules baked in: inference is always labeled, unknowns are listed,
  * no diagnosis, no savings guarantee, and the packet only restates what the
  * customer actually said.
+ *
+ * TAXONOMY FROM CONFIG, 2026-08-25 (Loop Spec Audit A01 condition 11). The trade
+ * labels and the family question bank used to be three `const` objects right
+ * here, which meant a client that does roofing only had to edit agent code. They
+ * moved VERBATIM to domain/problem/taxonomy.ts and are read through it. This
+ * file was NOT split and no exported signature changed (pre-answer 8 / HO-3 —
+ * both halves are bound by path string in the capability registry): the taxonomy
+ * arrives as an optional trailing argument that defaults to the shipped one, so
+ * every existing call site produces byte-identical output.
  */
-const FAMILY_LABELS: Record<string, string> = {
-  hvac: "Heating & cooling (HVAC)",
-  plumbing: "Plumbing",
-  electrical: "Electrical",
-  roofing: "Roofing",
-  appliance: "Appliance repair",
-  water_damage: "Water damage / restoration",
-};
-
-const FAMILY_QUESTIONS: Record<string, string[]> = {
-  hvac: [
-    "Is the thermostat set to the mode you expect (heat/cool), and does its display respond?",
-    "Roughly how old is the system, if you know?",
-    "Has the air filter been changed recently?",
-  ],
-  plumbing: [
-    "Does the problem happen constantly, or only when specific fixtures are used?",
-    "Do you know where the main water shutoff is?",
-    "Is there any visible water staining, and where exactly?",
-  ],
-  electrical: [
-    "Does the affected circuit trip a breaker, and did a single reset help? (Never reset repeatedly.)",
-    "How many outlets/fixtures are affected — one, one room, or more?",
-    "Any warmth, discoloration, or smell at outlets or switches?",
-  ],
-  roofing: [
-    "Does it only appear during or after rain?",
-    "Do you know roughly when the roof was last replaced or repaired?",
-  ],
-  appliance: [
-    "What is the brand and approximate age of the appliance?",
-    "Did anything change right before this started (move, power blink, new detergent, etc.)?",
-  ],
-  water_damage: [
-    "Is the water still coming in, or has it stopped?",
-    "How large is the affected area, roughly?",
-  ],
-};
-
-const GENERIC_QUESTIONS = [
-  "When did this start, and has it gotten better or worse?",
-  "Did anything unusual happen just before (weather, work in the home, power outage)?",
-  "Is anything else in the home behaving oddly since it started?",
-];
-
 export interface AnalyzeInput {
   description: string;
   intake_session_id: string | null;
@@ -117,14 +87,12 @@ export function analyzeProblemFixture(input: AnalyzeInput): AnalyzeResult {
 export function buildJobPacketFixture(
   problem: ProblemRecord,
   evidence: EvidenceObject,
-  now: string
+  now: string,
+  taxonomy: ProblemTaxonomy = ACTIVE_PROBLEM_TAXONOMY
 ): JobPacket {
   const family = problem.service_category;
-  const familyLabel = family ? (FAMILY_LABELS[family] ?? family) : null;
-  const questions = [
-    ...(family ? (FAMILY_QUESTIONS[family] ?? []) : []),
-    ...GENERIC_QUESTIONS,
-  ].slice(0, 5);
+  const label = familyLabel(family, taxonomy);
+  const questions = questionsForFamily(family, taxonomy);
 
   const unknowns = [
     "Exact cause — a qualified provider should verify on site.",
@@ -141,7 +109,7 @@ export function buildJobPacketFixture(
     observed_statements: [evidence.content],
     symptoms_and_timing: null,
     likely_service_category: {
-      value: familyLabel,
+      value: label,
       confidence: problem.service_category_confidence ?? "low",
       note: "This is an inference from the description, not a diagnosis.",
     },
