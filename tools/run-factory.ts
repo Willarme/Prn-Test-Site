@@ -9,7 +9,7 @@
  * Nothing here publishes anything: PASS pages enter the owner publish queue.
  * Re-run whenever the seed data, policy, scoring, or content bank changes.
  */
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { importSeedRows, type SeedFile } from "../src/domain/search/importer";
 import { evaluatePortfolio } from "../src/domain/search/portfolio";
@@ -17,6 +17,7 @@ import { buildCandidatePages } from "../src/domain/search/factory";
 import { qaCandidatePages } from "../src/domain/search/qa";
 import { SAMPLE_PAGE_SPEC } from "../src/domain/search/fixtures/sample-page-spec";
 import { FilePolicyStore } from "../src/platform/stores/policy-file";
+import { opportunityDecisionStore } from "../src/platform/search/decision-store";
 
 const ROOT = process.cwd();
 const OUT = path.join(ROOT, "data", "factory");
@@ -47,9 +48,22 @@ async function main() {
   const problemNew = opportunities.filter(
     (o) => eligibleIntents.has(o.intent_type) && !alreadyStaged.has(o.search_opportunity_id) && !alreadyStaged.has(o.keyword)
   );
-  const { specs, skipped } = buildCandidatePages(problemNew, policy.max_new_pages_per_period, {
-    now: () => NOW,
-  });
+  /**
+   * THE OWNER'S DECISIONS, JOINED AT READ TIME (coherence seam 2, A05 build).
+   *
+   * `buildCandidatePages` no longer filters on A04's recommendation — it asks
+   * `isOwnerApproved()`, which folds the append-only decision history. That
+   * history is an OVERLAY (decisions live in their own store precisely so this
+   * script can regenerate the committed artifact without eating them), so it
+   * has to be loaded and handed in.
+   */
+  const decisions = await opportunityDecisionStore(() => null).list();
+  const { specs, skipped, not_new_page } = buildCandidatePages(
+    problemNew,
+    policy.max_new_pages_per_period,
+    { now: () => NOW },
+    decisions
+  );
 
   // The handcrafted sample page is already staged; QA new candidates against it.
   const qa = qaCandidatePages(specs, [SAMPLE_PAGE_SPEC]);
@@ -62,13 +76,48 @@ async function main() {
     };
   });
 
+  /**
+   * FAIL CLOSED BEFORE OVERWRITING A NON-EMPTY PORTFOLIO WITH AN EMPTY ONE.
+   *
+   * The gate above is now the owner's decision, and today ZERO of the 96
+   * committed opportunities carries one — they are all at status "candidate".
+   * So a plain re-run of this script would compute an empty page set and write
+   * it straight over data/factory/staged-specs.json, silently deleting the six
+   * committed staged doors (and, with them, six of the seven pages the trial
+   * site serves). That is not a build failure anyone would notice until the
+   * site went blank.
+   *
+   * The refusal is the honest outcome: the gate got stricter, the committed
+   * artifact predates the gate, and re-deriving it requires the owner to
+   * actually accept the opportunities in /admin/opportunities first. Deleting
+   * the file is the deliberate way through, which is exactly the amount of
+   * friction a wipe of the public portfolio deserves.
+   */
+  const stagedPath = path.join(OUT, "staged-specs.json");
+  if (stagedSpecs.length === 0 && existsSync(stagedPath)) {
+    const committed = JSON.parse(readFileSync(stagedPath, "utf-8")) as { specs: unknown[] };
+    if (committed.specs.length > 0) {
+      console.error(
+        `REFUSING TO WRITE. This run produced 0 pages but ${committed.specs.length} are already committed in data/factory/staged-specs.json.\n\n` +
+          `A05's trigger is now the OWNER'S DECISION (status === "approved"), not A04's recommendation — coherence report seam 2.\n` +
+          `${summary.total} opportunities were scored; ${opportunities.filter((o) => o.status === "approved").length} carry an owner approval; ${decisions.length} decisions are on record.\n\n` +
+          `Accept opportunities in /admin/opportunities and re-run, or delete data/factory/staged-specs.json to deliberately clear the portfolio.`
+      );
+      process.exit(2);
+    }
+  }
+
   mkdirSync(OUT, { recursive: true });
   writeFileSync(path.join(OUT, "opportunities.json"), JSON.stringify({ generated_at: NOW, summary, opportunities }, null, 2));
-  writeFileSync(path.join(OUT, "staged-specs.json"), JSON.stringify({ generated_at: NOW, specs: stagedSpecs, skipped }, null, 2));
+  writeFileSync(stagedPath, JSON.stringify({ generated_at: NOW, specs: stagedSpecs, skipped }, null, 2));
   writeFileSync(path.join(OUT, "qa-results.json"), JSON.stringify({ generated_at: NOW, results: qa }, null, 2));
 
   console.log(`opportunities: ${summary.total}`, summary.by_recommendation);
-  console.log(`problem-intent NEW -> pages built: ${specs.length}, skipped: ${skipped.length}`);
+  console.log(`owner-approved -> pages built: ${specs.length}, skipped: ${skipped.length}`);
+  if (not_new_page.length > 0) {
+    console.log(`approved but NOT a new page (${not_new_page.length}):`);
+    for (const row of not_new_page) console.log(`  - ${row.keyword}: ${row.reason}`);
+  }
   console.log(`QA: ${qa.filter((r) => r.state === "PASS").length} PASS / ${qa.filter((r) => r.state === "FAIL").length} FAIL`);
 }
 

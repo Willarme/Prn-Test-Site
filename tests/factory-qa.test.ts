@@ -13,7 +13,17 @@ const seedFile = JSON.parse(
   readFileSync(join(process.cwd(), "tests", "fixtures", "seed-research", "seed-rows.json"), "utf-8")
 ) as SeedFile;
 const seedOpps = importSeedRows(seedFile, "2026-08-14T00:00:00Z");
-const acOpp = { ...seedOpps.find((o) => o.keyword === "ac blowing warm air")!, recommendation: "NEW" as const };
+/**
+ * OWNER-APPROVED, not merely NEW-recommended — coherence report seam 2. A05's
+ * trigger predicate changed in its own build from `recommendation === "NEW"` to
+ * `isOwnerApproved()`, so every fixture that expects a page to be BUILT has to
+ * carry the owner's decision, not the agent's opinion.
+ */
+const acOpp = {
+  ...seedOpps.find((o) => o.keyword === "ac blowing warm air")!,
+  recommendation: "NEW" as const,
+  status: "approved" as const,
+};
 
 describe("A05 page factory", () => {
   it("compiles an approved opportunity into a valid STAGED PageSpec", () => {
@@ -25,11 +35,26 @@ describe("A05 page factory", () => {
     expect(spec.monetization_eligible).toBe(false);
   });
 
-  it("builds only NEW-recommended candidates, up to the hard cap", () => {
+  it("builds only owner-approved, new-page-eligible candidates, up to the hard cap", () => {
     const mixed = [
-      acOpp,
-      { ...seedOpps.find((o) => o.keyword === "electrical burning smell")!, recommendation: "WATCH" as const },
-      { ...seedOpps.find((o) => o.keyword === "water heater leaking")!, recommendation: "NEW" as const },
+      acOpp, // approved + NEW
+      {
+        ...seedOpps.find((o) => o.keyword === "electrical burning smell")!,
+        recommendation: "WATCH" as const,
+        status: "approved" as const,
+      },
+      {
+        ...seedOpps.find((o) => o.keyword === "water heater leaking")!,
+        recommendation: "NEW" as const,
+        status: "approved" as const,
+      },
+      // The one that used to build and now must not: A04 says NEW, the owner
+      // has not decided (coherence seam 2).
+      {
+        ...seedOpps.find((o) => o.keyword === "furnace not working")!,
+        recommendation: "NEW" as const,
+        status: "candidate" as const,
+      },
     ];
     expect(buildCandidatePages(mixed, 10, { now: NOW }).specs.length).toBe(2);
     expect(buildCandidatePages(mixed, 1, { now: NOW }).specs.length).toBe(1);

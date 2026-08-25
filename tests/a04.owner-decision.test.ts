@@ -92,19 +92,85 @@ describe("the agent's opinion is not the owner's decision", () => {
     expect(isOwnerApproved(opportunity({ recommendation: null, status: "approved" }))).toBe(true);
   });
 
-  it("A05's page factory still filters on recommendation — the documented A05 handoff", () => {
-    // This is NOT the desired end state: coherence seam 2 says A05's trigger
-    // predicate must become status === "approved". That change belongs to A05's
-    // build. Pinning the CURRENT behaviour here means A05's build has to
-    // deliberately update this expectation rather than drift past it, and it
-    // records that the gap is known, not missed.
+  /**
+   * UPDATED BY THE A05 BUILD — COHERENCE REPORT SEAM 2.
+   *
+   * The A04 build left this pin asserting `specs.length === 1`: a
+   * recommendation-"NEW"/status-"candidate" opportunity DID produce a page,
+   * because `buildCandidatePages` filtered on `recommendation === "NEW"`. The
+   * comment there said, in as many words, that this was not the desired end
+   * state and that A05's build had to change it deliberately rather than drift
+   * past it.
+   *
+   * This is that deliberate change. A05's trigger predicate is now
+   * `isOwnerApproved()` (factory.ts `newPageEligibility`), so the agent's
+   * opinion produces nothing at all and only the owner's decision opens the
+   * gate. The assertion below is the exact inversion of what it used to be.
+   */
+  it("SEAM 2: a recommendation-NEW candidate produces ZERO PageSpecs", () => {
     const candidate = opportunity({ recommendation: "NEW", status: "candidate" });
     const { specs } = buildCandidatePages([candidate], 10, { now: () => "2026-08-24T00:00:00Z" });
-    expect(specs.length).toBe(1);
+    expect(specs.length).toBe(0);
     expect(isOwnerApproved(candidate)).toBe(false);
-    // The safety net today: factory.ts is reachable ONLY from tools/run-factory.ts
-    // (npm run factory). No scheduled route, no API route and no admin action
-    // calls it, so nothing automated bypasses the new gate.
+  });
+
+  it("SEAM 2: the same opportunity, owner-approved, DOES produce a page", () => {
+    const approved = opportunity({ recommendation: "NEW", status: "approved" });
+    const { specs } = buildCandidatePages([approved], 10, { now: () => "2026-08-24T00:00:00Z" });
+    expect(specs.length).toBe(1);
+    expect(specs[0].search_opportunity_id).toBe("so_test_1");
+    expect(isOwnerApproved(approved)).toBe(true);
+  });
+
+  it("SEAM 2: approval through the decision HISTORY opens the gate too, not just the field", () => {
+    // The committed artifact is never rewritten by a decision, so the record
+    // itself still reads "candidate" — the fold over the decision overlay is
+    // what the factory has to honour.
+    const candidate = opportunity({ recommendation: "NEW", status: "candidate" });
+    const accept = OpportunityDecision.parse({
+      decision_id: "od_seam2",
+      tenant_id: "prn",
+      search_opportunity_id: "so_test_1",
+      decision: "accept",
+      status_after: "approved",
+      decided_by: "owner",
+      decided_at: "2026-08-24T09:00:00Z",
+      note: null,
+      recommendation_at_decision: "NEW",
+      score_at_decision: 82.4,
+      score_version_at_decision: null,
+      approval_id: null,
+      run_id: null,
+    });
+    const { specs } = buildCandidatePages(
+      [candidate],
+      10,
+      { now: () => "2026-08-24T00:00:00Z" },
+      [accept]
+    );
+    expect(specs.length).toBe(1);
+  });
+
+  it("SEAM 2 / C18: an owner-approved EXPAND is REPORTED, never built and never dropped", () => {
+    const expand = opportunity({ recommendation: "EXPAND", status: "approved" });
+    const result = buildCandidatePages([expand], 10, { now: () => "2026-08-24T00:00:00Z" });
+    expect(result.specs.length).toBe(0);
+    expect(result.not_new_page).toHaveLength(1);
+    expect(result.not_new_page[0].recommendation).toBe("EXPAND");
+    expect(result.not_new_page[0].reason).toMatch(/GROWS an existing page/);
+  });
+
+  it("an UN-approved opportunity is not reported as a non-build — that is the normal queue", () => {
+    const candidate = opportunity({ recommendation: "EXPAND", status: "candidate" });
+    const result = buildCandidatePages([candidate], 10, { now: () => "2026-08-24T00:00:00Z" });
+    expect(result.specs.length).toBe(0);
+    expect(result.not_new_page).toEqual([]);
+  });
+
+  it("owner approval with NO recommendation at all still builds", () => {
+    const approved = opportunity({ recommendation: null, status: "approved" });
+    const { specs } = buildCandidatePages([approved], 10, { now: () => "2026-08-24T00:00:00Z" });
+    expect(specs.length).toBe(1);
   });
 });
 

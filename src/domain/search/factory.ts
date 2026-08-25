@@ -1,13 +1,18 @@
 import type { SearchOpportunity } from "@/domain/search/contracts";
+import { isOwnerApproved, type OpportunityDecision } from "@/domain/search/decision";
 import { PageSpec } from "@/domain/search/pages";
 import { slugify } from "@/domain/search/importer";
 import { shortHash } from "@/domain/shared/hash";
 
 /**
- * A05 Intent-Door Page Factory (Door Wave 3): compiles an approved
- * NEW-recommended SearchOpportunity into a typed PageSpec rendered by the ONE
- * shared template. A05 writes PageSpecs — it never invents websites, consent
- * language, or analyzer logic (#14A §15, SEO_DOORS Wave 3).
+ * A05 Intent-Door Page Factory (Door Wave 3): compiles an OWNER-APPROVED
+ * SearchOpportunity into a typed PageSpec rendered by the ONE shared template.
+ * A05 writes PageSpecs — it never invents websites, consent language, or
+ * analyzer logic (#14A §15, SEO_DOORS Wave 3).
+ *
+ * "Owner-approved", not "NEW-recommended" — see `newPageEligibility` below and
+ * coherence report seam 2. Pages are built from the owner's decision, never
+ * from A04's opinion.
  *
  * Wave note: content generation is currently a deterministic family-based
  * content bank (Tier-0). The production A05 upgrades ONLY the writer behind
@@ -158,27 +163,140 @@ export function compilePageSpec(opportunity: SearchOpportunity, deps: FactoryDep
 }
 
 /**
- * Compile only NEW-recommended candidates, up to the hard cap. One bad
- * keyword never kills the batch — it is skipped and reported.
+ * THE TRIGGER PREDICATE — coherence report seam 2, the headline change of the
+ * A05 build.
+ *
+ * WHAT THIS LINE USED TO BE: `opportunities.filter((x) => x.recommendation === "NEW")`.
+ * `recommendation` is A04's OPINION (contracts.ts:70 says so in as many words).
+ * `status` is the OWNER'S DECISION. So for the whole life of this codebase, a
+ * page could be built from an agent's suggestion with no human in between —
+ * the first human checkpoint that A04 §3.2 and A05 §3 both assert as existing
+ * was, in code, not wired at all. A04's build closed the other half (the
+ * decision record, decision.ts + opportunity-decisions.ts) and left this pin
+ * behind deliberately, with a comment saying A05 must change it on purpose
+ * rather than drift past it. This is that change.
+ *
+ * A05 NOW ASKS ONE QUESTION AND ONE PLACE: `isOwnerApproved()`. It reads the
+ * fold over the append-only decision history, never `recommendation`.
+ *
+ * THE SECOND, NARROWER RULE — and why it is not the same rule. Owner approval
+ * says "yes, act on this opportunity." It does not say "and the act is a NEW
+ * page." lifecycle.ts:47 records the quota rule verbatim — "Only NEW is
+ * eligible for the new-page quota (#23 §1.2)" — and Loop Spec Audit condition
+ * 18 is explicit that EXPAND means GROW AN EXISTING PAGE, not create one, and
+ * that a build which ignores this "will either silently drop EXPAND events or
+ * start creating duplicate pages from them."
+ *
+ * So the gate is approval; the recommendation decides the SHAPE of the work,
+ * and anything that is approved but not a new-page build is REPORTED by name
+ * rather than dropped. Nothing here is silent — that is the whole point of the
+ * `not_new_page` bucket below.
+ */
+export type NewPageEligibility =
+  | { eligible: true; reason: null }
+  | { eligible: false; reason: string };
+
+export function newPageEligibility(
+  opportunity: Pick<SearchOpportunity, "search_opportunity_id" | "status" | "recommendation">,
+  decisions: readonly OpportunityDecision[] = []
+): NewPageEligibility {
+  if (!isOwnerApproved(opportunity, decisions)) {
+    return {
+      eligible: false,
+      reason:
+        "not owner-approved — A04's recommendation is an opinion, not a decision (coherence seam 2)",
+    };
+  }
+  switch (opportunity.recommendation) {
+    // NEW is the quota-eligible recommendation. `null` is an owner approval
+    // with no agent opinion attached at all, which the shipped decision tests
+    // already treat as a complete approval ("it does not need a recommendation
+    // at all", a04.owner-decision.test.ts) — there is no opinion here saying
+    // the work is something other than a new page.
+    case "NEW":
+    case null:
+      return { eligible: true, reason: null };
+    case "EXPAND":
+      return {
+        eligible: false,
+        reason:
+          "approved as EXPAND — expansion GROWS an existing page and is not a new-page build (lifecycle.ts:47, #23 §1.2, Loop Spec Audit C18). No consumer for EXPAND exists yet; A13 owns portfolio expansion.",
+      };
+    case "MERGE":
+      return {
+        eligible: false,
+        reason:
+          "approved as MERGE — folds into an existing page rather than creating a second door",
+      };
+    default:
+      // WATCH / REJECT. The owner approving something A04 argued against is a
+      // real disagreement and worth surfacing; it is not a mandate to spend the
+      // new-page quota on it, because no owner control exists today that says
+      // "build this as NEW" over a WATCH/REJECT recommendation.
+      return {
+        eligible: false,
+        reason: `owner-approved but A04 recommended ${opportunity.recommendation} — the new-page quota is NEW-only, so this is reported rather than built`,
+      };
+  }
+}
+
+/**
+ * Compile owner-approved, new-page-eligible candidates, up to the hard cap.
+ * One bad keyword never kills the batch — it is skipped and reported.
  */
 export interface BuildResult {
   specs: PageSpec[];
   skipped: Array<{ keyword: string; reason: string }>;
+  /**
+   * Owner-approved but NOT a new-page build, with the reason. Separate from
+   * `skipped` (which means "we tried and it failed") because these are
+   * deliberate non-builds, and separate from silence because a decision the
+   * owner made that produces no visible effect is how a loop quietly breaks.
+   */
+  not_new_page: Array<{
+    search_opportunity_id: string;
+    keyword: string;
+    recommendation: string | null;
+    reason: string;
+  }>;
 }
 
 export function buildCandidatePages(
   opportunities: SearchOpportunity[],
   maxPages: number,
-  deps: FactoryDeps
+  deps: FactoryDeps,
+  decisions: readonly OpportunityDecision[] = []
 ): BuildResult {
   const specs: PageSpec[] = [];
   const skipped: BuildResult["skipped"] = [];
-  for (const o of opportunities.filter((x) => x.recommendation === "NEW").slice(0, maxPages)) {
+  const notNewPage: BuildResult["not_new_page"] = [];
+
+  const eligible: SearchOpportunity[] = [];
+  for (const o of opportunities) {
+    const verdict = newPageEligibility(o, decisions);
+    if (verdict.eligible) {
+      eligible.push(o);
+      continue;
+    }
+    // An un-approved candidate is the NORMAL state of the queue — 96 of them
+    // sit at "candidate" right now — so it is not reported per-row; only an
+    // owner decision that produced no page is.
+    if (isOwnerApproved(o, decisions)) {
+      notNewPage.push({
+        search_opportunity_id: o.search_opportunity_id,
+        keyword: o.keyword,
+        recommendation: o.recommendation,
+        reason: verdict.reason,
+      });
+    }
+  }
+
+  for (const o of eligible.slice(0, maxPages)) {
     try {
       specs.push(compilePageSpec(o, deps));
     } catch (err) {
       skipped.push({ keyword: o.keyword, reason: err instanceof Error ? err.message : String(err) });
     }
   }
-  return { specs, skipped };
+  return { specs, skipped, not_new_page: notNewPage };
 }
