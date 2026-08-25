@@ -71,8 +71,9 @@ export interface QualityKpiSnapshot {
   /** TRUE when this process lost a write OR could not read A09's records back. */
   could_not_verify: boolean;
   /**
-   * TRUE when the READ failed — A09's tables are unreachable or migration 00010
-   * is not applied. Distinct from a lost write so the cockpit states the actual
+   * TRUE when the READ failed — A09's tables are unreachable or this deployment
+   * has no database configured (migration 00010 itself is applied 2026-08-25).
+   * Distinct from a lost write so the cockpit states the actual
    * reason instead of reporting "lost 0 writes", and so the counts below can be
    * rendered as unknown rather than as zero.
    */

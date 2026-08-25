@@ -341,8 +341,14 @@ export async function neverDoSuite(): Promise<Suite> {
             outcome.fallback_reason ?? "(none)",
           ],
           [
+            /**
+             * NOT `!== "none"`. SafetyState is "normal" | "review" | "urgent",
+             * so the original comparison was true for every possible value — a
+             * condition that cannot fail is not a condition. The label says what
+             * it meant: not a NORMAL diagnosis.
+             */
             "the record carries the safety flag, not a normal diagnosis",
-            outcome.result.problem.safety_state !== "none",
+            outcome.result.problem.safety_state !== "normal",
             String(outcome.result.problem.safety_state),
           ],
         ]);
@@ -857,10 +863,16 @@ export async function neverDoSuite(): Promise<Suite> {
       how: "Asks `criticPassed()` about every non-PASS critic status; finds every CALL SITE of setPublished/emitPagePublished across src/ and asserts none is in an A06 module; and reads the one route that has them for its owner gate and its QA condition.",
       async measure() {
         const { criticPassed } = await import("@/domain/search/qa");
+        /**
+         * `criticPassed` takes the STATUS, not the whole stage result. The old
+         * probe built a result object and pushed it through `as never`, so every
+         * call compared an object to "PASS" and answered false whatever the
+         * status was. The condition could not fail — including on the day
+         * SKIPPED_NO_MODEL starts counting as a pass, which is the one thing
+         * this row exists to catch.
+         */
         const statuses = ["SKIPPED_NO_MODEL", "NOT_RUN", "FAIL"] as const;
-        const treatedAsPass = statuses.filter((s) =>
-          criticPassed({ status: s, reason: "probe", findings: [], provider: null, cost_usd: null, latency_ms: null } as never)
-        );
+        const treatedAsPass = statuses.filter((s) => criticPassed(s));
         /**
          * CALLS ONLY. A declaration carries a return-type annotation and a
          * `function` keyword; a call does not. Both the store's interface entry
@@ -1054,12 +1066,19 @@ export async function neverDoSuite(): Promise<Suite> {
       how: "Asks the real refusal predicate about a consent-ledger repair, and confirms the allow-list is empty and every repair kind is refused auto-execution.",
       async measure() {
         const { REPAIR_KINDS } = await import("@/platform/quality/repairs");
-        const autoable = REPAIR_KINDS.filter((k) => mayAutoExecute(k.kind));
+        // `repair_kind`, not `kind`. RepairKind has no `kind` field, so the
+        // original asked mayAutoExecute(undefined) once per entry and the
+        // condition below passed without ever naming a real repair.
+        const autoable = REPAIR_KINDS.filter((k) => mayAutoExecute(k.repair_kind));
         const consentForbidden = FORBIDDEN_TARGET_FIELDS.length > 0;
         const repairs = readCode("src/platform/quality/repairs.ts");
         return all([
           ["the auto-repair allow-list is empty", AUTO_REPAIR_ALLOW_LIST.length === 0],
-          ["no repair kind may auto-execute", autoable.length === 0, autoable.map((k) => k.kind).join(", ")],
+          [
+            `no repair kind may auto-execute (${REPAIR_KINDS.length} asked)`,
+            autoable.length === 0,
+            autoable.map((k) => k.repair_kind).join(", "),
+          ],
           ["forbidden target fields are declared", consentForbidden, FORBIDDEN_TARGET_FIELDS.join(", ")],
           ["a refusal reason function exists and is consulted", typeof repairRefusalReason === "function"],
           ["consent is named as untouchable", /consent/i.test(repairs)],
@@ -1117,30 +1136,30 @@ function probeAnalyzeInput() {
 }
 
 /** The shipped policy with ONE capability switched on, in memory only. */
-function enabledPolicy(
-  AiPolicySchema: { parse: (v: unknown) => unknown },
-  base: { capabilities: Record<string, unknown> },
+function enabledPolicy<T extends { capabilities: Record<string, { enabled: boolean }> }>(
+  AiPolicySchema: { parse: (v: unknown) => T },
+  base: T,
   key: string
-) {
+): T {
   return AiPolicySchema.parse({
     ...base,
     enabled: true,
     capabilities: {
       ...base.capabilities,
-      [key]: { ...(base.capabilities[key] as object), enabled: true },
+      [key]: { ...base.capabilities[key], enabled: true },
     },
-  }) as never;
+  });
 }
 
-function withCopy(
-  PageSpecSchema: { parse: (v: unknown) => unknown },
-  spec: { content_blocks: Array<{ kind: string; body_md: string }> },
+function withCopy<T extends { content_blocks: ReadonlyArray<{ body_md: string }> }>(
+  PageSpecSchema: { parse: (v: unknown) => T },
+  spec: T,
   copy: string
-) {
+): T {
   const blocks = spec.content_blocks.map((b, i) =>
     i === 0 ? { ...b, body_md: `${b.body_md}\n\n${copy}` } : b
   );
-  return PageSpecSchema.parse({ ...spec, content_blocks: blocks }) as never;
+  return PageSpecSchema.parse({ ...spec, content_blocks: blocks });
 }
 
 function trivialSchema() {

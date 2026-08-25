@@ -82,7 +82,7 @@ export async function seamSuite(): Promise<Suite> {
           recommendation: "NEW",
           status: "candidate",
         });
-        const eligible = newPageEligibility(opportunity, [], []);
+        const eligible = newPageEligibility(opportunity, []);
         const approved = SearchOpportunity.parse({
           ...probeOpportunity(),
           recommendation: "REJECT",
@@ -90,7 +90,7 @@ export async function seamSuite(): Promise<Suite> {
           approved_at: "2026-08-25T00:00:00Z",
           approved_by: "owner",
         });
-        const approvedEligible = newPageEligibility(approved, [], []);
+        const approvedEligible = newPageEligibility(approved, []);
         return all([
           ["`status` carries the owner's decision", /OpportunityStatus/.test(contract)],
           ["`approved_at` exists", /approved_at/.test(contract)],
@@ -335,9 +335,21 @@ export async function seamSuite(): Promise<Suite> {
             `the return-leg contract is incomplete: ${missing.join(", ") || `status ${def?.status ?? "unregistered"}`}`
           );
         }
+        /**
+         * The adapter's reach, measured rather than asserted. The prerequisite
+         * used to say it "is imported by nothing", which was one word off — its
+         * fixture is imported by tests/adapters.fixtures.test.ts. Under src/,
+         * where a producer would have to live, the count really is zero, and
+         * counting it here means this line cannot go stale the way the
+         * migration blockers did.
+         */
+        const adapterUsers = scan(/from "@\/platform\/adapters\/search-console"/, {
+          include: /^src\//,
+          codeOnly: true,
+        });
         return blocked(
           `the contract EXISTS and is approved with all seven context keys, and PageSpec.search_opportunity_id is populated so the lineage already works — but nothing produces the event (${producers.length} producers), so the return leg carries no data`,
-          "Search Console ingestion wired to a real property — GSC OAuth credentials exist in .env.local but src/platform/adapters/search-console.ts is imported by nothing, so no performance data reaches an opportunity",
+          `Search Console ingestion wired to a real property — GSC OAuth credentials exist in .env.local, but src/platform/adapters/search-console.ts has ${adapterUsers.length} importer(s) under src/ (only its fixture is used, and only by a test), so no performance data reaches an opportunity`,
           [
             `lineage field present in the factory: ${lineage}`,
             "This is exactly the state the audit prescribed: register the carrier now so the loop closes later with no schema change.",
@@ -596,13 +608,12 @@ function probeOpportunity() {
   };
 }
 
-function portfolio(
-  PageSpecSchema: { parse: (v: unknown) => unknown },
-  sample: unknown
-): Array<{
-  canonical_path: string;
-  content_blocks: Array<{ kind: string; source_fact_bundle_ids: string[] }>;
-}> {
+/**
+ * The committed portfolio, typed as whatever the schema parses to. It used to
+ * declare a hand-written shape and then `as never` its way past the mismatch,
+ * which meant every downstream call took a page the compiler could not check.
+ */
+function portfolio<T>(PageSpecSchema: { parse: (v: unknown) => T }, sample: unknown): T[] {
   const staged = JSON.parse(readSource("data/factory/staged-specs.json")) as { specs: unknown[] };
-  return [sample, ...staged.specs].map((s) => PageSpecSchema.parse(s)) as never;
+  return [sample, ...staged.specs].map((s) => PageSpecSchema.parse(s));
 }

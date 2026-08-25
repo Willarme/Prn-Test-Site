@@ -1,6 +1,6 @@
 import { existsSync, readdirSync } from "node:fs";
 import { join } from "node:path";
-import { all, blocked, fail, pass, type Suite } from "../types";
+import { all, fail, pass, type Suite } from "../types";
 import { describeHits, filesUnder, readSource, scan, sourceFiles } from "../source";
 
 const TODO = 'vault "Project/10 Master Todo/02 Phase 1 - Black Car Trial.md"';
@@ -22,7 +22,7 @@ export async function wave2Suite(): Promise<Suite> {
     { runPageQaSync, runDeterministicStage, evaluateReleaseForPublish, criticPassed },
     { recommend },
     { scoreOpportunity, CANON_SIGNAL_CATEGORIES, V1_SCORING_POLICY },
-    { matchHardExclusions, PRN_TRIAL_VOCABULARY },
+    { matchHardExclusions },
     { detectDuplicateIntents },
     { TRIAL_DEFAULT_SEO_FACTORY_POLICY },
     { compilePageSpec, listContentBankBundles, pageEligibleIntent, newPageEligibility },
@@ -160,7 +160,7 @@ export async function wave2Suite(): Promise<Suite> {
           keyword_difficulty: 1,
           intent_type: "problem",
         });
-        const scored = scoreOpportunity(opportunity, V1_SCORING_POLICY);
+        const scored = scoreOpportunity(opportunity, { scoring: V1_SCORING_POLICY });
         const result = recommend(scored, [], policy as never);
         const hits = matchHardExclusions("asbestos removal cost", policy.vocabulary as never);
         return all([
@@ -201,10 +201,10 @@ export async function wave2Suite(): Promise<Suite> {
           volume_monthly: 5_000,
           keyword_difficulty: 5,
         });
-        const scored = scoreOpportunity(candidate, V1_SCORING_POLICY);
+        const scored = scoreOpportunity(candidate, { scoring: V1_SCORING_POLICY });
         const result = recommend(scored, [existing], TRIAL_DEFAULT_SEO_FACTORY_POLICY);
         const dupes = detectDuplicateIntents(
-          [scoreOpportunity(existing, V1_SCORING_POLICY), scored],
+          [scoreOpportunity(existing, { scoring: V1_SCORING_POLICY }), scored],
           [existing],
           () => true
         );
@@ -286,7 +286,7 @@ export async function wave2Suite(): Promise<Suite> {
           recommendation: "NEW",
           status: "candidate",
         });
-        const eligibility = newPageEligibility(candidateOnly, [], []);
+        const eligibility = newPageEligibility(candidateOnly, []);
         return all([
           ["the factory gates on the owner decision", /isOwnerApproved\(/.test(factory)],
           [
@@ -561,7 +561,9 @@ export async function wave2Suite(): Promise<Suite> {
           ["a deterministic stage is reported", keys.includes("deterministic")],
           ["an ai_critic stage is reported", keys.includes("ai_critic")],
           ["an overall verdict exists", keys.includes("state") || keys.includes("overall"), keys.filter((k) => /state|overall/.test(k)).join(", ")],
-          ["blockers are enumerated", keys.includes("blockers") || Array.isArray(result.findings)],
+          // `result.findings` does not exist on PageQAResult, so the old `||`
+          // arm could never be true. The field the contract names is `blockers`.
+          ["blockers are enumerated", Array.isArray(result.blockers), `${result.blockers.length} blocker(s)`],
           ["release_eligible exists", keys.includes("release_eligible")],
         ]);
       },
@@ -668,9 +670,21 @@ export async function wave2Suite(): Promise<Suite> {
         });
         return all([
           ["the status is SKIPPED_NO_MODEL", out.status === "SKIPPED_NO_MODEL", out.status],
-          ["it is not counted as a pass", criticPassed(out) === false],
+          /**
+           * `criticPassed` takes the STATUS, not the whole output. Handing it
+           * the object compared an object to "PASS", which is false for every
+           * possible input — the condition could not have failed, and would
+           * have kept reading green if SKIPPED_NO_MODEL started counting as a
+           * pass tomorrow. That is the exact guarantee this row exists for.
+           */
+          ["it is not counted as a pass", criticPassed(out.status) === false],
           ["the reason says so in words", /NOT a pass/i.test(out.reason), out.reason.slice(0, 110)],
-          ["the default critic constant behaves the same", criticPassed(NO_MODEL_CRITIC ? await NO_MODEL_CRITIC.critique({} as never) : out) === false],
+          [
+            "the default critic constant behaves the same",
+            criticPassed(
+              NO_MODEL_CRITIC ? (await NO_MODEL_CRITIC.critique({} as never)).status : out.status
+            ) === false,
+          ],
         ]);
       },
     },
@@ -879,12 +893,13 @@ function criticImports(text: string): string {
 }
 
 /** Every committed staged spec plus the handcrafted sample — the shipped portfolio. */
-function committedStagedSpecs(
-  PageSpecSchema: { parse: (v: unknown) => unknown },
+/** Typed as whatever the schema parses to — see the same fix in loop-seams.ts. */
+function committedStagedSpecs<T>(
+  PageSpecSchema: { parse: (v: unknown) => T },
   sample: unknown
-): Array<{ canonical_path: string; template_id: string; template_version: string; created_at: string }> {
+): T[] {
   const staged = JSON.parse(readSource("data/factory/staged-specs.json")) as { specs: unknown[] };
-  return [sample, ...staged.specs].map((s) => PageSpecSchema.parse(s)) as never;
+  return [sample, ...staged.specs].map((s) => PageSpecSchema.parse(s));
 }
 
 /** Raw (non-.ts) files under a directory — migrations are .sql. */

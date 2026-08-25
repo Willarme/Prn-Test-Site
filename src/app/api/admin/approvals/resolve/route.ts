@@ -48,7 +48,7 @@ import { qualityStore } from "@/platform/quality/store";
  *
  * KNOWN LIMIT, stated rather than hidden: `resolveApproval` mutates A00's
  * in-process queue and fails soft to the database (migration 00007 is written,
- * not applied). In a single-process dev server that is correct end to end; in a
+ * unconfigured). In a single-process dev server that is correct end to end; in a
  * multi-instance deployment a decision would only be visible to the instance
  * that received it until 00007 is applied. That is A00's persistence gap, not a
  * behaviour A09 changed.

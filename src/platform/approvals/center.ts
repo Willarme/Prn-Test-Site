@@ -29,10 +29,13 @@ import { runtimeStore } from "@/platform/stores/runtime";
  * the existing owner-action audit mechanism) so the decision itself is
  * auditable — no new event names invented pending A08.
  *
- * Persistence: designed for the `approval_item` table
- * (supabase/migrations/00007_approval_center.sql — written, NOT applied).
- * Until applied, writes are FAIL-SOFT: in-process queue + logged miss; the
- * admin view works either way. Client injectable per RLS-seam condition (d).
+ * Persistence: the `approval_item` table
+ * (supabase/migrations/00007_approval_center.sql — applied 2026-08-25).
+ * Writes stay FAIL-SOFT anyway — in-process queue + logged miss when the
+ * database is unreachable or unconfigured — so the admin view works either way.
+ * That path is now defence-in-depth rather than the expected state
+ * (PLATFORM_MIGRATIONS_APPLIED in platform/db/client.ts).
+ * Client injectable per RLS-seam condition (d).
  */
 export const ApprovalStatus = z.enum([
   "PENDING",

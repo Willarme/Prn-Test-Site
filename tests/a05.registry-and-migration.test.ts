@@ -92,7 +92,7 @@ describe("A05's registry entry", () => {
   });
 });
 
-describe("migration 00012 — written, NOT applied, and structurally sound", () => {
+describe("migration 00012 — applied 2026-08-25, and structurally sound", () => {
   const sql = readFileSync(
     join(process.cwd(), "supabase/migrations/00012_page_registry.sql"),
     "utf-8"

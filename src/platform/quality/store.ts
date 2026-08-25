@@ -68,7 +68,9 @@ function fail(what: string, message: string): never {
 }
 
 // ---------------------------------------------------------------------------
-// Supabase backend (migration 00010 — written, NOT applied)
+// Supabase backend (migration 00010 — applied 2026-08-25; the file backend below
+// remains the fail-soft path for an unconfigured or unreachable database, not
+// the expected state — see PLATFORM_MIGRATIONS_APPLIED in platform/db/client.ts)
 // ---------------------------------------------------------------------------
 
 class SupabaseQualityStore implements QualityStore {

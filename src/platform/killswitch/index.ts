@@ -19,8 +19,8 @@ import { emitPlatformEvent } from "@/platform/events/emit";
  * the type union yet, no logic anywhere.
  *
  * CACHING STRATEGY (build-time choice the spec §10 delegates to this build):
- * the source of truth is the `kill_switch` table (migration 00008 — written,
- * NOT applied). The synchronous gate reads an in-process cache — never a
+ * the source of truth is the `kill_switch` table (migration 00008 — applied
+ * 2026-08-25). The synchronous gate reads an in-process cache — never a
  * network round trip per call (spec §2) — which is:
  *   - updated IMMEDIATELY on every same-process toggle (write-through), so
  *     the engage→next-call-blocked KPI is effectively zero in-process;

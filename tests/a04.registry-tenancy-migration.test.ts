@@ -118,7 +118,7 @@ describe("tenant_id (C4) — reserved on every A04 record, no tenant logic", () 
   });
 });
 
-describe("migration 00011 — written, NOT applied, and parseable", () => {
+describe("migration 00011 — applied 2026-08-25, and parseable", () => {
   const sql = readFileSync(
     join(process.cwd(), "supabase/migrations/00011_opportunity_decision.sql"),
     "utf-8"

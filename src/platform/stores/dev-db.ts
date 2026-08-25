@@ -21,7 +21,7 @@ export interface DevDb {
   events: EventEnvelope[];
   staged_specs: PageSpec[];
   /**
-   * A05 Page Registry rows (migration 00012 — written, NOT applied). The
+   * A05 Page Registry rows (migration 00012 — applied 2026-08-25). The
    * `staged_page_spec` table has existed since migration 00002; the REGISTRY
    * row — page_id, canonical_path, current_page_spec_id, lifecycle_status —
    * had no table anywhere, which is why 00012 exists and why the earlier waves
@@ -38,7 +38,7 @@ export interface DevDb {
   admin_audit: Array<{ at: string; action: string; target: string; detail: string | null }>;
 
   /**
-   * A09 Data Quality (migration 00010 — written, NOT applied). These four are
+   * A09 Data Quality (migration 00010 — applied 2026-08-25). These four are
    * the DURABLE store in the file-backed dev environment, not a buffer: A09's
    * writes are fail-LOUD by deliberate exception (types.ts QualityWriteResult),
    * so "no database configured" must still mean the finding lands somewhere it
@@ -55,7 +55,7 @@ export interface DevDb {
 
   /**
    * A04 owner decisions on search opportunities (migration 00011 — written,
-   * NOT applied). APPEND-ONLY and deliberately an OVERLAY: a decision must not
+   * applied 2026-08-25). APPEND-ONLY and deliberately an OVERLAY: a decision must not
    * rewrite data/factory/opportunities.json, which is committed, reproducible
    * factory output that the next `npm run factory` regenerates wholesale — and
    * regenerating it also regenerates A05's staged portfolio and A06's QA

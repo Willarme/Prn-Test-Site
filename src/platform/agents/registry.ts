@@ -146,7 +146,7 @@ export const TRIAL_AGENT_REGISTRY: readonly AgentDefinition[] = [
      * and A06's page publish gate are two separate gates and do not collapse.
      * `search_opportunity` appears in write_access for the pipeline's upserts;
      * `opportunity_decision` is the append-only owner-decision overlay
-     * (migration 00011, written NOT applied), deliberately separate so a
+     * (migration 00011, applied 2026-08-25), deliberately separate so a
      * decision never rewrites the committed factory artifact.
      */
     allowed_capabilities: ["get_search_metrics"],

@@ -73,12 +73,12 @@ function fail(what: string, message: string, kind: "read" | "write"): never {
       : "No decision could be read, so nothing that depends on your approvals can run.";
   throw new Error(
     missingTable
-      ? `${what}: the opportunity_decision table does not exist yet. Apply ${MIGRATION} (written, NOT applied) to enable owner decisions. ${consequence}`
+      ? `${what}: the opportunity_decision table is not reachable. ${MIGRATION} is applied to the live database, so this is a connection or configuration problem, not a missing migration. ${consequence}`
       : `${what}: ${message}`
   );
 }
 
-/** Supabase backend — table `opportunity_decision`, migration 00011 (written, NOT applied). */
+/** Supabase backend — table `opportunity_decision`, migration 00011 (applied 2026-08-25). */
 class SupabaseOpportunityDecisionStore implements OpportunityDecisionStore {
   readonly kind = "supabase" as const;
   constructor(private readonly db: SupabaseClient) {}

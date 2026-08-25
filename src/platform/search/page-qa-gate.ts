@@ -158,7 +158,7 @@ export async function publishQueueSnapshot(
  * that the owner acted.
  *
  * FAIL-SOFT AND NEVER LOAD-BEARING. Migration 00007's `approval_item` table is
- * written but NOT applied, so the queue is in-process only today and there is
+ * unreachable in a deployment with no database, so the queue can be in-process only and there is
  * frequently nothing to close. That is fine: the item is the RECORD of the ask,
  * the route is the ACT, and the act does not wait on the record. Returns the id
  * it resolved, or null.

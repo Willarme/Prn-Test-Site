@@ -676,9 +676,10 @@ export async function appendMetricDefinitionVersion(
 /**
  * Write the whole seeded dictionary through to the durable registry. Fail-soft
  * and idempotent at the row level (the table's primary key is
- * (name, definition_version)); nothing calls this in Wave 0 because migration
- * 00009 is not applied — it exists so applying the migration is a one-call
- * backfill rather than a rewrite.
+ * (name, definition_version)). Migration 00009 is applied 2026-08-25, so this is now a
+ * one-call backfill any caller can run against the live registry; nothing calls
+ * it automatically, because seeding a durable dictionary is an act with a date
+ * on it and not a side effect of importing a module.
  */
 export async function persistSeededDictionary(
   clientProvider: PlatformClientProvider = serviceClientProvider

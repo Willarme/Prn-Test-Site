@@ -44,7 +44,7 @@ export default async function OpportunitiesPage() {
   const { opportunities, summary, generated_at } = loadOpportunities();
 
   // Decisions are an overlay, and reading them must never take the page down:
-  // an unapplied migration or an unwritable dev store means "no decisions yet",
+  // an unreachable database or an unwritable dev store means "no decisions yet",
   // not a 500 on the owner's queue.
   let decisions: Awaited<ReturnType<ReturnType<typeof opportunityDecisionStore>["list"]>> = [];
   let decisionsReadable = true;

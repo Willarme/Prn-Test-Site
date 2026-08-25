@@ -30,9 +30,13 @@ import { QualityFinding } from "@/platform/quality/types";
  * missing. So this file mocks `createClient` itself and configures the database
  * env, which makes serviceClientProvider hand back a client for real.
  *
- * THE STATE BEING SIMULATED is exactly the one this branch ships: a database is
- * configured and everything up to migration 00009 is applied, but
- * 00010_data_quality.sql is written and NOT applied. So the platform's own
+ * THE STATE BEING SIMULATED is a PARTIAL database: everything up to migration
+ * 00009 is present, but A09's tables from 00010_data_quality.sql are not. Every
+ * migration is applied to the live project as of 2026-08-25, so this is no
+ * longer the shipped state — it is the failure mode the fail-soft contract
+ * exists for, and it is simulated deliberately rather than waited for: a
+ * half-migrated database, a restore mid-way, a revoked grant on one schema. So
+ * the platform's own
  * tables answer normally and only A09's five tables raise "relation ... does not
  * exist". A blanket-broken client would not have caught this — it would have
  * failed the journey counts too and hidden which half was at fault.

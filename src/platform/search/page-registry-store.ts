@@ -18,10 +18,10 @@ import { readDevDb, updateDevDb } from "@/platform/stores/dev-db";
  *
  * FAIL-LOUD ON THE PAGE ITSELF, fail-soft on everything about it. C11 is
  * precise that A05's AGENT RUN LEDGER writes may silently no-op because
- * migrations 00006+ are written but not applied. The page is different: an
+ * a deployment may have no database configured at all. The page is different: an
  * admin who triggers a generation run and is told it succeeded, while the page
  * did not persist, has been lied to — the same failure A04 hit by running the
- * real app and fixed by naming the unapplied migration in the error. This store
+ * real app and fixed by naming the missing table in the error. This store
  * does the same.
  *
  * WHY `staged_page_spec` IS REUSED AND `intent_page` IS NEW. The spec table has
@@ -36,7 +36,7 @@ function fail(what: string, message: string): never {
   const missingTable = /intent_page/.test(message) && /schema cache|does not exist/i.test(message);
   throw new Error(
     missingTable
-      ? `${what}: the intent_page table does not exist yet. Apply ${MIGRATION} (written, NOT applied) to enable the page registry. The page was NOT saved.`
+      ? `${what}: the intent_page table is not reachable. ${MIGRATION} is applied to the live database, so this is a connection or configuration problem, not a missing migration. The page was NOT saved.`
       : `${what}: ${message}`
   );
 }

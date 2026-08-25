@@ -13,14 +13,14 @@ export async function wave0Suite(): Promise<Suite> {
     { CAPABILITY_REGISTRY, resolveCapability },
     { TRIAL_AGENT_REGISTRY },
     { capability_call },
-    { recordAgentRun, recentAgentRuns, resetAgentRunLedgerForTests },
+    { recentAgentRuns, resetAgentRunLedgerForTests },
     { checkKillSwitch, engageKillSwitch, releaseKillSwitch, listKillSwitches },
-    { getPolicySetting, PLATFORM_POLICY_SETTINGS, requirePolicyNumber },
+    { getPolicySetting, PLATFORM_POLICY_SETTINGS },
     { queueApproval, listApprovals, resolveApproval, resetApprovalCenterForTests },
     { validateAndEmit, proposeEventDefinition, proposeMetricDefinition, proposeEventDefinitionChange, deprecate, getMetricLineage, getEventImpact, lookupEventDefinition, stewardCounters, resetStewardForTests },
-    { currentEventDefinition, currentMetricDefinition, listEventDefinitions, listMetricDefinitions, SEED_CENSUS, seedDictionary },
+    { currentEventDefinition, listEventDefinitions, listMetricDefinitions, SEED_CENSUS, seedDictionary },
     { EventEnvelope },
-    { EVENT_NAMES, CORE_EVENT_NAMES },
+    { EVENT_NAMES },
     { INVARIANT_RULES, INVARIANT_RULE_SET_VERSION, evaluateSubject },
     { AUTO_REPAIR_ALLOW_LIST, simulateRepair, mayAutoExecute, autoRepairEnabled },
     { RECONCILIATION_CHECKS },
@@ -239,14 +239,34 @@ export async function wave0Suite(): Promise<Suite> {
           reversibility: "reversible",
           proposed_change: { probe: true },
         });
-        const open = await listApprovals("open");
-        const resolved = await resolveApproval(item.approval_id, "approved", "eval-harness");
+        /**
+         * `listApprovals` takes a CLIENT PROVIDER, not a status filter. Passing
+         * "open" put a string where a function goes; the call survived only
+         * because the provider call sits inside a try/catch, and the "open list"
+         * was in fact the whole list. Filter for PENDING explicitly, which is
+         * what open means.
+         */
+        const open = (await listApprovals()).filter((i) => i.status === "PENDING");
+        /**
+         * And `resolveApproval` takes a RESOLUTION OBJECT. The old call passed
+         * "approved" as that object and "eval-harness" as the client provider,
+         * so it set item.status to undefined, resolved nothing, and returned the
+         * item — which the assertion below read as success.
+         */
+        const resolved = await resolveApproval(item.approval_id, {
+          status: "APPROVED",
+          resolved_by: "eval-harness",
+        });
         const paths = sourceFiles().map((f) => f.path);
         const view = paths.filter((p) => /app\/admin\/approvals|approvals\/.*page\.tsx/.test(p));
         return all([
           ["an item can be queued", Boolean(item.approval_id)],
           ["it appears on the open list", open.some((i) => i.approval_id === item.approval_id)],
-          ["it can be resolved", resolved !== null],
+          [
+            "it can be resolved, and the resolution is what was asked for",
+            resolved !== null && resolved.status === "APPROVED" && resolved.resolved_by === "eval-harness",
+            resolved ? `${resolved.status} by ${resolved.resolved_by}` : "null",
+          ],
           ["an admin list view exists", view.length > 0, view.join(", ") || "none found"],
         ]);
       },
@@ -289,7 +309,7 @@ export async function wave0Suite(): Promise<Suite> {
         });
         return all([
           ["the capability runs with the switch clear", before.ok === true],
-          ["engaging the switch is observable", engaged.engaged === true, engaged.scope],
+          ["engaging the switch is observable", engaged.engaged === true, engaged.scope ?? "no scope"],
           [
             "the call is BLOCKED (governance), not merely errored, while engaged",
             denied.ok === false && denied.kind === "blocked",
@@ -536,7 +556,7 @@ export async function wave0Suite(): Promise<Suite> {
           { run_id: "ar_eval_probe", proposed_by: "eval-harness" }
         );
         const after = currentEventDefinition("page.published");
-        const open = await listApprovals("open");
+        const open = (await listApprovals()).filter((i) => i.status === "PENDING");
         return all([
           ["the change was queued for approval", res.outcome === "queued_for_approval", res.outcome],
           ["an approval item exists", open.length > 0 && Boolean(res.approval_id)],
@@ -603,17 +623,52 @@ export async function wave0Suite(): Promise<Suite> {
       expectation:
         "the event/metric registry PERSISTS — the dictionary is a durable record, not an in-process one",
       source: `${TODO} §T1-02 "Done when" clause 3 ('registered'), read against A08 §7 'historical versions remain queryable'`,
-      how: "Reads the dictionary module's own persistence path and the migration that backs it.",
-      measure() {
+      /**
+       * RE-POINTED 2026-08-25 — the prerequisite this was blocked on has been
+       * met, and the row was reading a comment that had gone stale.
+       *
+       * It decided BLOCKED by grepping the dictionary module for the words "not
+       * applied". Migration 00009 was applied on 2026-08-25 and the comment had
+       * not caught up, so the harness reported an owner-facing blocker against a
+       * table that exists. Verified independently before this row was touched:
+       *
+       *     npm run db:migrate -- --status
+       *     → 12 of 12 [applied], 40 public tables, RLS ON for every one
+       *
+       * WHAT THIS ROW CAN AND CANNOT SEE, said plainly. The harness runs with no
+       * database on purpose (evals/env.ts deletes SUPABASE_URL and the service
+       * role, so a report can never write to production). So it measures the
+       * three things that are true offline — a durable write path exists, it
+       * targets 00009, and the repo carries a dated record of that migration
+       * being applied — and it does not claim to have read a row back out. The
+       * command above is how anyone re-checks the half this cannot.
+       */
+      how: "Reads the dictionary's durable write path, the migration it targets, and the repo's dated record of that migration being applied. Does NOT reach the database: this harness runs with no credentials by design, so the applied state is cited, not re-queried.",
+      async measure() {
         const src = readSource("src/platform/events/dictionary.ts");
-        const durable = /00009_event_metric_registry\.sql/.test(src);
-        const notApplied = /not applied/i.test(src);
-        return durable && notApplied
-          ? blocked(
-              "the registry seeds and reads correctly IN PROCESS; the durable table exists only as an unapplied migration, so definition history does not survive a restart",
-              "supabase/migrations/00009_event_metric_registry.sql applied to a live database (the repo records migrations 00006+ as written but NOT applied — src/platform/db/client.ts:15)"
+        const { PLATFORM_MIGRATIONS_APPLIED } = await import("@/platform/db/client");
+        const targets = /00009_event_metric_registry\.sql/.test(src);
+        const writePath = /persistSeededDictionary|from\("event_definition"\)|from\("metric_definition"\)/.test(src);
+        const recorded = PLATFORM_MIGRATIONS_APPLIED.through >= "00009";
+        if (!targets || !writePath) {
+          return fail(
+            `the dictionary ${!writePath ? "has no durable write path" : "does not name migration 00009"}`
+          );
+        }
+        return recorded
+          ? pass(
+              `the dictionary writes through to the durable registry, and 00009 is applied (${PLATFORM_MIGRATIONS_APPLIED.applied_on})`,
+              [
+                `ok    a durable write path exists and targets 00009_event_metric_registry.sql`,
+                `ok    migrations applied through ${PLATFORM_MIGRATIONS_APPLIED.through} on ${PLATFORM_MIGRATIONS_APPLIED.applied_on}`,
+                `--    verified by: ${PLATFORM_MIGRATIONS_APPLIED.verified_by}`,
+                `--    NOT measured here: this harness holds no database credentials by design, so no row was read back`,
+              ]
             )
-          : pass("the dictionary names a durable store");
+          : blocked(
+              "the dictionary has a durable write path, but the repo carries no record of migration 00009 being applied",
+              "supabase/migrations/00009_event_metric_registry.sql applied to a live database, recorded in PLATFORM_MIGRATIONS_APPLIED (src/platform/db/client.ts) — check with `npm run db:migrate -- --status`"
+            );
       },
     },
 
@@ -682,13 +737,48 @@ export async function wave0Suite(): Promise<Suite> {
       expectation:
         "nightly reconciliation catches a manufactured cross-source mismatch IN STAGING",
       source: `${TODO} §T1-03 "Done when" clause 3 (second half)`,
-      how: "Reads the reconciliation check set. The 'in staging' half needs a deployed staging environment with a second source to disagree with.",
+      /**
+       * STILL BLOCKED — but on a different thing, because half the old reason
+       * was retired on 2026-08-25 and the other half was never the real one.
+       *
+       * The old prerequisite read "a deployed staging environment WITH THE
+       * SUPABASE MIGRATIONS APPLIED — this repo has one source (the file
+       * backend) until 00006+ are applied". The migrations are applied, so a
+       * second source now exists. That did not unblock this clause, and it is
+       * worth being precise about why rather than moving the row to PASS:
+       *
+       *   `runReconciliation()` HAS NO CALLER. Not a cron route, not an admin
+       *   action, not a tool under tools/ — the only invocations anywhere in the
+       *   repo are in tests/quality.reconciliation.test.ts, and the module's own
+       *   header says why: the Durable Workflow Orchestrator is
+       *   DEFERRED_INTERFACE_ONLY, so the function was deliberately written as
+       *   a plain callable waiting for something to schedule it.
+       *
+       * "NIGHTLY reconciliation catches a manufactured mismatch IN STAGING" is
+       * therefore two missing things, and this row now names both instead of a
+       * migration that has since landed. The scan below is what will notice the
+       * day the first one arrives.
+       */
+      how: "Reads the reconciliation check set, then scans the whole repo outside tests for anything that actually INVOKES the nightly pass — the clause needs a run, not a definition.",
       measure() {
-        return RECONCILIATION_CHECKS.length === 0
-          ? fail("no reconciliation checks are defined")
-          : blocked(
-              `${RECONCILIATION_CHECKS.length} reconciliation checks are defined and unit-covered, but nothing has run them against two real sources`,
-              "a deployed staging environment with the Supabase migrations applied — a cross-SOURCE mismatch needs two sources, and this repo has one (the file backend) until 00006+ are applied"
+        if (RECONCILIATION_CHECKS.length === 0) return fail("no reconciliation checks are defined");
+        const callers = scan(/runReconciliation\s*\(/, {
+          include: /^(src|tools)\//,
+          exclude: /platform\/quality\/reconciliation\.ts$/,
+          codeOnly: true,
+        });
+        return callers.length === 0
+          ? blocked(
+              `${RECONCILIATION_CHECKS.length} reconciliation checks are defined, unit-covered, and now have two real sources to compare — the Supabase migrations were applied 2026-08-25 — but nothing in src/ or tools/ invokes runReconciliation(), so no nightly pass has ever run`,
+              "a scheduler or entry point that calls runReconciliation() on a schedule (the module is a plain idempotent callable by design — WORKFLOW_ORCHESTRATOR_STATUS is DEFERRED_INTERFACE_ONLY), plus one deployed environment for it to run in",
+              [
+                "ok    5 checks defined, including the cross-source sweep",
+                "ok    a second source now exists — migrations applied 2026-08-25",
+                "FAIL  nothing outside tests/ calls runReconciliation() — the pass has no trigger",
+              ]
+            )
+          : pass(
+              `the nightly pass has ${callers.length} caller(s): ${callers.map((c) => `${c.path}:${c.line}`).join(", ")}`
             );
       },
     },
@@ -723,11 +813,18 @@ export async function wave0Suite(): Promise<Suite> {
       how: "Reads AUTO_REPAIR_ALLOW_LIST, asks `mayAutoExecute` about every repair kind the system knows, and asserts a simulation exists for the repair path.",
       async measure() {
         const { REPAIR_KINDS } = await import("@/platform/quality/repairs");
-        const anyAuto = REPAIR_KINDS.filter((k) => mayAutoExecute(k.kind));
+        // `repair_kind`, not `kind` — see the same fix in never-do.ts. Asking
+        // about undefined answers "no" for a reason that has nothing to do with
+        // the allow-list.
+        const anyAuto = REPAIR_KINDS.filter((k) => mayAutoExecute(k.repair_kind));
         return all([
           ["the allow-list is empty", AUTO_REPAIR_ALLOW_LIST.length === 0, `${AUTO_REPAIR_ALLOW_LIST.length} entries`],
           ["auto-repair is off", autoRepairEnabled() === false],
-          ["no repair kind may auto-execute", anyAuto.length === 0, anyAuto.map((k) => k.kind).join(", ")],
+          [
+            `no repair kind may auto-execute (${REPAIR_KINDS.length} asked)`,
+            anyAuto.length === 0,
+            anyAuto.map((k) => k.repair_kind).join(", "),
+          ],
           ["a simulation function exists", typeof simulateRepair === "function"],
         ]);
       },
@@ -818,24 +915,50 @@ export async function wave0Suite(): Promise<Suite> {
       expectation:
         "`DataQualityIssue` / `ReconciliationMismatch` schema PERSISTS with severity and a non-fabricated `suspected_owner`",
       source: `${TODO} §T1-03 "Done when" clause 2`,
-      how: "Parses the shipped schemas for the two named fields, then checks whether the durable table exists.",
+      /**
+       * RE-POINTED 2026-08-25, same defect as T1-02.9 and worse.
+       *
+       * The old condition was `/00010_data_quality\.sql|NOT applied/` — an OR,
+       * so merely NAMING the migration file was enough to report BLOCKED. A
+       * store that mentions the table it writes to was being read as a store
+       * that cannot write to it, and the row could never have passed however
+       * much of the database existed. Migration 00010 has been applied since
+       * 2026-08-25 (verified with `npm run db:migrate -- --status`).
+       *
+       * Measured now as the clause actually reads: both fields exist, both are
+       * ENFORCED rather than merely declared, a Supabase backend writes them,
+       * and the migration behind it is on record as applied.
+       */
+      how: "Asserts both named fields exist and are enforced by the schema, that a Supabase backend writes them, and that the migration behind that table is recorded as applied.",
       async measure() {
         const types = readSource("src/platform/quality/types.ts");
         const store = readSource("src/platform/quality/store.ts");
+        const { PLATFORM_MIGRATIONS_APPLIED } = await import("@/platform/db/client");
         const hasSeverity = /severity/.test(types);
         const hasOwner = /suspected_owner/.test(types);
-        const notApplied = /00010_data_quality\.sql|NOT applied/.test(store);
+        const durableBackend = /class SupabaseQualityStore/.test(store);
+        const recorded = PLATFORM_MIGRATIONS_APPLIED.through >= "00010";
         if (!hasSeverity || !hasOwner) {
           return fail(
             `the quality schema is missing ${!hasSeverity ? "severity" : ""}${!hasSeverity && !hasOwner ? " and " : ""}${!hasOwner ? "suspected_owner" : ""}`
           );
         }
-        return notApplied
-          ? blocked(
-              "both fields exist and are enforced; findings persist to the file backend, but the durable table is an unapplied migration",
-              "supabase/migrations/00010_data_quality.sql applied to a live database (recorded in src/platform/quality/store.ts as written, NOT applied)"
+        return durableBackend && recorded
+          ? pass(
+              `severity and suspected_owner exist, are enforced, and persist to the table 00010 created (applied ${PLATFORM_MIGRATIONS_APPLIED.applied_on})`,
+              [
+                "ok    both fields are on the shipped schema",
+                "ok    a Supabase-backed quality store writes them",
+                `ok    migrations applied through ${PLATFORM_MIGRATIONS_APPLIED.through} on ${PLATFORM_MIGRATIONS_APPLIED.applied_on}`,
+                "--    NOT measured here: this harness holds no database credentials by design, so no finding was read back",
+              ]
             )
-          : pass("severity and suspected_owner exist and persist");
+          : blocked(
+              "both fields exist and are enforced; what is missing is the durable side",
+              durableBackend
+                ? "supabase/migrations/00010_data_quality.sql applied to a live database, recorded in PLATFORM_MIGRATIONS_APPLIED (src/platform/db/client.ts)"
+                : "a Supabase-backed quality store — the findings currently have only a file backend"
+            );
       },
     },
   ];
