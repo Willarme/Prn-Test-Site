@@ -17,34 +17,62 @@ export type FeatureFlag = z.infer<typeof FeatureFlag>;
 export const DEFAULT_FLAGS: readonly FeatureFlag[] = [
   { flag_key: "seo_doors_enabled", enabled: false, description: "Serve published IntentPages publicly", decision_ref: null },
   /**
-   * ⚠ GATE-READY, DEFAULT UNCHANGED — coherence report issue 16, flagged for
-   * Josh and Melissa by the A05 build.
+   * ✔ DECIDED — OWNER RULING, Josh, 2026-08-25. Coherence report issue 16 is
+   * closed. This is no longer a question; it is the record of the answer.
    *
-   * THE FINDING: `src/app/page.tsx` is public and unauthenticated, and it
-   * enumerates EVERY staged door page with its QA-state pill and a link to
-   * each. Indexing is safely blocked three ways (site-wide robots disallow,
-   * per-route noindex, the seo_doors_enabled master switch), so this is not an
-   * SEO leak — but A05 §7's promise that it "must never make a page publicly
-   * reachable" is untrue as written, and A06's QA verdicts are sitting on an
-   * unauthenticated surface. The audit puts it in the same exposure class as
+   * THE RULING: HIDE IT. `enabled: false`. His reasoning, in his terms: those
+   * pages are not for the public yet, and A06's QA verdicts are internal
+   * business — especially with a live demo coming. A visitor who lands on the
+   * homepage during a demo should see the product, not a work-in-progress
+   * inventory with PASS/FAIL pills on it.
+   *
+   * ── HISTORY, kept because it explains the shape of the code ──────────────
+   *
+   * THE FINDING (A05 build, flagged for Josh and Melissa): `src/app/page.tsx`
+   * is public and unauthenticated, and it enumerated EVERY staged door page
+   * with its QA-state pill and a link to each. Indexing was safely blocked
+   * three ways (site-wide robots disallow, per-route noindex, the
+   * seo_doors_enabled master switch), so it was never an SEO leak — but A05
+   * §7's promise that it "must never make a page publicly reachable" was
+   * untrue as written, and A06's QA verdicts were sitting on an
+   * unauthenticated surface. The audit put it in the same exposure class as
    * the known playbook View-Source leak (Trial Build State lines 104-125,
    * Master Todo T0-02).
    *
-   * WHY IT SHIPS ON. Nothing customer-visible changes without an owner. The
-   * listing is the trial navigator Joshua and the testers actually use, and
-   * turning it off is a product decision, not a build decision. So the flag
-   * exists, defaults to TODAY'S BEHAVIOUR, and flipping it to false is a
-   * one-line owner decision that needs no code change.
+   * WHY IT SHIPPED ON, and why that was right at the time: nothing
+   * customer-visible changes without an owner. The listing was the trial
+   * navigator Joshua and the testers actually used, and turning it off was a
+   * product decision, not a build decision. So the flag was built to default
+   * to THEN-CURRENT BEHAVIOUR, precisely so that flipping it would need an
+   * owner and not a code change. That is what just happened — the flip below
+   * is the whole change, exactly as designed. This paragraph is history now,
+   * superseded by the ruling above; it is preserved rather than deleted
+   * because it is the reason the switch existed to be thrown.
    *
-   * TODO-ASK-OWNER (Joshua + Melissa): should the public homepage keep listing
-   * staged pages and their QA state, or move behind isAdminUnlocked()?
+   * ── WHAT THE RULING DOES AND DOES NOT DO ────────────────────────────────
+   *
+   * DOES: the public homepage renders no staged listing at all — no slug, no
+   * link, no QA pill, and `allStagedSpecs()` is not even queried
+   * (src/app/page.tsx line 21 short-circuits).
+   *
+   * DOES NOT: gate `/staged/[slug]` itself. The audit's Fix line offered two
+   * branches — "move the staged listing behind isAdminUnlocked(), OR gate
+   * /staged/[slug] itself" — and this ruling takes the first. A direct
+   * /staged/<slug> URL still renders for anyone who has it; it stays noindex
+   * and is now unlisted, so it is no longer discoverable from the public site.
+   * Gating the route as well is a SEPARATE owner call, deliberately not taken
+   * here.
+   *
+   * JOSH KEEPS HIS NAVIGATOR. The staged pages he actually reviews are listed
+   * on /admin/pages (admin-gated), which links each one to /staged/<slug> and
+   * to its editor. Hiding the public copy costs him nothing.
    *
    * WHAT IS ALREADY ENFORCED, flag or no flag: nothing NEW from A05 or A06 may
    * render here. No qa.reasons, no lint findings, no provenance, no scoring —
-   * a test asserts it. The pill was already public before this build; the
-   * detail behind it never becomes public because of it.
+   * a test asserts it. The pill was public before this build; the detail
+   * behind it never became public because of it.
    */
-  { flag_key: "staged_listing_public", enabled: true, description: "List staged door pages + QA pill on the public homepage (trial navigator)", decision_ref: "D-20" },
+  { flag_key: "staged_listing_public", enabled: false, description: "List staged door pages + QA pill on the public homepage (trial navigator) — OFF by owner ruling, Josh 2026-08-25", decision_ref: "D-20" },
   { flag_key: "intake_shell_enabled", enabled: true, description: "Shared StartRequestForm + /start + intake API (fixture engine)", decision_ref: "D-20" },
   { flag_key: "results_shell_enabled", enabled: true, description: "Results page shell (fixture JobPacket)", decision_ref: "D-20" },
   { flag_key: "feature_lab_enabled", enabled: true, description: "Future Feature Lab concept pages + interest capture", decision_ref: "D-20" },

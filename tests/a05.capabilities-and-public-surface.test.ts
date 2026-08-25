@@ -50,7 +50,7 @@ describe("C8 — aliases on the shipped keys, not three new capabilities", () =>
   });
 });
 
-describe("issue 16 — the public staged listing is gate-ready, default unchanged", () => {
+describe("issue 16 — the public staged listing, hidden by owner ruling", () => {
   const homepage = readFileSync(join(process.cwd(), "src/app/page.tsx"), "utf-8");
   /**
    * Comments stripped for the leak scan. The homepage's own comment ENUMERATES
@@ -60,8 +60,16 @@ describe("issue 16 — the public staged listing is gate-ready, default unchange
    */
   const rendered = homepage.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
 
-  it("the flag exists and DEFAULTS TO TODAY'S BEHAVIOUR", () => {
-    expect(flagEnabled("staged_listing_public")).toBe(true);
+  /**
+   * WAS "DEFAULTS TO TODAY'S BEHAVIOUR" (true) — the A05 build's position that
+   * a product decision is not a build decision, so the flag shipped ON and
+   * waited for an owner. The owner ruled on 2026-08-25: hide it. The assertion
+   * is re-pointed at the ruling, not relaxed — it is still an exact boolean on
+   * the shipped default, and the surrounding guarantees (the flag exists, it
+   * carries a decision ref, the homepage consults it) are unchanged.
+   */
+  it("the flag records the OWNER RULING — the listing is OFF", () => {
+    expect(flagEnabled("staged_listing_public")).toBe(false);
     const flag = DEFAULT_FLAGS.find((f) => f.flag_key === "staged_listing_public")!;
     expect(flag.decision_ref).not.toBeNull();
   });

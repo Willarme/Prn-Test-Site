@@ -8,11 +8,17 @@ export const dynamic = "force-dynamic";
 export default async function Home() {
   // UI only — zero business logic lives in this layer.
   //
-  // COHERENCE ISSUE 16, gate-ready: the staged listing below is public and
-  // unauthenticated. The flag defaults to TODAY'S BEHAVIOUR (on) because
-  // nothing customer-visible changes without an owner; flipping
-  // `staged_listing_public` to false in platform/flags.ts hides it with no code
-  // change. See that flag's comment for the decision Josh and Melissa owe.
+  // COHERENCE ISSUE 16, DECIDED: Josh ruled on 2026-08-25 that the staged
+  // listing does not belong on a public page — those pages are not for the
+  // public yet, and A06's QA verdicts are internal business, especially with a
+  // live demo coming. `staged_listing_public` is therefore OFF in
+  // platform/flags.ts, which is the whole change: no code moved, because this
+  // route was built to consult the flag. See that flag's comment for the
+  // ruling, the reasoning, and the history it supersedes.
+  //
+  // OFF means OFF at the QUERY too, not just at the render — with the flag
+  // false the staged specs are never even loaded, so there is nothing in this
+  // component's data for a later edit to leak by accident.
   //
   // The rule that holds either way: only h1, canonical_path and the QA STATE
   // may render here. No qa.reasons, no lint findings, no provenance, no

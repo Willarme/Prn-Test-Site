@@ -508,7 +508,31 @@ export async function seamSuite(): Promise<Suite> {
       expectation:
         "staged pages are NOT publicly reachable and NOT listed on the public homepage; and A06 renders no `reasons`, findings or evidence onto any unauthenticated route",
       source: `${AUDIT} issue 16 — "Staged pages are publicly reachable and listed on the public homepage"; Fix: "move the staged listing behind isAdminUnlocked(), or gate /staged/[slug] itself."`,
-      how: "Reads the public homepage and the /staged/[slug] route for an admin gate, and separately asserts no QA detail reaches either.",
+      /**
+       * CLOSED 2026-08-25 BY OWNER RULING, not by a build.
+       *
+       * This row sat BLOCKED on one thing and named it precisely: an owner
+       * decision on `staged_listing_public`. Josh took it — hide the listing —
+       * so the row is read as PASS on the branch of the audit's own Fix line
+       * that he chose, and the prerequisite is gone rather than reworded.
+       *
+       * THE FIX LINE IS AN OR, AND THAT MATTERS. The audit offered "move the
+       * staged listing behind isAdminUnlocked(), OR gate /staged/[slug]
+       * itself". The ruling takes the first branch only. So the pass below
+       * SAYS OUT LOUD what is still true: a direct /staged/<slug> URL renders
+       * for anyone holding it. It is unlisted and noindex, which is what the
+       * audit's first branch buys; it is not gated, which is what the second
+       * branch would have bought. Reporting PASS without that sentence would
+       * let this row read as "staged pages are behind auth", which they are
+       * not. Gating the route is a separate owner call.
+       *
+       * WHAT PROVES THE LISTING IS ACTUALLY GONE. Not this scan — a scan
+       * cannot see rendered bytes. tests/seam16.staged-listing-ruling.test.ts
+       * renders the real `Home()` server component to HTML and asserts no
+       * slug, no href and no QA pill survive, with the flag forced back on as
+       * the control.
+       */
+      how: "Reads the public homepage and the /staged/[slug] route for an admin gate, reads the owner's ruling on the listing flag, and separately asserts no QA detail reaches either surface.",
       measure() {
         // Read both surfaces as CODE. The homepage's own comment enumerates the
         // things that must never render there; that comment is the rule, not the
@@ -520,6 +544,7 @@ export async function seamSuite(): Promise<Suite> {
         const listingGated = /isAdminUnlocked\(/.test(home);
         const routeGated = /isAdminUnlocked\(/.test(stagedRoute);
         const flagOn = flagEnabled("staged_listing_public");
+        const consultsFlag = /flagEnabled\("staged_listing_public"\)/.test(home);
         const detailLeak = /qa\.reasons|findings|repair_instructions|heuristic_score/.test(home + stagedRoute);
         const noindex = /index: false/.test(stagedRoute);
         if (detailLeak) {
@@ -527,12 +552,30 @@ export async function seamSuite(): Promise<Suite> {
             "QA detail (reasons / findings / scores) is rendered on an unauthenticated route — the half of the fix that was NOT optional"
           );
         }
-        if (listingGated || routeGated || !flagOn) {
+        // The ruling only means anything if the route still asks. A flag set to
+        // false that nothing reads would be a decision recorded and not applied.
+        if (!flagOn && !consultsFlag) {
+          return fail(
+            "the listing flag is OFF but src/app/page.tsx no longer consults it — the owner's ruling is recorded somewhere nothing reads"
+          );
+        }
+        if (!flagOn) {
+          return pass(
+            "OWNER RULING, Josh, 2026-08-25 — the staged listing is OFF. The public homepage renders no staged page, no slug and no QA pill; no QA detail reaches any unauthenticated route",
+            [
+              "His reasoning, recorded in src/platform/flags.ts: those pages are not for the public yet, and A06's QA verdicts are internal business — especially with a live demo coming.",
+              "src/app/page.tsx consults the flag at the QUERY as well as the render, so with it false the staged specs are never loaded.",
+              `RESIDUE, stated rather than glossed: /staged/[slug] itself is still ungated (noindex present: ${noindex}). The audit's Fix was an OR — hide the listing OR gate the route — and this ruling takes the first branch, so a direct URL still renders for anyone who has one. Gating the route is a separate owner call.`,
+              "Proved by render, not by grep: tests/seam16.staged-listing-ruling.test.ts.",
+            ]
+          );
+        }
+        if (listingGated || routeGated) {
           return pass("staged pages are behind an admin gate, and no QA detail reaches a public route");
         }
         return blocked(
-          `HALF MET. No QA detail leaks — no reasons, findings, scores or provenance render publicly (noindex present: ${noindex}) — but the staged listing IS still on the public, unauthenticated homepage with its QA-state pill, and /staged/[slug] has no admin gate. The build shipped the decision as a flag (staged_listing_public, default true) instead of taking it`,
-          "an owner ruling on flag `staged_listing_public` (src/platform/flags.ts records it as TODO-ASK-OWNER, Joshua + Melissa: should the public homepage keep listing staged pages and their QA state?). Flipping it to false needs no code change",
+          `HALF MET. No QA detail leaks — no reasons, findings, scores or provenance render publicly (noindex present: ${noindex}) — but the staged listing IS on the public, unauthenticated homepage with its QA-state pill, and /staged/[slug] has no admin gate`,
+          "an owner ruling on flag `staged_listing_public`. Josh ruled OFF on 2026-08-25; if this row is blocked again, the flag has been turned back ON without the listing being gated",
           [
             "The audit's own words: A05 §7's promise that it 'must never make a page publicly reachable' is untrue as written.",
             "Indexing is separately blocked three ways (site-wide robots disallow, per-route noindex, seo_doors_enabled off), so this is a reachability gap, not an SEO leak.",

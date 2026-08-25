@@ -99,8 +99,15 @@ describe("nothing A06 produces reaches an unauthenticated route", () => {
     expect(view).not.toMatch(/spec\.qa/);
   });
 
-  it("the staged listing flag still DEFAULTS TO TODAY'S BEHAVIOUR — A06 changed no live surface", () => {
-    expect(flagEnabled("staged_listing_public")).toBe(true);
+  /**
+   * A06 STILL CHANGED NO LIVE SURFACE — that was and remains this test's point.
+   * The staged listing is now OFF, and it was not A06 that turned it off: Josh
+   * ruled on 2026-08-25 (see platform/flags.ts). Both flags are asserted as
+   * exact booleans, as before; only the expected value of the one the owner
+   * ruled on has moved.
+   */
+  it("the staged listing flag is OFF by owner ruling, and the doors master switch is still OFF", () => {
+    expect(flagEnabled("staged_listing_public")).toBe(false);
     expect(flagEnabled("seo_doors_enabled")).toBe(false);
   });
 
