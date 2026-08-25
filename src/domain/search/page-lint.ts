@@ -73,6 +73,66 @@ const DAMAGE_ESCALATION = /\b(will (only )?get worse|will cost you|could cost yo
  */
 const DIRECTORY_FRAMING = /\b(compare (providers|contractors|quotes|pros)|browse (all|our)|hundreds of (trusted )?(providers|contractors|pros)|choose from (our|hundreds|dozens)|provider directory|directory of (providers|contractors)|shop around|find the best (provider|contractor|pro)|top \d+ (providers|contractors)|our network of|list of (providers|contractors)|all the (providers|contractors) (we|that))\b/i;
 
+/**
+ * INVENTED LOCAL STATISTICS. A05 §7 lists FOUR things this agent may never
+ * invent — "prices, local statistics, testimonials or provider claims" — and
+ * until now only two of the four had a check anywhere in the pipeline. Prices
+ * are caught (qa.ts `UNSOURCED_PRICE`); provider claims are caught and routed to
+ * a human (qa.ts `VERIFICATION_CLAIM`). A statistic and a testimonial passed
+ * both gates untouched. The expected-outcome harness put one of each through the
+ * whole pipeline and neither was blocked (NEVER-A05-1).
+ *
+ * THE ARGUMENT IS THE PRICE ARGUMENT, VERBATIM. A door page's copy is
+ * first-party authored text out of the content bank. PRN holds no local dataset,
+ * commissions no survey and buys no panel — so a number about how many homes,
+ * how often, or what share is UNSOURCED BY CONSTRUCTION. The check is therefore
+ * on the CLAIM, not on the citation: there is no citation that could make it
+ * true, which is exactly why the spec says "never invent" rather than "always
+ * source".
+ *
+ * TWO SHAPES, DELIBERATELY NARROW.
+ *
+ *   1. A statistic by its form — a percentage, or an "N out of M" / "1 in 4"
+ *      frequency. Neither has an innocent reading in door-page copy.
+ *   2. A quantified population claim tied to WHERE THE READER IS: "most homes in
+ *      your area", "hundreds of households near you". The locality half is
+ *      required. "Most homes have a shutoff near the meter" is ordinary safety
+ *      guidance and must keep passing — a hard blocker in this codebase has no
+ *      waiver path, so an over-broad rule is not a safe default, it is a page
+ *      nobody can ship.
+ */
+/* `%` is not a word character, so the boundary lives inside the alternation —
+ * a trailing \b after "40%" never matches and would silently disarm the half of
+ * this rule that catches a percentage. */
+const LOCAL_STATISTIC =
+  /\b\d{1,3}(\.\d+)?\s?(%|percent\b)|\b(\d{1,3}|one|two|three|four|five|six|seven|eight|nine|ten) (out of|in) (\d{1,3}|two|three|four|five|ten)\b/i;
+
+const POPULATION = "(homes?|households?|homeowners?|residents?|properties|families|neighbou?rs)";
+const HERE = "(your|this|our|the) (area|neighbou?rhood|street|block|city|town|county|region|zip code|community)";
+const LOCAL_POPULATION_CLAIM = new RegExp(
+  `\\b(most|nearly all|almost all|the majority of|dozens of|hundreds of|thousands of|\\d{1,3}) ${POPULATION}\\b[^.!?]{0,60}\\b(in|near|around|across) ${HERE}\\b` +
+    `|\\b${POPULATION}\\b[^.!?]{0,60}\\b(in|near|around|across) ${HERE}\\b[^.!?]{0,60}\\b(most|nearly all|almost all|\\d{1,3})\\b`,
+  "i"
+);
+
+/**
+ * TESTIMONIALS. The fourth of A05 §7's "may never invent", and the one with the
+ * clearest drift signal in the record: "Let's add reviews and a provider
+ * directory so customers can choose" (04 Research/11), already guarded against
+ * on the directory half by DIRECTORY_FRAMING above. This is the review half.
+ *
+ * PRN has no customers to quote on a door page — the pages are generated before
+ * anyone has used the service through them — so praise attributed to a customer
+ * is fabricated by definition. Two shapes again: the vocabulary of reviews, and
+ * the SHAPE of one (a quoted line attributed to a customer), because a
+ * fabricated testimonial usually arrives as punctuation rather than as the word
+ * "testimonial".
+ */
+const REVIEW_VOCABULARY =
+  /\b(testimonial|customer (review|story|quote)|what (our )?(customers|homeowners|clients|neighbou?rs) say|(happy|satisfied|delighted|thrilled) (customer|homeowner|client|resident)|would (highly )?recommend|(five|5)[- ]star|rated \d(\.\d)? (out of|stars?)|\d+ (reviews|ratings))\b/i;
+const ATTRIBUTED_QUOTE =
+  /["“][^"”\n]{8,240}["”]\s*[—–-]\s*(a |an |the )?[\w. ]{0,30}\b(customer|homeowner|client|resident|neighbou?r|homeowner in|user)\b/i;
+
 function visibleText(spec: PageSpec): Array<{ where: string; text: string }> {
   return [
     { where: "title", text: spec.title },
@@ -142,6 +202,36 @@ export function lintDirectoryFraming(spec: PageSpec): LintFinding[] {
 }
 
 /**
+ * THE INVENTED-EVIDENCE CHECK — statistics and testimonials, across every
+ * surface A05 writes. Same surfaces as the directory check, for the same reason:
+ * a fabricated statistic in a meta description is still a fabricated statistic.
+ */
+export function lintInventedEvidence(spec: PageSpec): LintFinding[] {
+  const findings: LintFinding[] = [];
+  for (const { where, text } of visibleText(spec)) {
+    const stat = text.match(LOCAL_STATISTIC) ?? text.match(LOCAL_POPULATION_CLAIM);
+    if (stat) {
+      findings.push({
+        check: "no_invented_statistic",
+        severity: "blocker",
+        where,
+        message: `unsourced statistic: "${stat[0].trim()}" — PRN holds no local dataset, so a number about how many homes or how often is invented by construction (A05 §7 "may NEVER invent … local statistics")`,
+      });
+    }
+    const review = text.match(REVIEW_VOCABULARY) ?? text.match(ATTRIBUTED_QUOTE);
+    if (review) {
+      findings.push({
+        check: "no_testimonial",
+        severity: "blocker",
+        where,
+        message: `testimonial or review language: "${review[0].trim().slice(0, 80)}" — a generated door page has no customers to quote (A05 §7 "may NEVER invent … testimonials")`,
+      });
+    }
+  }
+  return findings;
+}
+
+/**
  * STRUCTURED-DATA DISCIPLINE (C12c — one of the three §7 guardrails §11
  * dropped). §11 tells the builder to produce `structured_data_types[]` with
  * ZERO rules attached, which the audit names as "exactly the surface a
@@ -203,6 +293,7 @@ export function lintPageBeforeQa(
   const findings = [
     ...lintUrgencySlot(spec),
     ...lintDirectoryFraming(spec),
+    ...lintInventedEvidence(spec),
     ...lintStructuredData(spec, policy),
   ];
   return { passed: !findings.some((f) => f.severity === "blocker"), findings };

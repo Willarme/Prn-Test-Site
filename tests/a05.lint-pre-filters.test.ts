@@ -7,6 +7,7 @@ import { SAMPLE_PAGE_SPEC } from "@/domain/search/fixtures/sample-page-spec";
 import { PageFactoryPolicy } from "@/domain/search/page-factory-policy";
 import {
   lintDirectoryFraming,
+  lintInventedEvidence,
   lintPageBeforeQa,
   lintStructuredData,
   lintUrgencySlot,
@@ -47,6 +48,17 @@ const OPP = {
   created_at: "2026-08-14T00:00:00Z",
   updated_at: null,
 } as unknown as SearchOpportunity;
+
+/** Same shape as withUrgency, on the block a fabricated claim would land in. */
+function withIntentAnswer(body: string): PageSpec {
+  const base = compilePageSpec(OPP, { now: NOW });
+  return PageSpec.parse({
+    ...base,
+    content_blocks: base.content_blocks.map((b) =>
+      b.kind === "intent_answer" ? { ...b, body_md: body } : b
+    ),
+  });
+}
 
 function withUrgency(body: string): PageSpec {
   const base = compilePageSpec(OPP, { now: NOW });
@@ -219,6 +231,81 @@ describe("structured-data discipline exists BEFORE the surface does (C12c)", () 
       structured_data_plan: "WebSite, BreadcrumbList",
     });
     expect(lintStructuredData(spec, policy)).toEqual([]);
+  });
+});
+
+/**
+ * THE OTHER TWO THINGS A05 MAY NEVER INVENT.
+ *
+ * §7's list is four long — "prices, local statistics, testimonials or provider
+ * claims" — and only prices and provider claims had a check anywhere in the
+ * pipeline. The expected-outcome harness ran a fabricated local statistic and a
+ * fabricated testimonial through BOTH gates and neither one blocked either
+ * (NEVER-A05-1). These are the two that were missing, on A05's side.
+ */
+describe("invented evidence: statistics and testimonials", () => {
+  it("a freshly generated page carries neither", () => {
+    for (const family of ["hvac", "plumbing", "electrical", null]) {
+      const spec = compilePageSpec(
+        { ...OPP, problem_family_hint: family, keyword: `test ${family ?? "generic"} problem` },
+        { now: NOW }
+      );
+      expect(lintInventedEvidence(spec), family ?? "generic").toEqual([]);
+    }
+  });
+
+  const statistics = [
+    "Nine out of ten homes in your area had this exact failure last winter.",
+    "Roughly 40% of homes with this symptom need a full replacement.",
+    "1 in 4 households on your street report the same fault.",
+    "Hundreds of homeowners in your neighbourhood called about this last month.",
+  ];
+  for (const copy of statistics) {
+    it(`BLOCKS the statistic: ${copy.slice(0, 38)}...`, () => {
+      const findings = lintInventedEvidence(withIntentAnswer(copy));
+      expect(findings.map((f) => f.check)).toContain("no_invented_statistic");
+      expect(findings[0].severity).toBe("blocker");
+      expect(lintPageBeforeQa(withIntentAnswer(copy)).passed).toBe(false);
+    });
+  }
+
+  const testimonials = [
+    '"They were fantastic" — a happy customer in your neighbourhood.',
+    "See what our customers say about their first call.",
+    "Rated 4.9 out of 5 by homeowners like you.",
+    "A satisfied homeowner told us it was sorted the same afternoon.",
+  ];
+  for (const copy of testimonials) {
+    it(`BLOCKS the testimonial: ${copy.slice(0, 38)}...`, () => {
+      const findings = lintInventedEvidence(withIntentAnswer(copy));
+      expect(findings.map((f) => f.check)).toContain("no_testimonial");
+      expect(lintPageBeforeQa(withIntentAnswer(copy)).passed).toBe(false);
+    });
+  }
+
+  /**
+   * THE LINE, AGAIN. A hard blocker downstream has no waiver path, so a rule
+   * that cannot tell a general fact from a claim about the reader's street does
+   * not fail safe — it produces a page nobody can ship. Every line below is
+   * ordinary guidance and must keep passing.
+   */
+  it("PASSES general guidance that is not a claim about the reader's street", () => {
+    const innocent = [
+      "Most homes have a main water shutoff near the meter or where the supply enters.",
+      "Reset the breaker once at most; a breaker that re-trips is telling you something.",
+      "If it has been soaked for more than a day, a restoration pro should look at it.",
+      "Two things matter most: where the water comes from, and when.",
+      "For a gas smell, leave first and call your utility or 911 from outside.",
+    ];
+    for (const copy of innocent) {
+      expect(lintInventedEvidence(withIntentAnswer(copy)), copy).toEqual([]);
+    }
+  });
+
+  it("the whole committed portfolio is clean of both", () => {
+    for (const spec of loadStaged().specs) {
+      expect(lintInventedEvidence(spec as PageSpec), spec.canonical_path).toEqual([]);
+    }
   });
 });
 

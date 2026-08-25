@@ -69,6 +69,8 @@ export const A06_CHECK_IDS = [
   "voice.no_manufactured_urgency",
   "voice.no_directory_framing",
   "voice.no_unsourced_price",
+  "claims.no_fabricated_statistic",
+  "claims.no_testimonial",
   "voice.unqualified_verification_claim",
   // --- accessibility ---------------------------------------------------------
   "a11y.image_alt_present",
@@ -126,6 +128,8 @@ export const DEFAULT_BLOCKER_CHECKS: readonly A06CheckId[] = [
   "voice.no_manufactured_urgency",
   "voice.no_directory_framing",
   "voice.no_unsourced_price",
+  "claims.no_fabricated_statistic",
+  "claims.no_testimonial",
   "a11y.image_alt_present",
   "a11y.no_second_h1",
   "a11y.link_text_non_empty",

@@ -138,6 +138,49 @@ const UNSOURCED_PRICE =
   /(\$\s?\d|\b\d+\s?(dollars|usd)\b|\bcosts? (about|around|roughly|typically|usually|between)\b|\btypical(ly)? costs?\b|\baverage (cost|price)\b|\bper hour\b.*\b\d|\bflat (rate|fee)\b)/i;
 
 /**
+ * FABRICATED EVIDENCE — a statistic PRN cannot hold, or praise PRN cannot have
+ * been given. A05 §7 forbids inventing four things and A06 checked two of them:
+ * prices above, provider claims below. Statistics and testimonials had no check
+ * on either side of the gate until the expected-outcome harness walked one of
+ * each through both and neither stopped (NEVER-A05-1).
+ *
+ * WRITTEN FROM THE CANON RULE, NOT FROM A05'S LIST. A05's pre-filter module now
+ * carries its own patterns for the same two families, and these were composed
+ * separately — different vocabulary, different assembly — for the reason the
+ * header of this section already gives: two lists written from one rule by two
+ * builds catch each other's gaps, and a shared list fails once, everywhere.
+ *
+ * THE PREMISE IS THE PRICE PREMISE. The content bank is first-party authored
+ * text; PRN runs no survey and has no local panel, and a page generated before
+ * anyone has used the service through it has no customer to quote. So both
+ * families are unsourced BY CONSTRUCTION, and the check is on the claim.
+ *
+ * SCOPE IS DELIBERATE AND NARROW. A hard blocker here has no lift
+ * (A06_WAIVER_PATH), so a rule that fires on ordinary safety guidance does not
+ * fail safe — it produces a page nobody can ship. A population claim must be
+ * tied to where the reader is before it counts as a LOCAL statistic; "most homes
+ * have a shutoff near the meter" keeps passing.
+ */
+const FABRICATED_STATISTIC = new RegExp(
+  "(\\b\\d{1,3}(\\.\\d+)?\\s?(%|per ?cent\\b))" +
+    "|(\\b(\\d{1,3}|one|two|three|four|five|six|seven|eight|nine|ten)\\s+(out of|in)\\s+(\\d{1,3}|two|three|four|five|ten)\\b)" +
+    "|(\\b(\\d{1,3}|most|nearly all|almost all|the majority of|dozens of|hundreds of|thousands of)\\s+" +
+    "(homes?|households?|homeowners?|residents?|properties|families|neighbou?rs)\\b[^.!?]{0,60}" +
+    "\\b(in|near|around|across)\\s+(your|this|our|the)\\s+(area|neighbou?rhood|street|block|city|town|county|region|zip code|community)\\b)",
+  "i"
+);
+
+const FABRICATED_TESTIMONIAL = new RegExp(
+  "(\\b(testimonial|customer (review|story|quote)|success story)\\b)" +
+    "|(\\bwhat (our )?(customers|homeowners|clients|neighbou?rs) say\\b)" +
+    "|(\\b(happy|satisfied|delighted|thrilled|grateful) (customer|homeowner|client|resident)\\b)" +
+    "|(\\b(would|I'?d|we'?d) (highly )?recommend\\b)" +
+    "|(\\b((five|5)[- ]star|rated \\d(\\.\\d)? (out of|stars?)|\\d+ (reviews|ratings))\\b)" +
+    "|([\"“][^\"”\\n]{8,240}[\"”]\\s*[—–-]\\s*(a |an |the )?[\\w. ]{0,30}\\b(customer|homeowner|client|resident|neighbou?r)\\b)",
+  "i"
+);
+
+/**
  * VERIFICATION CLAIMS — scoped to claims ABOUT A PROVIDER, deliberately.
  *
  * A bare "verified" or "qualified" anywhere in a sentence is not a trust claim;
@@ -626,6 +669,30 @@ function voiceFindings(spec: PageSpec): RawFinding[] {
           surface.where,
           `unsourced price or cost claim: "${price[0].trim()}" — every PRN dollar is a TEST figure and no consumer pricing is decided`,
           "Remove the figure. Pricing is an owner decision and a door page is not where it lands."
+        )
+      );
+    }
+    const statistic = surface.text.match(FABRICATED_STATISTIC);
+    if (statistic) {
+      findings.push(
+        raw(
+          "claims.no_fabricated_statistic",
+          "blocker",
+          surface.where,
+          `unsourced statistic: "${statistic[0].trim()}" — PRN holds no local dataset, so a share, a frequency or a count of homes on a door page is invented by construction`,
+          "Remove the figure. Describe what the reader can observe, not what a number claims about their street."
+        )
+      );
+    }
+    const testimonial = surface.text.match(FABRICATED_TESTIMONIAL);
+    if (testimonial) {
+      findings.push(
+        raw(
+          "claims.no_testimonial",
+          "blocker",
+          surface.where,
+          `testimonial or review language: "${testimonial[0].trim().slice(0, 80)}" — a page generated before anyone used the service through it has no customer to quote`,
+          "Remove it. PRN earns the next step with the answer on the page, not with borrowed praise."
         )
       );
     }

@@ -309,6 +309,16 @@ describe("the voice/claim checks are A06's OWN, run redundantly beside A05's pre
     ["voice.no_manufactured_urgency", "Act now before it gets worse — don't wait."],
     ["voice.no_directory_framing", "Compare providers and choose from hundreds of contractors."],
     ["claims.no_unsupported_language", "We guarantee the cheapest fix, licensed and insured."],
+    /**
+     * The two families A05 §7 names that nothing checked until the
+     * expected-outcome harness walked one of each through both gates and
+     * neither stopped (NEVER-A05-1). A05 may never invent prices, local
+     * statistics, testimonials or provider claims — all four now have a check.
+     */
+    ["claims.no_fabricated_statistic", "Nine out of ten homes in your area had this exact failure last winter."],
+    ["claims.no_fabricated_statistic", "Roughly 40% of the homes near you are on the original pipework."],
+    ["claims.no_testimonial", "\"They were fantastic\" — a happy customer in your neighbourhood."],
+    ["claims.no_testimonial", "Read our customer reviews: rated 4.9 out of 5 across 300 reviews."],
   ];
 
   for (const [check, copy] of cases) {
