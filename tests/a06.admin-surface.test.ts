@@ -72,13 +72,13 @@ describe("the queue shows the decision the server will make", () => {
 
   it("the snapshot computes one decision per staged page, policy read once", async () => {
     const queue = await publishQueueSnapshot(() => null);
-    expect(queue.length).toBeGreaterThan(6);
+    expect(queue.length).toBeGreaterThan(4);
     for (const row of queue) {
       expect(row.decision.qa.page_spec_id).toBe(row.spec.page_spec_id);
       expect(row.decision.reasons.length).toBeGreaterThan(0);
     }
-    // The committed six are eligible; the PENDING handcrafted door is not.
-    expect(queue.filter((r) => r.decision.release_eligible)).toHaveLength(6);
+    // The committed four are eligible; the PENDING handcrafted door is not.
+    expect(queue.filter((r) => r.decision.release_eligible)).toHaveLength(4);
   });
 });
 

@@ -69,7 +69,7 @@ describe("tenant_id (C1) — reserved on all three A05 records, no tenant logic"
 
   it("is OPTIONAL — every committed staged spec still parses unchanged", () => {
     const committed = loadStaged().specs;
-    expect(committed.length).toBe(6);
+    expect(committed.length).toBe(4);
     for (const spec of committed) {
       expect(() => PageSpec.parse(spec)).not.toThrow();
       expect(PageSpec.parse(spec).tenant_id).toBeUndefined();

@@ -169,7 +169,7 @@ describe("the registered template DESCRIBES the shipped output — anti-drift", 
     expect(spec.template_version).toBe(TPL_INTENT_PAGE.version);
   });
 
-  it("matches every COMMITTED staged spec — the six doors the trial serves", () => {
+  it("matches every COMMITTED staged spec — the four doors the trial serves", () => {
     const committed = loadStaged().specs;
     expect(committed.length).toBeGreaterThan(0);
     for (const spec of committed) {
@@ -188,7 +188,7 @@ describe("the registered template DESCRIBES the shipped output — anti-drift", 
    */
   it("every shipped page resolves the template it CLAIMS, and matches it", () => {
     const shipped = [SAMPLE_PAGE_SPEC, ...loadStaged().specs];
-    expect(shipped).toHaveLength(7);
+    expect(shipped).toHaveLength(5);
     for (const spec of shipped) {
       const template = resolveTemplate(spec.template_id, spec.template_version);
       expect(template, `${spec.page_spec_id} claims ${spec.template_id}@${spec.template_version}`).not.toBeNull();

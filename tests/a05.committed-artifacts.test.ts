@@ -103,9 +103,9 @@ describe("this suite reads the SHIPPED artifacts, not a fixture", () => {
     expect(onDisk.specs.map((s) => s.page_spec_id)).toEqual(COMMITTED.map((s) => s.page_spec_id));
   });
 
-  it("is the seven doors the trial actually serves", () => {
-    expect(SHIPPED).toHaveLength(7);
-    expect(new Set(SHIPPED.map((s) => s.canonical_path)).size).toBe(7);
+  it("is the five doors the trial actually serves", () => {
+    expect(SHIPPED).toHaveLength(5);
+    expect(new Set(SHIPPED.map((s) => s.canonical_path)).size).toBe(5);
     for (const spec of SHIPPED) {
       expect(spec.canonical_path, spec.page_spec_id).toMatch(/^\/problems\/[a-z0-9-]+$/);
     }
@@ -115,7 +115,7 @@ describe("this suite reads the SHIPPED artifacts, not a fixture", () => {
 /* ── F1 ─────────────────────────────────────────────────────────────────── */
 
 describe("F1 — the owner can edit every shipped page", () => {
-  it("all seven pass the pre-QA lint", () => {
+  it("all five pass the pre-QA lint", () => {
     const blocked = SHIPPED.filter((s) => !lintPageBeforeQa(s).passed).map((s) => ({
       page: s.page_spec_id,
       findings: lintPageBeforeQa(s).findings.map((f) => `${f.check}@${f.where}`),
@@ -205,7 +205,7 @@ describe("F1 — the owner can edit every shipped page", () => {
 /* ── F2 ─────────────────────────────────────────────────────────────────── */
 
 describe("F2 — every shipped page carries real provenance", () => {
-  it("provenance.present holds for all seven — A06's future check would pass", () => {
+  it("provenance.present holds for all five — A06's future check would pass", () => {
     for (const spec of SHIPPED) {
       expect(provenanceProblems(spec), spec.page_spec_id).toEqual([]);
     }
@@ -262,7 +262,7 @@ describe("F2 — every shipped page carries real provenance", () => {
     }
   });
 
-  it("the six generated doors cite the content bank their copy came from", () => {
+  it("the four generated doors cite the content bank their copy came from", () => {
     for (const spec of COMMITTED) {
       expect(spec.source_fact_bundle_ids, spec.page_spec_id).toEqual([contentBankBundleId("hvac")]);
     }
@@ -309,9 +309,9 @@ describe("F2 — the backfill changed provenance and NOTHING else", () => {
     }
   });
 
-  it("the six qa:PASS pages still PASS the shipped deterministic QA", () => {
+  it("the four qa:PASS pages still PASS the shipped deterministic QA", () => {
     const results = qaCandidatePages(COMMITTED, [SAMPLE_PAGE_SPEC]);
-    expect(results).toHaveLength(6);
+    expect(results).toHaveLength(4);
     for (const result of results) {
       const spec = COMMITTED.find((s) => s.page_spec_id === result.page_spec_id)!;
       expect(result.state, result.page_spec_id).toBe("PASS");
@@ -337,7 +337,7 @@ describe("F2 — the backfill changed provenance and NOTHING else", () => {
 /* ── F4 ─────────────────────────────────────────────────────────────────── */
 
 describe("F4 — every shipped page matches the template it claims", () => {
-  it("resolves and matches, slot for slot, for all seven", () => {
+  it("resolves and matches, slot for slot, for all five", () => {
     for (const spec of SHIPPED) {
       const template = resolveTemplate(spec.template_id, spec.template_version);
       expect(template, `${spec.page_spec_id} claims ${spec.template_id}@${spec.template_version}`)
@@ -346,7 +346,7 @@ describe("F4 — every shipped page matches the template it claims", () => {
     }
   });
 
-  it("the six generated doors claim the five-slot factory template", () => {
+  it("the four generated doors claim the five-slot factory template", () => {
     for (const spec of COMMITTED) {
       expect(spec.template_id, spec.page_spec_id).toBe("tpl_intent_page");
       expect(spec.content_blocks).toHaveLength(5);

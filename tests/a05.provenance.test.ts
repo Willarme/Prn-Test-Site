@@ -233,7 +233,7 @@ describe("the stub is HONEST about what it is", () => {
 describe("the committed staged portfolio cites the bundles its copy came from", () => {
   it("every committed door carries the content-bank bundle for its family", () => {
     const committed = loadStaged().specs;
-    expect(committed).toHaveLength(6);
+    expect(committed).toHaveLength(4);
     for (const spec of committed) {
       expect(spec.source_fact_bundle_ids, spec.page_spec_id).toEqual([contentBankBundleId("hvac")]);
       expect(provenanceProblems(spec), spec.page_spec_id).toEqual([]);
