@@ -67,7 +67,11 @@ const NAME_MENTION_BASELINE: Record<string, string> = {
   "src/platform/capabilities/registry.ts":
     "implementation_ref on the seo.refresh_metrics capability — this IS the vendor-neutral indirection working. Code asks for the capability; the registry records which vendor implements it today, and swapping vendors is a registry edit. (Found by this test, not by a hand grep — which is the argument for the test.)",
   "src/platform/gateway/index.ts": "Doc comment naming the adapter as the seam example.",
-  "src/app/admin/page.tsx": "Owner-facing copy: which vendor the owner is being asked to fund.",
+  // "src/app/admin/page.tsx" DROPPED from the baseline 2026-08-26: the cockpit
+  // redesign made the owner-facing discovery copy vendor-neutral ("Live
+  // discovery — awaiting owner credentials"), which is the direction §4 wants.
+  // The test's own rule fired: the file no longer mentions the vendor, so the
+  // baseline entry goes.
 };
 
 /**

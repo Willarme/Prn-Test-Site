@@ -19,11 +19,20 @@ import { publishQueueSnapshot } from "@/platform/search/page-qa-gate";
 const ROOT = process.cwd();
 
 describe("no new top-level admin page", () => {
-  it("the admin route set is unchanged — A06 added no page of its own", () => {
+  it("the admin route set is the owned set — A06 added none; the 2026-08-26 owner directive added exactly two (agents + system), registry mirrors with no customer data", () => {
     const routes = readdirSync(join(ROOT, "src/app/admin")).filter((entry) =>
       statSync(join(ROOT, "src/app/admin", entry)).isDirectory()
     );
-    expect(routes.sort()).toEqual(["approvals", "controls", "login", "opportunities", "pages", "requests"]);
+    expect(routes.sort()).toEqual([
+      "agents",
+      "approvals",
+      "controls",
+      "login",
+      "opportunities",
+      "pages",
+      "requests",
+      "system",
+    ]);
   });
 
   it("the verdict renders inside the existing Pages surfaces", () => {

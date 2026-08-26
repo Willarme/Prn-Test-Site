@@ -15,19 +15,43 @@ export const dynamic = "force-dynamic";
 
 function Stat({ label, value, hint }: { label: string; value: string | number; hint?: string }) {
   return (
-    <div className="cell">
-      <span className="tag">{label}</span>
-      <div className="d2" style={{ fontSize: "2.2rem" }}>
-        {value}
-      </div>
-      {hint && (
-        <p className="hint" style={{ color: "var(--on-dark-mute)" }}>
-          {hint}
-        </p>
-      )}
+    <div className="stat-card">
+      <span className="stat-label">{label}</span>
+      <div className="stat-value">{value}</div>
+      {hint && <p className="stat-hint">{hint}</p>}
     </div>
   );
 }
+
+/**
+ * CANON 14A §17 — the Company OS Lite area map. Every admin area the build
+ * guide names, and where it lives today. A name with no trial surface yet
+ * says so ("later wave") rather than linking to something that does not
+ * exist: the admin never pretends.
+ */
+const COVERAGE: Array<{ area: string; href?: string; note?: string }> = [
+  { area: "Requests", href: "/admin/requests" },
+  { area: "Search / Opportunities", href: "/admin/opportunities" },
+  { area: "Pages", href: "/admin/pages" },
+  { area: "Controls", href: "/admin/controls", note: "page-creator policy" },
+  { area: "Approvals", href: "/admin/approvals" },
+  { area: "Agents", href: "/admin/agents" },
+  { area: "Kill switches + flags + AI", href: "/admin/system" },
+  { area: "Data + Metrics · A09", href: "/admin", note: "cockpit section" },
+  { area: "Trust", note: "later wave" },
+  { area: "Customers / Homes", note: "later wave" },
+  { area: "Provider Match Review", note: "later wave" },
+  { area: "Providers Lite", note: "later wave" },
+  { area: "Templates + Prompts", note: "later wave" },
+  { area: "Consent / Disclosures", note: "later wave" },
+  { area: "Provenance / Rights", note: "later wave" },
+  { area: "Public Derivation", note: "later wave" },
+  { area: "AI Readiness · A36", note: "later wave" },
+  { area: "Transition Watch · A25", note: "later wave" },
+  { area: "Idea Vault / Lean · A10", note: "later wave" },
+  { area: "External Agents", note: "later wave" },
+  { area: "Actions", note: "later wave" },
+];
 
 export default async function AdminOverview() {
   const gate = await adminGate();
@@ -53,24 +77,27 @@ export default async function AdminOverview() {
 
   return (
     <div>
-      <div className="eyebrow">Company OS Lite · trial cockpit</div>
-      <h1 className="d2" style={{ marginBottom: 8 }}>
-        Where the machine stands
-      </h1>
-      <p className="hint" style={{ color: "var(--on-dark-mute)", marginBottom: 24 }}>
-        Storage:{" "}
-        {store.kind === "supabase" ? (
-          <span className="pill pill-green">Supabase database — permanent</span>
-        ) : (
-          <span className="pill pill-amber">local file — temporary until the database is connected</span>
-        )}
-      </p>
+      <div className="adm-topline">
+        <div>
+          <div className="eyebrow">Company OS Lite · trial cockpit</div>
+          <h1 className="d2" style={{ marginBottom: 6 }}>
+            Where the machine stands
+          </h1>
+          <p className="hint" style={{ color: "var(--on-dark-mute)" }}>
+            {store.kind === "supabase" ? (
+              <span className="pill pill-green">Supabase database — permanent</span>
+            ) : (
+              <span className="pill pill-amber">local file — temporary until the database is connected</span>
+            )}
+          </p>
+        </div>
+      </div>
 
-      <div className="grid3" style={{ marginBottom: 30 }}>
+      <div className="grid3" style={{ marginBottom: 26 }}>
         <Stat
           label="Search opportunities"
           value={opps.summary.total}
-          hint={`${opps.summary.by_recommendation.NEW ?? 0} NEW · ${opps.summary.by_recommendation.WATCH ?? 0} WATCH · ${opps.summary.by_recommendation.MERGE ?? 0} MERGE · ${opps.summary.by_recommendation.REJECT ?? 0} REJECT`}
+          hint={`${opps.summary.by_recommendation.NEW ?? 0} NEW · ${opps.summary.by_recommendation.WATCH ?? 0} WATCH · ${opps.summary.by_recommendation.MERGE ?? 0} MERGE · your decisions in Search opportunities`}
         />
         <Stat
           label="Pages staged"
@@ -99,7 +126,7 @@ export default async function AdminOverview() {
         <Stat
           label="Needs vendor enrichment"
           value={opps.summary.needs_enrichment}
-          hint="metrics unknown until DataForSEO runs"
+          hint="metrics unknown until discovery runs"
         />
       </div>
 
@@ -115,17 +142,9 @@ export default async function AdminOverview() {
         (platform/quality/types.ts), so this surface could not leak them even if
         it tried.
       */}
-      <div className="cell" style={{ marginBottom: 30 }}>
-        <div
-          style={{
-            display: "flex",
-            gap: 12,
-            alignItems: "baseline",
-            justifyContent: "space-between",
-            flexWrap: "wrap",
-          }}
-        >
-          <span className="tag">Data quality · A09</span>
+      <div className="adm-card" style={{ marginBottom: 26 }}>
+        <div className="adm-card-head">
+          <span className="stat-label">Data quality · A09</span>
           {/*
             THE TRIGGER (T1-03 clause 3, second half). `runReconciliation()`
             had no caller anywhere outside tests, so the reconciliation sweeps
@@ -201,28 +220,28 @@ export default async function AdminOverview() {
           />
         </div>
         {queue.length === 0 ? (
-          <p className="hint" style={{ color: "var(--on-dark-mute)", marginTop: 12 }}>
+          <p className="stat-hint" style={{ marginTop: 12 }}>
             {quality.could_not_verify
               ? "No findings could be read back."
               : "No unresolved data-quality findings."}
           </p>
         ) : (
           <div style={{ overflowX: "auto", marginTop: 12 }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: ".85rem" }}>
+            <table className="adm-table">
               <thead>
-                <tr className="mono" style={{ textAlign: "left", color: "var(--on-dark-mute)" }}>
-                  <th style={{ padding: "6px 8px" }}>Severity</th>
-                  <th style={{ padding: "6px 8px" }}>Rule</th>
-                  <th style={{ padding: "6px 8px" }}>Entity</th>
-                  <th style={{ padding: "6px 8px" }}>Code</th>
-                  <th style={{ padding: "6px 8px" }}>Suspected owner</th>
-                  <th style={{ padding: "6px 8px" }}>Status</th>
+                <tr>
+                  <th>Severity</th>
+                  <th>Rule</th>
+                  <th>Entity</th>
+                  <th>Code</th>
+                  <th>Suspected owner</th>
+                  <th>Status</th>
                 </tr>
               </thead>
               <tbody>
                 {queue.map((f) => (
-                  <tr key={f.issue_id} style={{ borderTop: "1px solid var(--line-d)" }}>
-                    <td style={{ padding: "6px 8px" }}>
+                  <tr key={f.issue_id}>
+                    <td>
                       <span
                         className={`pill ${
                           f.severity === "critical" || f.severity === "high"
@@ -233,21 +252,21 @@ export default async function AdminOverview() {
                         {f.severity}
                       </span>
                     </td>
-                    <td className="mono" style={{ padding: "6px 8px" }}>{f.rule_id}</td>
-                    <td className="mono" style={{ padding: "6px 8px" }}>
+                    <td className="mono">{f.rule_id}</td>
+                    <td className="mono">
                       {f.entity_type}:{f.entity_id}
                     </td>
-                    <td className="mono" style={{ padding: "6px 8px" }}>{f.detail_code}</td>
-                    <td className="mono" style={{ padding: "6px 8px" }}>
+                    <td className="mono">{f.detail_code}</td>
+                    <td className="mono">
                       {/* Never a guess: null means the ledger did not support naming one. */}
                       {f.root_hypothesis.suspected_owner ?? "unattributed"}
                     </td>
-                    <td className="mono" style={{ padding: "6px 8px" }}>{f.status}</td>
+                    <td className="mono">{f.status}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
-            <p className="hint" style={{ color: "var(--on-dark-mute)", marginTop: 8 }}>
+            <p className="stat-hint" style={{ marginTop: 8 }}>
               Repairs a human must decide on appear in{" "}
               <Link href="/admin/approvals">the Approval Center</Link>.
             </p>
@@ -255,11 +274,17 @@ export default async function AdminOverview() {
         )}
       </div>
 
-      <div className="grid2" style={{ marginBottom: 30 }}>
-        <div className="cell">
-          <span className="tag">Door machine agents</span>
+      <div className="grid2" style={{ marginBottom: 26 }}>
+        <div className="adm-card">
+          <div className="adm-card-head">
+            <span className="stat-label">Door machine agents</span>
+            <Link href="/admin/agents" className="hint" style={{ color: "var(--pink)" }}>
+              Full roster →
+            </Link>
+          </div>
           {liveAgents.map((a) => (
-            <p key={a.agent_id} style={{ marginBottom: 8 }}>
+            <p key={a.agent_id} style={{ marginBottom: 10 }}>
+              <span className="health-dot hd-green" aria-hidden />
               <strong>
                 {a.agent_id} {a.name}
               </strong>{" "}
@@ -271,41 +296,65 @@ export default async function AdminOverview() {
             </p>
           ))}
         </div>
-        <div className="cell">
-          <span className="tag">What is NOT live (by design)</span>
-          <ul style={{ paddingLeft: 20, color: "var(--on-dark-mute)" }}>
+        <div className="adm-card">
+          <div className="adm-card-head">
+            <span className="stat-label">What is NOT live (by design)</span>
+            <Link href="/admin/system" className="hint" style={{ color: "var(--pink)" }}>
+              Switches →
+            </Link>
+          </div>
+          <ul style={{ paddingLeft: 20, color: "var(--on-dark-mute)", fontSize: ".9rem", lineHeight: 1.7 }}>
             <li>
-              DataForSEO live discovery — awaiting owner credentials (research shown is your seed
-              workbook, scored by A04)
+              Live discovery — awaiting owner credentials (research shown is your seed workbook,
+              scored by A04)
             </li>
-            <li>Model-written page copy + AI critic — awaiting OpenAI key (content bank v1 in use)</li>
+            <li>Model-written page copy + AI critic — AI policy ships all-off (see System)</li>
             <li>Public serving of doors — master switch OFF until launch gate</li>
             <li>Trust Network, provider recommendation, Customer Lite — later waves</li>
           </ul>
         </div>
       </div>
 
+      <div className="adm-card" style={{ marginBottom: 26 }}>
+        <div className="adm-card-head">
+          <span className="stat-label">Company OS coverage · canon 14A §17</span>
+          <span className="stat-hint">every named admin area — and where it lives today</span>
+        </div>
+        <div className="cover-grid">
+          {COVERAGE.map((c) =>
+            c.href ? (
+              <Link key={c.area} href={c.href} className="cover-item">
+                <span>
+                  {c.area}
+                  {c.note ? <span style={{ color: "var(--on-dark-faint)" }}> · {c.note}</span> : null}
+                </span>
+                <span className="cover-live">LIVE</span>
+              </Link>
+            ) : (
+              <div key={c.area} className="cover-item" style={{ opacity: 0.62 }}>
+                <span>{c.area}</span>
+                <span className="cover-later">{c.note?.toUpperCase() ?? "LATER WAVE"}</span>
+              </div>
+            )
+          )}
+        </div>
+      </div>
+
       <div className="grid3">
-        <Link href="/admin/opportunities" className="cell" style={{ textDecoration: "none" }}>
-          <span className="tag">Next →</span>
-          <strong>Review search opportunities</strong>
-          <p className="hint" style={{ color: "var(--on-dark-mute)" }}>
-            What A04 found and how it scored it.
-          </p>
+        <Link href="/admin/opportunities" className="stat-card" style={{ textDecoration: "none" }}>
+          <span className="stat-label">Next →</span>
+          <strong style={{ color: "var(--on-dark)" }}>Review search opportunities</strong>
+          <p className="stat-hint">What A04 found and how it scored it.</p>
         </Link>
-        <Link href="/admin/pages" className="cell" style={{ textDecoration: "none" }}>
-          <span className="tag">Next →</span>
-          <strong>Approve pages</strong>
-          <p className="hint" style={{ color: "var(--on-dark-mute)" }}>
-            Preview staged doors, see QA, publish.
-          </p>
+        <Link href="/admin/pages" className="stat-card" style={{ textDecoration: "none" }}>
+          <span className="stat-label">Next →</span>
+          <strong style={{ color: "var(--on-dark)" }}>Approve pages</strong>
+          <p className="stat-hint">Preview staged doors, see QA, publish.</p>
         </Link>
-        <Link href="/admin/controls" className="cell" style={{ textDecoration: "none" }}>
-          <span className="tag">Next →</span>
-          <strong>Page-creator controls</strong>
-          <p className="hint" style={{ color: "var(--on-dark-mute)" }}>
-            National vs local, quotas, thresholds, budgets.
-          </p>
+        <Link href="/admin/system" className="stat-card" style={{ textDecoration: "none" }}>
+          <span className="stat-label">Next →</span>
+          <strong style={{ color: "var(--on-dark)" }}>System &amp; safety</strong>
+          <p className="stat-hint">Flags, AI policy, kill switches, spend.</p>
         </Link>
       </div>
     </div>
