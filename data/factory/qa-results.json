@@ -3,45 +3,315 @@
   "results": [
     {
       "page_spec_id": "ps_ac_blowing_warm_air_v1",
+      "rule_set_version": "1.0.0",
+      "deterministic": {
+        "state": "PASS",
+        "checks_run": [
+          "duplicate.canonical_path",
+          "duplicate.title",
+          "duplication.cannibalization",
+          "content.intent_answer_present",
+          "content.not_thin",
+          "content.no_placeholder",
+          "content.heuristic_value_score",
+          "intake.attribution_matches",
+          "component.intake_embed",
+          "links.internal_root_relative",
+          "links.internal_resolvable",
+          "links.body_no_external",
+          "safety.urgency_block_present",
+          "index.noindex_reason_recorded",
+          "provenance.present",
+          "template.registered",
+          "template.conformance",
+          "structured_data.allow_list",
+          "structured_data.denied_type",
+          "structured_data.no_rating_markup",
+          "claims.no_unsupported_language",
+          "voice.no_manufactured_urgency",
+          "voice.no_directory_framing",
+          "voice.no_unsourced_price",
+          "claims.no_fabricated_statistic",
+          "claims.no_testimonial",
+          "voice.unqualified_verification_claim",
+          "a11y.image_alt_present",
+          "a11y.heading_order",
+          "a11y.no_second_h1",
+          "a11y.link_text_non_empty",
+          "perf.page_weight_proxy"
+        ],
+        "checks_skipped": [
+          {
+            "check": "a11y.color_contrast",
+            "status": "SKIPPED_NOT_MEASURABLE",
+            "why": "contrast is a property of computed styles in a rendered document. Measuring it needs a headless browser running an accessibility auditor against a real DOM; this repo has vitest only. NOT measured, therefore NOT passed."
+          },
+          {
+            "check": "a11y.focus_and_screen_reader",
+            "status": "SKIPPED_NOT_MEASURABLE",
+            "why": "focus order and screen-reader output are properties of the accessibility tree, which only exists in a browser. NOT measured, therefore NOT passed."
+          },
+          {
+            "check": "perf.load_time",
+            "status": "SKIPPED_NOT_MEASURABLE",
+            "why": "load time, LCP, CLS and real transfer weight need a network and a layout engine. `perf.page_weight_proxy` measures the markup A06 was handed and is explicitly a proxy, not a substitute."
+          }
+        ],
+        "unknown_required_checks": [],
+        "findings": []
+      },
+      "ai_critic": {
+        "status": "SKIPPED_NO_MODEL",
+        "reason": "no model is configured anywhere in this deployment — the AI critic did not run. This is NOT a pass: nothing has judged this page's voice, claims or usefulness.",
+        "findings": [],
+        "provider": null,
+        "cost_usd": null,
+        "latency_ms": null
+      },
+      "overall": "BLOCKED_PENDING_AI",
+      "blockers": [],
+      "release_eligible": true,
+      "release_reasons": [
+        "deterministic PASS with ai_critic=SKIPPED_NO_MODEL; a human still publishes every page, so this enters the owner's queue carrying the skipped-critic status, never a bare green PASS"
+      ],
       "state": "PASS",
       "reasons": [],
       "user_value_score": 80,
-      "critic_ran": true
+      "heuristic_score": 80
     },
     {
       "page_spec_id": "ps_furnace_blowing_cold_air_v1",
+      "rule_set_version": "1.0.0",
+      "deterministic": {
+        "state": "PASS",
+        "checks_run": [
+          "duplicate.canonical_path",
+          "duplicate.title",
+          "duplication.cannibalization",
+          "content.intent_answer_present",
+          "content.not_thin",
+          "content.no_placeholder",
+          "content.heuristic_value_score",
+          "intake.attribution_matches",
+          "component.intake_embed",
+          "links.internal_root_relative",
+          "links.internal_resolvable",
+          "links.body_no_external",
+          "safety.urgency_block_present",
+          "index.noindex_reason_recorded",
+          "provenance.present",
+          "template.registered",
+          "template.conformance",
+          "structured_data.allow_list",
+          "structured_data.denied_type",
+          "structured_data.no_rating_markup",
+          "claims.no_unsupported_language",
+          "voice.no_manufactured_urgency",
+          "voice.no_directory_framing",
+          "voice.no_unsourced_price",
+          "claims.no_fabricated_statistic",
+          "claims.no_testimonial",
+          "voice.unqualified_verification_claim",
+          "a11y.image_alt_present",
+          "a11y.heading_order",
+          "a11y.no_second_h1",
+          "a11y.link_text_non_empty",
+          "perf.page_weight_proxy"
+        ],
+        "checks_skipped": [
+          {
+            "check": "a11y.color_contrast",
+            "status": "SKIPPED_NOT_MEASURABLE",
+            "why": "contrast is a property of computed styles in a rendered document. Measuring it needs a headless browser running an accessibility auditor against a real DOM; this repo has vitest only. NOT measured, therefore NOT passed."
+          },
+          {
+            "check": "a11y.focus_and_screen_reader",
+            "status": "SKIPPED_NOT_MEASURABLE",
+            "why": "focus order and screen-reader output are properties of the accessibility tree, which only exists in a browser. NOT measured, therefore NOT passed."
+          },
+          {
+            "check": "perf.load_time",
+            "status": "SKIPPED_NOT_MEASURABLE",
+            "why": "load time, LCP, CLS and real transfer weight need a network and a layout engine. `perf.page_weight_proxy` measures the markup A06 was handed and is explicitly a proxy, not a substitute."
+          }
+        ],
+        "unknown_required_checks": [],
+        "findings": []
+      },
+      "ai_critic": {
+        "status": "SKIPPED_NO_MODEL",
+        "reason": "no model is configured anywhere in this deployment — the AI critic did not run. This is NOT a pass: nothing has judged this page's voice, claims or usefulness.",
+        "findings": [],
+        "provider": null,
+        "cost_usd": null,
+        "latency_ms": null
+      },
+      "overall": "BLOCKED_PENDING_AI",
+      "blockers": [],
+      "release_eligible": true,
+      "release_reasons": [
+        "deterministic PASS with ai_critic=SKIPPED_NO_MODEL; a human still publishes every page, so this enters the owner's queue carrying the skipped-critic status, never a bare green PASS"
+      ],
       "state": "PASS",
       "reasons": [],
       "user_value_score": 80,
-      "critic_ran": true
+      "heuristic_score": 80
     },
     {
       "page_spec_id": "ps_ac_freezing_up_v1",
+      "rule_set_version": "1.0.0",
+      "deterministic": {
+        "state": "PASS",
+        "checks_run": [
+          "duplicate.canonical_path",
+          "duplicate.title",
+          "duplication.cannibalization",
+          "content.intent_answer_present",
+          "content.not_thin",
+          "content.no_placeholder",
+          "content.heuristic_value_score",
+          "intake.attribution_matches",
+          "component.intake_embed",
+          "links.internal_root_relative",
+          "links.internal_resolvable",
+          "links.body_no_external",
+          "safety.urgency_block_present",
+          "index.noindex_reason_recorded",
+          "provenance.present",
+          "template.registered",
+          "template.conformance",
+          "structured_data.allow_list",
+          "structured_data.denied_type",
+          "structured_data.no_rating_markup",
+          "claims.no_unsupported_language",
+          "voice.no_manufactured_urgency",
+          "voice.no_directory_framing",
+          "voice.no_unsourced_price",
+          "claims.no_fabricated_statistic",
+          "claims.no_testimonial",
+          "voice.unqualified_verification_claim",
+          "a11y.image_alt_present",
+          "a11y.heading_order",
+          "a11y.no_second_h1",
+          "a11y.link_text_non_empty",
+          "perf.page_weight_proxy"
+        ],
+        "checks_skipped": [
+          {
+            "check": "a11y.color_contrast",
+            "status": "SKIPPED_NOT_MEASURABLE",
+            "why": "contrast is a property of computed styles in a rendered document. Measuring it needs a headless browser running an accessibility auditor against a real DOM; this repo has vitest only. NOT measured, therefore NOT passed."
+          },
+          {
+            "check": "a11y.focus_and_screen_reader",
+            "status": "SKIPPED_NOT_MEASURABLE",
+            "why": "focus order and screen-reader output are properties of the accessibility tree, which only exists in a browser. NOT measured, therefore NOT passed."
+          },
+          {
+            "check": "perf.load_time",
+            "status": "SKIPPED_NOT_MEASURABLE",
+            "why": "load time, LCP, CLS and real transfer weight need a network and a layout engine. `perf.page_weight_proxy` measures the markup A06 was handed and is explicitly a proxy, not a substitute."
+          }
+        ],
+        "unknown_required_checks": [],
+        "findings": []
+      },
+      "ai_critic": {
+        "status": "SKIPPED_NO_MODEL",
+        "reason": "no model is configured anywhere in this deployment — the AI critic did not run. This is NOT a pass: nothing has judged this page's voice, claims or usefulness.",
+        "findings": [],
+        "provider": null,
+        "cost_usd": null,
+        "latency_ms": null
+      },
+      "overall": "BLOCKED_PENDING_AI",
+      "blockers": [],
+      "release_eligible": true,
+      "release_reasons": [
+        "deterministic PASS with ai_critic=SKIPPED_NO_MODEL; a human still publishes every page, so this enters the owner's queue carrying the skipped-critic status, never a bare green PASS"
+      ],
       "state": "PASS",
       "reasons": [],
       "user_value_score": 80,
-      "critic_ran": true
+      "heuristic_score": 80
     },
     {
       "page_spec_id": "ps_why_is_my_ac_not_cooling_v1",
+      "rule_set_version": "1.0.0",
+      "deterministic": {
+        "state": "PASS",
+        "checks_run": [
+          "duplicate.canonical_path",
+          "duplicate.title",
+          "duplication.cannibalization",
+          "content.intent_answer_present",
+          "content.not_thin",
+          "content.no_placeholder",
+          "content.heuristic_value_score",
+          "intake.attribution_matches",
+          "component.intake_embed",
+          "links.internal_root_relative",
+          "links.internal_resolvable",
+          "links.body_no_external",
+          "safety.urgency_block_present",
+          "index.noindex_reason_recorded",
+          "provenance.present",
+          "template.registered",
+          "template.conformance",
+          "structured_data.allow_list",
+          "structured_data.denied_type",
+          "structured_data.no_rating_markup",
+          "claims.no_unsupported_language",
+          "voice.no_manufactured_urgency",
+          "voice.no_directory_framing",
+          "voice.no_unsourced_price",
+          "claims.no_fabricated_statistic",
+          "claims.no_testimonial",
+          "voice.unqualified_verification_claim",
+          "a11y.image_alt_present",
+          "a11y.heading_order",
+          "a11y.no_second_h1",
+          "a11y.link_text_non_empty",
+          "perf.page_weight_proxy"
+        ],
+        "checks_skipped": [
+          {
+            "check": "a11y.color_contrast",
+            "status": "SKIPPED_NOT_MEASURABLE",
+            "why": "contrast is a property of computed styles in a rendered document. Measuring it needs a headless browser running an accessibility auditor against a real DOM; this repo has vitest only. NOT measured, therefore NOT passed."
+          },
+          {
+            "check": "a11y.focus_and_screen_reader",
+            "status": "SKIPPED_NOT_MEASURABLE",
+            "why": "focus order and screen-reader output are properties of the accessibility tree, which only exists in a browser. NOT measured, therefore NOT passed."
+          },
+          {
+            "check": "perf.load_time",
+            "status": "SKIPPED_NOT_MEASURABLE",
+            "why": "load time, LCP, CLS and real transfer weight need a network and a layout engine. `perf.page_weight_proxy` measures the markup A06 was handed and is explicitly a proxy, not a substitute."
+          }
+        ],
+        "unknown_required_checks": [],
+        "findings": []
+      },
+      "ai_critic": {
+        "status": "SKIPPED_NO_MODEL",
+        "reason": "no model is configured anywhere in this deployment — the AI critic did not run. This is NOT a pass: nothing has judged this page's voice, claims or usefulness.",
+        "findings": [],
+        "provider": null,
+        "cost_usd": null,
+        "latency_ms": null
+      },
+      "overall": "BLOCKED_PENDING_AI",
+      "blockers": [],
+      "release_eligible": true,
+      "release_reasons": [
+        "deterministic PASS with ai_critic=SKIPPED_NO_MODEL; a human still publishes every page, so this enters the owner's queue carrying the skipped-critic status, never a bare green PASS"
+      ],
       "state": "PASS",
       "reasons": [],
       "user_value_score": 80,
-      "critic_ran": true
-    },
-    {
-      "page_spec_id": "ps_furnace_not_working_v1",
-      "state": "PASS",
-      "reasons": [],
-      "user_value_score": 80,
-      "critic_ran": true
-    },
-    {
-      "page_spec_id": "ps_furnace_short_cycling_v1",
-      "state": "PASS",
-      "reasons": [],
-      "user_value_score": 80,
-      "critic_ran": true
+      "heuristic_score": 80
     }
   ]
 }

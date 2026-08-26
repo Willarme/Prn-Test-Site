@@ -54,7 +54,8 @@
       "vendor_cost_usd": null,
       "researched_at": "2026-08-10T00:00:00Z",
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_furnace_blowing_cold_air_710b6b06",
@@ -94,7 +95,8 @@
       "vendor_cost_usd": null,
       "researched_at": "2026-08-10T00:00:00Z",
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_ac_not_turning_on_c390a8c5",
@@ -134,7 +136,8 @@
       "vendor_cost_usd": null,
       "researched_at": "2026-08-10T00:00:00Z",
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_ac_freezing_up_4db635a9",
@@ -174,7 +177,8 @@
       "vendor_cost_usd": null,
       "researched_at": "2026-08-10T00:00:00Z",
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_why_is_my_ac_not_cooling_abfd6984",
@@ -214,7 +218,8 @@
       "vendor_cost_usd": null,
       "researched_at": "2026-08-10T00:00:00Z",
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_furnace_not_working_81dce41c",
@@ -254,7 +259,8 @@
       "vendor_cost_usd": null,
       "researched_at": "2026-08-10T00:00:00Z",
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_furnace_short_cycling_7abd7fb7",
@@ -294,7 +300,8 @@
       "vendor_cost_usd": null,
       "researched_at": "2026-08-10T00:00:00Z",
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_concrete_calculator_3defdb7d",
@@ -334,7 +341,8 @@
       "vendor_cost_usd": null,
       "researched_at": "2026-08-10T00:00:00Z",
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_uuid_generator_27ba84ae",
@@ -374,7 +382,8 @@
       "vendor_cost_usd": null,
       "researched_at": "2026-08-10T00:00:00Z",
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_water_heater_leaking_from_bottom_cbcffd06",
@@ -414,7 +423,8 @@
       "vendor_cost_usd": null,
       "researched_at": "2026-08-10T00:00:00Z",
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_hash_generator_adbe0641",
@@ -454,7 +464,8 @@
       "vendor_cost_usd": null,
       "researched_at": "2026-08-10T00:00:00Z",
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_timestamp_converter_1ca6f316",
@@ -494,7 +505,8 @@
       "vendor_cost_usd": null,
       "researched_at": "2026-08-10T00:00:00Z",
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_hex_to_rgb_converter_a23ebf8d",
@@ -534,7 +546,8 @@
       "vendor_cost_usd": null,
       "researched_at": "2026-08-10T00:00:00Z",
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_slug_generator_1c658f9e",
@@ -574,7 +587,8 @@
       "vendor_cost_usd": null,
       "researched_at": "2026-08-10T00:00:00Z",
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_garage_door_won_t_close_a3ad6a42",
@@ -614,7 +628,8 @@
       "vendor_cost_usd": null,
       "researched_at": "2026-08-10T00:00:00Z",
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_concrete_slab_calculator_ffdff70d",
@@ -654,7 +669,8 @@
       "vendor_cost_usd": null,
       "researched_at": "2026-08-10T00:00:00Z",
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_gravel_calculator_c10869bb",
@@ -694,7 +710,8 @@
       "vendor_cost_usd": null,
       "researched_at": "2026-08-10T00:00:00Z",
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_garage_door_off_track_66270381",
@@ -734,7 +751,8 @@
       "vendor_cost_usd": null,
       "researched_at": "2026-08-10T00:00:00Z",
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_random_number_generator_44af6c79",
@@ -773,7 +791,8 @@
       "vendor_cost_usd": null,
       "researched_at": null,
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_aspect_ratio_calculator_7af274ff",
@@ -813,7 +832,8 @@
       "vendor_cost_usd": null,
       "researched_at": "2026-08-10T00:00:00Z",
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_garage_door_not_closing_all_the_way_47d65b70",
@@ -853,7 +873,8 @@
       "vendor_cost_usd": null,
       "researched_at": "2026-08-10T00:00:00Z",
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_garbage_disposal_not_working_35f82200",
@@ -893,7 +914,8 @@
       "vendor_cost_usd": null,
       "researched_at": "2026-08-10T00:00:00Z",
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_binary_converter_e3516c41",
@@ -932,7 +954,8 @@
       "vendor_cost_usd": null,
       "researched_at": null,
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_date_calculator_23eddab4",
@@ -972,7 +995,8 @@
       "vendor_cost_usd": null,
       "researched_at": "2026-08-10T00:00:00Z",
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_tip_calculator_e2af23a7",
@@ -1011,7 +1035,8 @@
       "vendor_cost_usd": null,
       "researched_at": null,
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_water_heater_leaking_d1a33945",
@@ -1051,7 +1076,8 @@
       "vendor_cost_usd": null,
       "researched_at": "2026-08-10T00:00:00Z",
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_age_calculator_ed9104c3",
@@ -1091,7 +1117,8 @@
       "vendor_cost_usd": null,
       "researched_at": "2026-08-10T00:00:00Z",
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_base64_encoder_4b4fff4b",
@@ -1131,7 +1158,8 @@
       "vendor_cost_usd": null,
       "researched_at": "2026-08-10T00:00:00Z",
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_color_picker_85a6bbeb",
@@ -1170,7 +1198,8 @@
       "vendor_cost_usd": null,
       "researched_at": null,
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_concrete_floor_calculator_05d5c7d1",
@@ -1210,7 +1239,8 @@
       "vendor_cost_usd": null,
       "researched_at": "2026-08-10T00:00:00Z",
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_time_zone_converter_f2be8bdf",
@@ -1250,7 +1280,8 @@
       "vendor_cost_usd": null,
       "researched_at": "2026-08-10T00:00:00Z",
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_password_generator_dbea338e",
@@ -1290,7 +1321,8 @@
       "vendor_cost_usd": null,
       "researched_at": "2026-08-10T00:00:00Z",
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_color_palette_generator_9d0237f1",
@@ -1330,7 +1362,8 @@
       "vendor_cost_usd": null,
       "researched_at": "2026-08-10T00:00:00Z",
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_paint_calculator_b1718404",
@@ -1370,7 +1403,8 @@
       "vendor_cost_usd": null,
       "researched_at": "2026-08-10T00:00:00Z",
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_roman_numeral_converter_f6056abb",
@@ -1409,7 +1443,8 @@
       "vendor_cost_usd": null,
       "researched_at": null,
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_fence_calculator_ff777a51",
@@ -1449,7 +1484,8 @@
       "vendor_cost_usd": null,
       "researched_at": "2026-08-10T00:00:00Z",
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_concrete_slab_cost_calculator_5419640a",
@@ -1489,7 +1525,8 @@
       "vendor_cost_usd": null,
       "researched_at": "2026-08-10T00:00:00Z",
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_sump_pump_not_working_d4837c67",
@@ -1529,7 +1566,8 @@
       "vendor_cost_usd": null,
       "researched_at": "2026-08-10T00:00:00Z",
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_driveway_gravel_calculator_60e2db80",
@@ -1569,7 +1607,8 @@
       "vendor_cost_usd": null,
       "researched_at": "2026-08-10T00:00:00Z",
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_percentage_calculator_e4be0c48",
@@ -1608,7 +1647,8 @@
       "vendor_cost_usd": null,
       "researched_at": null,
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_pea_gravel_calculator_2698b3a7",
@@ -1648,7 +1688,8 @@
       "vendor_cost_usd": null,
       "researched_at": "2026-08-10T00:00:00Z",
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_how_much_gravel_do_i_need_ee69092c",
@@ -1688,7 +1729,8 @@
       "vendor_cost_usd": null,
       "researched_at": "2026-08-10T00:00:00Z",
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_flooring_calculator_3c81e90c",
@@ -1728,7 +1770,8 @@
       "vendor_cost_usd": null,
       "researched_at": "2026-08-10T00:00:00Z",
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_electrical_burning_smell_b5149946",
@@ -1768,7 +1811,8 @@
       "vendor_cost_usd": null,
       "researched_at": "2026-08-10T00:00:00Z",
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_carpet_calculator_6d9db577",
@@ -1808,7 +1852,8 @@
       "vendor_cost_usd": null,
       "researched_at": "2026-08-10T00:00:00Z",
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_circuit_breaker_keeps_tripping_874b3834",
@@ -1848,7 +1893,8 @@
       "vendor_cost_usd": null,
       "researched_at": "2026-08-10T00:00:00Z",
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_fence_material_calculator_22cc292c",
@@ -1888,7 +1934,8 @@
       "vendor_cost_usd": null,
       "researched_at": "2026-08-10T00:00:00Z",
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_wood_fence_calculator_54d60364",
@@ -1928,7 +1975,8 @@
       "vendor_cost_usd": null,
       "researched_at": "2026-08-10T00:00:00Z",
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_meta_tag_generator_831222f2",
@@ -1967,7 +2015,8 @@
       "vendor_cost_usd": null,
       "researched_at": null,
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_outlet_not_working_c9cdf751",
@@ -2007,7 +2056,8 @@
       "vendor_cost_usd": null,
       "researched_at": "2026-08-10T00:00:00Z",
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_json_formatter_f025bf92",
@@ -2047,7 +2097,8 @@
       "vendor_cost_usd": null,
       "researched_at": "2026-08-10T00:00:00Z",
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_sql_formatter_4fea28f8",
@@ -2087,7 +2138,8 @@
       "vendor_cost_usd": null,
       "researched_at": "2026-08-10T00:00:00Z",
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_lights_flickering_in_house_b2eed658",
@@ -2127,7 +2179,8 @@
       "vendor_cost_usd": null,
       "researched_at": "2026-08-10T00:00:00Z",
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_html_encoder_c4474da7",
@@ -2166,7 +2219,8 @@
       "vendor_cost_usd": null,
       "researched_at": null,
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_water_leaking_from_ceiling_52dffe91",
@@ -2206,7 +2260,8 @@
       "vendor_cost_usd": null,
       "researched_at": "2026-08-10T00:00:00Z",
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_water_leaking_from_ceiling_after_rain_0e80c447",
@@ -2246,7 +2301,8 @@
       "vendor_cost_usd": null,
       "researched_at": "2026-08-10T00:00:00Z",
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_markdown_editor_37a0f1be",
@@ -2285,7 +2341,8 @@
       "vendor_cost_usd": null,
       "researched_at": null,
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_schedule_builder_95fb9712",
@@ -2324,7 +2381,8 @@
       "vendor_cost_usd": null,
       "researched_at": null,
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_drywall_calculator_e38d1e0d",
@@ -2364,7 +2422,8 @@
       "vendor_cost_usd": null,
       "researched_at": "2026-08-10T00:00:00Z",
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_tile_calculator_5c7a97b4",
@@ -2404,7 +2463,8 @@
       "vendor_cost_usd": null,
       "researched_at": "2026-08-10T00:00:00Z",
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_line_counter_fc8a6dd0",
@@ -2444,7 +2504,8 @@
       "vendor_cost_usd": null,
       "researched_at": "2026-08-10T00:00:00Z",
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_character_counter_e3837405",
@@ -2484,7 +2545,8 @@
       "vendor_cost_usd": null,
       "researched_at": "2026-08-10T00:00:00Z",
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_mulch_calculator_1b848c59",
@@ -2524,7 +2586,8 @@
       "vendor_cost_usd": null,
       "researched_at": "2026-08-10T00:00:00Z",
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_square_footage_calculator_f3004094",
@@ -2564,7 +2627,8 @@
       "vendor_cost_usd": null,
       "researched_at": "2026-08-10T00:00:00Z",
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_count_lines_in_text_aafc11d6",
@@ -2603,7 +2667,8 @@
       "vendor_cost_usd": null,
       "researched_at": null,
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_code_line_counter_online_74a3c7f0",
@@ -2642,7 +2707,8 @@
       "vendor_cost_usd": null,
       "researched_at": null,
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_character_count_without_spaces_38e8364d",
@@ -2681,7 +2747,8 @@
       "vendor_cost_usd": null,
       "researched_at": null,
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_letter_counter_online_8d1fe831",
@@ -2720,7 +2787,8 @@
       "vendor_cost_usd": null,
       "researched_at": null,
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_unix_timestamp_converter_milliseconds_65a00274",
@@ -2759,7 +2827,8 @@
       "vendor_cost_usd": null,
       "researched_at": null,
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_epoch_milliseconds_converter_f4fafa89",
@@ -2798,7 +2867,8 @@
       "vendor_cost_usd": null,
       "researched_at": null,
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_bulk_uuid_generator_44aef57c",
@@ -2837,7 +2907,8 @@
       "vendor_cost_usd": null,
       "researched_at": null,
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_uuid_v4_generator_bulk_2601fefc",
@@ -2876,7 +2947,8 @@
       "vendor_cost_usd": null,
       "researched_at": null,
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_sha256_hash_generator_online_a74a9fd9",
@@ -2915,7 +2987,8 @@
       "vendor_cost_usd": null,
       "researched_at": null,
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_checksum_generator_online_b420527d",
@@ -2954,7 +3027,8 @@
       "vendor_cost_usd": null,
       "researched_at": null,
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_aspect_ratio_calculator_pixels_9454a4ee",
@@ -2993,7 +3067,8 @@
       "vendor_cost_usd": null,
       "researched_at": null,
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_16_9_aspect_ratio_calculator_d42bcbdd",
@@ -3032,7 +3107,8 @@
       "vendor_cost_usd": null,
       "researched_at": null,
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_mulch_cubic_yards_calculator_67e911f6",
@@ -3071,7 +3147,8 @@
       "vendor_cost_usd": null,
       "researched_at": null,
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_how_much_mulch_do_i_need_calculator_1ad7677a",
@@ -3110,7 +3187,8 @@
       "vendor_cost_usd": null,
       "researched_at": null,
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_fence_post_spacing_calculator_f5e4cb90",
@@ -3149,7 +3227,8 @@
       "vendor_cost_usd": null,
       "researched_at": null,
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_picket_spacing_calculator_21436c8f",
@@ -3188,7 +3267,8 @@
       "vendor_cost_usd": null,
       "researched_at": null,
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_irregular_room_square_footage_calculator_0dc954fc",
@@ -3227,7 +3307,8 @@
       "vendor_cost_usd": null,
       "researched_at": null,
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_wall_square_footage_calculator_ec162dbe",
@@ -3266,7 +3347,8 @@
       "vendor_cost_usd": null,
       "researched_at": null,
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_cabinet_paint_calculator_bfdddccc",
@@ -3305,7 +3387,8 @@
       "vendor_cost_usd": null,
       "researched_at": null,
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_ceiling_paint_calculator_75830107",
@@ -3344,7 +3427,8 @@
       "vendor_cost_usd": null,
       "researched_at": null,
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_words_from_letters_generator_9e2997e1",
@@ -3383,7 +3467,8 @@
       "vendor_cost_usd": null,
       "researched_at": null,
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_remove_duplicate_lines_1f42a80e",
@@ -3423,7 +3508,8 @@
       "vendor_cost_usd": null,
       "researched_at": "2026-08-10T00:00:00Z",
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_word_unscrambler_8c3960b6",
@@ -3463,7 +3549,8 @@
       "vendor_cost_usd": null,
       "researched_at": "2026-08-10T00:00:00Z",
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_remove_duplicate_lines_from_list_391455c2",
@@ -3502,7 +3589,8 @@
       "vendor_cost_usd": null,
       "researched_at": null,
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_remove_duplicate_rows_online_da0e9849",
@@ -3541,7 +3629,8 @@
       "vendor_cost_usd": null,
       "researched_at": null,
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_base64_image_encoder_b50c1a46",
@@ -3580,7 +3669,8 @@
       "vendor_cost_usd": null,
       "researched_at": null,
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_url_safe_base64_encoder_9cc3600d",
@@ -3619,7 +3709,8 @@
       "vendor_cost_usd": null,
       "researched_at": null,
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_json_beautifier_online_c4f9fe9f",
@@ -3658,7 +3749,8 @@
       "vendor_cost_usd": null,
       "researched_at": null,
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_json_pretty_print_online_3aae8b58",
@@ -3697,7 +3789,8 @@
       "vendor_cost_usd": null,
       "researched_at": null,
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_mysql_formatter_online_41aaee27",
@@ -3736,7 +3829,8 @@
       "vendor_cost_usd": null,
       "researched_at": null,
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_postgresql_formatter_online_3362c1b5",
@@ -3775,7 +3869,8 @@
       "vendor_cost_usd": null,
       "researched_at": null,
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     },
     {
       "search_opportunity_id": "so_seed_7_letter_word_unscrambler_3f8a7487",
@@ -3814,7 +3909,8 @@
       "vendor_cost_usd": null,
       "researched_at": null,
       "created_at": "2026-08-14T18:00:00Z",
-      "updated_at": null
+      "updated_at": null,
+      "score_version": "1.0.0"
     }
   ]
 }

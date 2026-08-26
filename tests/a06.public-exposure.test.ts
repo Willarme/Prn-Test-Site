@@ -106,9 +106,9 @@ describe("nothing A06 produces reaches an unauthenticated route", () => {
    * exact booleans, as before; only the expected value of the one the owner
    * ruled on has moved.
    */
-  it("the staged listing flag is OFF by owner ruling, and the doors master switch is still OFF", () => {
+  it("the staged listing flag is OFF by owner ruling; the doors master switch is ON by owner directive 2026-08-26 (test environment)", () => {
     expect(flagEnabled("staged_listing_public")).toBe(false);
-    expect(flagEnabled("seo_doors_enabled")).toBe(false);
+    expect(flagEnabled("seo_doors_enabled")).toBe(true);
   });
 
   it("both noindex layers are untouched by this build", () => {

@@ -15,7 +15,9 @@ describe("feature flags", () => {
 
   it("keeps every RISKY surface off until its wave gate", () => {
     for (const key of [
-      "seo_doors_enabled",
+      // seo_doors_enabled REMOVED from this list 2026-08-26: flipped ON by
+      // owner directive (test environment) — see flags.ts OWNER-DIRECTIVE-
+      // 2026-08-26. The publish gate in front of it is unchanged and tested.
       "trust_enabled",
       "monetization_enabled",
       "mcp_enabled",

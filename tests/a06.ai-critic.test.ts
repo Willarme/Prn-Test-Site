@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync, statSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import { SAMPLE_PAGE_SPEC } from "@/domain/search/fixtures/sample-page-spec";
@@ -25,7 +25,7 @@ import {
 import { CAPABILITY_REGISTRY } from "@/platform/capabilities/registry";
 
 /**
- * A06 STEP 4 — THE AI CRITIC, AND THE RECLASSIFICATION OF THE ONE THAT WAS
+ * A06 STEP 4 â€” THE AI CRITIC, AND THE RECLASSIFICATION OF THE ONE THAT WAS
  * PRETENDING TO BE ONE (conditions C3 and C4).
  */
 
@@ -50,7 +50,7 @@ function withCopy(copy: string): PageSpec {
   });
 }
 
-describe("with no model configured — SKIPPED_NO_MODEL, and it is never a pass", () => {
+describe("with no model configured â€” SKIPPED_NO_MODEL, and it is never a pass", () => {
   /**
    * WHAT THIS USED TO ASSERT: "no critic capability is registered, so nothing is
    * wired." True until 2026-08-25, when one was implemented and registered.
@@ -58,14 +58,21 @@ describe("with no model configured — SKIPPED_NO_MODEL, and it is never a pass"
    * The protection moves to the distinction that carries the weight now:
    * REGISTRATION IS NOT ENABLEMENT. A registered contract must never silently
    * start a stage, so the run mode asks whether the critic is ENABLED, and it
-   * ships off. Everything below this line — SKIPPED_NO_MODEL on every real page,
-   * never a pass, never invoked after a deterministic blocker — is unchanged and
+   * ships off. Everything below this line â€” SKIPPED_NO_MODEL on every real page,
+   * never a pass, never invoked after a deterministic blocker â€” is unchanged and
    * still passing, which is the actual claim worth making.
    */
-  it("a critic capability is registered, and it is OFF", async () => {
+  it("a critic capability is registered — and OFF unless an owner policy document turns it on (2026-08-26 owner directive: ON in a live test environment)", async () => {
     expect(criticCapabilityRegistered()).toBe(true);
     expect(CAPABILITY_REGISTRY.map((c) => c.capability_key)).toContain(PAGE_CRITIC_CAPABILITY);
-    expect(await criticEnabled()).toBe(false);
+    // ai.flags-off-parity owns the "shipped = off" guarantee. When the runtime
+    // policy document exists this environment is deliberately ON, so the
+    // enablement assertion tracks the document instead of fighting it.
+    if (existsSync(join(process.cwd(), "data", "ai-policy.json"))) {
+      expect(await criticEnabled()).toBe(true);
+    } else {
+      expect(await criticEnabled()).toBe(false);
+    }
   });
 
   it("the gateway adapter reports SKIPPED_NO_MODEL and says what that does NOT mean", async () => {
@@ -115,7 +122,7 @@ describe("with no model configured — SKIPPED_NO_MODEL, and it is never a pass"
 });
 
 describe("the critic is NEVER invoked when the deterministic stage already blocked", () => {
-  it("critique() is not called at all — a failed page never pays for a critic", async () => {
+  it("critique() is not called at all â€” a failed page never pays for a critic", async () => {
     const critique = vi.fn();
     const spy: AICritic = { id: "spy", critique: critique as never };
     const broken = variant({ source_fact_bundle_ids: [] });
@@ -156,7 +163,7 @@ describe("the critic is NEVER invoked when the deterministic stage already block
  *
  * A06 checks these families deterministically too, so on the default policy the
  * deterministic stage blocks first and the critic is correctly never invoked.
- * Demoting them here is not a workaround — it is the honest way to exercise the
+ * Demoting them here is not a workaround â€” it is the honest way to exercise the
  * SECOND layer, and it demonstrates the redundancy argument directly: with A06's
  * own pattern check turned down, the critic still catches the same copy.
  */
@@ -187,7 +194,7 @@ describe("a critic that fails is not a critic that passed", () => {
 
   it("a critic returning PASS alongside a blocker is DOWNGRADED to FAIL", async () => {
     const contradictory = stubVoiceCritic({ severity: "blocker", forceStatus: "PASS" });
-    const result = await runPageQa(withCopy("Act now — our verified providers cost about $99."), {
+    const result = await runPageQa(withCopy("Act now â€” our verified providers cost about $99."), {
       critic: contradictory,
       policy: CRITIC_REACHABLE,
     });
@@ -201,10 +208,10 @@ describe("a critic that fails is not a critic that passed", () => {
  * "with a stubbed AICriticAdapter in tests, each of the four patterns produces a
  * voice_claim_policy finding".
  */
-describe("C4 Definition of Done — four patterns, four voice_claim_policy findings", () => {
+describe("C4 Definition of Done â€” four patterns, four voice_claim_policy findings", () => {
   const cases: Array<[string, string]> = [
     ["unsourced_price", "A visit usually costs about $180 in this area."],
-    ["manufactured_urgency", "Act now — don't wait, this only gets worse."],
+    ["manufactured_urgency", "Act now â€” don't wait, this only gets worse."],
     ["directory_framing", "Compare providers and choose from our network."],
     ["unqualified_verification_claim", "All of our providers are verified and insured."],
   ];
@@ -226,7 +233,7 @@ describe("C4 Definition of Done — four patterns, four voice_claim_policy findi
     });
   }
 
-  it("critic findings at MAJOR do not block release — findings are not verdicts", async () => {
+  it("critic findings at MAJOR do not block release â€” findings are not verdicts", async () => {
     const result = await runPageQa(withCopy("All of our providers are verified and insured."), {
       critic: stubVoiceCritic({ severity: "major" }),
     });
@@ -235,8 +242,8 @@ describe("C4 Definition of Done — four patterns, four voice_claim_policy findi
     expect(result.release_eligible).toBe(true);
   });
 
-  it("critic findings at BLOCKER do block release — the one gate reads blockers, whoever raised them", async () => {
-    const result = await runPageQa(withCopy("Act now — don't wait."), {
+  it("critic findings at BLOCKER do block release â€” the one gate reads blockers, whoever raised them", async () => {
+    const result = await runPageQa(withCopy("Act now â€” don't wait."), {
       critic: stubVoiceCritic({ severity: "blocker" }),
       policy: CRITIC_REACHABLE,
     });
@@ -246,10 +253,10 @@ describe("C4 Definition of Done — four patterns, four voice_claim_policy findi
   });
 });
 
-describe("fixtureCritic reclassified — the heuristic is honest about what it is", () => {
+describe("fixtureCritic reclassified â€” the heuristic is honest about what it is", () => {
   /**
-   * COMMENTS ARE STRIPPED FIRST. Naming the removed function in prose — to
-   * record what it was and why it went — is not the same as still having it, the
+   * COMMENTS ARE STRIPPED FIRST. Naming the removed function in prose â€” to
+   * record what it was and why it went â€” is not the same as still having it, the
    * same distinction A05's homepage leak scan draws. What must be gone is the
    * CODE: no declaration, no call, no export.
    */
@@ -272,7 +279,7 @@ describe("fixtureCritic reclassified — the heuristic is honest about what it i
     }
   });
 
-  it("the arithmetic is unchanged — no page's user_value_score moved", () => {
+  it("the arithmetic is unchanged â€” no page's user_value_score moved", () => {
     // The shipped constants, recomputed by hand for the handcrafted door:
     // 40 base + min(25, 6 kinds * 5) + min(20, floor(4381/200)) + 5 family
     // + 5 urgency + 5 handcrafted, capped at 100.
@@ -326,7 +333,7 @@ describe("the stub is a test double and never reaches a production path", () => 
     }
   });
 
-  it("A06's model route is the gateway and nothing else — no vendor SDK anywhere in it", () => {
+  it("A06's model route is the gateway and nothing else â€” no vendor SDK anywhere in it", () => {
     const critic = readFileSync(
       join(process.cwd(), "src/platform/search/page-qa-critic.ts"),
       "utf-8"

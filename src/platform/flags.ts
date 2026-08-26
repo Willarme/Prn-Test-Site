@@ -15,7 +15,28 @@ export type FeatureFlag = z.infer<typeof FeatureFlag>;
  * owner's standing approval); the risky flags stay OFF until their gates.
  */
 export const DEFAULT_FLAGS: readonly FeatureFlag[] = [
-  { flag_key: "seo_doors_enabled", enabled: false, description: "Serve published IntentPages publicly", decision_ref: null },
+  {
+    /**
+     * ✔ DECIDED — OWNER DIRECTIVE, Josh, 2026-08-26: ON for the test
+     * environment. His words: "make it live, this is a test environment, not
+     * the real thing, so it shouldn't matter." This is the master switch for
+     * serving published IntentPages at /problems/*, and the publish gate
+     * (release_eligible) still stands in front of what may be served. The
+     * site remains noindex site-wide (robots.ts), so nothing is discoverable
+     * by search engines; before PRODUCTION the owner should consciously
+     * re-rule.
+     *
+     * HISTORY, kept because it explains the shape of the code: this shipped
+     * false with decision_ref null — "off until its wave gate" — precisely so
+     * that flipping it would need an owner and not a code change. That is
+     * what happened here: the flag did its job.
+     */
+    flag_key: "seo_doors_enabled",
+    enabled: true,
+    description:
+      "Serve published IntentPages publicly — ON by owner directive (test environment), Josh 2026-08-26",
+    decision_ref: "OWNER-DIRECTIVE-2026-08-26",
+  },
   /**
    * ✔ DECIDED — OWNER RULING, Josh, 2026-08-25. Coherence report issue 16 is
    * closed. This is no longer a question; it is the record of the answer.

@@ -34,3 +34,10 @@ yarn-error.log*
 
 # local runtime data (fixture journeys) — never committed
 /data/runtime/
+
+# the owner's live AI policy document — runtime state, never committed.
+# The shipped defaults stay all-off (proven by ai.flags-off-parity.test.ts);
+# an owner turns the engine on per environment by writing this file, exactly
+# as canon intends ("a document an owner edits live"). Owner directive
+# 2026-08-26: ON in the local test environment.
+/data/ai-policy.json

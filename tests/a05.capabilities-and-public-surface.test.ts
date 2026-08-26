@@ -133,10 +133,10 @@ describe("issue 16 — the public staged listing, hidden by owner ruling", () =>
     expect(staged).toMatch(/robots:\s*\{\s*index:\s*false,\s*follow:\s*false\s*\}/);
   });
 
-  it("/problems/[slug] is still gated on seo_doors_enabled — layer two", () => {
+  it("/problems/[slug] is still gated on seo_doors_enabled — layer two (flag ON by owner directive 2026-08-26, test environment; the gate code is the point)", () => {
     const problems = readFileSync(join(process.cwd(), "src/app/problems/[slug]/page.tsx"), "utf-8");
     expect(problems).toMatch(/seo_doors_enabled/);
-    expect(flagEnabled("seo_doors_enabled")).toBe(false);
+    expect(flagEnabled("seo_doors_enabled")).toBe(true);
   });
 
   /**

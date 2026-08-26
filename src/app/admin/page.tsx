@@ -305,12 +305,14 @@ export default async function AdminOverview() {
           </div>
           <ul style={{ paddingLeft: 20, color: "var(--on-dark-mute)", fontSize: ".9rem", lineHeight: 1.7 }}>
             <li>
-              Live discovery — awaiting owner credentials (research shown is your seed workbook,
-              scored by A04)
+              Live discovery — awaiting owner credentials for the discovery vendor (research shown
+              is your seed workbook, scored by A04)
             </li>
-            <li>Model-written page copy + AI critic — AI policy ships all-off (see System)</li>
-            <li>Public serving of doors — master switch OFF until launch gate</li>
-            <li>Trust Network, provider recommendation, Customer Lite — later waves</li>
+            <li>
+              AI engine — ON in THIS environment by owner directive (runtime policy doc); a fresh
+              deployment still ships all-off until its own owner writes the policy
+            </li>
+            <li>Trust Network, provider recommendation, Customer Lite — later waves (code not yet built)</li>
           </ul>
         </div>
       </div>

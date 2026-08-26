@@ -1,3 +1,5 @@
+import { existsSync } from "node:fs";
+import { join } from "node:path";
 import { beforeEach, describe, expect, it } from "vitest";
 import { SAMPLE_PAGE_SPEC } from "@/domain/search/fixtures/sample-page-spec";
 import { PageSpec } from "@/domain/search/pages";
@@ -92,9 +94,14 @@ beforeEach(() => {
 });
 
 describe("registration is not enablement", () => {
-  it("a critic capability is registered, and it is OFF in the shipped policy", async () => {
+  it("a critic capability is registered, and OFF unless an owner policy document exists (2026-08-26 owner directive: ON in a live test environment)", async () => {
     expect(criticCapabilityRegistered()).toBe(true);
-    expect(await criticEnabled()).toBe(false);
+    // The shipped default stays off forever (asserted below). criticEnabled()
+    // reads the REAL store, which an owner may deliberately flip in a live
+    // environment via data/ai-policy.json — ai.flags-off-parity owns the
+    // fresh-checkout guarantee.
+    const ownerDoc = existsSync(join(process.cwd(), "data", "ai-policy.json"));
+    expect(await criticEnabled()).toBe(ownerDoc);
     expect(DEFAULT_AI_POLICY.capabilities["seo.critique_page"].enabled).toBe(false);
   });
 
