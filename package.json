@@ -3,6 +3,10 @@
   "version": "0.0.1",
   "private": true,
   "description": "Property Response Network — Black Car trial. One repo, one canonical data model, one shared capability layer.",
+  "allowScripts": {
+    "esbuild": true,
+    "sharp": true
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
