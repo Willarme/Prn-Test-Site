@@ -908,3 +908,17 @@ a.cover-item:hover {
     padding: 26px 18px 80px;
   }
 }
+
+/* THE PAGE EDITOR — form + live draft preview side by side. Grid, not
+   floats: the preview pane sticks while the form scrolls. */
+.page-editor-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 460px) minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+@media (max-width: 1100px) {
+  .page-editor-grid {
+    grid-template-columns: 1fr;
+  }
+}
