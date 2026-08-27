@@ -1,0 +1,10 @@
+{
+  "headers": [
+    {
+      "source": "/feature/:path*",
+      "headers": [
+        { "key": "X-Robots-Tag", "value": "noindex, nofollow" }
+      ]
+    }
+  ]
+}

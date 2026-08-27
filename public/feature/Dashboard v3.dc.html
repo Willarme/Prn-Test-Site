@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>
+/* Use the vendored copies so the page renders with no network. Without this the
+   runtime waits on unpkg.com, and a blocked or slow CDN leaves the raw {{ }} template on screen. */
+window.__resources = {
+  "https://unpkg.com/react@18.3.1/umd/react.production.min.js": "./vendor/react.js",
+  "https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js": "./vendor/react-dom.js",
+  "https://unpkg.com/@babel/standalone@7.29.0/babel.min.js": "./vendor/babel.js"
+};
+</script>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="description" content="Property Response Network — your home starts working like one connected asset instead of twenty unrelated problems." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="crossorigin" />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&amp;family=Public+Sans:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap" rel="stylesheet" />
+<style>
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:#F4F4F1;color:#12161A;font-family:"Public Sans",system-ui,sans-serif;font-size:16.5px;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+*,*::before,*::after{box-sizing:border-box}
+a{color:#C1004F;text-decoration:none}
+a:hover{color:#FF2E7E}
+button,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid #FF2E7E;outline-offset:3px}
+@keyframes prnfade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes prnping{0%{transform:scale(1);opacity:.55}70%{transform:scale(2.1);opacity:0}100%{opacity:0}}
+
+/* --- responsive: the v2 pages had no breakpoints at all.
+   The runtime re-serializes inline styles, so match on the property name and
+   restore only the grids that genuinely need to stay multi-column. --- */
+@media (max-width:860px){
+  [style*="grid-template-columns"]{grid-template-columns:1fr!important}
+  [style*="repeat(5"]{grid-template-columns:repeat(5,1fr)!important}
+  [style*="440px"]{grid-template-columns:repeat(3,1fr)!important}
+}
+@media (max-width:640px){
+  section{padding-top:46px!important;padding-bottom:46px!important}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* keep the founders ribbon clear of the nav CTA */
+@media (min-width:901px){div[style*="position:sticky"]>div{padding-right:158px!important}}
+@media (max-width:900px){div[style*="position:sticky"]>div{padding-right:118px!important}}
+</style>
+</helmet>
+
+<div style="background:#F4F4F1">
+
+<div aria-hidden="true" style="position:fixed;top:0;right:0;width:190px;height:190px;overflow:hidden;pointer-events:none;z-index:400"><div style="position:absolute;top:38px;right:-54px;width:230px;transform:rotate(45deg);background:#0B7A43;color:#fff;text-align:center;padding:10px 0;box-shadow:0 6px 18px rgba(0,0,0,.26);font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 104,'wght' 800;font-size:.8rem;letter-spacing:.08em;line-height:1.18"><b style="display:block;font-size:.95rem;letter-spacing:.12em">FREE</b>for Founders</div></div>
+<div style="position:sticky;top:0;z-index:150;background:rgba(244,244,241,.93);backdrop-filter:blur(14px);border-bottom:1px solid rgba(18,22,26,.12)">
+  <div style="width:100%;max-width:1180px;margin:0 auto;padding:0 26px;display:flex;align-items:center;gap:22px;height:64px">
+    <a href="One Connected Home.dc.html" style="display:flex;align-items:center;gap:10px;flex:none;color:#12161A">
+      <span style="width:14px;height:18px;background:#FF2E7E;clip-path:polygon(0 0,100% 18%,0 42%,0 100%,17% 100%,17% 0)"></span>
+      <span style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 100,'wght' 700;font-size:.82rem;letter-spacing:.03em">PRN</span>
+    </a>
+    <div style="display:flex;gap:16px;margin-left:auto;align-items:center;flex-wrap:wrap;font-size:.8rem">
+      <a href="One Connected Home.dc.html" style="color:#5A6462;padding:4px 0">Overview</a>
+      <a href="Dashboard v3.dc.html" style="color:#12161A;border-bottom:1px solid #FF2E7E;padding:4px 0">Dashboard</a>
+      <a href="Trust Network v3.dc.html" style="color:#5A6462;padding:4px 0">Trust Network</a>
+      <a href="SmartQuote v3.dc.html" style="color:#5A6462;padding:4px 0">SmartQuote</a>
+      <a href="Home Memory v2.dc.html" style="color:#5A6462;padding:4px 0">Home Memory</a>
+      <a href="Provider OS v2.dc.html" style="color:#5A6462;padding:4px 0">For providers</a>
+    </div>
+    <a href="#pulse" style="display:inline-flex;align-items:center;background:#12161A;color:#F4F4F1;border-radius:4px;font-weight:600;font-size:.78rem;padding:9px 14px;flex:none">Get early access</a>
+  </div>
+</div>
+
+<section style="padding:70px 0 54px;background-image:linear-gradient(rgba(18,22,26,.055) 1px,transparent 1px),linear-gradient(90deg,rgba(18,22,26,.055) 1px,transparent 1px);background-size:72px 72px;background-position:center">
+  <div style="width:100%;max-width:1180px;margin:0 auto;padding:0 26px;text-align:center">
+    <p style="font-family:'JetBrains Mono',monospace;font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;color:#5A6462;margin:0 0 22px">Concept preview · My Property Record</p>
+    <h1 style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 118,'wght' 800;font-size:clamp(2.4rem,6.2vw,5rem);line-height:.98;letter-spacing:-.025em;margin:0 auto 20px;max-width:20ch;text-wrap:balance">Twenty unrelated problems. <em style="font-style:normal;color:#C1004F">One connected asset.</em></h1>
+    <p style="font-size:clamp(1.05rem,1.6vw,1.3rem);color:#5A6462;margin:0 auto 6px;max-width:44ch">Your dashboard is where the house starts answering for itself.</p>
+    <p style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 108,'wght' 700;font-size:clamp(1.05rem,1.6vw,1.25rem);margin:0 auto;max-width:40ch">You stop carrying your home in your head.</p>
+  </div>
+</section>
+
+<section style="padding:0 0 84px">
+  <div style="width:100%;max-width:1180px;margin:0 auto;padding:0 26px">
+    <div style="background:#14181B;color:#EDEFEB;border-radius:16px;padding:52px 44px;box-shadow:0 40px 90px -50px rgba(18,22,26,.9);display:grid;grid-template-columns:360px 1fr;gap:52px;align-items:center">
+
+      <div style="position:relative;background:#0E1214;border:9px solid #2A3238;border-radius:38px;padding:14px 12px;box-shadow:0 30px 60px -24px rgba(0,0,0,.9)">
+        <div style="height:22px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;font-family:'JetBrains Mono',monospace;font-size:.6rem;color:#6C7877"><span>8:12</span><span>▲ ▮</span></div>
+        <div style="background:#181E22;border-radius:24px;padding:18px 16px 20px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:18px">
+            <span style="width:11px;height:14px;background:#FF2E7E;clip-path:polygon(0 0,100% 18%,0 42%,0 100%,17% 100%,17% 0)"></span>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:.58rem;letter-spacing:.14em;text-transform:uppercase;color:#6C7877">1114 Oakhurst</span>
+          </div>
+
+          <div style="display:flex;justify-content:center;margin-bottom:18px">
+            <div style="position:relative;width:150px;height:150px">
+              <svg width="150" height="150" viewBox="0 0 150 150" aria-hidden="true">
+                <circle cx="75" cy="75" r="62" stroke="rgba(237,239,235,.12)" stroke-width="10" fill="none" />
+                <circle cx="75" cy="75" r="62" stroke="#2ED67F" stroke-width="10" fill="none" stroke-linecap="round" stroke-dasharray="389" stroke-dashoffset="97" transform="rotate(-90 75 75)" />
+              </svg>
+              <div style="position:absolute;inset:0;display:grid;place-items:center;text-align:center">
+                <div>
+                  <p style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 112,'wght' 800;font-size:1.3rem;margin:0;line-height:1;color:#EDEFEB">On the way</p>
+                  <p style="font-family:'JetBrains Mono',monospace;font-size:.62rem;color:#98A4A3;margin:4px 0 0">Arriving 8:20–8:40</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:12px;padding:12px;border:1px solid rgba(237,239,235,.13);border-radius:10px;background:rgba(0,0,0,.28);margin-bottom:12px">
+            <span style="width:38px;height:38px;flex:none;border-radius:50%;background:#2A3238;display:grid;place-items:center">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="8" r="4" stroke="#98A4A3" stroke-width="1.6" /><path d="M4 21c0-4 3.6-6 8-6s8 2 8 6" stroke="#98A4A3" stroke-width="1.6" /></svg>
+            </span>
+            <span style="min-width:0">
+              <b style="display:block;font-size:.88rem;color:#EDEFEB">Marcus · North Allen Tree</b>
+              <span style="font-family:'JetBrains Mono',monospace;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:#6C7877">White F-450 · 2 crew</span>
+            </span>
+            <span style="margin-left:auto;position:relative;width:9px;height:9px;flex:none"><span style="position:absolute;inset:0;border-radius:50%;background:#2ED67F"></span><span style="position:absolute;inset:0;border-radius:50%;background:#2ED67F;animation:prnping 2s ease-out infinite"></span></span>
+          </div>
+
+          <div style="display:grid;gap:8px;margin-bottom:14px">
+            <div style="display:flex;align-items:center;gap:10px;font-size:.82rem;color:#98A4A3"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2 8.5l4 4L14 4" stroke="#2ED67F" stroke-width="2" /></svg>Request sent to one provider</div>
+            <div style="display:flex;align-items:center;gap:10px;font-size:.82rem;color:#98A4A3"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2 8.5l4 4L14 4" stroke="#2ED67F" stroke-width="2" /></svg>Confirmed with 6:42 to spare</div>
+            <div style="display:flex;align-items:center;gap:10px;font-size:.82rem;color:#98A4A3"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="6" stroke="#6C7877" stroke-width="1.6" /></svg>Findings and quote, next</div>
+          </div>
+
+          <div style="background:#FF2E7E;color:#fff;border-radius:10px;text-align:center;padding:13px;font-weight:600;font-size:.9rem">Nothing needed from you</div>
+          <p style="font-family:'JetBrains Mono',monospace;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:#6C7877;text-align:center;margin:10px 0 0">You're at work. It's handled.</p>
+        </div>
+      </div>
+
+      <div>
+        <h2 style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 114,'wght' 800;font-size:clamp(1.9rem,3.6vw,2.9rem);line-height:1.04;letter-spacing:-.02em;margin:0 0 18px;max-width:22ch;color:#EDEFEB">You already know this feeling. Home repair just never had it.</h2>
+        
+        <div style="display:grid;gap:14px;max-width:44ch">
+          <div style="display:flex;gap:14px;align-items:center"><svg width="26" height="26" viewBox="0 0 26 26" fill="none" aria-hidden="true"><circle cx="13" cy="13" r="11" stroke="#FF2E7E" stroke-width="1.6" /><path d="M13 7v6l4 3" stroke="#FF2E7E" stroke-width="1.6" /></svg><span style="font-size:1rem;color:#EDEFEB">Who's coming. When. In writing.</span></div>
+          <div style="display:flex;gap:14px;align-items:center"><svg width="26" height="26" viewBox="0 0 26 26" fill="none" aria-hidden="true"><rect x="3" y="6" width="20" height="14" rx="2" stroke="#FF2E7E" stroke-width="1.6" /><path d="M3 11h20" stroke="#FF2E7E" stroke-width="1.6" /></svg><span style="font-size:1rem;color:#EDEFEB">Approve the price from your desk.</span></div>
+          <div style="display:flex;gap:14px;align-items:center"><svg width="26" height="26" viewBox="0 0 26 26" fill="none" aria-hidden="true"><path d="M13 3l9 5v6c0 5-4 8-9 9-5-1-9-4-9-9V8l9-5z" stroke="#FF2E7E" stroke-width="1.6" /><path d="M9 13l3 3 5-6" stroke="#FF2E7E" stroke-width="1.6" /></svg><span style="font-size:1rem;color:#EDEFEB">One tap to swap providers.</span></div>
+          <div style="display:flex;gap:14px;align-items:center"><svg width="26" height="26" viewBox="0 0 26 26" fill="none" aria-hidden="true"><path d="M4 22V9l9-6 9 6v13" stroke="#FF2E7E" stroke-width="1.6" /><rect x="10" y="14" width="6" height="8" stroke="#FF2E7E" stroke-width="1.6" /></svg><span style="font-size:1rem;color:#EDEFEB">Every job kept, forever, for your house.</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<sc-if value="{{ showDispatcher }}" hint-placeholder-val="{{ true }}">
+<section style="padding:0 0 90px">
+  <div style="width:100%;max-width:1180px;margin:0 auto;padding:0 26px">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center;margin-bottom:38px">
+      <div>
+        <h2 style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 116,'wght' 800;font-size:clamp(2rem,4vw,3.2rem);line-height:1.02;letter-spacing:-.022em;margin:0 0 16px;max-width:20ch">Who pays <em style="font-style:normal;color:#C1004F">you</em> for chasing the repair?</h2>
+        <p style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 108,'wght' 700;font-size:1.2rem;line-height:1.25;margin:0 0 14px;max-width:30ch">Every repair has two workers. Only one gets paid, and it isn't you.</p>
+        <p style="font-size:1rem;color:#5A6462;margin:0;max-width:38ch">Somewhere along the way you became your house's dispatcher, scheduler, records clerk and quality inspector. Unpaid, untrained, on call, forever.</p>
+      </div>
+      <div style="display:grid;gap:14px">
+        <div style="background:#fff;border:1px solid rgba(255,46,126,.35);border-radius:8px;padding:18px 20px;display:flex;gap:16px;align-items:center;box-shadow:0 20px 40px -34px rgba(18,22,26,.7)">
+          <svg width="30" height="30" viewBox="0 0 34 34" fill="none" aria-hidden="true" style="flex:none"><path d="M11 29c-4-2-6.5-6-6.5-10.5C4.5 11.5 10 6 17 6s12.5 5.5 12.5 12.5c0 2.2-.6 4.2-1.6 6" stroke="#5A6462" stroke-width="1.5" stroke-linecap="round"/><path d="M17 12v7" stroke="#C1004F" stroke-width="1.9" stroke-linecap="round"/><circle cx="17" cy="23" r="1.4" fill="#C1004F"/></svg>
+          <span><b style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 108,'wght' 700;font-size:1rem;display:block">Worry.</b><span style="font-size:.86rem;color:#5A6462">At work, at dinner, at 2 a.m. Nobody bills you for it. You pay it anyway.</span></span>
+        </div>
+        <div style="background:#fff;border:1px solid rgba(18,22,26,.12);border-radius:8px;padding:18px 20px;display:flex;gap:16px;align-items:center">
+          <svg width="30" height="30" viewBox="0 0 34 34" fill="none" aria-hidden="true" style="flex:none"><rect x="5" y="3" width="16" height="26" rx="3" stroke="#5A6462" stroke-width="1.5" /><path d="M24 10c3 0 5 2 5 5s-2 5-5 5" stroke="#96601A" stroke-width="1.5" /><path d="M9 24h8" stroke="#5A6462" stroke-width="1.5" /></svg>
+          <span><b style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 108,'wght' 700;font-size:1rem;display:block">Call. Voicemail. Text. Silence.</b><span style="font-size:.86rem;color:#5A6462">Monday and Tuesday, gone. You tell the story again.</span></span>
+        </div>
+        <div style="background:#fff;border:1px solid rgba(18,22,26,.12);border-radius:8px;padding:18px 20px;display:flex;gap:16px;align-items:center">
+          <svg width="30" height="30" viewBox="0 0 34 34" fill="none" aria-hidden="true" style="flex:none"><rect x="4" y="5" width="11" height="9" rx="1.6" stroke="#5A6462" stroke-width="1.4"/><rect x="19" y="5" width="11" height="9" rx="1.6" stroke="#5A6462" stroke-width="1.4"/><rect x="4" y="19" width="11" height="9" rx="1.6" stroke="#5A6462" stroke-width="1.4"/><rect x="19" y="19" width="11" height="9" rx="1.6" stroke="#C1004F" stroke-width="1.6"/><path d="M22.6 22.4c0-1 .8-1.7 1.9-1.7s1.9.7 1.9 1.7c0 1.4-1.9 1.3-1.9 2.6" stroke="#C1004F" stroke-width="1.4" stroke-linecap="round"/><circle cx="24.5" cy="26.6" r=".9" fill="#C1004F"/></svg>
+          <span><b style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 108,'wght' 700;font-size:1rem;display:block">Choose.</b><span style="font-size:.86rem;color:#5A6462">Forty names to research, and no way to tell which one is good, which one is fair, or which one gets it done without costing you a day off.</span></span>
+        </div>
+      </div>
+    </div>
+    <div style="border-top:1px solid rgba(18,22,26,.12);padding-top:26px;display:flex;gap:18px;align-items:center;flex-wrap:wrap">
+      <p style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 116,'wght' 800;font-size:clamp(1.2rem,2vw,1.6rem);line-height:1.12;margin:0;max-width:34ch">Twenty separate emergencies, held together by you.</p>
+      <p style="font-size:1rem;color:#5A6462;margin:0;max-width:44ch;flex:1;min-width:280px">Chasing the repair is one job we take off you.</p>
+    </div>
+  </div>
+</section>
+</sc-if>
+
+<sc-if value="{{ showAway }}" hint-placeholder-val="{{ true }}">
+<section style="padding:78px 0;background:#12161A;color:#F4F4F1">
+  <div style="width:100%;max-width:1180px;margin:0 auto;padding:0 26px">
+    <div style="max-width:52ch;margin-bottom:44px">
+      <h2 style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 116,'wght' 800;font-size:clamp(2rem,4.2vw,3.3rem);line-height:1.02;letter-spacing:-.022em;margin:0 0 18px;color:#F4F4F1">Nobody should burn a day off if they don’t want to.</h2>
+      <p style="font-size:1.05rem;color:#98A4A3;margin:0">"I'll have to take a half day" is a habit built by an industry that never gave you another option. We built the other option. Being there is a setting you choose.</p>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-bottom:30px">
+      <div style="border:1px solid rgba(237,239,235,.14);border-radius:10px;padding:26px;background:rgba(255,255,255,.03)">
+        <p style="font-family:'JetBrains Mono',monospace;font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;color:#98A4A3;margin:0 0 18px">The norm · your PTO</p>
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px">
+          <div style="border:1px solid rgba(237,239,235,.14);border-radius:5px;padding:12px 6px;text-align:center"><span style="font-family:'JetBrains Mono',monospace;font-size:.6rem;color:#6C7877">MON</span></div>
+          <div style="border:1px solid rgba(237,239,235,.14);border-radius:5px;padding:12px 6px;text-align:center"><span style="font-family:'JetBrains Mono',monospace;font-size:.6rem;color:#6C7877">TUE</span></div>
+          <div style="border:1px solid rgba(237,239,235,.14);border-radius:5px;padding:12px 6px;text-align:center"><span style="font-family:'JetBrains Mono',monospace;font-size:.6rem;color:#6C7877">WED</span></div>
+          <div style="border:1px solid #C1004F;border-radius:5px;padding:12px 6px;text-align:center;background:rgba(193,0,79,.22)"><span style="font-family:'JetBrains Mono',monospace;font-size:.6rem;color:#fff">THU</span></div>
+          <div style="border:1px solid rgba(237,239,235,.14);border-radius:5px;padding:12px 6px;text-align:center"><span style="font-family:'JetBrains Mono',monospace;font-size:.6rem;color:#6C7877">FRI</span></div>
+        </div>
+        <p style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 110,'wght' 700;font-size:1.05rem;margin:0 0 6px;color:#F4F4F1">Half day gone. 8–12 window.</p>
+        <p style="font-size:.9rem;color:#98A4A3;margin:0">You sat in your own kitchen so somebody could reach a valve.</p>
+      </div>
+
+      <div style="border:1px solid rgba(46,214,127,.4);border-radius:10px;padding:26px;background:rgba(46,214,127,.06)">
+        <p style="font-family:'JetBrains Mono',monospace;font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;color:#2ED67F;margin:0 0 18px">With PRN · your PTO</p>
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px">
+          <div style="border:1px solid rgba(237,239,235,.14);border-radius:5px;padding:12px 6px;text-align:center"><span style="font-family:'JetBrains Mono',monospace;font-size:.6rem;color:#6C7877">MON</span></div>
+          <div style="border:1px solid rgba(237,239,235,.14);border-radius:5px;padding:12px 6px;text-align:center"><span style="font-family:'JetBrains Mono',monospace;font-size:.6rem;color:#6C7877">TUE</span></div>
+          <div style="border:1px solid rgba(237,239,235,.14);border-radius:5px;padding:12px 6px;text-align:center"><span style="font-family:'JetBrains Mono',monospace;font-size:.6rem;color:#6C7877">WED</span></div>
+          <div style="border:1px solid rgba(46,214,127,.5);border-radius:5px;padding:12px 6px;text-align:center;background:rgba(46,214,127,.14)"><span style="font-family:'JetBrains Mono',monospace;font-size:.6rem;color:#2ED67F">THU</span></div>
+          <div style="border:1px solid rgba(237,239,235,.14);border-radius:5px;padding:12px 6px;text-align:center"><span style="font-family:'JetBrains Mono',monospace;font-size:.6rem;color:#6C7877">FRI</span></div>
+        </div>
+        <p style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 110,'wght' 700;font-size:1.05rem;margin:0 0 6px;color:#F4F4F1">You were at work. It still got fixed.</p>
+        
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 380px;gap:36px;align-items:center;border:1px solid rgba(237,239,235,.14);border-radius:10px;padding:30px;background:rgba(255,255,255,.03)">
+      <div>
+        <h3 style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 112,'wght' 800;font-size:clamp(1.3rem,2.2vw,1.9rem);line-height:1.08;margin:0 0 14px;color:#F4F4F1">Tell us once how they get in.</h3>
+        <div style="display:grid;gap:12px;max-width:46ch">
+          <div style="display:flex;gap:12px;align-items:flex-start"><span style="width:7px;height:7px;background:#FF2E7E;margin-top:9px;flex:none"></span><span style="font-size:.98rem;color:#EDEFEB"><b>However they get in.</b> Gate code, lockbox, back fence, the neighbor with the key.</span></div>
+          <div style="display:flex;gap:12px;align-items:flex-start"><span style="width:7px;height:7px;background:#FF2E7E;margin-top:9px;flex:none"></span><span style="font-size:.98rem;color:#EDEFEB"><b>Photos while you're in a meeting.</b> Findings and part numbers, sent as they happen.</span></div>
+          <div style="display:flex;gap:12px;align-items:flex-start"><span style="width:7px;height:7px;background:#FF2E7E;margin-top:9px;flex:none"></span><span style="font-size:.98rem;color:#EDEFEB"><b>Full control from 20 miles away.</b></span></div>
+          <div style="display:flex;gap:12px;align-items:flex-start"><span style="width:7px;height:7px;background:#FF2E7E;margin-top:9px;flex:none"></span><span style="font-size:.98rem;color:#EDEFEB"><b>Want to be home? Go for it.</b> The options are yours.</span></div>
+        </div>
+      </div>
+
+      <div style="background:#181E22;border:1px solid rgba(237,239,235,.14);border-radius:12px;padding:16px">
+        <p style="font-family:'JetBrains Mono',monospace;font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;color:#6C7877;margin:0 0 12px">10:41 AM · you're at your desk</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+          <div style="aspect-ratio:1.2;border:1px solid rgba(237,239,235,.13);border-radius:5px;background:repeating-linear-gradient(135deg,#1E252A 0 6px,#232B31 6px 12px);display:grid;place-items:center;font-family:'JetBrains Mono',monospace;font-size:.5rem;color:#6C7877;letter-spacing:.1em">VALVE</div>
+          <div style="aspect-ratio:1.2;border:1px solid rgba(237,239,235,.13);border-radius:5px;background:repeating-linear-gradient(135deg,#1E252A 0 6px,#232B31 6px 12px);display:grid;place-items:center;font-family:'JetBrains Mono',monospace;font-size:.5rem;color:#6C7877;letter-spacing:.1em">DRIP PAN</div>
+        </div>
+        <div style="background:rgba(0,0,0,.3);border-radius:8px;padding:12px;margin-bottom:12px">
+          <p style="margin:0;font-size:.85rem;color:#EDEFEB">Shutoff is seized. Replacing it adds <b>$180</b>. Everything else is as quoted.</p>
+        </div>
+        <div style="display:flex;gap:8px">
+          <span style="flex:1;background:#FF2E7E;color:#fff;border-radius:6px;text-align:center;padding:10px;font-weight:600;font-size:.82rem">Approve $180</span>
+          <span style="border:1px solid rgba(237,239,235,.2);border-radius:6px;text-align:center;padding:10px;font-size:.82rem;color:#98A4A3">Ask</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+</sc-if>
+
+<sc-if value="{{ showBackup }}" hint-placeholder-val="{{ true }}">
+<section style="padding:86px 0;background:#EDEEE9;border-top:1px solid rgba(18,22,26,.1);border-bottom:1px solid rgba(18,22,26,.1)">
+  <div style="width:100%;max-width:1180px;margin:0 auto;padding:0 26px">
+    <h2 style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 114,'wght' 800;font-size:clamp(1.8rem,3.4vw,2.7rem);line-height:1.05;letter-spacing:-.02em;margin:0 0 12px;max-width:30ch">One request. One provider at a time. Confirmed, or reassigned for you.</h2>
+    <p style="font-size:1.02rem;color:#5A6462;margin:0 0 30px;max-width:56ch">Your problem never goes on a list five companies buy. Silence is our problem to solve, not yours to notice three days later.</p>
+
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:22px">
+      <sc-for list="{{ steps }}" as="st" hint-placeholder-count="5">
+        <button type="button" onClick="{{ st.go }}" style="{{ st.style }}">{{ st.label }}</button>
+      </sc-for>
+    </div>
+
+    <div style="background:#fff;border:1px solid rgba(18,22,26,.13);border-radius:10px;overflow:hidden;box-shadow:0 26px 54px -44px rgba(18,22,26,.7);min-height:230px">
+
+      <sc-if value="{{ isReceived }}" hint-placeholder-val="{{ true }}">
+      <div style="padding:28px;animation:prnfade .3s ease">
+        <p style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 108,'wght' 700;font-size:1.15rem;margin:0 0 8px">Saved and matched</p>
+        <p style="font-size:.98rem;color:#5A6462;margin:0 0 18px;max-width:52ch">Photos, access notes and this equipment&rsquo;s history, attached before anyone is contacted.</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <span style="font-size:.83rem;background:#F4F4F1;border:1px solid rgba(18,22,26,.12);border-radius:20px;padding:6px 13px">Photos</span>
+          <span style="font-size:.83rem;background:#F4F4F1;border:1px solid rgba(18,22,26,.12);border-radius:20px;padding:6px 13px">Gate code and access</span>
+          <span style="font-size:.83rem;background:#F4F4F1;border:1px solid rgba(18,22,26,.12);border-radius:20px;padding:6px 13px">What was done here before</span>
+        </div>
+        <p style="font-size:.9rem;color:#5A6462;margin:18px 0 0">You describe the problem one time, ever.</p>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isAssigned }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:28px;animation:prnfade .3s ease;display:grid;grid-template-columns:1fr .8fr;gap:28px;align-items:start">
+        <div>
+          <p style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 108,'wght' 700;font-size:1.15rem;margin:0 0 8px">Exactly one company</p>
+          <p style="font-size:.98rem;color:#5A6462;margin:0 0 16px;max-width:44ch">Named, with the reason they were chosen.</p>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <span style="font-size:.83rem;background:#F4F4F1;border:1px solid rgba(18,22,26,.12);border-radius:20px;padding:6px 13px">Right trade</span>
+            <span style="font-size:.83rem;background:#F4F4F1;border:1px solid rgba(18,22,26,.12);border-radius:20px;padding:6px 13px">Your area</span>
+            <span style="font-size:.83rem;background:#F4F4F1;border:1px solid rgba(18,22,26,.12);border-radius:20px;padding:6px 13px">Has the equipment</span>
+            <span style="font-size:.83rem;background:#F4F4F1;border:1px solid rgba(18,22,26,.12);border-radius:20px;padding:6px 13px">Insured and verified</span>
+            <span style="font-size:.83rem;background:#F4F4F1;border:1px solid rgba(18,22,26,.12);border-radius:20px;padding:6px 13px">Works owner-away</span>
+          </div>
+        </div>
+        <div style="background:#12161A;border-radius:10px;padding:20px;color:#F4F4F1">
+          <p style="font-size:.82rem;color:#98A4A3;margin:0 0 10px">A visible clock</p>
+          <p style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 112,'wght' 800;font-size:2rem;line-height:1;margin:0 0 8px">12:18</p>
+          <p style="font-size:.9rem;color:#EDEFEB;margin:0">They accept, or they lose it.</p>
+        </div>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isConfirmed }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:28px;animation:prnfade .3s ease">
+        <p style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 108,'wght' 700;font-size:1.15rem;margin:0 0 8px">Time held</p>
+        <p style="font-size:.98rem;color:#5A6462;margin:0 0 18px;max-width:52ch">You get a name, a truck and a window.</p>
+        <div style="background:#F4F4F1;border:1px solid rgba(18,22,26,.12);border-radius:8px;padding:18px 20px;max-width:60ch">
+          <p style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 108,'wght' 700;font-size:1rem;margin:0 0 7px">If the clock runs out</p>
+          <p style="font-size:.93rem;color:#5A6462;margin:0">The assignment is released, that provider may no longer contact you, and a verified backup holds your original time.</p>
+        </div>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isNumber }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:28px;animation:prnfade .3s ease;display:grid;grid-template-columns:1fr .9fr;gap:28px;align-items:center">
+        <div>
+          <p style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 108,'wght' 700;font-size:1.15rem;margin:0 0 8px">The number, already checked</p>
+          <p style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 112,'wght' 800;font-size:2.6rem;line-height:1;margin:0 0 14px">$2,450</p>
+          <div style="position:relative;height:9px;border-radius:5px;background:linear-gradient(90deg,rgba(11,122,67,.18),rgba(11,122,67,.34) 46%,rgba(232,149,42,.28));max-width:300px;margin-bottom:8px">
+            <span style="position:absolute;left:62%;top:-6px;width:3px;height:21px;background:#12161A;border-radius:2px"></span>
+          </div>
+          <div style="display:flex;justify-content:space-between;max-width:300px;font-size:.79rem;color:#5A6462">
+            <span>$1,900</span><span>inside the local range</span><span>$2,900</span>
+          </div>
+          <p style="font-size:.92rem;color:#5A6462;margin:16px 0 0">Checked by <a href="SmartQuote v3.dc.html">SmartQuote</a> before it reached you.</p>
+        </div>
+        <div style="display:grid;gap:9px">
+          <span style="background:#FF2E7E;color:#fff;border-radius:6px;text-align:center;padding:13px;font-weight:600;font-size:.9rem">Approve</span>
+          <span style="border:1px solid rgba(18,22,26,.18);border-radius:6px;text-align:center;padding:13px;font-size:.9rem;color:#12161A">Ask a question</span>
+          <span style="border:1px solid rgba(18,22,26,.18);border-radius:6px;text-align:center;padding:13px;font-size:.9rem;color:#5A6462">Decline</span>
+        </div>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isDone }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:28px;animation:prnfade .3s ease">
+        <p style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 108,'wght' 700;font-size:1.15rem;margin:0 0 8px">On file, for good</p>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:440px;margin-bottom:20px">
+          <div style="aspect-ratio:1.3;border:1px solid rgba(18,22,26,.14);border-radius:6px;background:repeating-linear-gradient(135deg,#E7E7E2 0 6px,#EFEFEA 6px 12px);display:grid;place-items:center;font-family:'JetBrains Mono',monospace;font-size:.6rem;color:#5A6462">BEFORE</div>
+          <div style="aspect-ratio:1.3;border:1px solid rgba(18,22,26,.14);border-radius:6px;background:repeating-linear-gradient(135deg,#E7E7E2 0 6px,#EFEFEA 6px 12px);display:grid;place-items:center;font-family:'JetBrains Mono',monospace;font-size:.6rem;color:#5A6462">RIGGING</div>
+          <div style="aspect-ratio:1.3;border:1px solid rgba(18,22,26,.14);border-radius:6px;background:repeating-linear-gradient(135deg,#E7E7E2 0 6px,#EFEFEA 6px 12px);display:grid;place-items:center;font-family:'JetBrains Mono',monospace;font-size:.6rem;color:#5A6462">AFTER</div>
+        </div>
+        <div style="display:grid;gap:10px;max-width:52ch">
+          <div style="display:flex;gap:10px;align-items:center"><span style="width:7px;height:7px;background:#0B7A43;flex:none"></span><span style="font-size:.94rem">Invoice matched the approval</span></div>
+          <div style="display:flex;gap:10px;align-items:center"><span style="width:7px;height:7px;background:#0B7A43;flex:none"></span><span style="font-size:.94rem">Warranty on file</span></div>
+          <div style="display:flex;gap:10px;align-items:center"><span style="width:7px;height:7px;background:#FF2E7E;flex:none"></span><span style="font-size:.94rem">Saved to <a href="Home Memory v2.dc.html">Home Memory</a></span></div>
+        </div>
+        <p style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 110,'wght' 700;font-size:1.05rem;margin:20px 0 0">Next time, the house already knows all of this.</p>
+      </div>
+      </sc-if>
+
+    </div>
+
+    <div style="margin-top:22px;border:1px solid rgba(18,22,26,.13);border-radius:10px;padding:22px 24px;background:#fff">
+      <p style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 110,'wght' 700;font-size:1.08rem;margin:0 0 6px">The exit stays open the whole time.</p>
+      <p style="font-size:.93rem;color:#5A6462;margin:0 0 14px">Using it costs you nothing and never puts you back on a list.</p>
+      <div style="display:flex;gap:7px;flex-wrap:wrap">
+        <span style="font-size:.82rem;background:#F4F4F1;border:1px solid rgba(18,22,26,.12);border-radius:20px;padding:6px 13px">Ask a question</span>
+        <span style="font-size:.82rem;background:#F4F4F1;border:1px solid rgba(18,22,26,.12);border-radius:20px;padding:6px 13px">Cut the scope</span>
+        <span style="font-size:.82rem;background:#F4F4F1;border:1px solid rgba(18,22,26,.12);border-radius:20px;padding:6px 13px">Send me someone else</span>
+        <span style="font-size:.82rem;background:#F4F4F1;border:1px solid rgba(18,22,26,.12);border-radius:20px;padding:6px 13px">Cancel before work starts</span>
+      </div>
+    </div>
+  </div>
+</section>
+</sc-if>
+
+<section style="padding:86px 0">
+  <div style="width:100%;max-width:1180px;margin:0 auto;padding:0 26px">
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:rgba(18,22,26,.12);border:1px solid rgba(18,22,26,.12)">
+      <div style="background:#F4F4F1;padding:26px 22px;text-align:center">
+        <svg width="40" height="40" viewBox="0 0 40 40" fill="none" aria-hidden="true" style="margin:0 auto 14px"><rect x="7" y="4" width="18" height="30" rx="3" stroke="#C1004F" stroke-width="1.6" /><path d="M30 12l6 16M36 12l-6 16" stroke="#5A6462" stroke-width="1.6" /></svg>
+        <b style="display:block;font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 108,'wght' 700;font-size:1rem;margin-bottom:6px">Zero calls</b>
+        <span style="font-size:.85rem;color:#5A6462">Status arrives. You don't ask.</span>
+      </div>
+      <div style="background:#F4F4F1;padding:26px 22px;text-align:center">
+        <svg width="40" height="40" viewBox="0 0 40 40" fill="none" aria-hidden="true" style="margin:0 auto 14px"><path d="M6 30V16l14-9 14 9v14" stroke="#C1004F" stroke-width="1.6" /><path d="M14 34V24h12v10" stroke="#5A6462" stroke-width="1.6" /></svg>
+        <b style="display:block;font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 108,'wght' 700;font-size:1rem;margin-bottom:6px">You don’t have to be there</b>
+        <span style="font-size:.85rem;color:#5A6462">Keep your day off for a day off.</span>
+      </div>
+      <div style="background:#F4F4F1;padding:26px 22px;text-align:center">
+        <svg width="40" height="40" viewBox="0 0 40 40" fill="none" aria-hidden="true" style="margin:0 auto 14px"><circle cx="20" cy="20" r="14" stroke="#C1004F" stroke-width="1.6" /><path d="M20 11v9l7 5" stroke="#5A6462" stroke-width="1.6" /></svg>
+        <b style="display:block;font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 108,'wght' 700;font-size:1rem;margin-bottom:6px">A visible clock</b>
+        <span style="font-size:.85rem;color:#5A6462">Missed it? We move the job.</span>
+      </div>
+      <div style="background:#F4F4F1;padding:26px 22px;text-align:center">
+        <svg width="40" height="40" viewBox="0 0 40 40" fill="none" aria-hidden="true" style="margin:0 auto 14px"><rect x="5" y="9" width="30" height="22" rx="3" stroke="#C1004F" stroke-width="1.6" /><path d="M12 20h16M12 25h10" stroke="#5A6462" stroke-width="1.6" /></svg>
+        <b style="display:block;font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 108,'wght' 700;font-size:1rem;margin-bottom:6px">Told once</b>
+        <span style="font-size:.85rem;color:#5A6462">Never repeat the story.</span>
+      </div>
+    </div>
+    <p style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 114,'wght' 800;font-size:clamp(1.3rem,2.4vw,1.9rem);line-height:1.1;margin:34px 0 0;max-width:34ch">Less of your life consumed by the house.</p>
+  </div>
+</section>
+
+<section style="padding:0 0 90px">
+  <div style="width:100%;max-width:1180px;margin:0 auto;padding:0 26px">
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:18px">
+      <a href="Trust Network v3.dc.html" style="display:block;background:#fff;border:1px solid rgba(18,22,26,.12);border-top:4px solid #3E6E7A;border-radius:8px;padding:22px 24px 24px;color:#12161A" style-hover="border-color:#FF2E7E">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:.58rem;letter-spacing:.14em;text-transform:uppercase;color:#3E6E7A">Who shows up</span>
+        <p style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 110,'wght' 700;font-size:1.15rem;margin:10px 0 6px">Trust Network</p>
+        <span style="font-size:.9rem;color:#5A6462">Use the people you already trust, trust.</span>
+      </a>
+      <a href="SmartQuote v3.dc.html" style="display:block;background:#fff;border:1px solid rgba(18,22,26,.12);border-top:4px solid #8A76B0;border-radius:8px;padding:22px 24px 24px;color:#12161A" style-hover="border-color:#FF2E7E">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:.58rem;letter-spacing:.14em;text-transform:uppercase;color:#8A76B0">What it should cost</span>
+        <p style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 110,'wght' 700;font-size:1.15rem;margin:10px 0 6px">SmartQuote Analyzer</p>
+        <span style="font-size:.9rem;color:#5A6462">Any quote, from anyone, in plain English.</span>
+      </a>
+      <a href="Home Memory v2.dc.html" style="display:block;background:#fff;border:1px solid rgba(18,22,26,.12);border-top:4px solid #C6923D;border-radius:8px;padding:22px 24px 24px;color:#12161A" style-hover="border-color:#FF2E7E">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:.58rem;letter-spacing:.14em;text-transform:uppercase;color:#C6923D">What the house knows</span>
+        <p style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 110,'wght' 700;font-size:1.15rem;margin:10px 0 6px">Home Memory</p>
+        <span style="font-size:.9rem;color:#5A6462">Stop renting your brain to your house for $0/hr.</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<section id="pulse" style="padding:0 0 90px">
+  <div style="width:100%;max-width:860px;margin:0 auto;padding:0 26px">
+    <div style="position:relative;overflow:hidden;border:1px solid rgba(18,22,26,.14);border-radius:10px;background:#fff;padding:30px;box-shadow:0 24px 50px -40px rgba(18,22,26,.6)">
+      <h2 style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 112,'wght' 800;font-size:clamp(1.4rem,2.4vw,2rem);line-height:1.1;margin:0 0 20px">Would you use this?</h2>
+
+      <sc-if value="{{ voteOpen }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+          <button type="button" onClick="{{ voteYes }}" style="flex:1;min-width:200px;display:flex;align-items:center;gap:12px;padding:18px;border:1px solid rgba(18,22,26,.14);border-radius:6px;background:#F7F7F5;cursor:pointer;text-align:left" style-hover="border-color:#0B7A43;background:rgba(18,165,91,.08)">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 12l5 5L20 6" stroke="#0B7A43" stroke-width="2" /></svg>
+            <b style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 106,'wght' 700;font-size:1rem">Yes, I would</b>
+          </button>
+          <button type="button" onClick="{{ voteNo }}" style="flex:1;min-width:200px;display:flex;align-items:center;gap:12px;padding:18px;border:1px solid rgba(18,22,26,.14);border-radius:6px;background:#F7F7F5;cursor:pointer;text-align:left" style-hover="border-color:#96601A;background:rgba(232,149,42,.1)">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="#96601A" stroke-width="2" /></svg>
+            <b style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 106,'wght' 700;font-size:1rem">No, not for me</b>
+          </button>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ yesPending }}" hint-placeholder-val="{{ false }}">
+        <div style="border:1px solid rgba(18,165,91,.4);background:rgba(18,165,91,.07);border-radius:6px;padding:22px;animation:prnfade .3s ease">
+          <p style="margin:0 0 4px;font-size:1.02rem"><b>Vote recorded.</b></p>
+          <p style="margin:0 0 18px;font-size:.93rem;color:#5A6462;max-width:52ch">Leave your details and you are a founding customer: free for life, and a message the day it opens near you.</p>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+            <input ref="{{ nameRef }}" type="text" placeholder="First name" aria-label="First name" style="width:100%;background:#fff;border:1px solid rgba(18,22,26,.16);border-radius:4px;padding:12px;font-size:.92rem;outline:none;color:#12161A" style-focus="border-color:#FF2E7E" />
+            <input ref="{{ zipRef }}" type="text" inputmode="numeric" placeholder="ZIP" aria-label="ZIP code" style="width:100%;background:#fff;border:1px solid rgba(18,22,26,.16);border-radius:4px;padding:12px;font-size:.92rem;outline:none;color:#12161A" style-focus="border-color:#FF2E7E" />
+          </div>
+          <input ref="{{ emailRef }}" type="email" placeholder="Email" aria-label="Email" style="width:100%;background:#fff;border:1px solid rgba(18,22,26,.16);border-radius:4px;padding:12px;font-size:.92rem;outline:none;color:#12161A;margin-bottom:10px" style-focus="border-color:#FF2E7E" />
+          <input ref="{{ phoneRef }}" type="tel" placeholder="Mobile, if you would rather have a text (optional)" aria-label="Mobile number" style="width:100%;background:#fff;border:1px solid rgba(18,22,26,.16);border-radius:4px;padding:12px;font-size:.92rem;outline:none;color:#12161A;margin-bottom:16px" style-focus="border-color:#FF2E7E" />
+          <sc-if value="{{ error }}" hint-placeholder-val="{{ false }}">
+            <p style="color:#C1004F;font-size:.85rem;margin:0 0 12px">Add an email so we know where to send it.</p>
+          </sc-if>
+          <button type="button" onClick="{{ submit }}" style="background:#12161A;color:#F7F7F5;border:0;border-radius:4px;font-weight:600;font-size:.9rem;padding:13px 20px;cursor:pointer">Claim my founding place</button>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ showNoPanel }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:prnfade .3s ease">
+          <p style="font-family:'JetBrains Mono',monospace;font-size:.64rem;letter-spacing:.13em;text-transform:uppercase;color:#5A6462;margin:0 0 12px">Recorded. Why not? Optional.</p>
+          <div style="display:flex;flex-wrap:wrap;gap:8px">
+            <sc-for list="{{ reasons }}" as="r" hint-placeholder-count="6">
+              <button type="button" onClick="{{ r.toggle }}" style="{{ r.style }}">{{ r.label }}</button>
+            </sc-for>
+          </div>
+          <button type="button" onClick="{{ sendReasons }}" style="margin-top:18px;background:#12161A;color:#F4F4F1;border:0;border-radius:4px;font-weight:600;font-size:.8rem;padding:9px 15px;cursor:pointer">Send</button>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ thanks }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:18px;border:1px solid rgba(18,165,91,.4);background:rgba(18,165,91,.08);border-radius:6px;animation:prnfade .3s ease">
+          <p style="margin:0;font-size:.96rem">{{ thanksText }}</p>
+        </div>
+      </sc-if>
+    </div>
+  </div>
+</section>
+
+<footer style="border-top:1px solid rgba(18,22,26,.12);padding:40px 0 34px;background:#F4F4F1">
+  <div style="width:100%;max-width:1180px;margin:0 auto;padding:0 26px;display:flex;gap:20px;flex-wrap:wrap;align-items:center;font-family:'JetBrains Mono',monospace;font-size:.64rem;letter-spacing:.08em;text-transform:uppercase;color:#5A6462">
+    <span style="width:13px;height:17px;background:#FF2E7E;clip-path:polygon(0 0,100% 18%,0 42%,0 100%,17% 100%,17% 0)"></span>
+    <span>© 2026 Property Response Network</span>
+    <a href="One Connected Home.dc.html" style="color:#5A6462">Overview</a>
+    <a href="Trust Network v3.dc.html" style="color:#5A6462">Trust Network</a>
+    <a href="SmartQuote v3.dc.html" style="color:#5A6462">SmartQuote</a>
+    <a href="Home Memory v2.dc.html" style="color:#5A6462">Home Memory</a>
+    <a href="Provider OS v2.dc.html" style="color:#5A6462">Providers</a>
+    <span style="margin-left:auto">Concept preview · Allen County, Indiana</span>
+  </div>
+</footer>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:900},&quot;showDispatcher&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Sections&quot;},&quot;showAway&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Sections&quot;},&quot;showBackup&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Sections&quot;}}">
+class Component extends DCLogic {
+  state = { step: "received", vote: null, modal: false, sent: false, thanks: "", picked: [], error: false };
+  nameRef = React.createRef();
+  emailRef = React.createRef();
+  phoneRef = React.createRef();
+  zipRef = React.createRef();
+
+  reasonLabels = ["I don't have this problem", "I already have a good solution", "Too complicated", "Wouldn't trust it with this", "Wouldn't use it often", "Value isn't clear", "Worried about price"];
+
+  chipStyle(on) {
+    return "border:1px solid " + (on ? "#FF2E7E" : "rgba(18,22,26,.16)") + ";background:" + (on ? "rgba(255,46,126,.1)" : "#F7F7F5") + ";border-radius:4px;padding:9px 14px;font-size:.85rem;cursor:pointer;color:#12161A";
+  }
+
+  stepList = [
+    { k: "received", label: "8:04  Received" },
+    { k: "assigned", label: "8:06  Assigned" },
+    { k: "confirmed", label: "8:11  Confirmed" },
+    { k: "number", label: "The number" },
+    { k: "done", label: "Done" }
+  ];
+
+  stepStyle(on) {
+    return "font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 106,'wght' 700;font-size:.86rem;padding:10px 16px;border-radius:5px;cursor:pointer;border:1px solid " + (on ? "#FF2E7E" : "rgba(18,22,26,.16)") + ";background:" + (on ? "#FF2E7E" : "#fff") + ";color:" + (on ? "#fff" : "#5A6462");
+  }
+
+  componentDidMount() {
+    this.__onKey = (e) => { if (e.key === "Escape" && this.state.modal) this.setState({ modal: false }); };
+    window.addEventListener("keydown", this.__onKey);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener("keydown", this.__onKey);
+  }
+
+  __record(rec) {
+    rec.at = new Date().toISOString().replace("T", " ").slice(0, 16);
+    rec.page = "Dashboard v3";
+    if (!this.__voteId) this.__voteId = Math.random().toString(36).slice(2, 10);
+    rec.id = this.__voteId;
+    try {
+      const cur = JSON.parse(localStorage.getItem("prn_signups") || "[]");
+      localStorage.setItem("prn_signups", JSON.stringify(cur.filter((r) => r.id !== rec.id).concat([rec])));
+    } catch (e) { console.warn("could not save this vote locally:", e); }
+    try {
+      fetch("/api/signup", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(rec) })
+        .catch((e) => console.warn("collector unreachable, vote kept in this browser:", e.message));
+    } catch (e) { console.warn("collector unreachable, vote kept in this browser:", e); }
+  }
+
+  renderVals() {
+    const s = this.state;
+    return {
+      steps: this.stepList.map((x) => ({
+        label: x.label,
+        style: this.stepStyle(this.state.step === x.k),
+        go: () => this.setState({ step: x.k })
+      })),
+      isReceived: this.state.step === "received",
+      isAssigned: this.state.step === "assigned",
+      isConfirmed: this.state.step === "confirmed",
+      isNumber: this.state.step === "number",
+      isDone: this.state.step === "done",
+      showDispatcher: this.props.showDispatcher ?? true,
+      showAway: this.props.showAway ?? true,
+      showBackup: this.props.showBackup ?? true,
+      voteOpen: !s.vote,
+      yesPending: s.vote === "yes" && !s.sent,
+      showNoPanel: s.vote === "no" && !s.thanks,
+      thanks: !!s.thanks,
+      thanksText: s.thanks,
+      modal: s.modal, sent: s.sent, notSent: !s.sent, error: s.error,
+      nameRef: this.nameRef, emailRef: this.emailRef, phoneRef: this.phoneRef, zipRef: this.zipRef,
+      voteYes: () => this.setState({ vote: "yes" }),
+      voteNo: () => this.setState({ vote: "no" }),
+      reopen: () => this.setState({ modal: true }),
+      reasons: this.reasonLabels.map((label) => ({
+        label,
+        style: this.chipStyle(s.picked.indexOf(label) > -1),
+        toggle: () => this.setState((st) => ({ picked: st.picked.indexOf(label) > -1 ? st.picked.filter((x) => x !== label) : st.picked.concat([label]) }))
+      })),
+      sendReasons: () => { this.__record({ vote: "no", reasons: this.state.picked }); this.setState({ thanks: "Thank you — a clear no keeps us from building the wrong thing." }); },
+      close: () => this.setState({ modal: false }),
+      keepOpen: (e) => { if (e && e.stopPropagation) e.stopPropagation(); },
+      submit: () => {
+        const email = this.emailRef.current && this.emailRef.current.value.trim();
+        if (!email || email.indexOf("@") < 1) { this.setState({ error: true }); return; }
+        const val = (r) => (r && r.current ? r.current.value.trim() : "");
+        this.__record({ vote: "yes", name: val(this.nameRef), email: email, phone: val(this.phoneRef), zip: val(this.zipRef) });
+        this.setState({ error: false, sent: true, thanks: "You are a founding customer. We will message you the day it opens near you." });
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>

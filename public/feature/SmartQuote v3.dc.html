@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>
+/* Use the vendored copies so the page renders with no network. Without this the
+   runtime waits on unpkg.com, and a blocked or slow CDN leaves the raw {{ }} template on screen. */
+window.__resources = {
+  "https://unpkg.com/react@18.3.1/umd/react.production.min.js": "./vendor/react.js",
+  "https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js": "./vendor/react-dom.js",
+  "https://unpkg.com/@babel/standalone@7.29.0/babel.min.js": "./vendor/babel.js"
+};
+</script>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="description" content="SmartQuote Analyzer — send any contractor's quote and find out what you're actually being asked to approve." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="crossorigin" />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&amp;family=Public+Sans:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap" rel="stylesheet" />
+<style>
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:#EEF1F3;color:#111619;font-family:"Public Sans",system-ui,sans-serif;font-size:16.5px;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+*,*::before,*::after{box-sizing:border-box}
+a{color:#C1004F;text-decoration:none}
+a:hover{color:#FF2E7E}
+button,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid #FF2E7E;outline-offset:3px}
+h1,h2,h3{text-wrap:balance}
+p{text-wrap:pretty}
+@keyframes prnfade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes prnscan{0%{transform:translateY(0);opacity:0}12%{opacity:1}88%{opacity:1}100%{transform:translateY(252px);opacity:0}}
+@keyframes prnping{0%{transform:scale(1);opacity:.55}70%{transform:scale(2.1);opacity:0}100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+
+/* --- responsive: the v2 pages had no breakpoints at all.
+   The runtime re-serializes inline styles, so match on the property name and
+   restore only the grids that genuinely need to stay multi-column. --- */
+@media (max-width:860px){
+  [style*="grid-template-columns"]{grid-template-columns:1fr!important}
+  [style*="repeat(5"]{grid-template-columns:repeat(5,1fr)!important}
+  [style*="440px"]{grid-template-columns:repeat(3,1fr)!important}
+}
+@media (max-width:640px){
+  section{padding-top:46px!important;padding-bottom:46px!important}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* keep the founders ribbon clear of the nav CTA */
+@media (min-width:901px){div[style*="position:sticky"]>div{padding-right:158px!important}}
+@media (max-width:900px){div[style*="position:sticky"]>div{padding-right:118px!important}}
+</style>
+</helmet>
+
+<div style="background:#EEF1F3">
+
+<div aria-hidden="true" style="position:fixed;top:0;right:0;width:190px;height:190px;overflow:hidden;pointer-events:none;z-index:400"><div style="position:absolute;top:38px;right:-54px;width:230px;transform:rotate(45deg);background:#0B7A43;color:#fff;text-align:center;padding:10px 0;box-shadow:0 6px 18px rgba(0,0,0,.26);font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 104,'wght' 800;font-size:.8rem;letter-spacing:.08em;line-height:1.18"><b style="display:block;font-size:.95rem;letter-spacing:.12em">FREE</b>for Founders</div></div>
+<div style="position:sticky;top:0;z-index:150;background:rgba(238,241,243,.93);backdrop-filter:blur(14px);border-bottom:1px solid rgba(17,22,25,.12)">
+  <div style="width:100%;max-width:1180px;margin:0 auto;padding:0 26px;display:flex;align-items:center;gap:20px;height:64px">
+    <a href="One Connected Home.dc.html" style="display:flex;align-items:center;gap:10px;flex:none;color:#111619">
+      <span style="width:14px;height:18px;background:#FF2E7E;clip-path:polygon(0 0,100% 18%,0 42%,0 100%,17% 100%,17% 0)"></span>
+      <span style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 100,'wght' 700;font-size:.82rem;letter-spacing:.03em">PRN</span>
+    </a>
+    <div style="display:flex;gap:16px;margin-left:auto;align-items:center;flex-wrap:wrap;font-size:.8rem">
+      <a href="One Connected Home.dc.html" style="color:#5B6569;padding:4px 0">Overview</a>
+      <a href="Dashboard v3.dc.html" style="color:#5B6569;padding:4px 0">Dashboard</a>
+      <a href="Trust Network v3.dc.html" style="color:#5B6569;padding:4px 0">Trust Network</a>
+      <a href="SmartQuote v3.dc.html" style="color:#111619;border-bottom:1px solid #FF2E7E;padding:4px 0">SmartQuote</a>
+      <a href="Home Memory v2.dc.html" style="color:#5B6569;padding:4px 0">Home Memory</a>
+      <a href="Provider OS v2.dc.html" style="color:#5B6569;padding:4px 0">For providers</a>
+    </div>
+    <a href="#pulse" style="display:inline-flex;align-items:center;background:#111619;color:#EEF1F3;border-radius:4px;font-weight:600;font-size:.78rem;padding:9px 14px;flex:none">Get early access</a>
+  </div>
+</div>
+
+<!-- ============ HERO ============ -->
+<section style="position:relative;padding:60px 0 44px;background-image:repeating-linear-gradient(180deg,transparent 0 31px,rgba(17,22,25,.04) 31px 32px);overflow:hidden">
+  <div style="position:absolute;left:0;right:0;bottom:0;height:120px;background:linear-gradient(180deg,rgba(238,241,243,0),#EEF1F3);pointer-events:none"></div>
+  <div style="position:relative;width:100%;max-width:1180px;margin:0 auto;padding:0 26px;display:grid;grid-template-columns:1.02fr .98fr;gap:52px;align-items:center">
+    <div>
+      <h1 style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 116,'wght' 800;font-size:clamp(2.3rem,5.2vw,4.2rem);line-height:.99;letter-spacing:-.026em;margin:0 0 22px;max-width:17ch">You shouldn't have to read it to know it's fair.</h1>
+      <p style="font-size:clamp(1.05rem,1.5vw,1.24rem);color:#5B6569;margin:0 0 10px;max-width:46ch">Eleven lines, four thousand dollars, and some vague trade shorthand that could turn it into $6,500.</p>
+      <p style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 108,'wght' 700;font-size:clamp(1.02rem,1.5vw,1.2rem);margin:0 0 28px;max-width:40ch">SmartQuote reads it for you. In plain English. In about a minute.</p>
+      <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center">
+        <a href="#pulse" style="display:inline-flex;align-items:center;background:#FF2E7E;color:#fff;border-radius:4px;font-weight:600;font-size:.9rem;padding:14px 22px">Try it on my quote</a>
+        <span style="font-size:.85rem;color:#5B6569">Any quote, any provider, in or out of our network.</span>
+      </div>
+    </div>
+
+    <div style="background:#fff;border:1px solid rgba(17,22,25,.14);border-radius:10px;box-shadow:0 34px 70px -46px rgba(17,22,25,.8);overflow:hidden">
+      <div style="padding:11px 16px;background:#111619;color:#EEF1F3;font-family:'JetBrains Mono',monospace;font-size:.62rem;letter-spacing:.1em;display:flex;gap:9px;align-items:center">
+        <span style="color:#FF2E7E">&#9670;</span>quote_final.pdf
+        <span style="margin-left:auto;display:flex;align-items:center;gap:7px;color:#7C8B90">
+          <span style="position:relative;width:6px;height:6px"><span style="position:absolute;inset:0;border-radius:50%;background:#FF2E7E"></span><span style="position:absolute;inset:0;border-radius:50%;background:#FF2E7E;animation:prnping 2s ease-out infinite"></span></span>
+          4 lines flagged
+        </span>
+      </div>
+
+      <div style="position:relative;padding:16px 18px;overflow:hidden;border-bottom:1px solid rgba(17,22,25,.1)">
+        <div style="position:absolute;left:0;right:0;top:0;height:2px;background:#FF2E7E;box-shadow:0 0 18px 4px rgba(255,46,126,.45);animation:prnscan 3.8s ease-in-out infinite;pointer-events:none"></div>
+        <p style="margin:0 0 12px;font-size:.78rem;color:#5B6569">Tap a highlighted line.</p>
+        <div style="display:grid;gap:3px;position:relative">
+          <sc-for list="{{ lines }}" as="l" hint-placeholder-count="7">
+            <button type="button" onClick="{{ l.pick }}" aria-label="{{ l.aria }}" style="{{ l.style }}">{{ l.txt }}</button>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="padding:18px 20px;background:#F7F9FA">
+        <div style="display:flex;gap:10px;align-items:baseline;margin-bottom:9px">
+          <span style="font-family:'JetBrains Mono',monospace;font-size:.72rem;font-weight:700;color:#C1004F;background:rgba(255,46,126,.13);padding:2px 7px;border-radius:3px">{{ sel.word }}</span>
+          <span style="font-size:.78rem;color:#5B6569">{{ sel.tag }}</span>
+        </div>
+        <p style="margin:0 0 12px;font-size:.95rem;line-height:1.5">{{ sel.means }}</p>
+        <div style="display:flex;gap:9px;align-items:center;padding-top:12px;border-top:1px solid rgba(17,22,25,.1)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true" style="flex:none"><path d="M4 5h16v11H8l-4 4V5z" stroke="#0B7A43" stroke-width="1.7" stroke-linejoin="round"/></svg>
+          <span style="font-size:.88rem;color:#111619">{{ sel.ask }}</span>
+        </div>
+      </div>
+
+      <div style="padding:14px 20px;border-top:1px solid rgba(17,22,25,.1);display:flex;gap:11px;align-items:center;flex-wrap:wrap">
+        <span style="border:1px solid rgba(17,22,25,.3);color:#111619;border-radius:4px;padding:9px 15px;font-weight:600;font-size:.84rem">Send all four questions</span>
+        <span style="font-size:.83rem;color:#5B6569">Written for you.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ ALLOWANCE STRIP ============ -->
+<section style="padding:8px 0 74px">
+  <div style="width:100%;max-width:1180px;margin:0 auto;padding:0 26px">
+    <div style="display:flex;gap:26px;flex-wrap:wrap;align-items:baseline;border-top:1px solid rgba(17,22,25,.14);padding-top:28px">
+      <p style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 116,'wght' 800;font-size:clamp(1.4rem,2.6vw,2.1rem);line-height:1.08;margin:0;max-width:24ch">&ldquo;Allowance&rdquo; is the most expensive word in home repair.</p>
+      <p style="font-size:1rem;color:#5B6569;margin:0;flex:1;min-width:300px;max-width:52ch">A placeholder is where a quote quietly grows between the handshake and the invoice. SmartQuote finds every one of them before you say yes.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TWO DOORS (interactive) ============ -->
+<section style="padding:76px 0;background:#111619;color:#EDEFEB">
+  <div style="width:100%;max-width:1180px;margin:0 auto;padding:0 26px">
+    <div style="max-width:56ch;margin-bottom:30px">
+      <h2 style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 116,'wght' 800;font-size:clamp(1.8rem,3.4vw,2.7rem);line-height:1.04;letter-spacing:-.02em;margin:0 0 14px;color:#fff">Some people relax when they see everything. Some relax when they see nothing.</h2>
+      
+    </div>
+
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:26px">
+      <button type="button" onClick="{{ doorQuiet }}" style="{{ quietStyle }}">Fewer decisions, please</button>
+      <button type="button" onClick="{{ doorAll }}" style="{{ allStyle }}">Show me everything</button>
+    </div>
+
+    <sc-if value="{{ isQuiet }}" hint-placeholder-val="{{ true }}">
+    <div style="display:grid;grid-template-columns:1fr .85fr;gap:26px;align-items:start;animation:prnfade .3s ease">
+      <div>
+        <h3 style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 112,'wght' 800;font-size:1.7rem;line-height:1.08;margin:0 0 16px;color:#fff">You can close the tab. And go live your life.</h3>
+        <p style="font-size:.98rem;color:#98A4A3;margin:0 0 20px;max-width:50ch">If the provider came from us, the quote runs through SmartQuote automatically, before it ever reaches you.</p>
+        <div style="display:grid;gap:12px;max-width:50ch">
+          <div style="display:flex;gap:11px;align-items:flex-start"><span style="width:7px;height:7px;background:#0B7A43;flex:none;margin-top:8px"></span><span style="font-size:.94rem;color:#EDEFEB">Inside the normal range, it says so and you approve.</span></div>
+          <div style="display:flex;gap:11px;align-items:flex-start"><span style="width:7px;height:7px;background:#FF2E7E;flex:none;margin-top:8px"></span><span style="font-size:.94rem;color:#EDEFEB">Something off, we flag it before you ever see it.</span></div>
+          <div style="display:flex;gap:11px;align-items:flex-start"><span style="width:7px;height:7px;background:#EDEFEB;flex:none;margin-top:8px"></span><span style="font-size:.94rem;color:#EDEFEB">One notification, only if a decision is genuinely needed.</span></div>
+        </div>
+      </div>
+
+      <div style="background:#1B2126;border:1px solid rgba(237,239,235,.16);border-radius:10px;overflow:hidden">
+        <div style="padding:11px 16px;border-bottom:1px solid rgba(237,239,235,.12);font-size:.75rem;color:#7C8B90">One notification, 8:52 PM</div>
+        <div style="padding:20px 18px">
+          <div style="display:flex;gap:11px;align-items:center;margin-bottom:14px">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true" style="flex:none"><circle cx="12" cy="12" r="10" stroke="#0B7A43" stroke-width="1.7"/><path d="M7.5 12.2l3 3 6-7" stroke="#0B7A43" stroke-width="1.9"/></svg>
+            <span style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 108,'wght' 700;font-size:1.05rem;color:#fff">Quote checked. Looks normal.</span>
+          </div>
+          <p style="margin:0 0 4px;font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 112,'wght' 800;font-size:2.1rem;line-height:1;color:#fff">$431</p>
+          <p style="margin:0 0 16px;font-size:.85rem;color:#98A4A3">Leaking shutoff valve, inside the local range.</p>
+          <p style="margin:0 0 18px;font-size:.9rem;color:#EDEFEB;padding:12px 14px;background:rgba(237,239,235,.06);border-radius:6px">We asked them to confirm the valve type and cap the trip charge. They agreed in writing.</p>
+          <span style="display:inline-flex;background:#FF2E7E;color:#fff;border-radius:4px;padding:11px 18px;font-weight:600;font-size:.88rem">Approve $431</span>
+        </div>
+      </div>
+    </div>
+    </sc-if>
+
+    <sc-if value="{{ isAll }}" hint-placeholder-val="{{ false }}">
+    <div style="animation:prnfade .3s ease">
+      <h3 style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 112,'wght' 800;font-size:1.7rem;line-height:1.08;margin:0 0 12px;color:#fff">Then here is all of it.</h3>
+      <p style="font-size:.98rem;color:#98A4A3;margin:0 0 24px;max-width:54ch">For the people who sleep better knowing the reasoning.</p>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:rgba(237,239,235,.14);border:1px solid rgba(237,239,235,.14);border-radius:8px;overflow:hidden">
+        <div style="background:#1B2126;padding:22px 20px">
+          <p style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 108,'wght' 700;font-size:1.02rem;margin:0 0 7px;color:#fff">Every line, explained</p>
+          <p style="margin:0;font-size:.9rem;color:#98A4A3">Labor, materials, equipment, quantities, fees, permits, disposal, access.</p>
+        </div>
+        <div style="background:#1B2126;padding:22px 20px">
+          <p style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 108,'wght' 700;font-size:1.02rem;margin:0 0 7px;color:#fff">Change-order risk</p>
+          <p style="margin:0;font-size:.9rem;color:#98A4A3">Vague quantities and undefined allowances that could move the final number.</p>
+        </div>
+        <div style="background:#1B2126;padding:22px 20px">
+          <p style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 108,'wght' 700;font-size:1.02rem;margin:0 0 7px;color:#fff">Read against your house</p>
+          <p style="margin:0;font-size:.9rem;color:#98A4A3">Compared to your job packet and property record, not as a document floating in space.</p>
+        </div>
+        <div style="background:#1B2126;padding:22px 20px">
+          <p style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 108,'wght' 700;font-size:1.02rem;margin:0 0 7px;color:#fff">What they still owe you</p>
+          <p style="margin:0;font-size:.9rem;color:#98A4A3">The information the provider hasn't given yet, listed plainly.</p>
+        </div>
+      </div>
+    </div>
+    </sc-if>
+
+    <p style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 110,'wght' 700;font-size:1.08rem;margin:28px 0 0;color:#fff">The checking is the same. You choose how much of it you see.</p>
+  </div>
+</section>
+
+<!-- ============ ANY PAPER + PRICE IN CONTEXT ============ -->
+<section style="padding:82px 0">
+  <div style="width:100%;max-width:1180px;margin:0 auto;padding:0 26px">
+    <div style="display:grid;grid-template-columns:1fr 1.1fr;gap:46px;align-items:start">
+
+      <div>
+        <h2 style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 116,'wght' 800;font-size:clamp(1.7rem,3.1vw,2.4rem);line-height:1.05;letter-spacing:-.02em;margin:0 0 14px;max-width:20ch">Even your neighbor's guy.</h2>
+        <p style="font-size:1rem;color:#5B6569;margin:0 0 24px;max-width:44ch">A PRN provider, a name off a truck, your brother-in-law's buddy. SmartQuote works on them all.</p>
+        <div style="display:grid;gap:9px;max-width:42ch">
+          <div style="display:flex;gap:11px;align-items:center;background:#fff;border:1px solid rgba(17,22,25,.12);border-radius:6px;padding:12px 15px">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true" style="flex:none"><path d="M14 3v5h5M14 3H6v18h12V8l-4-5z" stroke="#5B6569" stroke-width="1.6" stroke-linejoin="round"/></svg>
+            <span style="font-size:.92rem">A PDF they emailed</span>
+          </div>
+          <div style="display:flex;gap:11px;align-items:center;background:#fff;border:1px solid rgba(17,22,25,.12);border-radius:6px;padding:12px 15px">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true" style="flex:none"><rect x="3" y="6" width="18" height="14" rx="2" stroke="#5B6569" stroke-width="1.6"/><circle cx="12" cy="13" r="3.4" stroke="#5B6569" stroke-width="1.6"/><path d="M8.5 6l1.3-2h4.4L15.5 6" stroke="#5B6569" stroke-width="1.6" stroke-linejoin="round"/></svg>
+            <span style="font-size:.92rem">A photo of the paper on your counter</span>
+          </div>
+          <div style="display:flex;gap:11px;align-items:center;background:#fff;border:1px solid rgba(17,22,25,.12);border-radius:6px;padding:12px 15px">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true" style="flex:none"><rect x="6" y="3" width="12" height="18" rx="2.4" stroke="#5B6569" stroke-width="1.6"/><path d="M10.5 18h3" stroke="#5B6569" stroke-width="1.6"/></svg>
+            <span style="font-size:.92rem">The text they sent you at 9pm</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="background:#fff;border:1px solid rgba(17,22,25,.14);border-radius:10px;overflow:hidden;box-shadow:0 26px 54px -44px rgba(17,22,25,.7)">
+        <div style="padding:22px 24px 20px">
+          <p style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 112,'wght' 800;font-size:1.32rem;line-height:1.12;margin:0 0 20px;max-width:28ch">A high price and a wrong price look identical until somebody checks.</p>
+
+          <p style="font-size:.85rem;color:#5B6569;margin:0 0 4px">40-gallon gas water heater, Allen County</p>
+          <p style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 112,'wght' 800;font-size:2.3rem;line-height:1;margin:0 0 18px">$4,180</p>
+
+          <div style="position:relative;height:10px;border-radius:5px;background:linear-gradient(90deg,rgba(11,122,67,.16),rgba(11,122,67,.34) 34%,rgba(150,96,26,.3) 78%,rgba(193,0,79,.24));margin-bottom:9px">
+            <span style="position:absolute;left:51%;top:-7px;width:3px;height:24px;background:#111619;border-radius:2px"></span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:.78rem;color:#5B6569;margin-bottom:18px">
+            <span>$2,900</span><span style="color:#111619;font-weight:600">typical range</span><span>$5,400</span>
+          </div>
+
+          <p style="font-size:.93rem;margin:0 0 8px">Inside the range for a same-day replacement with a code-required expansion tank.</p>
+          <p style="font-size:.93rem;color:#5B6569;margin:0">Your attic install adds real labor. That's a legitimate reason to sit above the middle.</p>
+        </div>
+
+        <div style="border-top:1px solid rgba(17,22,25,.12);background:#F7F9FA;padding:20px 24px">
+          <p style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 110,'wght' 700;font-size:1.02rem;margin:0 0 8px">When it lands outside, the provider gets the question. Not you.</p>
+          <p style="font-size:.9rem;color:#5B6569;margin:0 0 14px">We ask them to name what makes this property or this scope different, and the answer reaches you with the quote.</p>
+          <div style="display:flex;gap:7px;flex-wrap:wrap">
+            <span style="font-size:.8rem;background:#fff;border:1px solid rgba(17,22,25,.12);border-radius:20px;padding:5px 12px;color:#4A5459">Restricted access</span>
+            <span style="font-size:.8rem;background:#fff;border:1px solid rgba(17,22,25,.12);border-radius:20px;padding:5px 12px;color:#4A5459">After hours</span>
+            <span style="font-size:.8rem;background:#fff;border:1px solid rgba(17,22,25,.12);border-radius:20px;padding:5px 12px;color:#4A5459">Extra crew or equipment</span>
+            <span style="font-size:.8rem;background:#fff;border:1px solid rgba(17,22,25,.12);border-radius:20px;padding:5px 12px;color:#4A5459">Hidden damage</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ============ THE LOOP + COLOURED TILES ============ -->
+<section style="padding:0 0 90px">
+  <div style="width:100%;max-width:1180px;margin:0 auto;padding:0 26px">
+    <p style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 114,'wght' 800;font-size:clamp(1.5rem,2.8vw,2.15rem);line-height:1.08;letter-spacing:-.02em;margin:0 0 30px;max-width:30ch">Every quote you run teaches the next one what is appropriate for your house to cost.</p>
+
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:18px">
+      <a href="Dashboard v3.dc.html" style="display:block;background:#fff;border:1px solid rgba(17,22,25,.12);border-top:4px solid #C1004F;border-radius:8px;padding:24px;color:#111619" style-hover="border-color:#C1004F;box-shadow:0 18px 36px -28px rgba(17,22,25,.75)">
+        <span style="font-size:.84rem;color:#1E6FD9;font-weight:600">Who's coming, when</span>
+        <p style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 110,'wght' 700;font-size:1.18rem;margin:9px 0 6px">Dashboard</p>
+        <span style="font-size:.9rem;color:#5B6569">Stop being your house's unpaid dispatcher.</span>
+      </a>
+      <a href="Trust Network v3.dc.html" style="display:block;background:#fff;border:1px solid rgba(17,22,25,.12);border-top:4px solid #3E6E7A;border-radius:8px;padding:24px;color:#111619" style-hover="border-color:#3E6E7A;box-shadow:0 18px 36px -28px rgba(17,22,25,.75)">
+        <span style="font-size:.84rem;color:#0B7A43;font-weight:600">Who to call</span>
+        <p style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 110,'wght' 700;font-size:1.18rem;margin:9px 0 6px">Trust Network</p>
+        <span style="font-size:.9rem;color:#5B6569">Use the people you already trust, trust.</span>
+      </a>
+      <a href="Home Memory v2.dc.html" style="display:block;background:#fff;border:1px solid rgba(17,22,25,.12);border-top:4px solid #C6923D;border-radius:8px;padding:24px;color:#111619" style-hover="border-color:#C6923D;box-shadow:0 18px 36px -28px rgba(17,22,25,.75)">
+        <span style="font-size:.84rem;color:#96601A;font-weight:600">What the house knows</span>
+        <p style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 110,'wght' 700;font-size:1.18rem;margin:9px 0 6px">Home Memory</p>
+        <span style="font-size:.9rem;color:#5B6569">Your most expensive asset has amnesia. We fix that.</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ VOTE ============ -->
+<section id="pulse" style="padding:0 0 90px">
+  <div style="width:100%;max-width:860px;margin:0 auto;padding:0 26px">
+    <div style="position:relative;overflow:hidden;border:1px solid rgba(17,22,25,.14);border-radius:10px;background:#fff;padding:30px;box-shadow:0 24px 50px -40px rgba(17,22,25,.6)">
+      <h2 style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 112,'wght' 800;font-size:clamp(1.4rem,2.4vw,2rem);line-height:1.1;margin:0 0 20px">Would this be a tool you'd like built?</h2>
+
+      <sc-if value="{{ voteOpen }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+          <button type="button" onClick="{{ voteYes }}" style="flex:1;min-width:200px;display:flex;align-items:center;gap:12px;padding:18px;border:1px solid rgba(17,22,25,.14);border-radius:6px;background:#F4F6F8;cursor:pointer;text-align:left" style-hover="border-color:#3E6E7A;background:rgba(18,165,91,.08)">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 12l5 5L20 6" stroke="#0B7A43" stroke-width="2" /></svg>
+            <b style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 106,'wght' 700;font-size:1rem">Yes, I would</b>
+          </button>
+          <button type="button" onClick="{{ voteNo }}" style="flex:1;min-width:200px;display:flex;align-items:center;gap:12px;padding:18px;border:1px solid rgba(17,22,25,.14);border-radius:6px;background:#F4F6F8;cursor:pointer;text-align:left" style-hover="border-color:#C6923D;background:rgba(232,149,42,.1)">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="#96601A" stroke-width="2" /></svg>
+            <b style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 106,'wght' 700;font-size:1rem">No, not for me</b>
+          </button>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ yesPending }}" hint-placeholder-val="{{ false }}">
+        <div style="border:1px solid rgba(18,165,91,.4);background:rgba(18,165,91,.07);border-radius:6px;padding:22px;animation:prnfade .3s ease">
+          <p style="margin:0 0 4px;font-size:1.02rem"><b>Vote recorded.</b></p>
+          <p style="margin:0 0 18px;font-size:.93rem;color:#5A6462;max-width:52ch">Leave your details and you are a founding customer: free for life, and a message the day it opens near you.</p>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+            <input ref="{{ nameRef }}" type="text" placeholder="First name" aria-label="First name" style="width:100%;background:#fff;border:1px solid rgba(18,22,26,.16);border-radius:4px;padding:12px;font-size:.92rem;outline:none;color:#12161A" style-focus="border-color:#FF2E7E" />
+            <input ref="{{ zipRef }}" type="text" inputmode="numeric" placeholder="ZIP" aria-label="ZIP code" style="width:100%;background:#fff;border:1px solid rgba(18,22,26,.16);border-radius:4px;padding:12px;font-size:.92rem;outline:none;color:#12161A" style-focus="border-color:#FF2E7E" />
+          </div>
+          <input ref="{{ emailRef }}" type="email" placeholder="Email" aria-label="Email" style="width:100%;background:#fff;border:1px solid rgba(18,22,26,.16);border-radius:4px;padding:12px;font-size:.92rem;outline:none;color:#12161A;margin-bottom:10px" style-focus="border-color:#FF2E7E" />
+          <input ref="{{ phoneRef }}" type="tel" placeholder="Mobile, if you would rather have a text (optional)" aria-label="Mobile number" style="width:100%;background:#fff;border:1px solid rgba(18,22,26,.16);border-radius:4px;padding:12px;font-size:.92rem;outline:none;color:#12161A;margin-bottom:16px" style-focus="border-color:#FF2E7E" />
+          <sc-if value="{{ error }}" hint-placeholder-val="{{ false }}">
+            <p style="color:#C1004F;font-size:.85rem;margin:0 0 12px">Add an email so we know where to send it.</p>
+          </sc-if>
+          <button type="button" onClick="{{ submit }}" style="background:#12161A;color:#F7F7F5;border:0;border-radius:4px;font-weight:600;font-size:.9rem;padding:13px 20px;cursor:pointer">Claim my founding place</button>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ showNoPanel }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:prnfade .3s ease">
+          <p style="font-size:.9rem;color:#5B6569;margin:0 0 12px">Recorded. Why not? Optional.</p>
+          <div style="display:flex;flex-wrap:wrap;gap:8px">
+            <sc-for list="{{ reasons }}" as="r" hint-placeholder-count="6">
+              <button type="button" onClick="{{ r.toggle }}" style="{{ r.style }}">{{ r.label }}</button>
+            </sc-for>
+          </div>
+          <button type="button" onClick="{{ sendReasons }}" style="margin-top:18px;background:#111619;color:#EEF1F3;border:0;border-radius:4px;font-weight:600;font-size:.8rem;padding:9px 15px;cursor:pointer">Send</button>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ thanks }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:18px;border:1px solid rgba(18,165,91,.4);background:rgba(18,165,91,.08);border-radius:6px;animation:prnfade .3s ease">
+          <p style="margin:0;font-size:.96rem">{{ thanksText }}</p>
+        </div>
+      </sc-if>
+    </div>
+  </div>
+</section>
+
+<footer style="border-top:1px solid rgba(17,22,25,.12);padding:40px 0 34px;background:#EEF1F3">
+  <div style="width:100%;max-width:1180px;margin:0 auto;padding:0 26px;display:flex;gap:20px;flex-wrap:wrap;align-items:center;font-size:.82rem;color:#5B6569">
+    <span style="width:13px;height:17px;background:#FF2E7E;clip-path:polygon(0 0,100% 18%,0 42%,0 100%,17% 100%,17% 0)"></span>
+    <span>&copy; 2026 Property Response Network</span>
+    <a href="One Connected Home.dc.html" style="color:#5B6569">Overview</a>
+    <a href="Dashboard v3.dc.html" style="color:#5B6569">Dashboard</a>
+    <a href="Trust Network v3.dc.html" style="color:#5B6569">Trust Network</a>
+    <a href="Home Memory v2.dc.html" style="color:#5B6569">Home Memory</a>
+    <a href="Provider OS v2.dc.html" style="color:#5B6569">Providers</a>
+    <span style="margin-left:auto">Concept preview, Allen County, Indiana</span>
+  </div>
+</footer>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:900}}">
+class Component extends DCLogic {
+  state = { line: "tank", door: "quiet", vote: null, modal: false, sent: false, thanks: "", picked: [], error: false };
+  nameRef = React.createRef();
+  emailRef = React.createRef();
+  phoneRef = React.createRef();
+  zipRef = React.createRef();
+
+  quoteLines = [
+    { k: "labor", txt: "R&R 40 GAL GAS WH — LABOR & MATL", flag: false, total: false, word: "R&R", tag: "Reads clean", means: "Remove and replace. Labor and the unit itself are covered at the quoted price.", ask: "Nothing to ask here." },
+    { k: "tank", txt: "EXP TANK / T&P PER CODE — ALLOWANCE", flag: true, total: false, word: "ALLOWANCE", tag: "The price isn't set", means: "An allowance is a guess, not a price. If the part or the fitting costs more than they estimated, the difference lands on your final bill.", ask: "Can the expansion tank be a fixed price instead?" },
+    { k: "permit", txt: "HAUL-OFF, PERMIT (IF REQ'D) … TBD", flag: true, total: false, word: "TBD", tag: "No ceiling", means: "Your county does require this permit, so it is coming. A line with no number on it is a bill you agreed to before you saw it.", ask: "What is the worst case on the permit?" },
+    { k: "pan", txt: "DRIP PAN — N/I", flag: true, total: false, word: "N/I", tag: "Not included", means: "Indiana code wants a drip pan under a heater in this location. Left out of the quote, it comes back later as a change order.", ask: "Is the drip pan in or out, in writing?" },
+    { k: "vent", txt: "VENT/DRAFT — AS NEEDED", flag: true, total: false, word: "AS NEEDED", tag: "Priced on the day", means: "Discretionary work, priced at the tech's judgment on the day, after you have already committed to the job.", ask: "What is the most the vent work could add?" },
+    { k: "terms", txt: "50% DEP · BAL ON COMP · NET 0", flag: false, total: false, word: "50% DEP", tag: "Reads clean", means: "Half up front, the balance when the work is finished, due immediately. Normal for this trade.", ask: "Nothing to ask here." },
+    { k: "total", txt: "TOTAL ………… $4,180.00", flag: false, total: true, word: "TOTAL", tag: "Before the four unknowns", means: "This is the number you would sign. Four lines above it have no fixed price, so this is a floor, not a ceiling.", ask: "Pin down the four lines first." }
+  ];
+
+  reasonLabels = ["I read quotes fine myself", "I only use one guy", "Wouldn't trust the numbers", "Too complicated", "Wouldn't use it often", "Value isn't clear"];
+
+  chipStyle(on) {
+    return "border:1px solid " + (on ? "#FF2E7E" : "rgba(17,22,25,.16)") + ";background:" + (on ? "rgba(255,46,126,.1)" : "#F4F6F8") + ";border-radius:4px;padding:9px 14px;font-size:.85rem;cursor:pointer;color:#111619";
+  }
+
+  doorStyle(on) {
+    return "font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 106,'wght' 700;font-size:.95rem;padding:13px 20px;border-radius:5px;cursor:pointer;border:1px solid " + (on ? "#FF2E7E" : "rgba(237,239,235,.24)") + ";background:" + (on ? "#FF2E7E" : "transparent") + ";color:" + (on ? "#fff" : "#98A4A3");
+  }
+
+  lineStyle(l, on) {
+    var base = "display:block;width:100%;text-align:left;font-family:'JetBrains Mono',monospace;font-size:.73rem;line-height:1.5;padding:5px 8px;border-radius:4px;border:1px solid transparent;cursor:pointer;";
+    if (l.flag) {
+      return base + "color:#111619;background:" + (on ? "rgba(255,46,126,.18)" : "rgba(255,46,126,.07)") + ";border-color:" + (on ? "#FF2E7E" : "rgba(255,46,126,.28)") + ";";
+    }
+    base += l.total ? "font-weight:700;color:#111619;" : "color:#4A5459;";
+    return base + (on ? "background:rgba(17,22,25,.06);border-color:rgba(17,22,25,.18);color:#111619;" : "background:transparent;");
+  }
+
+  componentDidMount() {
+    this.__onKey = (e) => { if (e.key === "Escape" && this.state.modal) this.setState({ modal: false }); };
+    window.addEventListener("keydown", this.__onKey);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener("keydown", this.__onKey);
+  }
+
+  __record(rec) {
+    rec.at = new Date().toISOString().replace("T", " ").slice(0, 16);
+    rec.page = "SmartQuote v3";
+    if (!this.__voteId) this.__voteId = Math.random().toString(36).slice(2, 10);
+    rec.id = this.__voteId;
+    try {
+      const cur = JSON.parse(localStorage.getItem("prn_signups") || "[]");
+      localStorage.setItem("prn_signups", JSON.stringify(cur.filter((r) => r.id !== rec.id).concat([rec])));
+    } catch (e) { console.warn("could not save this vote locally:", e); }
+    try {
+      fetch("/api/signup", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(rec) })
+        .catch((e) => console.warn("collector unreachable, vote kept in this browser:", e.message));
+    } catch (e) { console.warn("collector unreachable, vote kept in this browser:", e); }
+  }
+
+  renderVals() {
+    const s = this.state;
+    const found = this.quoteLines.filter((l) => l.k === s.line);
+    const sel = found.length ? found[0] : this.quoteLines[1];
+    return {
+      lines: this.quoteLines.map((l) => ({
+        txt: l.txt,
+        aria: l.flag ? "Explain the " + l.word + " line" : "Explain the line " + l.word,
+        style: this.lineStyle(l, l.k === s.line),
+        pick: () => this.setState({ line: l.k })
+      })),
+      sel: sel,
+
+      isQuiet: s.door === "quiet",
+      isAll: s.door === "all",
+      quietStyle: this.doorStyle(s.door === "quiet"),
+      allStyle: this.doorStyle(s.door === "all"),
+      doorQuiet: () => this.setState({ door: "quiet" }),
+      doorAll: () => this.setState({ door: "all" }),
+
+      voteOpen: !s.vote,
+      yesPending: s.vote === "yes" && !s.sent,
+      showNoPanel: s.vote === "no" && !s.thanks,
+      thanks: !!s.thanks,
+      thanksText: s.thanks,
+      modal: s.modal, sent: s.sent, notSent: !s.sent, error: s.error,
+      nameRef: this.nameRef, emailRef: this.emailRef, phoneRef: this.phoneRef, zipRef: this.zipRef,
+      voteYes: () => this.setState({ vote: "yes" }),
+      voteNo: () => this.setState({ vote: "no" }),
+      reopen: () => this.setState({ modal: true }),
+      reasons: this.reasonLabels.map((label) => ({
+        label,
+        style: this.chipStyle(s.picked.indexOf(label) > -1),
+        toggle: () => this.setState((st) => ({ picked: st.picked.indexOf(label) > -1 ? st.picked.filter((x) => x !== label) : st.picked.concat([label]) }))
+      })),
+      sendReasons: () => { this.__record({ vote: "no", reasons: this.state.picked }); this.setState({ thanks: "Thank you. A clear no keeps us from building the wrong thing first." }); },
+      close: () => this.setState({ modal: false }),
+      keepOpen: (e) => { if (e && e.stopPropagation) e.stopPropagation(); },
+      submit: () => {
+        const email = this.emailRef.current && this.emailRef.current.value.trim();
+        if (!email || email.indexOf("@") < 1) { this.setState({ error: true }); return; }
+        const val = (r) => (r && r.current ? r.current.value.trim() : "");
+        this.__record({ vote: "yes", name: val(this.nameRef), email: email, phone: val(this.phoneRef), zip: val(this.zipRef) });
+        this.setState({ error: false, sent: true, thanks: "You are a founding customer. We will message you the day it opens near you." });
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>

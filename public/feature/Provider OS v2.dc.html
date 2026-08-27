@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>
+/* Use the vendored copies so the page renders with no network. Without this the
+   runtime waits on unpkg.com, and a blocked or slow CDN leaves the raw {{ }} template on screen. */
+window.__resources = {
+  "https://unpkg.com/react@18.3.1/umd/react.production.min.js": "./vendor/react.js",
+  "https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js": "./vendor/react-dom.js",
+  "https://unpkg.com/@babel/standalone@7.29.0/babel.min.js": "./vendor/babel.js"
+};
+</script>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="description" content="Your business makes money from a fraction of your day and consumes the rest of your life for free. Prepared jobs and the operating layer around your skilled hands." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="crossorigin" />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&amp;family=Public+Sans:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap" rel="stylesheet" />
+<style>
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:#0E141A;color:#E8EEF3;font-family:"Public Sans",system-ui,sans-serif;font-size:16.5px;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+*,*::before,*::after{box-sizing:border-box}
+a{color:#2E8BFF;text-decoration:none}
+a:hover{color:#6FB0FF}
+button,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid #2E8BFF;outline-offset:3px}
+@keyframes prnfade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes prnping{0%{transform:scale(1);opacity:.5}70%{transform:scale(2);opacity:0}100%{opacity:0}}
+</style>
+</helmet>
+
+<div style="background:#0E141A">
+
+<div style="position:sticky;top:0;z-index:150;background:rgba(14,20,26,.9);backdrop-filter:blur(14px);border-bottom:1px solid rgba(232,238,243,.13)">
+  <div style="width:100%;max-width:1180px;margin:0 auto;padding:0 26px;display:flex;align-items:center;gap:26px;height:64px">
+    <a href="property-response-v2 (2).html" style="display:flex;align-items:center;gap:10px;flex:none;color:#E8EEF3">
+      <span style="width:14px;height:18px;background:#2E8BFF;clip-path:polygon(0 0,100% 18%,0 42%,0 100%,17% 100%,17% 0)"></span>
+      <span style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 100,'wght' 700;font-size:.82rem;letter-spacing:.03em">PRN <span style="color:#5C7488">/ PROVIDERS</span></span>
+    </a>
+    <div style="display:flex;gap:15px;margin-left:auto;align-items:center;flex-wrap:wrap;font-size:.79rem">
+      <a href="One Connected Home.dc.html" style="color:#7E96A8;padding:4px 0">Overview</a>
+      <a href="Dashboard v3.dc.html" style="color:#7E96A8;padding:4px 0">Dashboard</a>
+      <a href="Trust Network v3.dc.html" style="color:#7E96A8;padding:4px 0">Trust Network</a>
+      <a href="SmartQuote v3.dc.html" style="color:#7E96A8;padding:4px 0">SmartQuote</a>
+      <a href="Home Memory v2.dc.html" style="color:#7E96A8;padding:4px 0">Home Memory</a>
+      <a href="Provider OS v2.dc.html" style="color:#E8EEF3;border-bottom:1px solid #2E8BFF;padding:4px 0">For providers</a>
+    </div>
+    <a href="#pulse" style="display:inline-flex;align-items:center;background:#2E8BFF;color:#04121F;border-radius:4px;font-weight:700;font-size:.78rem;padding:9px 14px;flex:none">Apply</a>
+  </div>
+</div>
+
+<section style="padding:62px 0 40px;background:radial-gradient(1000px 400px at 70% 0%,rgba(46,139,255,.14),transparent 70%)">
+  <div style="width:100%;max-width:1180px;margin:0 auto;padding:0 26px">
+    <p style="font-family:'JetBrains Mono',monospace;font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;color:#5C7488;margin:0 0 20px">Founding partners · Allen County</p>
+    <h1 style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 116,'wght' 800;font-size:clamp(2.2rem,5.4vw,4.3rem);line-height:1;letter-spacing:-.025em;margin:0 0 20px;max-width:26ch;text-wrap:balance">Your business pays you for a fraction of your day — and takes the rest <em style="font-style:normal;color:#2E8BFF">for free.</em></h1>
+    <p style="font-size:clamp(1.05rem,1.5vw,1.25rem);color:#7E96A8;margin:0;max-width:48ch">You know your billable rate. What's your unpaid rate?</p>
+  </div>
+</section>
+
+<section style="padding:0 0 80px">
+  <div style="width:100%;max-width:1180px;margin:0 auto;padding:0 26px">
+    <div style="background:#16202A;border:1px solid rgba(232,238,243,.16);border-radius:10px;overflow:hidden;box-shadow:0 34px 70px -40px rgba(0,0,0,.95)">
+      <div style="display:flex;align-items:center;gap:12px;padding:14px 20px;border-bottom:1px solid rgba(232,238,243,.12);background:rgba(0,0,0,.24);flex-wrap:wrap">
+        <b style="font-family:'JetBrains Mono',monospace;font-size:.66rem;letter-spacing:.16em;text-transform:uppercase;color:#7E96A8">The timesheet your business never showed you</b>
+        <span style="margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:#5C7488">Your numbers · model, not a promise</span>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1.15fr .85fr">
+        <div style="padding:24px;border-right:1px solid rgba(232,238,243,.12)">
+          <p style="font-family:'JetBrains Mono',monospace;font-size:.62rem;letter-spacing:.13em;text-transform:uppercase;color:#5C7488;margin:0 0 14px">One 40-hour week, hour by hour</p>
+          <div style="display:grid;grid-template-columns:repeat(10,1fr);gap:6px;margin-bottom:16px">
+            <sc-for list="{{ blocks }}" as="b" hint-placeholder-count="40">
+              <div style="{{ b.style }}"></div>
+            </sc-for>
+          </div>
+          <div style="display:flex;gap:22px;flex-wrap:wrap;font-family:'JetBrains Mono',monospace;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:#7E96A8">
+            <span style="display:flex;align-items:center;gap:8px"><span style="width:12px;height:12px;background:#2E8BFF;display:inline-block;border-radius:2px"></span>Hands on the work</span>
+            <span style="display:flex;align-items:center;gap:8px"><span style="width:12px;height:12px;background:#3A4A57;display:inline-block;border-radius:2px"></span>Unpaid: calls, quotes, chasing, driving</span>
+          </div>
+
+          <div style="margin-top:24px;padding-top:20px;border-top:1px solid rgba(232,238,243,.12);display:grid;gap:18px">
+            <div>
+              <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:10px">
+                <span style="font-family:'JetBrains Mono',monospace;font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:#5C7488">Unpaid hours a week</span>
+                <b style="font-family:'JetBrains Mono',monospace;font-size:1.1rem;color:#E8EEF3;margin-left:auto">{{ hours }}</b>
+              </div>
+              <div style="display:flex;gap:8px">
+                <button type="button" onClick="{{ lessHours }}" style="width:38px;height:38px;border:1px solid rgba(232,238,243,.2);background:transparent;border-radius:4px;cursor:pointer;font-size:1.1rem;line-height:1">−</button>
+                <button type="button" onClick="{{ moreHours }}" style="width:38px;height:38px;border:1px solid rgba(232,238,243,.2);background:transparent;border-radius:4px;cursor:pointer;font-size:1.1rem;line-height:1">+</button>
+                <span style="align-self:center;font-size:.86rem;color:#7E96A8">Most owners we talk to guess low.</span>
+              </div>
+            </div>
+            <div>
+              <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:10px">
+                <span style="font-family:'JetBrains Mono',monospace;font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:#5C7488">Your billable rate</span>
+                <b style="font-family:'JetBrains Mono',monospace;font-size:1.1rem;color:#E8EEF3;margin-left:auto">${{ rate }}/hr</b>
+              </div>
+              <div style="display:flex;gap:8px">
+                <button type="button" onClick="{{ lessRate }}" style="width:38px;height:38px;border:1px solid rgba(232,238,243,.2);background:transparent;border-radius:4px;cursor:pointer;font-size:1.1rem;line-height:1">−</button>
+                <button type="button" onClick="{{ moreRate }}" style="width:38px;height:38px;border:1px solid rgba(232,238,243,.2);background:transparent;border-radius:4px;cursor:pointer;font-size:1.1rem;line-height:1">+</button>
+                <span style="align-self:center;font-size:.86rem;color:#7E96A8">What a customer pays for your hour.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="padding:24px;background:rgba(46,139,255,.06)">
+          <p style="font-family:'JetBrains Mono',monospace;font-size:.62rem;letter-spacing:.13em;text-transform:uppercase;color:#2E8BFF;margin:0 0 18px">What that costs you a year</p>
+          <div style="display:grid;gap:20px">
+            <div>
+              <p style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 114,'wght' 800;font-size:clamp(2rem,4vw,3rem);line-height:1;letter-spacing:-.02em;margin:0;color:#E8EEF3">{{ yearHours }} hrs</p>
+              <p style="font-size:.88rem;color:#7E96A8;margin:6px 0 0">given away over 50 weeks</p>
+            </div>
+            <div>
+              <p style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 114,'wght' 800;font-size:clamp(2rem,4vw,3rem);line-height:1;letter-spacing:-.02em;margin:0;color:#2E8BFF">{{ weeks }} weeks</p>
+              <p style="font-size:.88rem;color:#7E96A8;margin:6px 0 0">of 40-hour weeks, unpaid</p>
+            </div>
+            <div>
+              <p style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 114,'wght' 800;font-size:clamp(2rem,4vw,3rem);line-height:1;letter-spacing:-.02em;margin:0;color:#2ED67F">${{ dollars }}</p>
+              <p style="font-size:.88rem;color:#7E96A8;margin:6px 0 0">at your own rate — or {{ days }} workdays back every week</p>
+            </div>
+          </div>
+          <p style="font-family:'JetBrains Mono',monospace;font-size:.6rem;line-height:1.7;color:#5C7488;margin:20px 0 0;padding-top:14px;border-top:1px solid rgba(232,238,243,.12)">Your inputs × a 40-hour week × 50 weeks. Recovered hours are yours to sell OR to live — never count them as both.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section style="padding:70px 0;background:#E8EAE6;color:#101820">
+  <div style="width:100%;max-width:1180px;margin:0 auto;padding:0 26px">
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:30px">
+      <p style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 112,'wght' 800;font-size:clamp(1.35rem,2.2vw,1.9rem);line-height:1.12;letter-spacing:-.015em;margin:0;border-left:3px solid #1668D8;padding-left:20px;color:#101820">Would you sell ten years of your life for $0? You're doing it eleven minutes at a time.</p>
+      <p style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 112,'wght' 800;font-size:clamp(1.35rem,2.2vw,1.9rem);line-height:1.12;letter-spacing:-.015em;margin:0;border-left:3px solid #1668D8;padding-left:20px;color:#101820">A $20 task should never be allowed to interrupt a $150 hour.</p>
+      <p style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 112,'wght' 800;font-size:clamp(1.35rem,2.2vw,1.9rem);line-height:1.12;letter-spacing:-.015em;margin:0;border-left:3px solid #1668D8;padding-left:20px;color:#101820">You'd never put your best tech on the phones all day. So why are you on them?</p>
+      <p style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 112,'wght' 800;font-size:clamp(1.35rem,2.2vw,1.9rem);line-height:1.12;letter-spacing:-.015em;margin:0;border-left:3px solid #1668D8;padding-left:20px;color:#101820">If every new customer makes more work for you personally, you didn't grow a company. You grew your job.</p>
+    </div>
+  </div>
+</section>
+
+<section style="padding:80px 0">
+  <div style="width:100%;max-width:1180px;margin:0 auto;padding:0 26px">
+    <h2 style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 114,'wght' 800;font-size:clamp(1.8rem,3.4vw,2.7rem);line-height:1.05;letter-spacing:-.02em;margin:0 0 8px">Four buttons. That's your whole day.</h2>
+    <p style="font-size:1rem;color:#7E96A8;margin:0 0 34px">Everything else runs underneath.</p>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px">
+      <div style="background:#16202A;border:1px solid rgba(46,139,255,.35);border-radius:8px;padding:24px;text-align:center">
+        <svg width="46" height="46" viewBox="0 0 46 46" fill="none" aria-hidden="true" style="margin:0 auto 16px"><rect x="6" y="8" width="34" height="26" rx="3" stroke="#2E8BFF" stroke-width="1.8" /><path d="M13 18h14M13 25h20" stroke="#5C7488" stroke-width="1.6" /><path d="M28 40l5 4 9-11" stroke="#2ED67F" stroke-width="2.2" /></svg>
+        <p style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 116,'wght' 800;font-size:1.35rem;letter-spacing:.04em;margin:0 0 8px">ACCEPT</p>
+        <p style="font-size:.87rem;color:#7E96A8;margin:0">Read the packet. Judge the work, not a promise.</p>
+      </div>
+      <div style="background:#16202A;border:1px solid rgba(232,238,243,.14);border-radius:8px;padding:24px;text-align:center">
+        <svg width="46" height="46" viewBox="0 0 46 46" fill="none" aria-hidden="true" style="margin:0 auto 16px"><path d="M4 30h8l5-12 5 20 5-14 4 6h11" stroke="#2E8BFF" stroke-width="1.8" /></svg>
+        <p style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 116,'wght' 800;font-size:1.35rem;letter-spacing:.04em;margin:0 0 8px">START</p>
+        <p style="font-size:.87rem;color:#7E96A8;margin:0">Customer is told automatically. No “where are you?” call.</p>
+      </div>
+      <div style="background:#16202A;border:1px solid rgba(232,238,243,.14);border-radius:8px;padding:24px;text-align:center">
+        <svg width="46" height="46" viewBox="0 0 46 46" fill="none" aria-hidden="true" style="margin:0 auto 16px"><circle cx="23" cy="23" r="17" stroke="#2E8BFF" stroke-width="1.8" /><path d="M18 18a5 5 0 1 1 6 5v3" stroke="#5C7488" stroke-width="1.8" /><circle cx="24" cy="31" r="1.6" fill="#2E8BFF" /></svg>
+        <p style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 116,'wght' 800;font-size:1.35rem;letter-spacing:.04em;margin:0 0 8px">HELP</p>
+        <p style="font-size:.87rem;color:#7E96A8;margin:0">Extra scope, part needed, approval — raised and written for you.</p>
+      </div>
+      <div style="background:#16202A;border:1px solid rgba(232,238,243,.14);border-radius:8px;padding:24px;text-align:center">
+        <svg width="46" height="46" viewBox="0 0 46 46" fill="none" aria-hidden="true" style="margin:0 auto 16px"><rect x="7" y="7" width="32" height="32" rx="4" stroke="#2E8BFF" stroke-width="1.8" /><path d="M15 23l6 6 12-14" stroke="#2ED67F" stroke-width="2.2" /></svg>
+        <p style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 116,'wght' 800;font-size:1.35rem;letter-spacing:.04em;margin:0 0 8px">DONE</p>
+        <p style="font-size:.87rem;color:#7E96A8;margin:0">Photos up once. Record, invoice trail and warranty write themselves.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section style="padding:0 0 80px">
+  <div style="width:100%;max-width:1180px;margin:0 auto;padding:0 26px;display:grid;grid-template-columns:1fr 80px 1fr;gap:18px;align-items:center">
+    <div style="background:#16202A;border:1px solid rgba(232,238,243,.14);border-radius:8px;padding:24px">
+      <p style="font-family:'JetBrains Mono',monospace;font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;color:#5C7488;margin:0 0 18px">A lead</p>
+      <div style="display:grid;gap:10px">
+        <div style="display:flex;gap:10px;align-items:center;font-size:.92rem;color:#7E96A8"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M4 4l10 10M14 4L4 14" stroke="#E8952A" stroke-width="1.8" /></svg>A name and a number</div>
+        <div style="display:flex;gap:10px;align-items:center;font-size:.92rem;color:#7E96A8"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M4 4l10 10M14 4L4 14" stroke="#E8952A" stroke-width="1.8" /></svg>Sold to three competitors</div>
+        <div style="display:flex;gap:10px;align-items:center;font-size:.92rem;color:#7E96A8"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M4 4l10 10M14 4L4 14" stroke="#E8952A" stroke-width="1.8" /></svg>Two hours of driving to say no</div>
+        <div style="display:flex;gap:10px;align-items:center;font-size:.92rem;color:#7E96A8"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M4 4l10 10M14 4L4 14" stroke="#E8952A" stroke-width="1.8" /></svg>You pay either way</div>
+      </div>
+    </div>
+    <p style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 118,'wght' 800;font-size:1.3rem;margin:0;text-align:center;color:#2E8BFF">VS.</p>
+    <div style="background:#16202A;border:1px solid rgba(46,139,255,.4);border-radius:8px;padding:24px;box-shadow:0 24px 50px -40px rgba(46,139,255,.8)">
+      <p style="font-family:'JetBrains Mono',monospace;font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;color:#2E8BFF;margin:0 0 18px">A prepared job</p>
+      <div style="display:grid;gap:10px">
+        <div style="display:flex;gap:10px;align-items:center;font-size:.92rem"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M3 9.5l4.5 4.5L16 4" stroke="#2ED67F" stroke-width="2" /></svg>Verified property in your territory</div>
+        <div style="display:flex;gap:10px;align-items:center;font-size:.92rem"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M3 9.5l4.5 4.5L16 4" stroke="#2ED67F" stroke-width="2" /></svg>Photos, safety flags, access plan</div>
+        <div style="display:flex;gap:10px;align-items:center;font-size:.92rem"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M3 9.5l4.5 4.5L16 4" stroke="#2ED67F" stroke-width="2" /></svg>A window the customer already picked</div>
+        <div style="display:flex;gap:10px;align-items:center;font-size:.92rem"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M3 9.5l4.5 4.5L16 4" stroke="#2ED67F" stroke-width="2" /></svg>Nobody else got it. Decline costs nothing.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section style="padding:80px 0;background:#101820;border-top:1px solid rgba(232,238,243,.1)">
+  <div style="width:100%;max-width:1180px;margin:0 auto;padding:0 26px">
+    <h2 style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 114,'wght' 800;font-size:clamp(1.8rem,3.4vw,2.7rem);line-height:1.05;letter-spacing:-.02em;margin:0 0 8px">The departments you never have to hire.</h2>
+    <p style="font-size:1rem;color:#7E96A8;margin:0 0 32px">Every module labeled honestly: what's live, what's being built, what's still a drawing.</p>
+
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px">
+      <sc-for list="{{ modules }}" as="m" hint-placeholder-count="16">
+        <div style="background:#16202A;border:1px solid rgba(232,238,243,.13);border-radius:8px;padding:20px">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+            <span style="width:34px;height:34px;flex:none;border-radius:6px;background:rgba(46,139,255,.12);display:grid;place-items:center;font-family:'JetBrains Mono',monospace;font-size:.7rem;color:#2E8BFF">{{ m.abbr }}</span>
+            <span style="{{ m.tagStyle }}">{{ m.tag }}</span>
+          </div>
+          <b style="display:block;font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 108,'wght' 700;font-size:1rem;margin-bottom:6px">{{ m.name }}</b>
+          <span style="font-size:.85rem;color:#7E96A8">{{ m.what }}</span>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+</section>
+
+<section style="padding:80px 0">
+  <div style="width:100%;max-width:1180px;margin:0 auto;padding:0 26px">
+    <p style="font-family:'JetBrains Mono',monospace;font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;color:#5C7488;margin:0 0 24px">Your screen at 7:41 AM · concept preview</p>
+    <div style="background:#16202A;border:1px solid rgba(232,238,243,.16);border-radius:10px;overflow:hidden;box-shadow:0 34px 70px -44px rgba(0,0,0,.95)">
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid rgba(232,238,243,.12)">
+        <div style="padding:20px;border-right:1px solid rgba(232,238,243,.12)">
+          <p style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 114,'wght' 800;font-size:1.9rem;margin:0;line-height:1">3</p>
+          <p style="font-size:.84rem;color:#7E96A8;margin:6px 0 0">Jobs today · all prepared</p>
+        </div>
+        <div style="padding:20px;border-right:1px solid rgba(232,238,243,.12)">
+          <p style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 114,'wght' 800;font-size:1.9rem;margin:0;line-height:1;color:#E8952A">1</p>
+          <p style="font-size:.84rem;color:#7E96A8;margin:6px 0 0">Needs your decision</p>
+        </div>
+        <div style="padding:20px;border-right:1px solid rgba(232,238,243,.12)">
+          <p style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 114,'wght' 800;font-size:1.9rem;margin:0;line-height:1;color:#2ED67F">0</p>
+          <p style="font-size:.84rem;color:#7E96A8;margin:6px 0 0">Estimates to drive to</p>
+        </div>
+        <div style="padding:20px">
+          <p style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 114,'wght' 800;font-size:1.9rem;margin:0;line-height:1">4.0</p>
+          <p style="font-size:.84rem;color:#7E96A8;margin:6px 0 0">Hours off the job this week</p>
+        </div>
+      </div>
+      <div style="padding:20px;display:grid;gap:10px">
+        <div style="display:flex;align-items:center;gap:14px;padding:14px 16px;border:1px solid rgba(232,149,42,.4);background:rgba(232,149,42,.08);border-radius:6px;flex-wrap:wrap">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true"><path d="M11 3l8 15H3z" stroke="#E8952A" stroke-width="1.6" /><path d="M11 9v4" stroke="#E8952A" stroke-width="1.6" /></svg>
+          <span style="font-size:.92rem">Oakhurst — second stem is a risk. Your write-up goes to the customer, not a phone call.</span>
+          <span style="margin-left:auto;background:#2E8BFF;color:#04121F;border-radius:4px;font-size:.78rem;font-weight:700;padding:8px 14px">Send it</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:14px;padding:14px 16px;border:1px solid rgba(232,238,243,.13);background:rgba(0,0,0,.22);border-radius:6px;flex-wrap:wrap">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true"><circle cx="11" cy="11" r="9" stroke="#5C7488" stroke-width="1.6" /><path d="M11 6v5l4 3" stroke="#5C7488" stroke-width="1.6" /></svg>
+          <span style="font-size:.92rem;color:#7E96A8">10:30 · Hanover St — stump grind, owner away, access approved</span>
+          <span style="margin-left:auto;border:1px solid rgba(232,238,243,.2);border-radius:4px;font-size:.78rem;padding:8px 14px">START</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:14px;padding:14px 16px;border:1px solid rgba(232,238,243,.13);background:rgba(0,0,0,.22);border-radius:6px;flex-wrap:wrap">
+          <span style="position:relative;width:10px;height:10px;flex:none"><span style="position:absolute;inset:0;border-radius:50%;background:#2E8BFF"></span><span style="position:absolute;inset:0;border-radius:50%;background:#2E8BFF;animation:prnping 2s ease-out infinite"></span></span>
+          <span style="font-size:.92rem;color:#7E96A8">New · Leo-Cedarville — limb over a shared fence, full packet attached</span>
+          <span style="margin-left:auto;border:1px solid rgba(232,238,243,.2);border-radius:4px;font-size:.78rem;padding:8px 14px">Review</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section style="padding:0 0 80px">
+  <div style="width:100%;max-width:1180px;margin:0 auto;padding:0 26px;display:grid;grid-template-columns:1fr 1fr;gap:22px">
+    <div style="background:#16202A;border:1px solid rgba(232,238,243,.14);border-radius:8px;padding:26px">
+      <svg width="40" height="40" viewBox="0 0 40 40" fill="none" aria-hidden="true"><circle cx="20" cy="20" r="16" stroke="#2E8BFF" stroke-width="1.8" /><path d="M14 20h12M20 14v12" stroke="#2E8BFF" stroke-width="1.8" /></svg>
+      <h3 style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 110,'wght' 700;font-size:1.25rem;margin:16px 0 10px">A fixed fee. Never a cut of your job.</h3>
+      <p style="font-size:.92rem;color:#7E96A8;margin:0">A percentage would give us a stake in your quote going up. Territory, accepted-packet or confirmed-booking fee — stated in advance. No platform surcharge on the customer's bill.</p>
+    </div>
+    <div style="background:#16202A;border:1px solid rgba(232,238,243,.14);border-radius:8px;padding:26px">
+      <svg width="40" height="40" viewBox="0 0 40 40" fill="none" aria-hidden="true"><path d="M20 5l13 6v9c0 8-6 12-13 14C13 32 7 28 7 20v-9z" stroke="#2E8BFF" stroke-width="1.8" /><path d="M14 20l5 5 8-10" stroke="#2ED67F" stroke-width="2" /></svg>
+      <h3 style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 110,'wght' 700;font-size:1.25rem;margin:16px 0 10px">Your customers stay yours.</h3>
+      <p style="font-size:.92rem;color:#7E96A8;margin:0">Work you bring in carries no job fee and stays in your lane. Priority on PRN jobs is earned by response and completion — it is never for sale.</p>
+    </div>
+  </div>
+</section>
+
+<section id="pulse" style="padding:0 0 90px">
+  <div style="width:100%;max-width:860px;margin:0 auto;padding:0 26px">
+    <div style="border:1px solid rgba(46,139,255,.45);border-radius:8px;background:rgba(46,139,255,.07);padding:30px">
+      <h2 style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 112,'wght' 800;font-size:clamp(1.4rem,2.4vw,2rem);line-height:1.1;margin:0 0 20px">Would you take prepared jobs instead of bought names?</h2>
+
+      <sc-if value="{{ voteOpen }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+          <button type="button" onClick="{{ voteYes }}" style="flex:1;min-width:200px;display:flex;align-items:center;gap:12px;padding:18px;border:1px solid rgba(232,238,243,.14);border-radius:6px;background:rgba(0,0,0,.22);cursor:pointer;text-align:left" style-hover="border-color:#2ED67F;background:rgba(46,214,127,.08)">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 12l5 5L20 6" stroke="#2ED67F" stroke-width="2" /></svg>
+            <b style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 106,'wght' 700;font-size:1rem">Yes — put my crew on the list</b>
+          </button>
+          <button type="button" onClick="{{ voteNo }}" style="flex:1;min-width:200px;display:flex;align-items:center;gap:12px;padding:18px;border:1px solid rgba(232,238,243,.14);border-radius:6px;background:rgba(0,0,0,.22);cursor:pointer;text-align:left" style-hover="border-color:#E8952A;background:rgba(232,149,42,.08)">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="#E8952A" stroke-width="2" /></svg>
+            <b style="font-family:'Archivo',sans-serif;font-variation-settings:'wdth' 106,'wght' 700;font-size:1rem">No, not for my business</b>
+          </button>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ yesPending }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:18px;border:1px solid rgba(46,214,127,.4);background:rgba(46,214,127,.08);border-radius:6px;animation:prnfade .3s ease">
+          <p style="margin:0 0 14px;font-size:.96rem"><b>Answer recorded.</b> We're only taking a handful of crews.</p>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ showNoPanel }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:prnfade .3s ease">
+          <p style="font-family:'JetBrains Mono',monospace;font-size:.64rem;letter-spacing:.13em;text-transform:uppercase;color:#7E96A8;margin:0 0 12px">Recorded. Why not? — optional</p>
+          <div style="display:flex;flex-wrap:wrap;gap:8px">
+            <sc-for list="{{ reasons }}" as="r" hint-placeholder-count="6">
+              <button type="button" onClick="{{ r.toggle }}" style="{{ r.style }}">{{ r.label }}</button>
+            </sc-for>
+          </div>
+          <button type="button" onClick="{{ sendReasons }}" style="margin-top:18px;background:#2E8BFF;color:#04121F;border:0;border-radius:4px;font-weight:700;font-size:.8rem;padding:9px 15px;cursor:pointer">Send</button>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ thanks }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:18px;border:1px solid rgba(46,214,127,.4);background:rgba(46,214,127,.08);border-radius:6px;animation:prnfade .3s ease">
+          <p style="margin:0;font-size:.96rem">{{ thanksText }}</p>
+        </div>
+      </sc-if>
+    </div>
+  </div>
+</section>
+
+<footer style="border-top:1px solid rgba(232,238,243,.12);padding:40px 0 34px;background:#0E141A">
+  <div style="width:100%;max-width:1180px;margin:0 auto;padding:0 26px;display:flex;gap:20px;flex-wrap:wrap;align-items:center;font-family:'JetBrains Mono',monospace;font-size:.64rem;letter-spacing:.08em;text-transform:uppercase;color:#5C7488">
+    <span style="width:13px;height:17px;background:#2E8BFF;clip-path:polygon(0 0,100% 18%,0 42%,0 100%,17% 100%,17% 0)"></span>
+    <span>© 2026 Property Response Network</span>
+    <a href="One Connected Home.dc.html" style="color:#7E96A8">Overview</a>
+    <a href="Dashboard v3.dc.html" style="color:#7E96A8">Dashboard</a>
+    <a href="Trust Network v3.dc.html" style="color:#7E96A8">Trust Network</a>
+    <a href="SmartQuote v3.dc.html" style="color:#7E96A8">SmartQuote</a>
+    <a href="Home Memory v2.dc.html" style="color:#7E96A8">Home Memory</a>
+    <span style="margin-left:auto">Modeled figures · not achieved results</span>
+  </div>
+</footer>
+
+
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:900}}">
+class Component extends DCLogic {
+  state = { hours: 15, rate: 100, vote: null, modal: false, sent: false, thanks: "", picked: [], error: false };
+  nameRef = React.createRef();
+  emailRef = React.createRef();
+  phoneRef = React.createRef();
+  zipRef = React.createRef();
+
+  mods = [
+    ["FO", "Front office", "24/7 intake, calls, texts, photos, clarifiers, reminders, missed-contact recovery.", "real"],
+    ["OP", "Prepared opportunities", "Job-ready packets, one provider at a time, response and backup states.", "real"],
+    ["JB", "Jobs by next action", "Review, schedule, start, approval needed, waiting on a part, finish.", "real"],
+    ["SC", "Schedule & capacity", "Your hours, territory, urgency rules, windows, current load.", "real"],
+    ["ST", "Customer status", "Sent, seen, accepted, on the way, done — sent for you, automatically.", "real"],
+    ["RU", "Your rules", "Trades, coverage, licenses, insurance, fees, response preferences.", "real"],
+    ["QT", "Quotes & approvals", "Automatic drafts from the packet, options, change orders, follow-up.", "build"],
+    ["PR", "Work prep", "Scope, tools, parts, access, difficulty, shopping list, pre-arrival questions.", "build"],
+    ["DF", "Digital foreman", "In-context steps, annotated photos, checkpoints, stop conditions, escalation.", "build"],
+    ["HM", "Customer & house memory", "Prior jobs, equipment, parts, warranties, preferences carried forward.", "build"],
+    ["CM", "Company memory", "What happened, what fixed it, parts, evidence — the company learns, not just you.", "build"],
+    ["MO", "Money & profitability", "Invoicing links, job profit, warranty obligations, lost-reason learning.", "build"],
+    ["TM", "Team & apprentices", "Roles, assignment, guided packets, teach-the-system-once training.", "build"],
+    ["BP", "Network purchasing", "Job shopping list at network prices with a transparent savings receipt.", "future"],
+    ["TC", "Tool cloud", "The tool the job needs, verified, nearby, reserved — instead of owned.", "future"],
+    ["GM", "Owner / GM brain", "Profit by job type and ZIP, time allocation, anomalies, next best decision.", "future"]
+  ];
+
+  reasonLabels = ["I have all the work I need", "I don't trust platform work", "Fees are the problem", "Assigned windows won't fit", "Too complicated", "Want to see it running first"];
+
+  tagStyle(kind) {
+    const map = { real: ["#2ED67F", "rgba(46,214,127,.45)"], build: ["#E8952A", "rgba(232,149,42,.5)"], future: ["#7E96A8", "rgba(232,238,243,.22)"] };
+    const c = map[kind];
+    return "font-family:'JetBrains Mono',monospace;font-size:.55rem;letter-spacing:.12em;text-transform:uppercase;color:" + c[0] + ";border:1px solid " + c[1] + ";padding:2px 6px;border-radius:2px;margin-left:auto";
+  }
+
+  chipStyle(on) {
+    return "border:1px solid " + (on ? "#2E8BFF" : "rgba(232,238,243,.16)") + ";background:" + (on ? "rgba(46,139,255,.16)" : "transparent") + ";border-radius:4px;padding:9px 14px;font-size:.85rem;cursor:pointer;color:#E8EEF3";
+  }
+
+  componentDidMount() {
+    this.__onKey = (e) => { if (e.key === "Escape" && this.state.modal) this.setState({ modal: false }); };
+    window.addEventListener("keydown", this.__onKey);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener("keydown", this.__onKey);
+  }
+
+  renderVals() {
+    const s = this.state;
+    const blocks = [];
+    for (let i = 0; i < 40; i++) {
+      const unpaid = i >= 40 - s.hours;
+      blocks.push({ style: "aspect-ratio:1;border-radius:2px;background:" + (unpaid ? "#3A4A57" : "#2E8BFF") + ";opacity:" + (unpaid ? ".85" : "1") });
+    }
+    const yearHours = s.hours * 50;
+    return {
+      blocks: blocks,
+      hours: s.hours,
+      rate: s.rate,
+      yearHours: yearHours,
+      weeks: Math.round((yearHours / 40) * 10) / 10,
+      dollars: (yearHours * s.rate).toLocaleString("en-US"),
+      days: Math.round((s.hours / 8) * 10) / 10,
+      moreHours: () => this.setState((st) => ({ hours: Math.min(30, st.hours + 1) })),
+      lessHours: () => this.setState((st) => ({ hours: Math.max(4, st.hours - 1) })),
+      moreRate: () => this.setState((st) => ({ rate: Math.min(400, st.rate + 25) })),
+      lessRate: () => this.setState((st) => ({ rate: Math.max(50, st.rate - 25) })),
+      modules: this.mods.map((m) => ({
+        abbr: m[0], name: m[1], what: m[2],
+        tag: m[3] === "real" ? "Real now" : (m[3] === "build" ? "In build" : "Future"),
+        tagStyle: this.tagStyle(m[3])
+      })),
+      voteOpen: !s.vote,
+      yesPending: s.vote === "yes" && !s.sent,
+      showNoPanel: s.vote === "no" && !s.thanks,
+      thanks: !!s.thanks,
+      thanksText: s.thanks,
+      modal: s.modal, sent: s.sent, notSent: !s.sent, error: s.error,
+      nameRef: this.nameRef, emailRef: this.emailRef, phoneRef: this.phoneRef, zipRef: this.zipRef,
+      voteYes: () => this.setState({ vote: "yes" }),
+      voteNo: () => this.setState({ vote: "no" }),
+      reopen: () => this.setState({ modal: true }),
+      reasons: this.reasonLabels.map((label) => ({
+        label,
+        style: this.chipStyle(s.picked.indexOf(label) > -1),
+        toggle: () => this.setState((st) => ({ picked: st.picked.indexOf(label) > -1 ? st.picked.filter((x) => x !== label) : st.picked.concat([label]) }))
+      })),
+      sendReasons: () => this.setState({ thanks: "Thank you — that's the kind of answer that changes what we build." }),
+      close: () => this.setState({ modal: false }),
+      keepOpen: (e) => { if (e && e.stopPropagation) e.stopPropagation(); },
+      submit: () => {
+        const email = this.emailRef.current && this.emailRef.current.value.trim();
+        if (!email || email.indexOf("@") < 1) { this.setState({ error: true }); return; }
+        this.setState({ error: false, sent: true, thanks: "You're on the founding-partner list. We'll be in touch within two business days." });
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>
