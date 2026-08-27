@@ -1,4 +1,5 @@
 import { adminGate } from "@/components/admin/AdminGate";
+import { GeneratePagesButton } from "@/components/admin/GeneratePagesButton";
 import { OpportunityDecision } from "@/components/admin/OpportunityDecision";
 import { effectiveStatus, latestDecision } from "@/domain/search/decision";
 import { loadOpportunities } from "@/platform/admin/data";
@@ -141,10 +142,22 @@ export default async function OpportunitiesPage() {
                       offering the owner an action that 500s.
                     */}
                     {decisionsReadable ? (
-                      <OpportunityDecision
-                        opportunityId={o.search_opportunity_id}
-                        status={status}
-                      />
+                      <span style={{ display: "inline-flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+                        <OpportunityDecision
+                          opportunityId={o.search_opportunity_id}
+                          status={status}
+                        />
+                        {/*
+                          CLOSE THE LOOP ON THE ROW ITSELF: once the owner has
+                          approved, the next step of the workflow is one click
+                          away — build the draft door. The route is idempotent
+                          per opportunity (a second press answers "already has
+                          a page"), so the button is safe to press twice.
+                        */}
+                        {status === "approved" && (
+                          <GeneratePagesButton opportunityId={o.search_opportunity_id} />
+                        )}
+                      </span>
                     ) : (
                       <span className="hint" style={{ color: "var(--on-dark-mute)" }}>
                         unavailable

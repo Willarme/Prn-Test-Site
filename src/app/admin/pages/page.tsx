@@ -2,6 +2,7 @@ import { adminGate } from "@/components/admin/AdminGate";
 import Link from "next/link";
 import { loadStaged, publishedPageIds } from "@/platform/admin/data";
 import { DEFAULT_FLAGS } from "@/platform/flags";
+import { GeneratePagesButton } from "@/components/admin/GeneratePagesButton";
 import { PublishButton } from "@/components/admin/PublishButton";
 import { publishQueueSnapshot } from "@/platform/search/page-qa-gate";
 
@@ -44,6 +45,23 @@ export default async function AdminPages() {
         Publish state lives in the runtime store — persistent locally, temporary on staging until the
         database is connected.
       </p>
+
+      {/*
+        THE PAGE MAKER, IN THE PAGE. A05's only admin trigger. One press runs
+        the factory over every opportunity approved in Search opportunities:
+        drafts are staged at QA PENDING and land in the queue below — nothing
+        is published by this action, and running it twice cannot double-build
+        (the route skips opportunities that already have a page).
+      */}
+      <div className="cell" style={{ margin: "0 0 24px" }}>
+        <strong>The page maker</strong> — one press builds a draft door for every opportunity you
+        approved in <strong>Search opportunities</strong>. Drafts land below as QA-pending; they go
+        public only through your own <strong>Approve &amp; publish</strong>. Safe to press again:
+        opportunities that already have a page are skipped.
+        <div style={{ marginTop: 10 }}>
+          <GeneratePagesButton />
+        </div>
+      </div>
 
       <div style={{ overflowX: "auto" }}>
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: ".9rem" }}>
