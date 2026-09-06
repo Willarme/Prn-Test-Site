@@ -10,7 +10,7 @@ const nextConfig = {
   // page (GET /problems/ac-blowing-warm-air) is read from content/doors/ at
   // request time and would otherwise be missing from the deploy (F1 flagged it).
   outputFileTracingIncludes: {
-    "/**": ["./data/seo-factory-policy.json", "./content/doors/**", "./content/door-template/v43/**"],
+    "/**": ["./data/seo-factory-policy.json", "./content/doors/**", "./content/door-template/v43/**", "./content/source-evidence/**"],
   },
 };
 

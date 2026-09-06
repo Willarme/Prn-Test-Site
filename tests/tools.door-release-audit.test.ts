@@ -1,9 +1,11 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { createServer, type Server } from 'node:http';
 import { fileURLToPath } from 'node:url';
+import { createRequire } from 'node:module';
 
 const modulePath = fileURLToPath(new URL('../tools/audit-door-release.mjs', import.meta.url));
-const { auditDoorRelease, SECTION_IDS, robotsAllows } = await import(/* @vite-ignore */ modulePath);
+// Native Node handles a checked-out CRLF shebang; Vite's dynamic loader does not.
+const { auditDoorRelease, SECTION_IDS, robotsAllows } = createRequire(import.meta.url)(modulePath);
 const servers: Server[] = [];
 afterEach(async () => { await Promise.all(servers.splice(0).map((server) => new Promise<void>((resolve) => {
   server.closeAllConnections(); server.close(() => resolve());

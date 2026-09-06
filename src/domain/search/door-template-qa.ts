@@ -82,6 +82,7 @@ export interface DoorTemplateEvidence {
   assets: DoorAssetEvidence[];
   social: { og_image: string | null; twitter_image: string | null; width: number | null; height: number | null; encoding_format: string | null } | null;
   sources: DoorSourceVerification[];
+  source_review_findings?: Array<{ id: string; reason: string }>;
   capabilities: DoorCapabilityVerification[];
   /** No production receipt adapter is installed yet. Missing means blocked. */
   production: null | {
@@ -99,7 +100,8 @@ const validHash = (value: string | null | undefined) => typeof value === "string
 const time = (value: string) => Date.parse(value);
 const isCurrent = (verified: string, expires: string, now: number, maxDays: number) =>
   Number.isFinite(time(verified)) && Number.isFinite(time(expires)) && time(verified) <= now &&
-  time(expires) > now && time(expires) > time(verified) && now - time(verified) <= maxDays * 86400000;
+  time(expires) > now && time(expires) > time(verified) && now - time(verified) <= maxDays * 86400000 &&
+  time(expires) - time(verified) <= maxDays * 86400000;
 
 function htmlAttributes(tag: string): Record<string, string> {
   const attributes: Record<string, string> = {};
@@ -213,6 +215,10 @@ export function runV43DoorChecks(spec: PageSpec, evidence?: DoorTemplateEvidence
 
   // These are immutable exact mappings. A source id attached to arbitrary new
   // prose, or a model PASS, can never substitute for reviewed claim support.
+  for (const issue of collected?.source_review_findings ?? []) {
+    fail("door_template.source_verification", `review:${issue.id}`, issue.reason,
+      "Resolve the documented source conflict or coverage gap through a reviewed revision; preserve frozen copy and the release hold.");
+  }
   for (const source of reviewed.source_bindings) {
     const receipt = collected?.sources.find((row) => row.source_id === source.source_id && row.url === source.url);
     const maxAge = /\$|\bcost|\bprice|\brange\b/i.test(source.inherited_note) ? 90 : 180;

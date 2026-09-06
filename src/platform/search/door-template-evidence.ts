@@ -5,6 +5,7 @@ import reviewed from "../../../content/door-template/v43/binding.json";
 import type { PageSpec } from "@/domain/search/pages";
 import { requiresV43DoorChecks, V43_QA_RENDER_ORIGIN, type DoorTemplateEvidence, type DoorAssetEvidence } from "@/domain/search/door-template-qa";
 import { renderV43DoorPage, renderV43Template } from "@/platform/pages/v43-door-renderer";
+import { collectSourceReview } from "@/platform/search/source-review-store";
 
 const sha = (value: string | Buffer) => createHash("sha256").update(value).digest("hex");
 const lf = (value: Buffer) => value.toString("utf8").replace(/\r\n/g, "\n");
@@ -79,10 +80,13 @@ export function collectDoorTemplateEvidence(specs: readonly PageSpec[]): Record<
       evidence.assets.push(actual);
     }
 
-    // Deliberately empty. The imported ledger's September 1 prose is retained
-    // provenance, not a fresh source fetch. There is no authenticated production
-    // verification adapter yet. PageSpec and the capability manifest cannot
-    // author their own source/runtime/launch proof. These remain release blockers.
+    try {
+      const review = collectSourceReview(new Date(evidence.collected_at));
+      evidence.sources = review.sources;
+      evidence.source_review_findings = review.bundle.findings.map(row => ({ id: row.finding_id, reason: row.reason }));
+    } catch { evidence.errors.push("Current server-owned source review failed integrity checks or is unavailable."); }
+    // Runtime and launch proof remain absent. A source review, PageSpec or
+    // capability manifest cannot author production capability/consent receipts.
     return [spec.page_spec_id, evidence];
   }));
 }

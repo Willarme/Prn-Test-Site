@@ -47,6 +47,8 @@ describe("independent v43 release checks", () => {
     expect(findings.some((finding) => finding.check === "door_template.claim_binding" && finding.where === "cause-2" && finding.message.includes("$15 to $40"))).toBe(true);
     expect(findings.filter((finding) => finding.check === "door_template.capability_runtime")).toHaveLength(9);
     expect(findings.some((finding) => finding.check === "door_template.source_verification")).toBe(true);
+    expect(findings.filter((finding) => finding.where.startsWith("review:"))).toHaveLength(3);
+    expect(findings.some((finding) => finding.where === "stat-2:src-5")).toBe(false);
     expect(findings.some((finding) => finding.check === "door_template.production_release")).toBe(true);
     expect(spec.door_template?.source_bindings.every((source) => source.verified_at === null && source.evidence_status === "INHERITED_UNVERIFIED")).toBe(true);
   });
@@ -119,6 +121,9 @@ describe("independent v43 release checks", () => {
   it("requires current evidence for the exact claim and source, including price expiry", () => {
     const spec = fixture();
     const evidence = evidenceFor(spec);
+    // This test synthesizes claim coverage only. Actual collected review gaps
+    // remain independently blocking in the real-evidence tests.
+    evidence.source_review_findings = [];
     const now = Date.parse(evidence.collected_at);
     evidence.sources = spec.door_template!.source_bindings.map((source) => ({ source_id: source.source_id, url: source.url,
       content_sha256: "b".repeat(64), receipt_sha256: "c".repeat(64), verifier: "synthetic-unit-fixture",

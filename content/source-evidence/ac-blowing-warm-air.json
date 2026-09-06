@@ -1,0 +1,370 @@
+{
+  "schema_version": 1,
+  "page_id": "ac-blowing-warm-air",
+  "binding_sha256": "3f14222350a5ae401381ab37b31b7b66c83dd05416a4fd2631b533db417518ea",
+  "reviewed_at": "2026-09-06T16:08:10.766Z",
+  "expires_at": "2026-12-05T16:08:10.766Z",
+  "reviewer": "Codex source_support_review agent",
+  "sources": [
+    {
+      "source_id": "src-1",
+      "url": "https://schvacservice.com/blog/why-is-my-ac-blowing-warm-air",
+      "final_url": "https://schvacservice.com/blog/why-is-my-ac-blowing-warm-air",
+      "http_status": 200,
+      "captured_at": "2026-09-06T16:01:41.138Z",
+      "content_sha256": "48f45f103b666d3d7cc0f0da5d208a0c0536bdd2627f4a65c5a0fc49cbb493bc",
+      "content_bytes": 45680,
+      "evidence_class": "PRACTITIONER_SELF_REPORT",
+      "published_at": "2026-05-22",
+      "modified_at": null,
+      "date_basis": "VISIBLE_PUBLICATION_DATE",
+      "summary": "Company asserts about half of warm-air calls are simple fixes. No sample, denominator, collection window, or reproducible method is disclosed; this verifies an attributed assertion only."
+    },
+    {
+      "source_id": "src-2",
+      "url": "https://www.integrityrefrigerationandac.com/blog/why-is-my-ac-blowing-warm-air-troubleshooting-steps",
+      "final_url": "https://www.integrityrefrigerationandac.com/blog/why-is-my-ac-blowing-warm-air-troubleshooting-steps",
+      "http_status": 200,
+      "captured_at": "2026-09-06T16:01:41.177Z",
+      "content_sha256": "f290a99d8c245cdf14498bd2c17f8e562da9c0b6c0cc95d06c27dfff225ce0eb",
+      "content_bytes": 765485,
+      "evidence_class": "PRACTITIONER_REPEATING_UNATTRIBUTED_DATA",
+      "published_at": "2026-06-30",
+      "modified_at": null,
+      "date_basis": "VISIBLE_PUBLICATION_DATE",
+      "summary": "Page reports 40-50% from unidentified industry data, without a linked dataset or denominator. It does not establish that these are the company's own measured outcomes."
+    },
+    {
+      "source_id": "src-3",
+      "url": "https://atyourservicepros.us/problems/ac-blowing-warm-air",
+      "final_url": "https://atyourservicepros.us/problems/ac-blowing-warm-air",
+      "http_status": 200,
+      "captured_at": "2026-09-06T16:01:41.178Z",
+      "content_sha256": "b9a65fb710640f350cb75947543ebec2e6a9a07b918df90b9e672dc2847e2ff6",
+      "content_bytes": 175974,
+      "evidence_class": "PRACTITIONER_SELF_REPORT",
+      "published_at": null,
+      "modified_at": null,
+      "date_basis": "NO_VISIBLE_DATE",
+      "summary": "Opening text attributes about 50% to three simple causes. Later text assigns roughly half to the first cause alone. No dataset or method resolves that internal inconsistency."
+    },
+    {
+      "source_id": "src-4",
+      "url": "https://onpointacservices.com/why-is-my-ac-blowing-warm-air/",
+      "final_url": "https://onpointacservices.com/why-is-my-ac-blowing-warm-air/",
+      "http_status": 200,
+      "captured_at": "2026-09-06T16:01:41.179Z",
+      "content_sha256": "a3f160242d36d197db2c77063fe6268adc7cfbe256dc80e1bbd7771adbe88459",
+      "content_bytes": 82941,
+      "evidence_class": "PRACTITIONER_SELF_REPORT",
+      "published_at": "2026-07-14T12:16:47+00:00",
+      "modified_at": "2026-08-17T15:29:25+00:00",
+      "date_basis": "JSON_LD_ONLY_NOT_VISIBLE",
+      "summary": "Company describes about half as causes a homeowner can check, without a denominator or outcome dataset. Checkable causes are not identical to confirmed homeowner resolutions."
+    },
+    {
+      "source_id": "src-5",
+      "url": "https://www.carrier.com/us/en/residential/hvac-resources/air-conditioners/why-is-my-ac-blowing-hot-air/",
+      "final_url": "https://www.carrier.com/us/en/residential/hvac-resources/air-conditioners/why-is-my-ac-blowing-hot-air/",
+      "http_status": 200,
+      "captured_at": "2026-09-06T16:01:46.934Z",
+      "content_sha256": "08163f2b78d6fa28b74282c314876dc1309095f6552e2b30d20c8c4aeeabb1fd",
+      "content_bytes": 150778,
+      "evidence_class": "MANUFACTURER_GUIDANCE",
+      "published_at": null,
+      "modified_at": null,
+      "date_basis": "NO_VISIBLE_DATE",
+      "summary": "FAQ publishes $200-$1,500 and describes thermostat fixes as cheaper than compressor/leak work. Troubleshooting covers thermostat, filter and outdoor power. Another FAQ says to stop a warm-blowing system immediately."
+    },
+    {
+      "source_id": "src-6",
+      "url": "https://www.carrier.com/us/en/residential/hvac-resources/air-conditioners/will-frozen-ac-fix-itself/",
+      "final_url": "https://www.carrier.com/us/en/residential/hvac-resources/air-conditioners/will-frozen-ac-fix-itself/",
+      "http_status": 200,
+      "captured_at": "2026-09-06T16:01:46.935Z",
+      "content_sha256": "30fc1895f1d06d064edb39e964bf569f375850a99431f05332726ff5ea27ec9e",
+      "content_bytes": 157883,
+      "evidence_class": "MANUFACTURER_GUIDANCE",
+      "published_at": null,
+      "modified_at": null,
+      "date_basis": "NO_VISIBLE_DATE",
+      "summary": "Supports immediate cooling shutdown, fan ON while thawing, and possible severe compressor damage. Describes airflow restrictions and refrigerant issues; restart advice requires thawing, restored airflow and dryness."
+    },
+    {
+      "source_id": "src-7",
+      "url": "https://www.trane.com/residential/en/resources/troubleshooting/air-conditioners/evaporator-coil-is-frozen/",
+      "final_url": "https://www.trane.com/residential/en/resources/troubleshooting/air-conditioners/evaporator-coil-is-frozen/",
+      "http_status": 200,
+      "captured_at": "2026-09-06T16:01:46.936Z",
+      "content_sha256": "9a9ff69d9f186cb9e67548199a54aa040be92d43425a81fcae6ad0db6f237b07",
+      "content_bytes": 307902,
+      "evidence_class": "MANUFACTURER_GUIDANCE",
+      "published_at": null,
+      "modified_at": null,
+      "date_basis": "NO_VISIBLE_DATE",
+      "summary": "Supports COOL-to-OFF, major-damage risk and professional repair. This page does not instruct fan ON. Low refrigerant may reflect leakage or improper initial charging."
+    },
+    {
+      "source_id": "src-8",
+      "url": "https://www.carrier.com/us/en/residential/hvac-resources/air-conditioners/ac-capacitor/",
+      "final_url": "https://www.carrier.com/us/en/residential/hvac-resources/air-conditioners/ac-capacitor/",
+      "http_status": 200,
+      "captured_at": "2026-09-06T16:01:46.936Z",
+      "content_sha256": "3b1ea2cb7e08833dac2ab15d948c7e8abd75f2ab705e40f28a41dd1d014e1807",
+      "content_bytes": 154194,
+      "evidence_class": "MANUFACTURER_GUIDANCE",
+      "published_at": null,
+      "modified_at": null,
+      "date_basis": "NO_VISIBLE_DATE",
+      "summary": "Published installed range is $100-$400, with hourly labor $75-$150. It supports humming/start symptoms and professional-only replacement. Labor rates alone do not establish a $150 minimum total."
+    },
+    {
+      "source_id": "src-9",
+      "url": "https://www.carrier.com/us/en/residential/hvac-resources/air-conditioners/fix-a-refrigerant-leak/",
+      "final_url": "https://www.carrier.com/us/en/residential/hvac-resources/air-conditioners/fix-a-refrigerant-leak/",
+      "http_status": 200,
+      "captured_at": "2026-09-06T16:01:47.240Z",
+      "content_sha256": "b93542470c69c890ba8ce785d6f103795d093c1edbbdd66c53c84d4bf0cd91c7",
+      "content_bytes": 140602,
+      "evidence_class": "MANUFACTURER_GUIDANCE_WITH_SECONDARY_COST",
+      "published_at": null,
+      "modified_at": null,
+      "date_basis": "NO_VISIBLE_DATE",
+      "summary": "Supports reduced cooling, ice, hissing, nonconsumed refrigerant and professional repair. FAQ publishes $250-$1,600 credited to Angi. It does not specify a weeks-long onset or a $1,600+ range."
+    },
+    {
+      "source_id": "src-10",
+      "url": "https://www.homeadvisor.com/cost/heating-and-cooling/clean-ac-coils/",
+      "final_url": "https://www.homeadvisor.com/cost/heating-and-cooling/clean-ac-coils/",
+      "http_status": 200,
+      "captured_at": "2026-09-06T16:01:47.241Z",
+      "content_sha256": "43572261726339a45240712ccfa15ae7224410eefdeba8bfda87ad327031d4fc",
+      "content_bytes": 386110,
+      "evidence_class": "COST_PUBLISHER_AGGREGATOR",
+      "published_at": null,
+      "modified_at": "2026-06-20",
+      "date_basis": "VISIBLE_UPDATED_DATE",
+      "summary": "Separates condenser cleaning $75-$200 from acid washing $300-$350; maintenance-bundled cleaning is $75-$100. The frozen span combines categories. The guide describes customer surveys plus outside research without a page-specific sample."
+    },
+    {
+      "source_id": "src-11",
+      "url": "https://www.thisoldhouse.com/heating-cooling/air-conditioner-repair-cost",
+      "final_url": "https://www.thisoldhouse.com/heating-cooling/air-conditioner-repair-cost",
+      "http_status": 200,
+      "captured_at": "2026-09-06T16:01:47.242Z",
+      "content_sha256": "f5d4ed60a5f8bff4cde21bc4738a5b65a9f64a255f526ee7e72b629b5ec9bdbd",
+      "content_bytes": 701282,
+      "evidence_class": "COST_GUIDE_COMPILATION",
+      "published_at": null,
+      "modified_at": "2026-03-16",
+      "date_basis": "VISIBLE_UPDATED_DATE",
+      "summary": "Lists common central-AC repairs $150-$650 and evaporator replacement $700-$2,500+. There is no literal frozen-coil $150-$2,500 row. Figures derive from Angi and Home Depot; this is a compilation."
+    }
+  ],
+  "claims": [
+    {
+      "claim_id": "stat-1",
+      "claim_sha256": "0415b64c0a9a7da7e52e13ebdd059d13fe0ff18ce7374a58760417f8074840b0",
+      "source_captures": [
+        {
+          "source_id": "src-1",
+          "content_sha256": "48f45f103b666d3d7cc0f0da5d208a0c0536bdd2627f4a65c5a0fc49cbb493bc"
+        },
+        {
+          "source_id": "src-2",
+          "content_sha256": "f290a99d8c245cdf14498bd2c17f8e562da9c0b6c0cc95d06c27dfff225ce0eb"
+        },
+        {
+          "source_id": "src-3",
+          "content_sha256": "b9a65fb710640f350cb75947543ebec2e6a9a07b918df90b9e672dc2847e2ff6"
+        },
+        {
+          "source_id": "src-4",
+          "content_sha256": "a3f160242d36d197db2c77063fe6268adc7cfbe256dc80e1bbd7771adbe88459"
+        }
+      ],
+      "reviewed_at": "2026-09-06T16:08:10.766Z",
+      "expires_at": "2027-03-05T16:08:10.766Z",
+      "status": "PARTIALLY_SUPPORTED",
+      "reason": "Four websites contain approximate-half assertions; the combined wording overstates their common provenance and resolution measurement. One source repeats unidentified industry data, two describe checkable causes, and no denominator is available.",
+      "gaps": [
+        "No four-market measured sample or time window",
+        "Source-3 has internally inconsistent cause scope",
+        "No independent evidence the asserted frequencies are accurate"
+      ]
+    },
+    {
+      "claim_id": "stat-2",
+      "claim_sha256": "cb6f820e001f77da127e65509088f5d130b2998237cd7069f5fe272ccff5596b",
+      "source_captures": [
+        {
+          "source_id": "src-5",
+          "content_sha256": "08163f2b78d6fa28b74282c314876dc1309095f6552e2b30d20c8c4aeeabb1fd"
+        }
+      ],
+      "reviewed_at": "2026-09-06T16:08:10.766Z",
+      "expires_at": "2026-12-05T16:08:10.766Z",
+      "status": "SUPPORTED",
+      "reason": "The full claim accurately attributes the currently published range and relative repair-cost examples to Carrier. This verifies the attribution, not a PRN quote, local price, or independently measured repair distribution.",
+      "gaps": []
+    },
+    {
+      "claim_id": "stat-3",
+      "claim_sha256": "dffba4aceae9f6be5350f224389bd9c6bee0292def4554e83b027ebac7fc9d99",
+      "source_captures": [
+        {
+          "source_id": "src-6",
+          "content_sha256": "30fc1895f1d06d064edb39e964bf569f375850a99431f05332726ff5ea27ec9e"
+        }
+      ],
+      "reviewed_at": "2026-09-06T16:08:10.766Z",
+      "expires_at": "2027-03-05T16:08:10.766Z",
+      "status": "PARTIALLY_SUPPORTED",
+      "reason": "Carrier supports the action and damage warning. Zero minutes is a reasonable editorial rendering of immediately, not a measured statistic. The second manufacturer is omitted from the binding and does not state fan ON on its cited page.",
+      "gaps": [
+        "Trane fan-ON attribution not found",
+        "src-7 absent from claim binding"
+      ]
+    },
+    {
+      "claim_id": "cause-1",
+      "claim_sha256": "4a037855feeec52500240188d5951202a04a1e0b973c1852638cde9f12f836d6",
+      "source_captures": [],
+      "reviewed_at": "2026-09-06T16:08:10.766Z",
+      "expires_at": "2026-12-05T16:08:10.766Z",
+      "status": "UNBOUND",
+      "reason": "No source_ids exist. Manufacturer thermostat guidance is available in src-5, but zero cost is an inference about changing an existing setting, not a quoted repair price.",
+      "gaps": [
+        "Missing explicit source binding",
+        "Free is an action-cost inference"
+      ]
+    },
+    {
+      "claim_id": "cause-2",
+      "claim_sha256": "c5eb848af94bb242d882c4c3325c479dbd6fe9e5560343b28a034d01f599cb03",
+      "source_captures": [],
+      "reviewed_at": "2026-09-06T16:08:10.766Z",
+      "expires_at": "2026-12-05T16:08:10.766Z",
+      "status": "UNBOUND",
+      "reason": "No source_ids exist. src-5/6 support the airflow/freezing mechanism; no reviewed frozen source establishes the exact $15-$40 replacement-filter range or the assumed filter type and purchase unit.",
+      "gaps": [
+        "Missing explicit source binding",
+        "Unsourced filter price/type/quantity"
+      ]
+    },
+    {
+      "claim_id": "cause-3",
+      "claim_sha256": "3e31d32b3e17d376893a9e1e684f723534a341c3f6d3c19fed9fd71ad5946b60",
+      "source_captures": [],
+      "reviewed_at": "2026-09-06T16:08:10.766Z",
+      "expires_at": "2026-12-05T16:08:10.766Z",
+      "status": "UNBOUND",
+      "reason": "No source_ids exist. src-5 supports the outdoor-power/indoor-blower mechanism. Practitioner pages mention one reset, but a manufacturer safety reference and exact binding remain necessary for the full guidance.",
+      "gaps": [
+        "Missing explicit source binding",
+        "Reset guidance needs a primary safety reference",
+        "Free/service-call wording is not a cost measurement"
+      ]
+    },
+    {
+      "claim_id": "cause-4",
+      "claim_sha256": "ca00f62109d1db89a0792b9b45d8fa09c1c60c876cd0f32a782f48f0e8820dba",
+      "source_captures": [
+        {
+          "source_id": "src-11",
+          "content_sha256": "f5d4ed60a5f8bff4cde21bc4738a5b65a9f64a255f526ee7e72b629b5ec9bdbd"
+        }
+      ],
+      "reviewed_at": "2026-09-06T16:08:10.766Z",
+      "expires_at": "2026-12-05T16:08:10.766Z",
+      "status": "PARTIALLY_SUPPORTED",
+      "reason": "The cited cost guide supports price variation, not the displayed frozen-coil interval. Its lower and upper values come from different tables, and the upper replacement bound is open-ended. Frozen-system mechanism/action is corroborated by unbound manufacturer sources.",
+      "gaps": [
+        "Editorial synthesis is not a published frozen-coil range",
+        "Closed $2,500 ceiling loses source plus qualifier",
+        "Mechanism/action not bound to manufacturer evidence"
+      ]
+    },
+    {
+      "claim_id": "cause-5",
+      "claim_sha256": "a2a04e44a55c712e6f67dfcfb218f2a721d431f77f13d72c271aca53df5a7c04",
+      "source_captures": [
+        {
+          "source_id": "src-8",
+          "content_sha256": "3b1ea2cb7e08833dac2ab15d948c7e8abd75f2ab705e40f28a41dd1d014e1807"
+        }
+      ],
+      "reviewed_at": "2026-09-06T16:08:10.766Z",
+      "expires_at": "2026-12-05T16:08:10.766Z",
+      "status": "PARTIALLY_SUPPORTED",
+      "reason": "Symptoms and professional-only handling are supported. The bound manufacturer publishes a different lower endpoint. Narrowing that endpoint using an hourly labor rate does not substantiate the new range.",
+      "gaps": [
+        "Exact $150 floor unsupported by bound src-8"
+      ]
+    },
+    {
+      "claim_id": "cause-6",
+      "claim_sha256": "964d985cbc5b27de0d0d11b7d9cca12ede97f378b307a340cba861b188803d82",
+      "source_captures": [
+        {
+          "source_id": "src-10",
+          "content_sha256": "43572261726339a45240712ccfa15ae7224410eefdeba8bfda87ad327031d4fc"
+        }
+      ],
+      "reviewed_at": "2026-09-06T16:08:10.766Z",
+      "expires_at": "2026-12-05T16:08:10.766Z",
+      "status": "PARTIALLY_SUPPORTED",
+      "reason": "The endpoints are present across distinct cleaning methods. The frozen typical span hides that difference. Primary manufacturer guidance can support exterior-debris clearance, but it is not bound to this claim.",
+      "gaps": [
+        "Combined service categories need explicit context",
+        "Technical guidance lacks primary binding"
+      ]
+    },
+    {
+      "claim_id": "cause-7",
+      "claim_sha256": "96030344b9ef4a773be33aacea908369c8169ec1debdc6773b93ab8166c3448d",
+      "source_captures": [
+        {
+          "source_id": "src-9",
+          "content_sha256": "b93542470c69c890ba8ce785d6f103795d093c1edbbdd66c53c84d4bf0cd91c7"
+        }
+      ],
+      "reviewed_at": "2026-09-06T16:08:10.766Z",
+      "expires_at": "2026-12-05T16:08:10.766Z",
+      "status": "PARTIALLY_SUPPORTED",
+      "reason": "Most symptoms, sealed-system guidance and the base cost range are present. A fixed weeks-long onset is absent. The cited original cost publisher supports repairs exceeding $1,600, but is only a secondary link, not a frozen binding.",
+      "gaps": [
+        "Weeks-long symptom timing not established",
+        "Open-ended range requires explicit cost-chain/context binding"
+      ]
+    }
+  ],
+  "findings": [
+    {
+      "finding_id": "unbound-warm-system-continued-operation",
+      "severity": "RELEASE_BLOCKING_SOURCE_CONFLICT",
+      "sections": [
+        "FAQ",
+        "VISUALS"
+      ],
+      "reason": "Existing citations instruct stopping unresolved warm operation; absence of visible ice alone does not substantiate the frozen permission. This is not represented by the ten explicit source claims."
+    },
+    {
+      "finding_id": "unbound-room-scope-categorical-claim",
+      "severity": "SOURCE_COVERAGE_GAP",
+      "sections": [
+        "WHAT_CHANGES_THE_ANSWER"
+      ],
+      "reason": "No reviewed binding or primary source establishes this categorical distinction; do not mark verified from general airflow guidance."
+    },
+    {
+      "finding_id": "unbound-frozen-compressor-flood-and-repair-cost",
+      "severity": "SOURCE_COVERAGE_GAP",
+      "sections": [
+        "FAQ"
+      ],
+      "reason": "General damage risk is supported; the exact flood mechanism and paired repair-cost comparison are not demonstrated by the bound source set."
+    }
+  ],
+  "bundle_sha256": "d8d123a8e8e3172205ad5b5619723ae46fda58f0177fd2d8c29d6ba74a473340"
+}
