@@ -38,6 +38,10 @@ npm run dev       # local dev server
 
 ## Status
 
+The [hosted test preview](https://prn-test-site.vercel.app/demo) was deployed on
+September 6. [Deployment evidence and runtime limits](docs/test-site-deployment-2026-09-06.md)
+distinguish the verified page preview from the remaining hosted workflow setup.
+
 The September 6, 2026 source checkpoint contains the local AC demo, intake and
 results flow, portable packet/PDF, request-scoped sharing controls, concept-preview
 directory, and frozen v43 SEO-template integration. Start with
