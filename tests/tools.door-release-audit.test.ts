@@ -10,7 +10,7 @@ afterEach(async () => { await Promise.all(servers.splice(0).map((server) => new 
 }))); });
 
 type Variant = 'good' | 'missing-page' | 'no-body' | 'relative-canonical' | 'wrong-image-size' |
-  'missing-image' | 'corrupt-image' | 'wrong-image-mime' | 'external-redirect' | 'credential-link' | 'token-link' | 'missing-section' | 'pending-capability';
+  'missing-image' | 'corrupt-image' | 'wrong-image-mime' | 'external-redirect' | 'credential-link' | 'token-link' | 'missing-section' | 'pending-capability' | 'empty-sitemap' | 'preview-listed' | 'unexplained-sitemap-204';
 
 async function fixture(variant: Variant = 'good', mode = 'preview') {
   const requests: string[] = [];
@@ -47,7 +47,14 @@ async function fixture(variant: Variant = 'good', mode = 'preview') {
     } else if (url === '/robots.txt') {
       res.setHeader('content-type', 'text/plain'); res.end(`User-agent: *\n${mode === 'preview' ? 'Disallow: /' : 'Allow: /'}\nSitemap: ${origin}/sitemap.xml\n`);
     } else if (url === '/sitemap.xml') {
-      res.setHeader('content-type', 'application/xml'); res.end(`<urlset xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"><url><loc>${origin}/problems/ac-blowing-warm-air</loc><image:image><image:loc>${origin}/image.png</image:loc></image:image></url></urlset>`);
+      if ((mode === 'preview' && variant !== 'preview-listed') || variant === 'empty-sitemap') {
+        res.writeHead(204, variant === 'unexplained-sitemap-204' ? {} : { 'x-prn-publication-state': 'held-noindex', 'x-robots-tag': 'noindex, nofollow' });
+        res.end(); return;
+      }
+      const listed = mode === 'production' || variant === 'preview-listed';
+      res.setHeader('content-type', 'application/xml'); res.end(`<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">${listed ? `<url><loc>${origin}/problems/ac-blowing-warm-air</loc><image:image><image:loc>${origin}/image.png</image:loc></image:image></url>` : ''}</urlset>`);
+    } else if (url === '/image-sitemap.xml') {
+      res.writeHead(204, { 'x-prn-publication-state': 'held-noindex', 'x-robots-tag': 'noindex, nofollow' }); res.end();
     } else if (url === '/capabilities/home-problem-analyzer.json') {
       res.setHeader('content-type', 'application/json'); res.end(JSON.stringify({ capabilities: Array.from({ length: 9 }, (_, i) => ({ capability_id: `cap.${i}`, live_status: variant === 'pending-capability' ? 'PENDING_RUNTIME_VERIFICATION' : 'LIVE' })) }));
     } else if (url === '/cooling/') { res.setHeader('content-type', 'text/html'); res.end('<html><body>Cooling</body></html>'); }
@@ -107,6 +114,30 @@ describe('read-only door HTTP release audit', () => {
     const report = await auditDoorRelease({ origin, mode: 'production' });
     expect(report.http_checks_passed).toBe(false);
     expect(report.checks.some((check: { id: string; passed: boolean }) => check.id === 'capabilities.production_live_status' && !check.passed)).toBe(true);
+  });
+  it('accepts intentionally deferred preview inventories without claiming production membership', async () => {
+    const { origin } = await fixture('empty-sitemap');
+    const report = await auditDoorRelease({ origin, mode: 'preview' });
+    expect(report.http_checks_passed).toBe(true);
+    expect(report.checks).toContainEqual(expect.objectContaining({ id: 'sitemap.preview_inventory_empty', passed: true }));
+    expect(report.checks).toContainEqual(expect.objectContaining({ id: 'sitemap.preview_intentionally_deferred', passed: true, production_membership_verified: false }));
+    expect(report.checks.some((check: { id: string }) => check.id === 'sitemap.canonical_page_present')).toBe(false);
+  });
+  it('rejects unexplained empty HTTP responses instead of treating an outage as the hold', async () => {
+    const { origin } = await fixture('unexplained-sitemap-204');
+    const report = await auditDoorRelease({ origin, mode: 'preview' });
+    expect(report.checks).toContainEqual(expect.objectContaining({ id: 'sitemap.preview_intentionally_deferred', passed: false }));
+  });
+  it('fails preview inventories that advertise noindexed pages', async () => {
+    const { origin } = await fixture('preview-listed');
+    const report = await auditDoorRelease({ origin, mode: 'preview' });
+    expect(report.checks).toContainEqual(expect.objectContaining({ id: 'sitemap.preview_inventory_empty', passed: false }));
+  });
+  it('still requires the canonical page and every declared image in production', async () => {
+    const { origin } = await fixture('empty-sitemap', 'production');
+    const report = await auditDoorRelease({ origin, mode: 'production' });
+    expect(report.checks).toContainEqual(expect.objectContaining({ id: 'sitemap.canonical_page_present', passed: false }));
+    expect(report.checks).toContainEqual(expect.objectContaining({ id: 'sitemap.all_declared_images_present', passed: false }));
   });
   it('handles crawler-specific disallow and allow specificity', () => {
     expect(robotsAllows('User-agent: *\nDisallow: /\nUser-agent: Googlebot\nAllow: /problems/\n', 'Googlebot', '/problems/ac')).toBe(true);

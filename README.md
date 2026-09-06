@@ -48,6 +48,9 @@ directory, and frozen v43 SEO-template integration. Start with
 [the delivery status and setup notes](docs/repository-status-2026-09-06.md) and
 [the demo guide](docs/client-demo.md).
 
+[SEO release wiring](docs/seo-release-wiring-2026-09-06.md) documents the preview
+capability manifest, held sitemap endpoints, and remaining production requirements.
+
 The illustrated feature services remain concept previews. The generated SEO draft
 remains rejected, and production release is still blocked. Repository updates do
 not establish a working external demo or a live production deployment.

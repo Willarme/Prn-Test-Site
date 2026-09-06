@@ -173,6 +173,7 @@ export async function auditDoorRelease({ origin: givenOrigin, mode, pagePath = '
       'Real form submission, photo/audio/video interpretation and nine production capability outcomes',
       'Source/claim support and freshness, consent/privacy and real-data suppression evidence',
       'Domain/console ownership, launch authorization and deployment authority',
+      'Production sitemap XSD validation and exact publication-store/renderer reconciliation',
       'Actual pinned-v43 verification on both Joshua and Melissa machines'],
     scope: 'GET-only public HTTP inspection. No model calls, credentials, form submissions, publication or configuration changes.' };
   const add = (id, passed, details = {}) => report.checks.push({ id, passed: Boolean(passed), ...details });
@@ -212,6 +213,7 @@ export async function auditDoorRelease({ origin: givenOrigin, mode, pagePath = '
         const body = await boundedBody(response, image ? LIMITS.image : LIMITS.document);
         return { ...probe, body, finalUrl: current.href, headers: {
           robots: response.headers.get('x-robots-tag') ?? '',
+          publication_state: response.headers.get('x-prn-publication-state') ?? '',
         } };
       }
     } catch (error) {
@@ -331,18 +333,29 @@ export async function auditDoorRelease({ origin: givenOrigin, mode, pagePath = '
       && ids(crawledHtml).has('direct-answer') && ids(crawledHtml).has('sources-and-review'), { crawler, status: crawled.status });
   }
   const visitedSitemaps = new Set(), sitemapLocations = new Set(), sitemapImages = new Set();
+  let sitemapPageEntries = 0, sitemapImageEntries = 0;
   async function visitSitemap(raw) {
     const target = safeTarget(raw, origin);
     if (target.error) { add('sitemap.safe_target', false, { reason: target.error }); return; }
     if (visitedSitemaps.has(target.url.href)) return;
     visitedSitemaps.add(target.url.href);
     const result = await get(target.url.href, { purpose: 'sitemap' });
+    if (mode === 'preview' && result.status === 204) {
+      add('sitemap.preview_intentionally_deferred', !result.error && result.body.length === 0 &&
+        result.headers.publication_state === 'held-noindex' && /\bnoindex\b/i.test(result.headers.robots ?? ''),
+      { path: target.url.pathname, status: result.status, production_membership_verified: false });
+      return;
+    }
+    if (mode === 'preview') add('sitemap.preview_explicit_hold', false,
+      { path: target.url.pathname, status: result.status, expected: 'HTTP 204 with explicit held-noindex headers' });
     add('sitemap.http_200', result.status === 200 && !result.error, { path: target.url.pathname, status: result.status });
     const xml = result.body.toString('utf8');
     add('sitemap.xml', /<(?:urlset|sitemapindex)\b/i.test(xml) && !/<html\b/i.test(xml), { path: target.url.pathname });
     if (/<sitemapindex\b/i.test(xml)) {
       for (const match of xml.matchAll(/<loc\b[^>]*>([^<]+)<\/loc>/gi)) sitemapQueue.add(decode(match[1].trim()));
     } else {
+      sitemapPageEntries += [...xml.matchAll(/<url\b/gi)].length;
+      sitemapImageEntries += [...xml.matchAll(/<image:image\b/gi)].length;
       for (const match of xml.matchAll(/<loc\b[^>]*>([^<]+)<\/loc>/gi)) {
         const targetLoc = safeTarget(decode(match[1].trim()), origin);
         if (targetLoc.url && isAbsolute(decode(match[1].trim()))) sitemapLocations.add(targetLoc.url.href);
@@ -358,9 +371,18 @@ export async function auditDoorRelease({ origin: givenOrigin, mode, pagePath = '
   for (const raw of sitemapQueue) { if (visitedSitemaps.size >= MAX_SITEMAPS) break; await visitSitemap(raw); }
   if (!sitemapImages.size && visitedSitemaps.size < MAX_SITEMAPS) await visitSitemap('/image-sitemap.xml');
   add('sitemap.bounded_inventory', sitemapQueue.size <= MAX_SITEMAPS, { maximum: MAX_SITEMAPS });
-  add('sitemap.canonical_page_present', [...sitemapLocations].some((url) => normalPath(new URL(url).pathname) === normalPath(pageTarget.url.pathname)));
-  add('sitemap.all_declared_images_present', images.size > 0 && [...images.keys()].every((url) => sitemapImages.has(url)),
-    { declared_images: images.size, found_image_entries: sitemapImages.size });
+  if (mode === 'preview') {
+    // The held site is globally noindexed. Including its preview page merely
+    // to pass a production-membership check would contradict that policy.
+    // HTTP 204 with explicit hold headers is deferred, not a sitemap success.
+    add('sitemap.preview_inventory_empty', sitemapPageEntries === 0 && sitemapImageEntries === 0 &&
+      sitemapLocations.size === 0 && sitemapImages.size === 0,
+    { page_entries: sitemapPageEntries, image_entries: sitemapImageEntries, production_schema_validated: false });
+  } else {
+    add('sitemap.canonical_page_present', [...sitemapLocations].some((url) => normalPath(new URL(url).pathname) === normalPath(pageTarget.url.pathname)));
+    add('sitemap.all_declared_images_present', images.size > 0 && [...images.keys()].every((url) => sitemapImages.has(url)),
+      { declared_images: images.size, found_image_entries: sitemapImages.size });
+  }
 
   const manifest = await get('/capabilities/home-problem-analyzer.json', { purpose: 'capability_manifest' });
   add('capabilities.http_200', manifest.status === 200 && !manifest.error, { status: manifest.status });
