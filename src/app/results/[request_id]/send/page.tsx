@@ -8,6 +8,7 @@ import { ownerAllowed } from "@/platform/links/owner";
 import { runtimeStore } from "@/platform/stores/runtime";
 import { journeySafetyRule } from "@/domain/problem/journey-safety";
 import { makeShareLink } from "./actions";
+import { feedbackEligible } from "@/platform/feedback/eligible";
 
 export const metadata: Metadata = {
   referrer: "no-referrer",
@@ -62,7 +63,7 @@ export default async function SendPacketPage({
       <a className="back" href={resultsHref}>
         Back to your results
       </a>
-      <FeedbackPopup requestId={request_id} ownerKey={k} />
+      <FeedbackPopup requestId={request_id} ownerKey={k} eligible={await feedbackEligible(request_id)} />
     </ResultsShell>
   );
 }

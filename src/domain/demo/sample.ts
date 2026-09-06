@@ -6,19 +6,14 @@ import { HVAC_COOLING_PLAYBOOK } from "@/domain/intake/playbooks/hvac-cooling";
 import { ACTIVE_DISCLOSURE } from "@/domain/privacy/disclosures";
 import { createOwnerCookie } from "@/platform/links/owner";
 import { runtimeStore } from "@/platform/stores/runtime";
+import { demoSamplesEnabled } from "./mode";
+export { demoSamplesEnabled } from "./mode";
 
 export const DEMO_SAMPLE_DESCRIPTION =
   "Synthetic demonstration — this is an invented home and request. " +
   "My Carrier AC is 8 years old and blowing warm air since Tuesday. " +
   "The thermostat is set to 72 and the room is 84. The filter is clean. " +
   "The outdoor fan is turning. There is no visible ice on the accessible line.";
-
-/** The demo is an explicit deployment mode, never an alternate production entry. */
-export function demoSamplesEnabled(): boolean {
-  return process.env.PRN_RUNTIME_STORE === "file" && Boolean(process.env.PRN_DEV_DB_PATH) &&
-    (process.env.PRN_CLIENT_DEMO === "1" ||
-      (process.env.NODE_ENV !== "production" && process.env.NEXT_DIST_DIR === ".next-codex-demo"));
-}
 
 /** A fixed synthetic scenario still uses the normal governed capabilities and
  * persistence boundary. It cannot accept homeowner text or select a model. */

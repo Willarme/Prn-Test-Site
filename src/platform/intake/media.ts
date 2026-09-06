@@ -251,6 +251,7 @@ function answersFromLabel(
 ): { field_key: string; value_text: string }[] {
   const out: { field_key: string; value_text: string }[] = [];
   const f = read.fields;
+  if (f.equipment_type) out.push({ field_key: "equipment_type", value_text: f.equipment_type });
   if (f.brand) out.push({ field_key: "brand", value_text: f.brand });
   const modelSerial = [f.model ? `Model ${f.model}` : null, f.serial ? `Serial ${f.serial}` : null]
     .filter(Boolean)

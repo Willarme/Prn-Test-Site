@@ -45,9 +45,8 @@ export async function POST(request: Request): Promise<NextResponse> {
   try {
     await runtimeStore().recordEvents([event]);
   } catch {
-    // Interest signals are best-effort telemetry; never surface a failure to
-    // the visitor over a thumbs-up.
-    return NextResponse.json({ ok: true, recorded: false });
+    // The visitor's acknowledgement must mean their answer was persisted.
+    return NextResponse.json({ ok: false, recorded: false }, { status: 503 });
   }
   return NextResponse.json({ ok: true, recorded: true });
 }

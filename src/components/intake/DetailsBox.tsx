@@ -30,6 +30,8 @@ export interface DetailsField {
   photo_prompt: string | null;
   accepts: Array<"photo" | "text">;
   priority: "core" | "helpful";
+  optional_group?: "context" | "history" | "access";
+  choices?: { value: string; label: string }[];
   harvest_to_property_memory: boolean;
   have: { value: string | null; source: string; confirmed_from_photo?: boolean } | null;
   conflict?: { held_value: string; reported_values: string[] };
@@ -88,7 +90,8 @@ export function DetailsBox({
   });
   const fileInputs = useRef<Record<string, HTMLInputElement | null>>({});
 
-  const done = fields.filter((f) => !f.conflict && f.have && f.have.value !== CANNOT_REACH_FIELD_VALUE &&
+  const plannedFields = fields.filter(f => !f.optional_group);
+  const done = plannedFields.filter((f) => !f.conflict && f.have && f.have.value !== CANNOT_REACH_FIELD_VALUE &&
     !(LABEL_FIELDS.has(f.field_key) && f.have.source === "photo" && f.have.value === null)).length;
 
   async function post(body: Record<string, unknown>, failMessage: string): Promise<boolean> {
@@ -194,14 +197,20 @@ export function DetailsBox({
   function typedInput(f: DetailsField, placeholder = "or type it here") {
     return (
       <div style={{ display: "flex", gap: 8 }}>
-        <input
+        {f.choices ? (
+          <select className="inp" aria-label={f.label} value={typed[f.field_key] ?? ""}
+            onChange={(e) => setTyped({ ...typed, [f.field_key]: e.target.value })}>
+            <option value="">Choose an answer (optional)</option>
+            {f.choices.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
+          </select>
+        ) : <input
           className="inp"
           aria-label={f.label}
           placeholder={placeholder}
           value={typed[f.field_key] ?? ""}
           onChange={(e) => setTyped({ ...typed, [f.field_key]: e.target.value })}
           onKeyDown={(e) => e.key === "Enter" && saveText(f.field_key)}
-        />
+        />}
         <button className="btn btn-ghost btn-sm" disabled={busy === f.field_key} onClick={() => saveText(f.field_key)}>
           Save
         </button>
@@ -223,6 +232,166 @@ export function DetailsBox({
     );
   }
 
+  function renderField(f: DetailsField) {
+          const isOpen = open === f.field_key;
+          const have = f.have;
+          const unreachable = have?.value === CANNOT_REACH_FIELD_VALUE;
+          const readFromPhoto = have !== null && have.source === "photo" && have.value !== null;
+          const photoOnly = have !== null && have.source === "photo" && have.value === null;
+          const unreadLabel = photoOnly && LABEL_FIELDS.has(f.field_key);
+          const held = have !== null && !unreachable && !readFromPhoto && !unreadLabel;
+          const confidence = labelConfidence[f.field_key];
+          return (
+            <li key={f.field_key} style={{ borderTop: "1px solid var(--line-l)", padding: "12px 0" }} data-field={f.field_key}>
+              <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+                <span
+                  aria-hidden
+                  style={{
+                    width: 24,
+                    height: 24,
+                    borderRadius: 4,
+                    flex: "0 0 24px",
+                    display: "grid",
+                    placeItems: "center",
+                    background: !f.conflict && (held || readFromPhoto) ? "var(--green)" : "transparent",
+                    border: !f.conflict && (held || readFromPhoto) ? "none" : "1px solid var(--line-l)",
+                    color: "#fff",
+                    fontWeight: 700,
+                  }}
+                >
+                  {!f.conflict && (held || readFromPhoto) ? "✓" : ""}
+                </span>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+                    <strong>{f.label}</strong>
+                    {f.priority === "core" && !have && <span className="pill pill-pink">most useful</span>}
+                    {f.harvest_to_property_memory && <span className="pill">kept with your home</span>}
+                  </div>
+
+                  {held && (
+                    <p className="hint" style={{ marginTop: 4 }} data-held={f.field_key}>
+                      {f.choices?.find(c => c.value === have.value)?.label ?? have.value ?? "photo attached"}{" "}
+                      <span style={{ color: "var(--on-light-mute)" }}>· {provenance(have.source, have.confirmed_from_photo)}</span>
+                      {" · "}
+                      <button className="btn btn-ghost btn-sm" style={{ padding: "2px 8px" }} onClick={() => setOpen(isOpen ? null : f.field_key)}>
+                        change
+                      </button>
+                    </p>
+                  )}
+
+                  {f.conflict && (
+                    <div role="status" data-field-conflict={f.field_key} style={{ marginTop: 8 }}>
+                      <p style={{ marginBottom: 8 }}>
+                        Kept: <strong>{f.conflict.held_value}</strong>. Later you reported: <strong>{f.conflict.reported_values.join(" / ")}</strong>.
+                        {" "}Which value belongs to this system? Both reports stay in your packet until you choose.
+                      </p>
+                      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                        {[f.conflict.held_value, ...f.conflict.reported_values].map(value => (
+                          <button key={value} className="btn btn-ghost btn-sm" disabled={busy === f.field_key} onClick={() => confirm(f.field_key, value)}>
+                            Use {value}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {readFromPhoto && !f.conflict && (
+                    <div style={{ marginTop: 6 }} data-confirm={f.field_key}>
+                      <p style={{ marginBottom: 6 }}>
+                        {confidence === "low" ? "Our best read is " : "We read "}
+                        <strong>{have.value}</strong> — is that right?
+                      </p>
+                      <div style={{ display: "flex", gap: 8 }}>
+                        <button className="btn btn-pink btn-sm" disabled={busy === f.field_key} onClick={() => confirm(f.field_key, have.value!)}>
+                          Yes
+                        </button>
+                        <button className="btn btn-ghost btn-sm" disabled={busy === f.field_key} onClick={() => setOpen(isOpen ? null : f.field_key)}>
+                          Fix it
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {unreadLabel && (
+                    <div style={{ marginTop: 6 }} data-unread={f.field_key}>
+                      <p style={{ marginBottom: 6 }}>We could not read that one. The photo is in your packet.</p>
+                      {typedInput(f, "Type the model and serial here")}
+                      <p className="hint" style={{ marginTop: 6 }}>{!f.optional_group && escapeHatch(f)}</p>
+                    </div>
+                  )}
+
+                  {photoOnly && !unreadLabel && (
+                    <p className="hint" style={{ marginTop: 4 }}>
+                      photo attached <span style={{ color: "var(--on-light-mute)" }}>· {provenance(have.source)}</span>
+                      {f.accepts.includes("text") && (
+                        <>
+                          {" · "}
+                          <button className="btn btn-ghost btn-sm" style={{ padding: "2px 8px" }} onClick={() => setOpen(isOpen ? null : f.field_key)}>
+                            add a note
+                          </button>
+                        </>
+                      )}
+                    </p>
+                  )}
+
+                  {unreachable && (
+                    <p className="hint" style={{ marginTop: 4 }} data-unreachable={f.field_key}>
+                      You could not get to this. It goes in the packet as still unknown.{" "}
+                      <button className="btn btn-ghost btn-sm" style={{ padding: "2px 8px" }} onClick={() => setOpen(isOpen ? null : f.field_key)}>
+                        {isOpen ? "close" : "add it now"}
+                      </button>
+                    </p>
+                  )}
+
+                  {!have && (
+                    <p className="hint" style={{ marginTop: 4 }}>
+                      {f.why_it_matters}{" "}
+                      <button className="btn btn-ghost btn-sm" style={{ padding: "2px 8px" }} onClick={() => setOpen(isOpen ? null : f.field_key)}>
+                        {isOpen ? "close" : "add"}
+                      </button>{" "}
+                      {!f.optional_group && escapeHatch(f)}
+                    </p>
+                  )}
+
+                  {isOpen && (
+                    <div style={{ marginTop: 10, padding: 12, background: "var(--chalk)", borderRadius: 4 }}>
+                      <p style={{ marginBottom: 8 }}>
+                        <strong>{f.optional_group ? "How to answer:" : "Where to find it:"}</strong> {f.how_to_find}
+                      </p>
+                      {f.accepts.includes("photo") && (
+                        <div style={{ marginBottom: 10 }}>
+                          {f.photo_prompt && <p className="hint">{f.photo_prompt}</p>}
+                          <input
+                            ref={(el) => {
+                              fileInputs.current[f.field_key] = el;
+                            }}
+                            type="file"
+                            accept="image/*,video/mp4,video/quicktime"
+                            capture="environment"
+                            style={{ display: "none" }}
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) upload(f.field_key, file);
+                            }}
+                          />
+                          <button
+                            className="btn btn-pink btn-sm"
+                            disabled={busy === f.field_key}
+                            onClick={() => fileInputs.current[f.field_key]?.click()}
+                          >
+                            {busy === f.field_key ? "Uploading…" : "📷 Snap or upload a photo"}
+                          </button>
+                        </div>
+                      )}
+                      {f.accepts.includes("text") && typedInput(f)}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </li>
+          );
+  }
+
   return (
     <div className="card-light">
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 12 }}>
@@ -230,7 +399,7 @@ export function DetailsBox({
           Details a technician will want
         </h2>
         <span className="pill pill-green">
-          {done}/{fields.length} ready
+          {done}/{plannedFields.length} ready
         </span>
       </div>
       <p className="hint" style={{ margin: "6px 0 16px" }}>
@@ -350,166 +519,18 @@ export function DetailsBox({
       </div>
 
       <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-        {fields.map((f) => {
-          const isOpen = open === f.field_key;
-          const have = f.have;
-          const unreachable = have?.value === CANNOT_REACH_FIELD_VALUE;
-          const readFromPhoto = have !== null && have.source === "photo" && have.value !== null;
-          const photoOnly = have !== null && have.source === "photo" && have.value === null;
-          const unreadLabel = photoOnly && LABEL_FIELDS.has(f.field_key);
-          const held = have !== null && !unreachable && !readFromPhoto && !unreadLabel;
-          const confidence = labelConfidence[f.field_key];
-          return (
-            <li key={f.field_key} style={{ borderTop: "1px solid var(--line-l)", padding: "12px 0" }} data-field={f.field_key}>
-              <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
-                <span
-                  aria-hidden
-                  style={{
-                    width: 24,
-                    height: 24,
-                    borderRadius: 4,
-                    flex: "0 0 24px",
-                    display: "grid",
-                    placeItems: "center",
-                    background: !f.conflict && (held || readFromPhoto) ? "var(--green)" : "transparent",
-                    border: !f.conflict && (held || readFromPhoto) ? "none" : "1px solid var(--line-l)",
-                    color: "#fff",
-                    fontWeight: 700,
-                  }}
-                >
-                  {!f.conflict && (held || readFromPhoto) ? "✓" : ""}
-                </span>
-                <div style={{ flex: 1 }}>
-                  <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-                    <strong>{f.label}</strong>
-                    {f.priority === "core" && !have && <span className="pill pill-pink">most useful</span>}
-                    {f.harvest_to_property_memory && <span className="pill">kept with your home</span>}
-                  </div>
-
-                  {held && (
-                    <p className="hint" style={{ marginTop: 4 }} data-held={f.field_key}>
-                      {have.value ?? "photo attached"}{" "}
-                      <span style={{ color: "var(--on-light-mute)" }}>· {provenance(have.source, have.confirmed_from_photo)}</span>
-                      {" · "}
-                      <button className="btn btn-ghost btn-sm" style={{ padding: "2px 8px" }} onClick={() => setOpen(isOpen ? null : f.field_key)}>
-                        change
-                      </button>
-                    </p>
-                  )}
-
-                  {f.conflict && (
-                    <div role="status" data-field-conflict={f.field_key} style={{ marginTop: 8 }}>
-                      <p style={{ marginBottom: 8 }}>
-                        Kept: <strong>{f.conflict.held_value}</strong>. Later you reported: <strong>{f.conflict.reported_values.join(" / ")}</strong>.
-                        {" "}Which value belongs to this system? Both reports stay in your packet until you choose.
-                      </p>
-                      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                        {[f.conflict.held_value, ...f.conflict.reported_values].map(value => (
-                          <button key={value} className="btn btn-ghost btn-sm" disabled={busy === f.field_key} onClick={() => confirm(f.field_key, value)}>
-                            Use {value}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {readFromPhoto && !f.conflict && (
-                    <div style={{ marginTop: 6 }} data-confirm={f.field_key}>
-                      <p style={{ marginBottom: 6 }}>
-                        {confidence === "low" ? "Our best read is " : "We read "}
-                        <strong>{have.value}</strong> — is that right?
-                      </p>
-                      <div style={{ display: "flex", gap: 8 }}>
-                        <button className="btn btn-pink btn-sm" disabled={busy === f.field_key} onClick={() => confirm(f.field_key, have.value!)}>
-                          Yes
-                        </button>
-                        <button className="btn btn-ghost btn-sm" disabled={busy === f.field_key} onClick={() => setOpen(isOpen ? null : f.field_key)}>
-                          Fix it
-                        </button>
-                      </div>
-                    </div>
-                  )}
-
-                  {unreadLabel && (
-                    <div style={{ marginTop: 6 }} data-unread={f.field_key}>
-                      <p style={{ marginBottom: 6 }}>We could not read that one. The photo is in your packet.</p>
-                      {typedInput(f, "Type the model and serial here")}
-                      <p className="hint" style={{ marginTop: 6 }}>{escapeHatch(f)}</p>
-                    </div>
-                  )}
-
-                  {photoOnly && !unreadLabel && (
-                    <p className="hint" style={{ marginTop: 4 }}>
-                      photo attached <span style={{ color: "var(--on-light-mute)" }}>· {provenance(have.source)}</span>
-                      {f.accepts.includes("text") && (
-                        <>
-                          {" · "}
-                          <button className="btn btn-ghost btn-sm" style={{ padding: "2px 8px" }} onClick={() => setOpen(isOpen ? null : f.field_key)}>
-                            add a note
-                          </button>
-                        </>
-                      )}
-                    </p>
-                  )}
-
-                  {unreachable && (
-                    <p className="hint" style={{ marginTop: 4 }} data-unreachable={f.field_key}>
-                      You could not get to this. It goes in the packet as still unknown.{" "}
-                      <button className="btn btn-ghost btn-sm" style={{ padding: "2px 8px" }} onClick={() => setOpen(isOpen ? null : f.field_key)}>
-                        {isOpen ? "close" : "add it now"}
-                      </button>
-                    </p>
-                  )}
-
-                  {!have && (
-                    <p className="hint" style={{ marginTop: 4 }}>
-                      {f.why_it_matters}{" "}
-                      <button className="btn btn-ghost btn-sm" style={{ padding: "2px 8px" }} onClick={() => setOpen(isOpen ? null : f.field_key)}>
-                        {isOpen ? "close" : "add"}
-                      </button>{" "}
-                      {escapeHatch(f)}
-                    </p>
-                  )}
-
-                  {isOpen && (
-                    <div style={{ marginTop: 10, padding: 12, background: "var(--chalk)", borderRadius: 4 }}>
-                      <p style={{ marginBottom: 8 }}>
-                        <strong>Where to find it:</strong> {f.how_to_find}
-                      </p>
-                      {f.accepts.includes("photo") && (
-                        <div style={{ marginBottom: 10 }}>
-                          {f.photo_prompt && <p className="hint">{f.photo_prompt}</p>}
-                          <input
-                            ref={(el) => {
-                              fileInputs.current[f.field_key] = el;
-                            }}
-                            type="file"
-                            accept="image/*,video/mp4,video/quicktime"
-                            capture="environment"
-                            style={{ display: "none" }}
-                            onChange={(e) => {
-                              const file = e.target.files?.[0];
-                              if (file) upload(f.field_key, file);
-                            }}
-                          />
-                          <button
-                            className="btn btn-pink btn-sm"
-                            disabled={busy === f.field_key}
-                            onClick={() => fileInputs.current[f.field_key]?.click()}
-                          >
-                            {busy === f.field_key ? "Uploading…" : "📷 Snap or upload a photo"}
-                          </button>
-                        </div>
-                      )}
-                      {f.accepts.includes("text") && typedInput(f)}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </li>
-          );
-        })}
+        {fields.filter(f => !f.optional_group).map(renderField)}
       </ul>
+      {(["context", "history", "access"] as const).map(group => {
+        const grouped = fields.filter(f => f.optional_group === group);
+        if (!grouped.length) return null;
+        const labels = { context: "More about the system and what you need", history: "Service history", access: "Access and visit preferences" };
+        return <details key={group} data-optional-group={group} style={{ borderTop: "1px solid var(--line-l)", padding: "14px 0" }}>
+          <summary style={{ cursor: "pointer", fontWeight: 600 }}>{labels[group]} <span className="hint">· optional</span></summary>
+          <p className="hint" style={{ marginTop: 8 }}>Add what you know. Leave any item blank to skip it.</p>
+          <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>{grouped.map(renderField)}</ul>
+        </details>;
+      })}
     </div>
   );
 }

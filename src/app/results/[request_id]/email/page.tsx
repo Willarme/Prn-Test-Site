@@ -6,6 +6,7 @@ import { flagEnabled } from "@/platform/flags";
 import { ownerAllowed } from "@/platform/links/owner";
 import { runtimeStore } from "@/platform/stores/runtime";
 import { journeySafetyRule } from "@/domain/problem/journey-safety";
+import { feedbackEligible } from "@/platform/feedback/eligible";
 
 export const metadata: Metadata = {
   referrer: "no-referrer",
@@ -36,8 +37,8 @@ export const dynamic = "force-dynamic";
  *           "Start from your results page to email this packet." /
  *           "Send it again."
  *
- * The form carries `data-feedback-trigger`: a submit is one of the four
- * moments that arm the feedback popup (decisions §2).
+ * The form's legacy action marker does not arm feedback. Only a durable live
+ * sent receipt on /mail can do that; failures and previews do not qualify.
  */
 const ERRORS: Record<string, string> = {
   email: "Enter the email your packet should go to.",
@@ -105,7 +106,7 @@ export default async function EmailPacketPage({
       <a className="back" href={resultsHref}>
         Back to your results
       </a>
-      <FeedbackPopup requestId={request_id} ownerKey={k} />
+      <FeedbackPopup requestId={request_id} ownerKey={k} eligible={await feedbackEligible(request_id)} />
     </ResultsShell>
   );
 }

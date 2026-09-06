@@ -249,7 +249,7 @@ export function buildDirectionsInput(ctx: DirectionsBuildContext, opts: Directio
   const requestId = journey.session.request_id;
   const isHvacCooling = playbook.playbook_id === "pb_hvac_cooling_v1";
   const trade = tradeFor(journey.problem.service_category);
-  const homeownerWords = printablePacketText(journey.packet.observed_statements[0] ?? ctx.textEvidence.content);
+  const homeownerWords = printablePacketText(ctx.textEvidence.content);
   const conflicts = heldFieldConflicts(ctx.answers, ctx.allEvidence, playbook.required_fields);
   const brandConflict = conflicts.find(c => c.field_key === "brand");
   const ageConflict = conflicts.find(c => c.field_key === "system_age");
@@ -381,8 +381,11 @@ export function buildDirectionsInput(ctx: DirectionsBuildContext, opts: Directio
   const timingText = text("symptom_timing");
   const onsetSource = timingText ?? homeownerWords;
   const onsetCharacter = parseOnsetCharacter(onsetSource);
-  const onsetSpan = parseOnsetSpanDays(onsetSource, now);
-  const onsetClock = onsetSpan !== null ? daysBefore(now, onsetSpan) : null;
+  // Relative timing belongs to the report that supplied it, never the render.
+  const timingAt = timingText ? latest.get("symptom_timing")?.answered_at : ctx.textEvidence.captured_at;
+  const reportedAt = wallClock(timingAt ?? journey.problem.created_at, tz) ?? wallClock(journey.problem.created_at, tz)!;
+  const onsetSpan = reportedAt ? parseOnsetSpanDays(onsetSource, reportedAt) : null;
+  const onsetClock = reportedAt && onsetSpan !== null ? daysBefore(reportedAt, onsetSpan) : null;
   const onsetWeekday = onsetClock && onsetSpan !== null && onsetSpan <= 6 ? WEEKDAYS_LONG[onsetClock.weekday] : null;
 
   const filterRatingRaw = stepAnswer("filter");
@@ -403,6 +406,7 @@ export function buildDirectionsInput(ctx: DirectionsBuildContext, opts: Directio
   const filterAge = text("filter_age_weeks");
 
   const view: HvacCoolingView = {
+    homeowner_words: firstSentence(homeownerWords),
     filter_rating: filterRating,
     filter_reported_clean: filterRatingRaw === "reported_clean",
     filter_age_weeks: filterAge && /^\d{1,3}$/.test(filterAge) ? Number(filterAge) : null,
@@ -416,7 +420,7 @@ export function buildDirectionsInput(ctx: DirectionsBuildContext, opts: Directio
     ice_photo: photoByTarget("step_ice_check"),
     ice_reported: stepWasReported("ice_check") || stepWasReported("ice_on_line"),
     compressor_audible: yesNo(stepAnswer("compressor_audible")),
-    vent_airflow: ventRaw ? (/normal|strong|fine|usual/.test(ventRaw) ? "normal" : /weak|low|barely|less/.test(ventRaw) ? "weak" : null) : null,
+    vent_airflow: ventRaw ? (/^(no airflow|none)$/.test(ventRaw) ? "none" : /normal|strong|fine|usual/.test(ventRaw) ? "normal" : /weak|low|barely|less/.test(ventRaw) ? "weak" : null) : null,
     thermostat_setpoint_f: setpoint && /^\d{2}$/.test(setpoint) ? Number(setpoint) : null,
     room_temp_f: roomTemp && /^\d{2}$/.test(roomTemp) ? Number(roomTemp) : null,
     thermostat_mode: thermostatMode,
@@ -426,7 +430,7 @@ export function buildDirectionsInput(ctx: DirectionsBuildContext, opts: Directio
         : setpoint
           ? "reported"
           : null,
-    safety_negative: safetyRaw === null ? null : /^(no|none|nothing|none of these|no to all)$/.test(safetyRaw),
+    safety_negative: safetyRaw === null || safetyRaw === "not sure" ? null : /^(no|none|nothing|none of these|no to all)$/.test(safetyRaw),
     onset_character: onsetCharacter,
     onset_weekday: onsetWeekday,
     onset_span_days: onsetSpan,
@@ -440,17 +444,24 @@ export function buildDirectionsInput(ctx: DirectionsBuildContext, opts: Directio
   };
 
   // --- urgency & safety --------------------------------------------------------
+  const habitability = text("habitability");
+  const homeUse = habitability === "lost" || habitability === "intact" ? habitability : "degraded";
+  const vulnerableOccupant = yesNo(text("vulnerable_occupant")) === "yes";
+  const damageAccruing = yesNo(text("damage_accruing")) === "yes";
   const urgency = decideUrgency({
     homeowner_words: homeownerWords,
     safety_rule_id: journey.problem.safety_rule_id,
     safety_rule_halts: journey.problem.safety_state === "urgent",
     safety_questions_asked: view.safety_negative !== null,
     safety_questions_negative: view.safety_negative ?? undefined,
-    habitability: "degraded",
+    habitability: homeUse,
+    vulnerable_occupant: vulnerableOccupant,
+    damage_accruing: damageAccruing,
     stated_urgency: (() => {
       const u = text("urgency")?.toLowerCase() ?? null;
       if (!u) return null;
       if (/today|now|urgent/.test(u)) return "same_day";
+      if (u === "soon") return "soon";
       if (/soon|asap|as soon/.test(u)) return "asap";
       if (/plan|quote|whenever|later/.test(u)) return "planned";
       return null;
@@ -617,9 +628,9 @@ export function buildDirectionsInput(ctx: DirectionsBuildContext, opts: Directio
       urgency_level: urgency.urgency_level,
       safety_state: urgency.safety_state,
       hazard_flags: urgency.hazard_flags,
-      habitability: "degraded",
-      vulnerable_occupant: false,
-      damage_accruing: false,
+      habitability: homeUse,
+      vulnerable_occupant: vulnerableOccupant,
+      damage_accruing: damageAccruing,
     },
     equipment: {
       labels_set: trade === "hvac" ? HVAC_LABELS_SET : trade,

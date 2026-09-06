@@ -84,6 +84,12 @@ export async function POST(request: Request): Promise<NextResponse> {
   try {
     const valid = new Set(ctx.playbook.required_fields.map((f) => f.field_key));
     const accepted = (fields ?? []).filter((f) => valid.has(f.field_key));
+    for (const field of accepted) {
+      const choices = ctx.playbook.required_fields.find(f => f.field_key === field.field_key)?.choices;
+      if (choices && field.value !== CANNOT_REACH_FIELD_VALUE && !choices.some(c => c.value === field.value)) {
+        return NextResponse.json({ error: "Choose one of the offered answers." }, { status: 400 });
+      }
+    }
     const priorAnswers = await store.listDiagnosisAnswers(request_id);
     const known = step ? ctx.playbook.diagnostic_steps.find((s) => s.step_id === step.step_id) : undefined;
     // Validate the whole request before saving any fields or address. A valid
@@ -146,6 +152,8 @@ export async function POST(request: Request): Promise<NextResponse> {
       try {
         for (const f of accepted) {
           if (f.confirmed || f.value.trim() === CANNOT_REACH_FIELD_VALUE) continue;
+          // Voluntary details are not automatic clarifying questions asked.
+          if (ctx.playbook.required_fields.find(field => field.field_key === f.field_key)?.optional_group) continue;
           await emitClarifierAnswered({
             problem_id: ctx.journey.problem.problem_id,
             request_id,

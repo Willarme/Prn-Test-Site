@@ -7,6 +7,9 @@ import { readLinkLedger } from "@/platform/links/ledger";
 import { formatWhen } from "@/platform/links/views";
 import { runtimeStore } from "@/platform/stores/runtime";
 import { ownerAllowed } from "@/platform/links/owner";
+import { FeedbackSuccess } from "@/components/results/FeedbackSuccess";
+import { feedbackEligible } from "@/platform/feedback/eligible";
+import { PACKET_EMAIL_SUBJECT } from "@/platform/results/packet-email";
 
 /**
  * /mail/<email_id> — THE OUTBOX, SHOWN (track P3; routine decision 8).
@@ -51,6 +54,8 @@ export default async function MailPage({ params, searchParams }: { params: Promi
 
   const sms = isSmsMessage(email);
   const preview = email.mode === "preview";
+  const delivered = !sms && email.subject === PACKET_EMAIL_SUBJECT && email.mode === "live"
+    && !!email.sent_at && await feedbackEligible(email.request_id);
   const keepLink = email.request_id
     ? readLinkLedger(email.request_id).links.find((l) => l.scope === "keep")
     : null;
@@ -60,6 +65,7 @@ export default async function MailPage({ params, searchParams }: { params: Promi
 
   return (
     <main className="section section-light">
+      {delivered && <FeedbackSuccess requestId={email.request_id} />}
       <div className="wrap-narrow">
         <p className="eyebrow">{sms ? "Text message" : "Email"}</p>
         {preview ? (

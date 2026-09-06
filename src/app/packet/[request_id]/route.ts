@@ -3,6 +3,8 @@ import { escapeAttr, escapeHtml } from "@/domain/packet/script";
 import { recordCustomerEvent } from "@/platform/events/customer";
 import { loadPacket, resolvePacketAccess } from "@/platform/packet/load";
 import { demoAwareOrigin } from "@/platform/demo-origin";
+import { feedbackValueScript } from "@/domain/feedback/value";
+import { feedbackEligible } from "@/platform/feedback/eligible";
 
 /**
  * GET /packet/[request_id] — the Job Packet as a standalone print document
@@ -133,7 +135,10 @@ export async function GET(request: Request, ctx: { params: Promise<{ request_id:
     return html(`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="robots" content="noindex,nofollow"></head><body style="font-family:system-ui;max-width:40rem;margin:3rem auto;padding:1rem"><h1>Your packet needs a quick check.</h1><p>Your description is saved. Some details cannot be included in a shareable packet.</p>${access.owner ? `<a href="${escapeAttr(back)}">Return to your saved results</a>` : "<p>The homeowner can review the saved record.</p>"}</body></html>`, 200, { "x-packet-self-check": "held" });
   }
   // The toolbar is injected after the render so the self-check never sees it.
-  const body = rendered.html.replace("<body>", `<body>${toolbar(request_id, share, keep, false)}`);
+  const successSignal = access.owner && !rendered.halted && await feedbackEligible(request_id)
+    ? feedbackValueScript(request_id) : "";
+  const body = rendered.html.replace("<body>", `<body>${toolbar(request_id, share, keep, false)}`)
+    .replace("</body>", `${successSignal}</body>`);
 
   await recordCustomerEvent({
     event_name: "packet.viewed",

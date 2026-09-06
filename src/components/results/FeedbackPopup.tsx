@@ -1,6 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { hasPersistedReceipt } from "@/domain/feedback/receipt";
+import { FEEDBACK_DONE_KEY, FEEDBACK_DELAY_MS, FEEDBACK_VALUE_EVENT, feedbackValueKey } from "@/domain/feedback/value";
 
 /**
  * THE FEEDBACK POPUP — copy verbatim from MOCKUP-2-results-page.html's popup
@@ -8,10 +10,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
  * PRN Master Build Spec MERGED §15 (BINDING: fires on the SECOND satisfaction
  * moment, never the first).
  *
- *   Trigger    a click on any element carrying `data-feedback-trigger` (the
- *              results page puts it on "Open my Job Packet", "Save this to my
- *              home", "Ask my people" and "I already have someone"; the email
- *              page puts it on its form, so a submit arms it too).
+ *   Trigger    a successfully rendered owner packet or verified save/send
+ *              receipt for this request. Navigation and submission never arm.
  *   Delay      8 seconds after the trigger. When the trigger navigated the
  *              homeowner away (Save → /keep, Ask → /ask, Email → /mail) and
  *              they come back, the popup fires 8 seconds after they are back
@@ -20,7 +20,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
  *              homeowner to the exact results state") is the moment it fires.
  *   Position   bottom-right card, slides up, covers nothing, no overlay.
  *   Dismiss    the X, "Skip", or Esc — three ways out.
- *   Frequency  once per person, ever (localStorage `prn_feedback_done`).
+ *   Frequency  once per browser profile (`prn_feedback_done`). No identity is
+ *              collected, so this cannot promise person-wide cross-device suppression.
  *   Arrival    never: nothing fires without a trigger.
  *
  * It is rendered in the page from the start (hidden) so the approved copy is
@@ -31,9 +32,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
  * The four "What did it get right?" options post as short keys, one per design
  * claim the decisions doc says each option measures, so they can be counted.
  */
-export const FEEDBACK_DONE_KEY = "prn_feedback_done";
+export { FEEDBACK_DONE_KEY, FEEDBACK_DELAY_MS };
+/** Legacy export for compatibility only; no longer read or written. */
 export const FEEDBACK_ARMED_KEY = "prn_feedback_armed_at";
-export const FEEDBACK_DELAY_MS = 8000;
 
 const SCORES = [
   { key: "not_really", label: "Not really" },
@@ -66,7 +67,7 @@ function writeStorage(key: string, value: string | null): void {
   }
 }
 
-export function FeedbackPopup({ requestId, ownerKey }: { requestId: string; ownerKey?: string }) {
+export function FeedbackPopup({ requestId, ownerKey, eligible = false }: { requestId: string; ownerKey?: string; eligible?: boolean }) {
   const [open, setOpen] = useState(false);
   const [score, setScore] = useState<Score | null>(null);
   const [right, setRight] = useState<string[]>([]);
@@ -74,49 +75,47 @@ export function FeedbackPopup({ requestId, ownerKey }: { requestId: string; owne
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pending = useRef(false);
 
   const finish = useCallback(() => {
     writeStorage(FEEDBACK_DONE_KEY, "1");
-    writeStorage(FEEDBACK_ARMED_KEY, null);
+    writeStorage(feedbackValueKey(requestId), null);
     if (timer.current) clearTimeout(timer.current);
     setOpen(false);
-  }, []);
+  }, [requestId]);
 
   useEffect(() => {
-    if (readStorage(FEEDBACK_DONE_KEY)) return;
+    setOpen(false);
+    if (!eligible || readStorage(FEEDBACK_DONE_KEY)) return;
 
     const schedule = () => {
-      const armed = Number(readStorage(FEEDBACK_ARMED_KEY));
-      if (!armed || timer.current) return;
-      const remaining = FEEDBACK_DELAY_MS - (Date.now() - armed);
-      // Still on the page that armed it: the rest of the 8 seconds. Back after
-      // leaving: a fresh 8 seconds from arrival, never instantly on load.
-      const wait = remaining > 0 ? remaining : FEEDBACK_DELAY_MS;
-      timer.current = setTimeout(() => setOpen(true), wait);
+      if (readStorage(FEEDBACK_DONE_KEY) || document.visibilityState === "hidden") {
+        if (timer.current) clearTimeout(timer.current);
+        timer.current = null;
+        setOpen(false);
+        return;
+      }
+      const value = Number(readStorage(feedbackValueKey(requestId)));
+      if (!Number.isFinite(value) || value <= 0 || timer.current) return;
+      // Always allow eight visible seconds on arrival/return; never pop on load.
+      timer.current = setTimeout(() => {
+        timer.current = null;
+        if (!readStorage(FEEDBACK_DONE_KEY) && document.visibilityState !== "hidden"
+          && readStorage(feedbackValueKey(requestId))) setOpen(true);
+      }, FEEDBACK_DELAY_MS);
     };
-    const arm = () => {
-      if (readStorage(FEEDBACK_DONE_KEY)) return;
-      if (!readStorage(FEEDBACK_ARMED_KEY)) writeStorage(FEEDBACK_ARMED_KEY, String(Date.now()));
-      schedule();
-    };
-    const onClick = (e: MouseEvent) => {
-      const el = (e.target as Element | null)?.closest?.("[data-feedback-trigger]");
-      if (el) arm();
-    };
-    const onSubmit = (e: Event) => {
-      const el = e.target as Element | null;
-      if (el?.matches?.("[data-feedback-trigger]")) arm();
-    };
-    document.addEventListener("click", onClick);
-    document.addEventListener("submit", onSubmit);
+    window.addEventListener(FEEDBACK_VALUE_EVENT, schedule);
+    window.addEventListener("storage", schedule);
+    document.addEventListener("visibilitychange", schedule);
     schedule();
     return () => {
-      document.removeEventListener("click", onClick);
-      document.removeEventListener("submit", onSubmit);
+      window.removeEventListener(FEEDBACK_VALUE_EVENT, schedule);
+      window.removeEventListener("storage", schedule);
+      document.removeEventListener("visibilitychange", schedule);
       if (timer.current) clearTimeout(timer.current);
       timer.current = null;
     };
-  }, []);
+  }, [eligible, requestId]);
 
   useEffect(() => {
     if (!open) return;
@@ -128,7 +127,8 @@ export function FeedbackPopup({ requestId, ownerKey }: { requestId: string; owne
   }, [open, finish]);
 
   async function send() {
-    if (!score || saving) return;
+    if (!score || pending.current) return;
+    pending.current = true;
     setSaving(true);
     setError(null);
     const response = await fetch("/api/feedback", {
@@ -142,8 +142,10 @@ export function FeedbackPopup({ requestId, ownerKey }: { requestId: string; owne
         slow: slow.trim() ? slow.trim().slice(0, 500) : null,
       }),
     }).catch(() => null);
+    const receipt = response?.ok ? await response.json().catch(() => null) : null;
+    pending.current = false;
     setSaving(false);
-    if (!response?.ok) {
+    if (!hasPersistedReceipt(receipt)) {
       setError("Your feedback could not be saved. Try again, or skip for now.");
       return;
     }

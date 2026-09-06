@@ -24,7 +24,7 @@ function location(requestId: string): string {
 export function validateQuestionPlan(value: unknown, playbook: IntakePlaybook): QuestionPlan | null {
   if (!value || typeof value !== "object") return null;
   const p = value as QuestionPlan;
-  const valid = new Set(playbook.required_fields.map(f => f.field_key));
+  const valid = new Set(playbook.required_fields.filter(f => !f.optional_group).map(f => f.field_key));
   if (!Array.isArray(p.field_keys) || !Number.isInteger(p.max_questions) || p.max_questions < 0 ||
       p.max_questions > 20 || p.field_keys.length > p.max_questions ||
       new Set(p.field_keys).size !== p.field_keys.length || p.field_keys.some(k => !valid.has(k)) ||
@@ -52,9 +52,14 @@ export function orderedDetailFields(
   plan: QuestionPlan | null,
 ): FieldRequirement[] {
   const answered = new Set(answers.map(a => a.field_key));
-  const held = playbook.required_fields.filter(f => answered.has(f.field_key));
+  const held = playbook.required_fields.filter(f => !f.optional_group && answered.has(f.field_key));
   const valid = validateQuestionPlan(plan, playbook);
   const order = valid?.field_keys ?? clarifierCandidates(playbook, [...answered]).map(f => f.field_key).slice(0, 5);
   const byKey = new Map(playbook.required_fields.map(f => [f.field_key, f]));
   return [...held, ...order.filter(k => !answered.has(k)).flatMap(k => byKey.has(k) ? [byKey.get(k)!] : [])];
+}
+
+/** Voluntary sections are rendered separately from the capped question plan. */
+export function optionalDetailFields(playbook: IntakePlaybook): FieldRequirement[] {
+  return playbook.required_fields.filter(f => f.optional_group);
 }

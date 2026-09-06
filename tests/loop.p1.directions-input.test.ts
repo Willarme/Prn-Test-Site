@@ -133,7 +133,7 @@ describe("P1 · buildDirectionsInput", () => {
     expect(input.packet.trade).toBe("hvac");
     expect(input.packet.id).toMatch(/^[0-9A-F]{4}-[0-9A-F]{4}$/);
     expect(input.packet.version).toBe("v1");
-    expect(input.problem.title).toBe("AC running but blowing warm air");
+    expect(input.problem.title).toBe("Cooling problem");
     expect(input.problem.onset_character).toBe("gradual");
     expect(input.problem.onset_weekday_spoken).toBe("Thursday");
     expect(input.problem.onset_span_days).toBe(2);
@@ -187,17 +187,17 @@ describe("P1 · buildDirectionsInput", () => {
     expect(JSON.stringify(input)).not.toContain("555-0134");
     // Script parts from the same view.
     expect(input.narrative.script_parts).toMatchObject({
-      problem_clause: "my AC is running but blowing warm air",
+      problem_clause: "The air conditioner is on and I can feel air but it's just not cold anymore",
       equipment_brand_type: "a Carrier",
       age_spoken: "about eight years old",
       model_number: "24ABC636A003",
       onset_clause: "started gradually on Thursday",
-      outdoor_state_clause: "the outdoor unit is running and the fan's turning",
+      outdoor_state_clause: "the outdoor fan's turning",
       filter_clause: "the filter's clean",
     });
     // Facts: the safety negative, the machine state, the maintenance state, the onset — and never an inference.
     expect(input.narrative.facts.map((f) => f.text)).toEqual([
-      "AC running, air from vents not cold",
+      "Homeowner reports: “The air conditioner is on and I can feel air but it's just not cold anymore”",
       "Outdoor fan is turning",
       "Filter clean, rated 1/10 by the homeowner",
       "Outdoor fins mostly clear",
@@ -226,7 +226,7 @@ describe("P1 · buildDirectionsInput", () => {
     expect(out.html).toContain("As soon as possible · not a safety hazard");
     expect(out.html).toContain('href="http://localhost:3111/keep/tok-keep"');
     expect(out.html).toContain("Provider link");
-    expect(out.html).toContain(`It's a Carrier, about eight years old, model <span class="x-mono">24ABC636A003</span>. Started gradually on Thursday. The outdoor unit is running and the fan's turning, the filter's clean. I've got a Job Packet`);
+    expect(out.html).toContain(`It's a Carrier, about eight years old, model <span class="x-mono">24ABC636A003</span>. Started gradually on Thursday. The outdoor fan's turning, the filter's clean. I've got a Job Packet`);
   });
 
   it("the thin request (description only) produces the honest thin packet", async () => {
@@ -246,7 +246,7 @@ describe("P1 · buildDirectionsInput", () => {
     expect(counters).toEqual(["1", "0", "0", "0", "5"]);
     expect(out.html).toContain("The facts worth reading first");
     expect(out.html).toContain("The evidence recorded so far does not point one way.");
-    expect(out.html).toContain(`"Hi — my AC is running but blowing warm air. I've got a Job Packet I can send you before you come out."`);
+    expect(out.html).toContain(`"Hi — AC is blowing warm air, not cooling at all. I've got a Job Packet I can send you before you come out."`);
   });
 
   it("the cannot-reach markers become unknowns with the homeowner's reason (checklist F5)", async () => {

@@ -13,8 +13,8 @@ import { AgentDefinition } from "@/platform/agents/contracts";
  *    so canon's phase bands could land on a new `phase_band` field without
  *    colliding (see contracts.ts for the full migration note);
  *  - `phase_band` mirrors each agent's architecture-prompt frontmatter
- *    `phase` (prn-vault/Project/03 Build/Agent Architecture Prompts). A36 has
- *    no architecture-prompt document, so its band is "TBD", not a guess;
+ *    `phase` (prn-vault/Project/03 Build/Agent Architecture Prompts). A36's
+ *    2026-09-06 DRAFT now supplies TRIAL; review and runtime remain T3-24 work;
  *  - `autonomy_level` is "TBD" on every agent: canon carries two
  *    non-identical autonomy scales (A0–A5 vs the L-ladder — see contracts.ts)
  *    and the owners have not yet picked one;
@@ -609,9 +609,11 @@ export const TRIAL_AGENT_REGISTRY: readonly AgentDefinition[] = [
       "Deploy/nightly/weekly checks for UI-only logic, schema/tool/auth/provenance regressions; recommends/prepares fixes; no broad prod auto-changes.",
     purpose:
       "Deploy/nightly/weekly checks for UI-only logic, schema/tool/auth/provenance regressions; recommends/prepares fixes; no broad prod auto-changes.",
-    // No architecture-prompt document exists for A36, so its band has no
-    // source to mirror — TBD, pending owner assignment (never a guess).
-    phase_band: "TBD",
+    // Source: A36 AI-Native Readiness and Interface Steward Agent.md (2026-09-06),
+    // phase TRIAL / V0. The spec is DRAFT; T3-24 requires independent system
+    // review before implementation. SKELETON_LIVE is historical declared scope:
+    // runtime remains unbuilt, with no executor, activation or schedule here.
+    phase_band: "TRIAL",
     ...TBD,
     kill_switch_ref: killRef("A36"),
   },

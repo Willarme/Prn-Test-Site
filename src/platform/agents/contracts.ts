@@ -37,7 +37,8 @@ export type AgentStatus = z.infer<typeof AgentStatus>;
  * `prn-vault/Project/03 Build/Agent Architecture Prompts/` — deliberately NOT
  * named `stage` (that name carried the trial-scope meaning now living in
  * `status`). "TBD" is reserved for agents with no frontmatter/canon source for
- * their band yet (currently A36), pending owner assignment — never a guess.
+ * their band yet; use a documented source when it exists, never a guess.
+ * A sourced phase band does not establish spec approval or runtime activation.
  */
 export const PhaseBand = z.enum(["FOUNDATION", "TRIAL", "PHASE2", "LATER", "TBD"]);
 export type PhaseBand = z.infer<typeof PhaseBand>;

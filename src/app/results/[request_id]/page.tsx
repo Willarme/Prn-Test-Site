@@ -3,6 +3,8 @@ import { notFound, redirect } from "next/navigation";
 import { journeySafetyRule } from "@/domain/problem/journey-safety";
 import type { Metadata } from "next";
 import { ResultsTemplate } from "@/components/results/ResultsTemplate";
+import { FeedbackSuccess } from "@/components/results/FeedbackSuccess";
+import { feedbackEligible } from "@/platform/feedback/eligible";
 import { JOURNEY_COOKIE_NAME, decodeJourneyCookie } from "@/domain/problem/journey-cookie";
 import { recordCustomerEvent } from "@/platform/events/customer";
 import { flagEnabled } from "@/platform/flags";
@@ -144,13 +146,16 @@ export default async function ResultsPage({
   });
 
   const keepHref = `/keep/${issueLink({ scope: "keep", request_id }).token}`;
+  const eligible = journey ? await feedbackEligible(request_id) : false;
   return <>
+    {kept && eligible && <FeedbackSuccess requestId={request_id} />}
     {kept && <div role="status" className="wrap-narrow" style={{ padding: "18px 24px" }} data-keep-receipt>
       Saved to Home Memory. <a href={keepHref}>Open your saved record</a>
     </div>}
     <ResultsTemplate
       requestId={request_id}
       ownerKey={k}
+      feedbackEligible={eligible}
       keepHref={keepHref}
       askHref={`/ask/${issueLink({ scope: "ask", request_id }).token}`}
       askAnswers={askAnswers}

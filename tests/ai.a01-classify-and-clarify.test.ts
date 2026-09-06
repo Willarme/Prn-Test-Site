@@ -413,7 +413,7 @@ describe("the clarifier ceiling is a branch the model never reaches", () => {
   });
 
   it("one remaining candidate is not a choice — no model is paid to confirm it", async () => {
-    const all = playbook.required_fields.map((f) => f.field_key);
+    const all = playbook.required_fields.filter(f => !f.optional_group).map((f) => f.field_key);
     const p = provider([reply('{"field_key":"x","why":"x"}')]);
     const outcome = await selectNextClarifier(
       {

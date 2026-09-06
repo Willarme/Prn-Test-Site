@@ -42,8 +42,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
               <Link className="ecosystem-nav-link" href="/demo">
                 Explore the demo
               </Link>
-              <Link className="ecosystem-header-cta" href="/start">
-                Start with what happened
+              <Link className="ecosystem-header-cta" href={process.env.VERCEL === "1" ? "/demo/sample/walkthrough" : "/start"}>
+                {process.env.VERCEL === "1" ? "Try the sample" : "Start with what happened"}
               </Link>
             </nav>
           </div>

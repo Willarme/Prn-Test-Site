@@ -32,9 +32,8 @@ import { ResultsShell } from "@/components/results/ResultsShell";
  * track's ownership (/packet, /keep, /ask, /pages/*) or a document, and a
  * plain anchor renders identically in the test harness and the browser.
  *
- * `data-feedback-trigger` marks the four moments that arm the feedback popup
- * (decisions §2: "after any one of opening the Job Packet, saving to Home
- * Memory, or sending to someone"); the popup listens for them itself.
+ * `data-feedback-trigger` retains the approved action markers. They do not
+ * arm feedback: only verified successful value receipts do that.
  */
 export interface ResultsTemplateProps {
   requestId: string;
@@ -45,14 +44,17 @@ export interface ResultsTemplateProps {
   /** The friend's answers to the Trust Network ask, when any exist. */
   askAnswers?: AskAnswer[];
   ownerKey?: string;
+  feedbackEligible?: boolean;
+  /** Public synthetic tours can route actions to their isolated sample pages. */
+  navigation?: Partial<Record<"packet" | "email" | "send" | "find", string>>;
 }
 
-export function ResultsTemplate({ requestId, keepHref, askHref, askAnswers = [], ownerKey }: ResultsTemplateProps) {
+export function ResultsTemplate({ requestId, keepHref, askHref, askAnswers = [], ownerKey, feedbackEligible = false, navigation }: ResultsTemplateProps) {
   const query = ownerKey ? `?k=${encodeURIComponent(ownerKey)}` : "";
-  const packetHref = `/packet/${encodeURIComponent(requestId)}${query}`;
-  const emailHref = `/results/${encodeURIComponent(requestId)}/email${query}`;
-  const sendHref = `/results/${encodeURIComponent(requestId)}/send${query}`;
-  const findHref = `/results/${encodeURIComponent(requestId)}/find${query}`;
+  const packetHref = navigation?.packet ?? `/packet/${encodeURIComponent(requestId)}${query}`;
+  const emailHref = navigation?.email ?? `/results/${encodeURIComponent(requestId)}/email${query}`;
+  const sendHref = navigation?.send ?? `/results/${encodeURIComponent(requestId)}/send${query}`;
+  const findHref = navigation?.find ?? `/results/${encodeURIComponent(requestId)}/find${query}`;
 
   return (
     <ResultsShell>
@@ -288,7 +290,7 @@ export function ResultsTemplate({ requestId, keepHref, askHref, askAnswers = [],
 
       <p className="legal">This is a preparation record. A qualified technician does their own testing on site, and the price stays theirs to set. What you entered stays with you until you choose to send it.</p>
 
-      <FeedbackPopup requestId={requestId} ownerKey={ownerKey} />
+      <FeedbackPopup requestId={requestId} ownerKey={ownerKey} eligible={feedbackEligible} />
     </ResultsShell>
   );
 }

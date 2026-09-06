@@ -71,6 +71,9 @@ export const FieldRequirement = z.object({
   harvest_to_property_memory: z.boolean(),
   /** Regex sources (JS syntax) that auto-detect the field from the customer's own words. */
   auto_detect_patterns: z.array(z.string()),
+  /** Voluntary detail groups never enter the capped automatic clarifier plan. */
+  optional_group: z.enum(["context", "history", "access"]).optional(),
+  choices: z.array(z.object({ value: z.string().min(1), label: z.string().min(1) })).min(2).optional(),
 });
 export type FieldRequirement = z.infer<typeof FieldRequirement>;
 

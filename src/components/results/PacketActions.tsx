@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { ACTIVE_PACKET_COPY } from "@/domain/problem/packet-copy";
+import { hasPersistedReceipt } from "@/domain/feedback/receipt";
 
 /**
  * PACKET CTA COPY FROM CONFIG (Loop Spec Audit A02 condition 8). The four
@@ -102,25 +103,41 @@ export function AlreadyHaveSomeone({
 
 export function ConceptInterest({ concept, landingPath }: { concept: string; landingPath: string }) {
   const [voted, setVoted] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const pending = useRef(false);
   async function vote(thumb: "up" | "down") {
-    setVoted(thumb);
-    await fetch("/api/feature-interest", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ concept, kind: "thumb", thumb, landing_path: landingPath }),
-    }).catch(() => {});
+    if (pending.current) return;
+    pending.current = true;
+    setSaving(true);
+    setError(null);
+    try {
+      const response = await fetch("/api/feature-interest", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ concept, kind: "thumb", thumb, landing_path: landingPath }),
+      });
+      if (!response.ok || !hasPersistedReceipt(await response.json())) throw new Error("not recorded");
+      setVoted(thumb);
+    } catch {
+      setError("Your response could not be saved. Try again.");
+    } finally {
+      pending.current = false;
+      setSaving(false);
+    }
   }
   if (voted) {
     return <p className="pill pill-green">Noted — thank you. This really does steer what we build.</p>;
   }
   return (
-    <div style={{ display: "flex", gap: 10 }}>
-      <button className="chip" onClick={() => vote("up")}>
+    <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }} aria-busy={saving}>
+      <button className="chip" disabled={saving} onClick={() => vote("up")}>
         👍 I&apos;d use this
       </button>
-      <button className="chip" onClick={() => vote("down")}>
+      <button className="chip" disabled={saving} onClick={() => vote("down")}>
         👎 Not for me
       </button>
+      {error && <p role="alert" style={{ flexBasis: "100%" }}>{error}</p>}
     </div>
   );
 }

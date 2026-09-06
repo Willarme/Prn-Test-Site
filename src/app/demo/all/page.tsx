@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { demoSamplesEnabled } from "@/domain/demo/mode";
 import styles from "../demo.module.css";
 
 export const dynamic = "force-dynamic";
@@ -39,19 +40,29 @@ const groups: { title: string; detail: string; entries: Destination[] }[] = [
 ];
 
 export default function DemoDirectory() {
-  const clientDemo = process.env.PRN_CLIENT_DEMO === "1";
+  const localSample = demoSamplesEnabled();
+  const clientDemo = process.env.PRN_CLIENT_DEMO === "1" || !localSample;
+  const visibleGroups = localSample ? groups : groups.map((group, index) => ({
+    ...group,
+    detail: index === 0 ? "Open the prepared example with its results, guided checks and real sample PDF. No customer record or account is created." : index === 1 ? "Explore the approved product concepts. Illustrated schedules, quotes, verification and product records are examples; these services are not activated in the presentation." : group.detail,
+    entries: group.entries.map(entry => entry.intent ? {
+      ...entry,
+      detail: entry.intent === "guided" ? "Follow the optional AC check logic using a fixed synthetic scenario. Your choices stay in the sample walkthrough." : "The actual results and packet presentation for an invented home, with a real prepared PDF and labelled keep, share and email previews.",
+      status: "Prepared interactive sample",
+    } : entry.href === "/ac-blowing-warm-air" ? { ...entry, detail: "Explore the complete 15-section guide and equipment diagrams. Use the prepared walkthrough below for this presentation.", status: "Guide preview" } : entry.href === "/start" || entry.href === "/no-hot-water" ? { ...entry, detail: "Preview the intake entrance. Custom requests are not enabled in this presentation; use the prepared AC sample above.", status: "Intake preview" } : entry),
+  }));
   return <main className={`${styles.demo} ${styles.catalog}`}>
     <div className={styles.catalogHead}><p className={styles.kicker}>Property Response Network / Demo directory</p><Link href="/demo">← Demo entrance</Link></div>
     <h1>Every demo, in one place.</h1>
     <p className={styles.catalogIntro}>Use this for your own walkthrough or to jump to a particular part of the experience. Use example details throughout. No provider is contacted, no appointment is booked and email actions stay in preview.</p>
-    {groups.map(group => <section key={group.title} className={styles.catalogSection}>
+    {visibleGroups.map(group => <section key={group.title} className={styles.catalogSection}>
       <h2>{group.title}</h2><p>{group.detail}</p>
       <div className={styles.routeList}>{group.entries.map(entry => <article className={styles.routeRow} key={entry.name}>
         <div><h3>{entry.name}</h3><small>{entry.status}</small></div><p>{entry.detail}</p>
         {entry.href ? <Link href={entry.href}>Open <span aria-hidden>↗</span></Link> : <form action="/demo/start" method="post"><input type="hidden" name="intent" value={entry.intent} /><button type="submit">Open sample <span aria-hidden>→</span></button></form>}
       </article>)}</div>
     </section>)}
-    <aside className={styles.localOnly}><h2>Keep, share, add details and email preview</h2><p>These belong to a specific request. Open a sample result above to reach them with the right permissions. Each sample has its own real packet; there are no shared customer records or fixed private links in this directory.</p></aside>
+    <aside className={styles.localOnly}><h2>Keep, share, add details and email preview</h2><p>{localSample ? "These belong to a specific request. Open a sample result above to reach them with the right permissions. Each sample has its own real packet; there are no shared customer records or fixed private links in this directory." : "Open the prepared result above to explore these next steps. The sample uses invented details and generic demonstration links; it does not save a real home record or send an email."}</p></aside>
     {!clientDemo && <aside className={styles.localOnly}><h2>Joshua and Missy · local operator tools</h2><p>The working operator controls are separate from the client tour. Publishing, AI policy and internal QA stay behind the existing admin access controls. A live AI writer result can still be rejected by QA; generated pages are not automatically released.</p><Link href="/admin">Operator dashboard ↗</Link><Link href="/admin/controls">Page-creator controls ↗</Link><Link href="/admin/requests">Request register ↗</Link><Link href="/admin/system">AI and system controls ↗</Link><Link href="/admin/agents">Agent registry ↗</Link><Link href="/admin/pages">SEO pages and QA ↗</Link><Link href="/admin/opportunities">Search opportunities ↗</Link><Link href="/admin/approvals">Data repair approvals ↗</Link></aside>}
   </main>;
 }

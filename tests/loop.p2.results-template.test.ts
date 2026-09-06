@@ -186,7 +186,7 @@ describe("GET /results/[request_id] — the template", () => {
     expect(page).toContain('id="trust"');
   });
 
-  it("arms the feedback popup on the four value moments and nowhere else", () => {
+  it("preserves the four action markers and keeps feedback hidden on arrival", () => {
     const triggers = Array.from(page.matchAll(/data-feedback-trigger="([^"]+)"/g)).map((m) => m[1]);
     expect(triggers.sort()).toEqual(["ask_people", "have_someone", "open_packet", "save_home"]);
     // The popup is in the HTML, hidden, never open on arrival.

@@ -1,4 +1,5 @@
 import { IntakePlaybook } from "@/domain/intake/playbook";
+import { HVAC_OPTIONAL_FIELDS } from "./hvac-optional-fields";
 
 /**
  * HVAC — "AC runs but the air isn't cold" (warm / lukewarm / not cooling /
@@ -100,6 +101,7 @@ export const HVAC_COOLING_PLAYBOOK: IntakePlaybook = IntakePlaybook.parse({
       harvest_to_property_memory: false,
       auto_detect_patterns: [],
     },
+    ...HVAC_OPTIONAL_FIELDS,
   ],
   first_step_id: "filter",
   diagnostic_steps: [
@@ -193,7 +195,7 @@ export const HVAC_COOLING_PLAYBOOK: IntakePlaybook = IntakePlaybook.parse({
       ],
       decision_frame: [
         "This is the cheapest fix in the book and worth trying before any service call.",
-        "A replacement filter is a standard hardware-store item — [local price] (OD-13: sourced pricing arrives later; no invented figures).",
+        "A replacement filter is a standard hardware-store item.",
       ],
       provider_note:
         "Filter rated very dirty. Please verify the recorded filter condition, indoor coil and airflow; any repair and its result need separate confirmation.",

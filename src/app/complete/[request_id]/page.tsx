@@ -8,11 +8,12 @@ import { acknowledgementLine, trialScope, type HeldFact } from "@/domain/intake/
 import { projectWalkthroughView, resolveWalkthroughPosition } from "@/domain/intake/playbook";
 import { flagEnabled } from "@/platform/flags";
 import { loadJourneyContext } from "@/platform/intake/complete";
-import { loadQuestionPlan, orderedDetailFields } from "@/platform/intake/question-plan";
+import { loadQuestionPlan, orderedDetailFields, optionalDetailFields } from "@/platform/intake/question-plan";
 import { runtimeStore } from "@/platform/stores/runtime";
 import { ownerAllowed } from "@/platform/links/owner";
 import { journeySafetyRule } from "@/domain/problem/journey-safety";
 import { heldFieldConflicts } from "@/domain/intake/field-conflicts";
+import { HVAC_COOLING_TITLE } from "@/domain/packet/knowledge-hvac-cooling";
 
 export const metadata: Metadata = {
   referrer: "no-referrer",
@@ -128,7 +129,7 @@ export default async function CompletePage({ params, searchParams }: { params: P
   }
 
   const questionPlan = loadQuestionPlan(request_id, ctx.playbook);
-  const fields: DetailsField[] = orderedDetailFields(ctx.playbook, answers, questionPlan).map((f) => ({
+  const fields: DetailsField[] = [...orderedDetailFields(ctx.playbook, answers, questionPlan), ...optionalDetailFields(ctx.playbook)].map((f) => ({
     field_key: f.field_key,
     label: f.label,
     why_it_matters: f.why_it_matters,
@@ -136,6 +137,8 @@ export default async function CompletePage({ params, searchParams }: { params: P
     photo_prompt: f.photo_prompt,
     accepts: f.accepts,
     priority: f.priority,
+    optional_group: f.optional_group,
+    choices: f.choices,
     harvest_to_property_memory: f.harvest_to_property_memory,
     have: latest.get(f.field_key) ?? null,
     conflict: (() => {
@@ -153,7 +156,7 @@ export default async function CompletePage({ params, searchParams }: { params: P
     <main>
       <section className="section" style={{ paddingBottom: 36 }}>
         <div className="wrap-narrow">
-          <div className="eyebrow">{ctx.playbook.cluster_label}</div>
+          <div className="eyebrow">{ctx.playbook.playbook_id === "pb_hvac_cooling_v1" ? HVAC_COOLING_TITLE : ctx.playbook.cluster_label}</div>
           {uploadWarning && <AttachmentRecovery requestId={request_id} ownerKey={k} />}
           {voiceReceipt}
           {acknowledgement && (

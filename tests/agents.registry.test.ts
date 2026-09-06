@@ -102,7 +102,7 @@ describe("canonical agent registry", () => {
     }
   });
 
-  it("A00: phase_band mirrors the architecture-prompt frontmatter (A36 = TBD, no doc exists)", () => {
+  it("A00: phase_band mirrors sourced architecture-prompt frontmatter without activating A36", () => {
     const band = (id: string) => TRIAL_AGENT_REGISTRY.find((a) => a.agent_id === id)!.phase_band;
     for (const id of ["A01", "A02", "A03", "A04", "A05", "A06", "A07", "A08", "A09", "A10"]) {
       expect(band(id), id).toBe("TRIAL");
@@ -110,7 +110,14 @@ describe("canonical agent registry", () => {
     for (const id of ["A12", "A13", "A14", "A15", "A16", "A25", "A27"]) {
       expect(band(id), id).toBe("PHASE2");
     }
-    expect(band("A36")).toBe("TBD");
+    expect(band("A36")).toBe("TRIAL");
+    const a36 = TRIAL_AGENT_REGISTRY.find((a) => a.agent_id === "A36")!;
+    expect(a36.status).toBe("SKELETON_LIVE");
+    expect(a36.allowed_capabilities).toEqual([]);
+    expect(a36.data_access).toEqual([]);
+    expect(a36.write_access).toEqual([]);
+    expect(a36.budgets).toEqual({});
+    expect(a36.schedule).toBeUndefined();
   });
 
   it("A00: no budget carries an un-labeled dollar figure (hard canon rule 4 — none set yet)", () => {

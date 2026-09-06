@@ -94,7 +94,7 @@ export function clarifierCandidates(
   answeredFieldKeys: readonly string[]
 ): ClarifierCandidate[] {
   const answered = new Set(answeredFieldKeys);
-  const open = playbook.required_fields.filter((f) => !answered.has(f.field_key));
+  const open = playbook.required_fields.filter((f) => !f.optional_group && !answered.has(f.field_key));
   const rank = (f: FieldRequirement) => (f.priority === "core" ? 0 : 1);
   return [...open]
     .sort((a, b) => rank(a) - rank(b))

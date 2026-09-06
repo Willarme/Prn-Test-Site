@@ -74,12 +74,25 @@ describe("synthetic client sample launcher", () => {
     expect(denied.status).toBe(404);
   });
 
-  it.each(["disabled", "database", "missing_path"])("does not create a sample when configuration is %s", async mode => {
+  it.each(["disabled", "database", "missing_path"])("opens the hosted prepared sample without creating a customer record when configuration is %s", async mode => {
     if (mode === "disabled") { vi.stubEnv("PRN_CLIENT_DEMO", ""); vi.stubEnv("NEXT_DIST_DIR", ""); }
     if (mode === "database") vi.stubEnv("PRN_RUNTIME_STORE", "supabase");
     if (mode === "missing_path") vi.stubEnv("PRN_DEV_DB_PATH", "");
     expect(demoSamplesEnabled()).toBe(false);
-    expect((await POST(request())).status).toBe(404);
+    const response = await POST(request());
+    expect(response.status).toBe(303);
+    expect(response.headers.get("location")).toBe("/demo/sample/results");
+    expect(response.headers.get("set-cookie")).toBeNull();
+    expect(response.headers.get("x-robots-tag")).toBe("noindex, nofollow");
+    expect(network).not.toHaveBeenCalled();
+  });
+
+  it("routes hosted guided samples to their own walkthrough, rejects forged targets and never writes customer authority", async () => {
+    vi.stubEnv("PRN_RUNTIME_STORE", "supabase");
+    expect((await POST(request("intent=guided"))).headers.get("location")).toBe("/demo/sample/walkthrough");
+    expect((await POST(request("intent=https://elsewhere.example"))).status).toBe(400);
+    expect((await POST(request("intent=results", { origin: "https://elsewhere.example" }))).status).toBe(403);
+    expect((await POST(request("description=customer+text"))).status).toBe(400);
     expect(network).not.toHaveBeenCalled();
   });
 
@@ -107,6 +120,23 @@ describe("synthetic client sample launcher", () => {
     expect((await POST(request("intent=results", { "content-length": "2048" }))).status).toBe(413);
     expect((await POST(request("{}", { "content-type": "application/json" }))).status).toBe(415);
     expect(await count()).toBe(0);
+  });
+
+  it("cancels a stalled hosted form at the read deadline without issuing authority", async () => {
+    vi.useRealTimers();
+    vi.useFakeTimers({ toFake: ["Date", "setTimeout", "clearTimeout"] });
+    vi.stubEnv("PRN_RUNTIME_STORE", "supabase");
+    const cancel = vi.fn();
+    const pending = POST(new Request("http://localhost/demo/start", {
+      method: "POST", body: new ReadableStream({ cancel }), duplex: "half",
+      headers: { "content-type": "application/x-www-form-urlencoded", origin: "http://localhost" },
+    } as RequestInit & { duplex: "half" }));
+    await vi.advanceTimersByTimeAsync(10_001);
+    const response = await pending;
+    expect(response.status).toBe(408);
+    expect(response.headers.get("set-cookie")).toBeNull();
+    expect(cancel).toHaveBeenCalledOnce();
+    expect(network).not.toHaveBeenCalled();
   });
 
   it("reserves a global allowance before concurrent creation and enforces its minute ceiling", async () => {

@@ -1,0 +1,6 @@
+import Link from "next/link";
+import { SampleFrame } from "../SampleFrame";
+import { CopyPreview } from "../CopyPreview";
+import styles from "../sample.module.css";
+const message = "Example question: Do you know an HVAC provider you would use again? This prepared AC packet shows the kind of context they could receive: https://prn-test-site.vercel.app/demo/sample/packet\n\nThis is a demonstration. No recommendation request has been sent.";
+export default function SampleAsk() { return <SampleFrame title="Let a useful recommendation carry its context." intro="This is the preview of asking someone you trust. The demonstration keeps the example on this page and collects no friend or provider contact details."><div className={styles.grid}><section className={styles.panel}><h2>An example question</h2><div className={styles.preview}>{message}</div><div className={styles.actions}><CopyPreview text={message} /></div></section><aside className={styles.panel}><h2>A useful reply has more than a name.</h2><ul><li>Who recommended the provider</li><li>What work they actually used them for</li><li>Why they would call them again</li></ul><Link className={`${styles.button} ${styles.secondary}`} href="/pages/trust-network">Explore the Trust Network concept</Link></aside></div></SampleFrame>; }

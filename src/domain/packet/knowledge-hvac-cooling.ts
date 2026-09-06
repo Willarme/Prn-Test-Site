@@ -37,6 +37,8 @@ import { spelled } from "@/domain/packet/script";
  */
 
 export interface HvacCoolingView {
+  /** Literal, printable opening complaint. A playbook match is not an observation. */
+  homeowner_words?: string;
   /** Step `filter`: the 0–10 rating, when answered. */
   filter_rating: number | null;
   /** Initial-description observation; never invent a numeric rating for it. */
@@ -60,7 +62,7 @@ export interface HvacCoolingView {
   /** A literal statement is reported evidence, not an inspected line or photo. */
   ice_reported?: boolean;
   compressor_audible: "yes" | "no" | null;
-  vent_airflow: "normal" | "weak" | null;
+  vent_airflow: "normal" | "weak" | "none" | null;
   thermostat_setpoint_f: number | null;
   room_temp_f: number | null;
   thermostat_mode?: string | null;
@@ -81,8 +83,8 @@ export interface HvacCoolingView {
   walkthrough_started: boolean;
 }
 
-export const HVAC_COOLING_TITLE = "AC running but blowing warm air";
-export const HVAC_COOLING_PROBLEM_CLAUSE = "my AC is running but blowing warm air";
+export const HVAC_COOLING_TITLE = "Cooling problem";
+export const HVAC_COOLING_PROBLEM_CLAUSE = "I need help with my cooling system";
 export const HVAC_LABELS_SET = "hvac";
 
 /** Intake Coverage Standard §6.1 — technician-only, in the order a technician works. */
@@ -131,7 +133,7 @@ const ONSET_ADVERB: Record<OnsetCharacter, string> = {
 export function hvacCoolingFacts(v: HvacCoolingView): Fact[] {
   const facts: Fact[] = [];
   // The complaint this cluster matched on — the symptom, never a cause.
-  facts.push({ text: "AC running, air from vents not cold", provenance: "reported", kind: "other" });
+  if (v.homeowner_words) facts.push({ text: `Homeowner reports: “${v.homeowner_words}”`, provenance: "reported", kind: "other" });
 
   if (v.fan_moving === "yes") {
     facts.push({
@@ -161,6 +163,8 @@ export function hvacCoolingFacts(v: HvacCoolingView): Fact[] {
     facts.push({ text: "Air from vents is moving at normal strength", provenance: "reported", kind: "other" });
   } else if (v.vent_airflow === "weak") {
     facts.push({ text: "Air from vents is weak", provenance: "reported", kind: "other" });
+  } else if (v.vent_airflow === "none") {
+    facts.push({ text: "Homeowner reports no airflow at the vents", provenance: "reported", kind: "other" });
   }
 
   if (v.ice === "no") {
@@ -227,16 +231,13 @@ export function hvacCoolingFacts(v: HvacCoolingView): Fact[] {
 
 export function hvacCoolingSummary(v: HvacCoolingView): string[] {
   const out: string[] = [];
-  out.push(
-    v.vent_airflow === "normal"
-      ? "Indoor fan runs and air moves from the vents, but the air is not cold."
-      : "Air comes from the vents but the air is not cold."
-  );
+  if (v.homeowner_words) out.push(`The homeowner describes it as: “${v.homeowner_words}”.`);
+  if (v.vent_airflow) out.push(`Airflow at the vents is reported as ${v.vent_airflow}.`);
   if (v.onset_character || v.onset_weekday || v.onset_span_days !== null) {
     const when = v.onset_weekday
       ? `Started ${v.onset_weekday}`
       : v.onset_span_days !== null && v.onset_span_days > 0
-        ? `Started ~${v.onset_span_days} days ago`
+        ? `Started ~${v.onset_span_days} days before the timing was reported`
         : "Started";
     const how =
       v.onset_character === "gradual"
@@ -255,7 +256,7 @@ export function hvacCoolingSummary(v: HvacCoolingView): string[] {
     out.push(
       v.compressor_audible === "yes"
         ? "The outdoor unit is running, the fan is turning and the compressor can be heard."
-        : "The outdoor unit is running and the fan is turning."
+        : "The outdoor fan is turning."
     );
   } else if (v.fan_moving === "no") {
     out.push("The outdoor fan is not turning while the thermostat calls for cool.");
@@ -289,10 +290,10 @@ export function hvacCoolingScriptParts(v: HvacCoolingView): ScriptParts {
   if (v.onset_character && v.onset_weekday) onset = `started ${ONSET_ADVERB[v.onset_character]} on ${v.onset_weekday}`;
   else if (v.onset_weekday) onset = `started on ${v.onset_weekday}`;
   else if (v.onset_character && v.onset_span_days !== null && v.onset_span_days > 0)
-    onset = `started ${ONSET_ADVERB[v.onset_character]} about ${spelled(v.onset_span_days)} day${v.onset_span_days === 1 ? "" : "s"} ago`;
+    onset = `started ${ONSET_ADVERB[v.onset_character]} about ${spelled(v.onset_span_days)} day${v.onset_span_days === 1 ? "" : "s"} before I reported it`;
   else if (v.onset_character) onset = `started ${ONSET_ADVERB[v.onset_character]}`;
   else if (v.onset_span_days !== null && v.onset_span_days > 0)
-    onset = `started about ${spelled(v.onset_span_days)} day${v.onset_span_days === 1 ? "" : "s"} ago`;
+    onset = `started about ${spelled(v.onset_span_days)} day${v.onset_span_days === 1 ? "" : "s"} before I reported it`;
 
   let filter: string | null = null;
   if (v.filter_rating !== null) {
@@ -304,7 +305,7 @@ export function hvacCoolingScriptParts(v: HvacCoolingView): ScriptParts {
   }
 
   return {
-    problem_clause: HVAC_COOLING_PROBLEM_CLAUSE,
+    problem_clause: v.homeowner_words ? v.homeowner_words.replace(/[.!?]+$/, "") : HVAC_COOLING_PROBLEM_CLAUSE,
     equipment_brand_type: equipment,
     age_spoken: null, // filled by the builder from the equipment block, so the table and the script agree
     model_number: v.model,
@@ -313,7 +314,7 @@ export function hvacCoolingScriptParts(v: HvacCoolingView): ScriptParts {
     room_temp: v.room_temp_f,
     outdoor_state_clause:
       v.fan_moving === "yes"
-        ? "the outdoor unit is running and the fan's turning"
+        ? "the outdoor fan's turning"
         : v.fan_moving === "no"
           ? "the outdoor fan isn't turning"
           : null,
@@ -328,6 +329,10 @@ export function hvacCoolingScriptParts(v: HvacCoolingView): ScriptParts {
 
 export function hvacCoolingChecks(v: HvacCoolingView): Check[] {
   const checks: Check[] = [];
+  if (v.vent_airflow === "none") checks.push({
+    name: "Air at the vents", result: "No airflow reported", changed: "Records the homeowner's no-airflow observation",
+    result_provenance: "reported", changed_provenance: "reported", certainty: "noted",
+  });
   if (v.thermostat_mode === "cool" && v.thermostat_setpoint_f !== null && v.room_temp_f !== null && v.room_temp_f > v.thermostat_setpoint_f) {
     checks.push({
       name: "Thermostat mode and setpoint",
