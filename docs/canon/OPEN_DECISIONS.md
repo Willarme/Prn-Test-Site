@@ -4,8 +4,92 @@ Owner rule (D-4): items here NEVER block a build. Review whenever convenient;
 say the item number and your choice. New items get added each session as they
 come up, newest first. When decided, entries move to DECISIONS.md.
 
+## Closed 2026-08-28 — the T6-01 growth-layer questions (see D-25)
+
+The T6-01 build parked four business judgements in `docs/T6-01-NOTES.md` and
+never listed them here, which is why they sat invisible to this register for a
+day. Recording the correction rather than quietly fixing it: **which trade's
+playbook is authoritative**, **the eligibility threshold**, **whether shadow
+playbooks may carry technique instructions**, and **whether the eligibility gate
+may take "authored content exists" on trust** are all now ruled by Josh —
+R1/R2/R3/R5 in DECISIONS.md D-25. A build's parked questions belong in this file
+on the day they are parked; a notes file is not the register.
+
+## Closed 2026-08-28, second pass — OD-20 is obsolete (see D-26)
+
+OD-20 recorded a cost that no longer exists, so it closes — but the entry is
+corrected here rather than deleted, because the reason it was wrong is the
+useful part.
+
+**What OD-20 said, kept verbatim for the record:** "Lowercase place names in
+search queries yield null geography. D2 fixed a compiler that invented locations
+out of ordinary phrasing by requiring a proper noun: 'in Fort Wayne' resolves,
+'in fort wayne' does not. That is the deliberate trade (refusing to guess beats
+guessing), but it is a judgement worth revisiting once A04 shows how real query
+strings arrive — if the feeds deliver lowercased queries at volume, the answer
+is a place gazetteer, never a loosened regex."
+
+**What was actually wrong.** The lowercase trade-off was not the real cost. The
+proper-noun rule guessed in the other direction too: it turned November, March,
+Spring, Autumn, Christmas, Hurricane Helene, Comcast, AEP and Lowes into
+locations, and it refused Columbia City and Michigan City — real Indiana towns
+in PRN's own market — while writing "is not a proper place name" into the audit
+trail, which was false. OD-20 described a deliberate trade; the mechanism was
+wrong on both sides, and no revisiting-later would have surfaced that, because
+every test written for it was lowercase.
+
+**What happened next, and why it also failed (D-26, superseded same day).** Josh
+first ruled: verify against a known-places index, never guess. Case-insensitive
+lookup did remove the lowercase cost OD-20 recorded. But it kept the premise
+that geography is something to RECOVER FROM THE QUERY TEXT, and that premise was
+the actual defect. The index lookup guessed too, just with different words:
+"columbus day sale on chainsaws" resolved to columbus, "Fort Wayne Cabinets
+installed my kitchen wrong" to fort wayne, "roof leak in Columbus Georgia" to
+the OHIO Columbus, and "I named my dog Hilliard" to hilliard — and it wrote
+"verified against the known-places index" into the audit trail each time.
+
+**THE RULING THAT SETTLES IT (2026-08-28, D-27). The whole parse-the-query
+approach is retired.** Geography was never missing and never needed recovering.
+`GeographyScope` is already a structured field on every keyword and opportunity
+row (`src/domain/search/contracts.ts`), and the DataForSEO adapter maps it to
+`location_code` on every call. Geography is an INPUT to the search that produced
+the query, chosen before the query existed. `compileIntent` now takes the row's
+scope as an argument and copies it through, preserving `geography_assumed` so a
+stated scope is never confused with an assumed one. `known-places.ts` and
+`known-places-v1.ts` are deleted.
+
+Three mechanisms were built in that spot over three rounds — preposition-follows,
+capitalisation-minus-denylist, index-lookup — and all three guessed, each while
+asserting it had verified something. That is the pattern the ruling ends: not a
+better heuristic, no heuristic.
+
+**The cost this entry recorded no longer applies, in either version.** Not the
+lowercase cost (the mechanism is gone), and not the seeded-index-coverage cost
+that briefly replaced it (there is no index). There is nothing here left to
+revisit and no follow-on item: a row either carries a scope or it does not, and
+when it does not, the compiled output says so instead of inventing one.
+
 ## Open
 
+- **OD-21 — When may Plumbing/Drain or Roofing become authoritative?** R1 made
+  Tree the voice of record and left the other two shadow. Flipping either needs
+  the same three things Tree got: Josh's ruling, a named human in
+  `provenance.reviewed_by` with a date, and a content pass against the R3
+  no-technique rule. Until then the eligibility gate vetoes every plumbing and
+  roofing candidate — correctly, because PRN has no signed voice for those
+  trades. Not urgent; it is the natural next step whenever a second trade earns
+  the effort.
+- **OD-20 — CLOSED 2026-08-28 by D-26.** Moved to the closed section above,
+  where the original wording is kept verbatim along with the correction: the
+  cost it recorded no longer exists, and the mechanism it described was guessing
+  in both directions rather than making a deliberate trade.
+- **OD-19 — The eligibility threshold number, when real scores exist.** R2 set it
+  to null on OD-5's precedent: null means no score auto-approves, every
+  non-vetoed candidate returns for a human decision, and the vetoes still refuse
+  outright. The number should be chosen against real A04 demand data and a real
+  spread of scored candidates, not before. It is a one-line data edit in
+  `src/domain/growth/eligibility-policy-v1.ts`; the gate already handles both
+  cases and is tested in both.
 - **OD-18 — Does the Job Packet show a homeowner a CONFIDENCE LEVEL at all, and
   in what words?** (Melissa.) The packet today renders `inference · medium
   confidence` next to the likely service category, because the frozen contract
@@ -57,7 +141,7 @@ come up, newest first. When decided, entries move to DECISIONS.md.
   A06's build did not move it — `publish_mode` stays `OWNER_APPROVAL`,
   `human_approval_required` stays true, and `release_eligible` now fails closed
   automatically if either changes.
-- **OD-13 — Guided-diagnosis economics need sourced prices.** The owner wants
+- **OD-13 — DECIDED 2026-08-27 (see DECISIONS.md). WAS: — Guided-diagnosis economics need sourced prices.** The owner wants
   the walkthrough to end in a decision frame (rent a tester vs. paid diagnostic
   visit vs. buy the cheap part on a gamble) with dollar figures. Canon forbids
   invented prices/local claims, so v1 frames the decision with placeholders
@@ -77,11 +161,21 @@ come up, newest first. When decided, entries move to DECISIONS.md.
   promotion gate" evidence (20-50 clean QA candidates, defect rates) is not
   yet machine-checked. Acceptable while no publish runtime exists; revisit at
   the A06/publish wave.
-- **OD-9 — City dataset for county expansion (D-10).** The fixture city index
+- **OD-9 — DECIDED 2026-08-27 (see DECISIONS.md). WAS: — City dataset for county expansion (D-10).** The fixture city index
   covers Allen County IN + Franklin County OH for tests. Before local pages
   activate, vendor a real places-by-county dataset (recommendation: US Census
   gazetteer) and map DataForSEO location codes for state/county/city targets.
-- **OD-8 — Trial brand/domain name.** No production domain is owned yet. The
+
+  *Scope clarified 2026-08-28 (D-27).* This item is about TARGETING — choosing
+  the counties and cities PRN runs searches against, and mapping each to a
+  vendor location code. It was briefly read as also covering a lookup index for
+  resolving place names OUT OF query text; that reading is retired along with
+  the mechanism it justified. Nothing in the growth domain consumes a places
+  dataset any more, and the gazetteer import stays what D-10 made it: a
+  targeting dataset for the county-expansion wave. The `locationCode()` half is
+  live today for national/US and throws loudly on any other mode, which is the
+  behaviour this item exists to complete.
+- **OD-8 — DECIDED 2026-08-27 (see DECISIONS.md). WAS: — Trial brand/domain name.** No production domain is owned yet. The
   repo is `property-response-network`. Needed before Search Console
   verification and launch waves — not before.
 - **OD-7 — Founder story on the new site.** The old HTML's About page carries
@@ -100,7 +194,7 @@ come up, newest first. When decided, entries move to DECISIONS.md.
   states meanings. Proposed mapping is documented in
   `src/platform/capabilities/contracts.ts` (R0 read-public … R6
   irreversible/legal). Confirm or correct whenever.
-- **OD-3 — Consent affirmative action.** "By continuing you agree…" (implied
+- **OD-3 — DECIDED 2026-08-27 (see DECISIONS.md). WAS: — Consent affirmative action.** "By continuing you agree…" (implied
   on continue) vs an explicit checkbox at intake. Old HTML used a checkbox
   (its wording is dead — it promised inspections/pricing we don't offer).
   Decide at the intake-shell wave; counsel review gates final wording either

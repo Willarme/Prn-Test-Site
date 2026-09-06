@@ -1,0 +1,423 @@
+<title>Results Page — Mockup v3</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Public+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0F1114; --text:#12161A; --muted:#5A6462; --dim:#6B7472;
+    --paper:#F7F7F5; --paper2:#EFF0EC; --white:#FFFFFF;
+    --pink:#FF2E7E; --pinkd:#C1004F; --pinkl:#FF6FA6; --pink100:#FFC2DA; --pink50:#FDE8F0;
+    --green:#1F6B47; --blue:#2D5C68; --teal:#3E6E7A; --amber:#9A6A1F; --on-ink:#F2F3F5;
+    --line:rgba(18,22,26,.13); --line-s:rgba(18,22,26,.22);
+    --r:4px; --r6:6px;
+    --plane:0 3px 0 rgba(18,22,26,.09);
+    --bevel:inset 0 1px 0 rgba(255,255,255,.75), inset 0 -1px 0 rgba(18,22,26,.06);
+    --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+    --disp:'Archivo',system-ui,sans-serif;
+    --body:'Public Sans',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{background:var(--paper2);color:var(--text);font-family:var(--body);margin:0;padding:26px 16px 70px;line-height:1.55}
+  .wrap{max-width:920px;margin:0 auto}
+  .note{background:var(--ink);color:var(--on-ink);border-radius:var(--r6);padding:16px 20px;margin-bottom:24px;font-size:.86rem;line-height:1.62}
+  .note b{color:var(--pinkl)}
+  .screen{background:var(--paper);border:1px solid var(--line);border-radius:var(--r6);overflow:hidden;box-shadow:var(--plane)}
+  .nav{display:flex;align-items:center;gap:11px;padding:14px 28px;border-bottom:1px solid var(--line);font-size:.8rem;color:var(--muted);background:var(--white)}
+  .nav .logo{font-family:var(--disp);font-weight:800;color:var(--text);letter-spacing:-.02em;font-size:.95rem}
+  .pad{padding:42px 34px}
+
+  /* ============ HERO ============ */
+  .hero{text-align:center;max-width:62ch;margin:0 auto}
+  .seal{width:64px;height:64px;border-radius:50%;background:rgba(31,107,71,.12);border:1.5px solid var(--green);color:var(--green);
+        display:grid;place-items:center;margin:0 auto 20px;box-shadow:var(--bevel)}
+  .seal svg{width:32px;height:32px}
+  .kick{font:500 .7rem/1 var(--mono);letter-spacing:.18em;text-transform:uppercase;color:var(--pinkd);margin-bottom:14px}
+  h1{font-family:var(--disp);font-size:clamp(2rem,4.7vw,2.9rem);line-height:1.04;letter-spacing:-.035em;margin:0 auto 16px;font-weight:800;max-width:14ch}
+  .lede{font-size:1.06rem;color:var(--muted);margin:0 auto;max-width:48ch;line-height:1.6}
+
+  /* ==== WHAT YOU WALK AWAY WITH ==== */
+  .packet{margin-top:40px}
+  .eyebrow{font:500 .68rem/1 var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--muted);
+           margin:0 0 12px;display:flex;align-items:center;gap:9px;justify-content:center}
+  .pennant{width:9px;height:9px;background:var(--pink);display:inline-block;
+           clip-path:polygon(0 0,100% 0,100% 100%);border-radius:1px}
+  .ph2{font-family:var(--disp);font-size:clamp(1.5rem,3.4vw,2.15rem);font-weight:800;letter-spacing:-.035em;
+       line-height:1.1;margin:0 auto 26px;text-align:center;max-width:20ch}
+  .ph2 .accent{color:var(--pinkd)}
+  .bengrid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .benefit{background:var(--white);border:1px solid var(--line);border-radius:var(--r6);padding:30px 26px;
+           box-shadow:var(--plane);position:relative;overflow:hidden}
+  .benefit::before{content:"";position:absolute;inset:0 0 auto 0;height:3px}
+  .ben-green::before{background:var(--green)}
+  .ben-blue::before{background:var(--blue)}
+  .b-ico{width:62px;height:62px;border-radius:var(--r6);display:grid;place-items:center;margin-bottom:18px;
+         box-shadow:var(--bevel)}
+  .b-ico svg{width:32px;height:32px}
+  .ic-green{background:rgba(31,107,71,.13);color:var(--green)}
+  .ic-blue{background:rgba(45,92,104,.14);color:var(--blue)}
+  .b-h{display:block;font-family:var(--disp);font-size:1.22rem;font-weight:800;letter-spacing:-.03em;
+       line-height:1.18;margin-bottom:9px}
+  .c-green{color:var(--green)} .c-blue{color:var(--blue)}
+  .b-p{font-size:.92rem;color:var(--muted);line-height:1.55;display:block}
+
+  /* shared icon tiles */
+  .ic{width:54px;height:54px;border-radius:var(--r6);display:grid;place-items:center;margin:0 auto 14px;box-shadow:var(--bevel)}
+  .ic svg{width:28px;height:28px}
+  .ic-ink{background:rgba(18,22,26,.07);color:var(--text)}
+  .ic-pink{background:rgba(255,46,126,.14);color:var(--pinkd)}
+
+  /* ============ PACKET CTA ============ */
+  .cta-band{margin-top:34px;text-align:center;background:var(--white);border:1px solid var(--line);
+            border-top:3px solid var(--pink);border-radius:var(--r6);padding:34px 34px 30px;box-shadow:var(--plane)}
+  .cta-eyebrow{font:500 .72rem/1 var(--mono);letter-spacing:.19em;text-transform:uppercase;color:var(--pinkd);margin:0 0 22px}
+  .cta-h{font-family:var(--disp);font-size:clamp(1.6rem,3.6vw,2.2rem);font-weight:800;letter-spacing:-.036em;
+         line-height:1.08;margin:0 auto 12px;max-width:18ch}
+  .cta-sub{font-size:1rem;color:var(--muted);margin:0 auto 26px;max-width:40ch}
+  .cta-btn{display:inline-block;background:var(--pinkd);color:#fff;font-family:var(--disp);font-weight:800;
+           font-size:1.06rem;letter-spacing:-.015em;padding:17px 40px;border-radius:var(--r);
+           text-decoration:none;box-shadow:var(--plane)}
+  .cta-alt{margin:14px 0 0;font-size:.82rem}
+  .cta-alt a{color:var(--dim);text-decoration:underline;text-underline-offset:3px}
+
+  /* ============ HOME MEMORY ============ */
+  .hm{margin-top:34px;display:grid;grid-template-columns:1fr 1.12fr;gap:32px;align-items:center;
+      background:var(--paper2);border:1px solid var(--line);border-top:3px solid var(--amber);
+      border-radius:var(--r6);padding:34px 32px;box-shadow:var(--plane)}
+  .hm-eyebrow{font:500 .68rem/1 var(--mono);letter-spacing:.17em;text-transform:uppercase;color:var(--amber);margin:0 0 12px}
+  .hm-h{font-family:var(--disp);font-size:1.62rem;font-weight:800;letter-spacing:-.034em;line-height:1.1;margin:0 0 11px;max-width:18ch}
+  .hm-p{font-size:.93rem;color:var(--muted);line-height:1.58;margin:0 0 18px}
+  .hm-fig{margin:0;background:var(--white);border:1px solid var(--line);border-radius:var(--r6);
+          padding:16px 16px 12px;box-shadow:var(--plane)}
+  .fplan{width:100%;height:auto;display:block}
+  .hm-fig figcaption{font:500 .6rem/1.45 var(--mono);letter-spacing:.07em;text-transform:uppercase;
+                     color:var(--dim);text-align:center;margin-top:10px}
+  ul.saved{list-style:none;margin:0 0 18px;padding:0}
+  ul.saved li{position:relative;padding:8px 0 8px 27px;font-size:.86rem;line-height:1.45;border-bottom:1px solid var(--line)}
+  ul.saved li:last-child{border-bottom:0}
+  ul.saved li::before{content:"";position:absolute;left:3px;top:13px;width:11px;height:6px;
+    border-left:2px solid var(--amber);border-bottom:2px solid var(--amber);transform:rotate(-45deg)}
+  .kicker{font-family:var(--disp);font-size:.9rem;font-weight:800;color:var(--text);letter-spacing:-.018em;
+          line-height:1.35;margin:0 0 18px}
+  .btn{display:block;text-align:center;padding:15px 18px;border-radius:var(--r);font-weight:700;font-size:.97rem;
+       text-decoration:none;font-family:var(--disp);letter-spacing:-.012em;box-shadow:var(--plane)}
+  .btn.fill{background:var(--amber);color:#fff}
+  .skip{text-align:center;margin-top:12px;font-size:.79rem}
+  .skip a{color:var(--dim);text-decoration:underline;text-underline-offset:3px}
+
+  /* ============ SEND BLOCK ============ */
+  .trust{margin-top:34px;background:var(--paper2);border:1px solid var(--line);border-top:3px solid var(--blue);
+         border-radius:var(--r6);padding:34px 32px;box-shadow:var(--plane)}
+  .trust-eyebrow{font:500 .68rem/1 var(--mono);letter-spacing:.17em;text-transform:uppercase;color:var(--blue);margin:0 0 12px}
+  .path.lead .ic52{opacity:1;filter:none}
+  .trusttop{display:grid;grid-template-columns:.92fr 1.32fr;gap:28px;align-items:center;margin-bottom:26px}
+  .trust h2{font-family:var(--disp);font-size:1.56rem;margin:0 0 10px;letter-spacing:-.032em;font-weight:800;
+            line-height:1.12;max-width:20ch}
+  .trust .sub{font-size:.93rem;color:var(--muted);margin:0;line-height:1.55}
+  .trustfig{margin:0;background:var(--white);border:1px solid var(--line);border-radius:var(--r6);
+            padding:16px 16px 12px;box-shadow:var(--plane)}
+  .tmap{width:100%;height:auto;display:block}
+  .trustfig figcaption{font:500 .6rem/1.45 var(--mono);letter-spacing:.07em;text-transform:uppercase;
+                       color:var(--dim);text-align:center;margin-top:10px}
+  .paths{display:grid;grid-template-columns:repeat(3,1fr);gap:13px}
+  .path{border:1px solid var(--line);border-radius:var(--r6);padding:22px 20px;background:var(--white);box-shadow:var(--plane)}
+  .path.lead{background:rgba(31,107,71,.07);border:1.5px solid var(--green);
+             box-shadow:0 3px 0 rgba(31,107,71,.22)}
+  .path.lead b{color:var(--green)}
+  .ic52{width:56px;height:56px;margin:0 0 14px;border-radius:50%;display:grid;place-items:center}
+  .ic52 svg{width:56px;height:56px;display:block}
+  .icq{opacity:.62;filter:grayscale(1)}
+  .path b{display:block;font-family:var(--disp);font-size:1rem;margin-bottom:6px;letter-spacing:-.022em;font-weight:800}
+  .path span{font-size:.82rem;color:var(--muted);line-height:1.5;display:block}
+
+  /* ============ PRODUCT CARDS ============ */
+  .prods{margin-top:38px}
+  .prods h2{font-family:var(--disp);font-size:1.38rem;font-weight:800;letter-spacing:-.03em;margin:0 0 6px}
+  .prods .sub{font-size:.93rem;color:var(--muted);margin:0 0 20px;max-width:56ch;line-height:1.58}
+  .pgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .p{border:1px solid var(--line);border-radius:var(--r6);padding:24px;background:var(--white);text-decoration:none;color:inherit;
+     display:grid;grid-template-columns:auto 1fr;gap:17px;align-items:start;box-shadow:var(--plane)}
+  .p .num{font:500 .63rem/1 var(--mono);letter-spacing:.12em;color:var(--dim);margin-bottom:8px}
+  .p b{display:block;font-family:var(--disp);font-size:1.04rem;margin-bottom:8px;letter-spacing:-.025em;line-height:1.24}
+  .p span.d{font-size:.83rem;color:var(--muted);line-height:1.52;display:block}
+  .p .arrow{margin-top:12px;font:500 .73rem/1 var(--mono);letter-spacing:.07em;color:var(--pinkd)}
+  .signoff{margin-top:26px;background:var(--green);border-radius:var(--r6);padding:42px 30px;text-align:center;
+           box-shadow:var(--plane);position:relative;overflow:hidden}
+  .signoff::after{content:"";position:absolute;right:-52px;top:-52px;width:210px;height:210px;border-radius:50%;
+                  background:rgba(255,255,255,.06)}
+  .signoff-line{font-family:var(--disp);font-size:clamp(1.55rem,3.6vw,2.3rem);font-weight:800;letter-spacing:-.038em;
+                line-height:1.1;margin:0 auto;max-width:20ch;color:#fff;position:relative;z-index:1}
+  .so-accent{color:var(--pink100)}
+
+  .legal{margin-top:38px;padding-top:16px;border-top:1px solid var(--line);font-size:.76rem;color:var(--dim);line-height:1.62;font-style:italic}
+
+  /* ============ FEEDBACK ============ */
+  .fbwrap{margin-top:44px}
+  .fblabel{font:500 .67rem/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin-bottom:12px}
+  .fb{background:var(--white);border:1px solid var(--line);border-radius:var(--r6);padding:26px;box-shadow:0 18px 40px -22px rgba(18,22,26,.45);max-width:434px}
+  .fb h4{font-family:var(--disp);margin:0 0 7px;font-size:1.1rem;font-weight:800;letter-spacing:-.025em;line-height:1.22}
+  .fb .fsub{font-size:.85rem;color:var(--muted);margin:0 0 17px;line-height:1.5}
+  .chips{display:flex;gap:8px;margin-bottom:19px;flex-wrap:wrap}
+  .fchip{border:1px solid var(--line-s);border-radius:999px;padding:9px 15px;font-size:.83rem;font-weight:600;background:var(--white);box-shadow:var(--plane)}
+  .fchip.sel{background:var(--green);border-color:var(--green);color:#fff}
+  .q{font-size:.85rem;font-weight:700;margin:0 0 9px}
+  .opts{display:flex;flex-direction:column;gap:7px;margin-bottom:19px}
+  .opt{border:1px solid var(--line);border-radius:var(--r);padding:11px 13px;font-size:.83rem;color:var(--muted)}
+  .fbbtn{display:flex;gap:13px;align-items:center}
+  .fbbtn a:first-child{flex:1;text-align:center;background:var(--green);color:#fff;padding:12px;border-radius:var(--r);font-weight:700;font-size:.89rem;text-decoration:none;font-family:var(--disp);box-shadow:var(--plane)}
+  .fbbtn a:last-child{font-size:.81rem;color:var(--dim);text-decoration:underline;text-underline-offset:3px}
+  @media (max-width:820px){.trusttop,.hm{grid-template-columns:1fr}}
+  @media (max-width:700px){.paths,.pgrid,.bengrid{grid-template-columns:1fr}}
+</style>
+
+<div class="wrap">
+
+<div class="note">
+<b>MOCKUP 2 v6 — results page.</b> The packet CTA is now eyebrow plus button only. <b>Trust Network</b> has its own titled eyebrow and a blue rail matching the Home Memory band, and <b>Ask my people</b> carries a solid green border so the eye lands there. The closing line is a <b>full green sign-off band</b>. Wording is unchanged except the two lines you asked me to cut. <b>Design is open for Joshua — wording is frozen.</b>
+</div>
+
+<div class="screen">
+  <div class="nav"><span class="logo">Go Live</span><span>·</span><span>Your request</span></div>
+
+  <div class="pad">
+
+    <!-- ============ HEADER ============ -->
+    <div class="hero">
+      <div class="seal">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 12.5l5.2 5.2L20 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <h1>Your Job Packet is ready</h1>
+    </div>
+
+    <!-- ==== WHAT YOU WALK AWAY WITH - wording approved on AC Problem Page LIVE v33 ==== -->
+    <div class="packet">
+      <p class="eyebrow"><i class="pennant" aria-hidden="true"></i>What you walk away with</p>
+      <h2 class="ph2">A packet that can help the provider <span class="accent">start further ahead.</span></h2>
+      <div class="bengrid">
+
+        <div class="benefit ben-green">
+          <span class="b-ico ic-green">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 22h14"/><path d="M5 2h14"/><path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"/><path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"/></svg>
+          </span>
+          <b class="b-h c-green">Shorter billable hour</b>
+          <span class="b-p">Less diagnostic time on the clock may mean less money out of your pocket.</span>
+        </div>
+
+        <div class="benefit ben-blue">
+          <span class="b-ico ic-blue">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 22h14a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v4"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M2 15h10"/><path d="m9 18 3-3-3-3"/></svg>
+          </span>
+          <b class="b-h c-blue">They arrive with more context</b>
+          <span class="b-p">Your photos, your readings and what you already ruled out, before they load the van.</span>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ============ PACKET CTA ============ -->
+    <div class="cta-band">
+      <p class="cta-eyebrow">Your Job Packet</p>
+      <a class="cta-btn" href="#">Open my Job Packet</a>
+      <p class="cta-alt"><a href="#">Email it to me instead</a></p>
+    </div>
+
+    <!-- ============ HOME MEMORY ============ -->
+    <div class="hm">
+      <div class="hm-text">
+        <p class="hm-eyebrow">Home Memory</p>
+        <h2 class="hm-h">Your house is an asset with amnesia.</h2>
+        <p class="hm-p">Your car remembers its oil changes better than your house remembers a $12,000 furnace. Save this, and next time your house does the remembering.</p>
+        <ul class="saved">
+          <li>Your unit — make, model, serial and age</li>
+          <li>Where the shutoff, the panel and the filter live</li>
+          <li>Your photos, on file and dated</li>
+          <li>This repair, and what actually fixed it</li>
+          <li>Warranty dates</li>
+        </ul>
+        <p class="kicker">So it isn't living inside your head. Wasting the energy you could be using to live.</p>
+        <a class="btn fill" href="#">Save this to my home</a>
+        <div class="skip"><a href="#">Not now</a></div>
+      </div>
+      <figure class="hm-fig">
+        <svg viewBox="-40 0 1020 630" class="fplan" role="img" aria-label="A floor plan of the house with pins on the dishwasher, furnace, water heater, water main, electrical panel and the front oak tree."><g stroke="#2A2622" fill="none"><rect x="60" y="60" width="780" height="450" stroke-width="4" /><path d="M430 60 V300" stroke-width="4" /><path d="M60 300 H430" stroke-width="4" /><path d="M600 300 V510" stroke-width="4" /><path d="M430 300 H840" stroke-width="4" /></g><g stroke="#F7F7F5" stroke-width="7"><path d="M430 165 V215" /><path d="M290 300 H350" /><path d="M600 430 V480" /></g><g stroke="rgba(42,38,34,.26)" stroke-width="1" stroke-dasharray="5 5"><path d="M60 250 H430" /><path d="M600 60 V300" /></g><g font-family="JetBrains Mono, monospace" font-size="27" letter-spacing="2" fill="#8C8073"><text x="88" y="100">KITCHEN</text><text x="458" y="100">LIVING</text><text x="88" y="340">UTILITY</text><text x="628" y="340">GARAGE</text><text x="458" y="340">HALL</text></g><g><circle cx="200" cy="170" r="38" fill="rgba(255,46,126,.14)" /><circle cx="200" cy="170" r="22" fill="#fff" stroke="#C1004F" stroke-width="2.8" /><circle cx="200" cy="170" r="7" fill="#C1004F" /><text x="200" y="232" font-family="JetBrains Mono, monospace" font-size="24" letter-spacing="1.2" fill="#5A6462" text-anchor="middle">DISHWASHER</text></g><g><circle cx="130" cy="390" r="38" fill="rgba(255,46,126,.14)" /><circle cx="130" cy="390" r="22" fill="#fff" stroke="#C1004F" stroke-width="2.8" /><circle cx="130" cy="390" r="7" fill="#C1004F" /><text x="130" y="452" font-family="JetBrains Mono, monospace" font-size="24" letter-spacing="1.2" fill="#5A6462" text-anchor="middle">FURNACE</text></g><g><circle cx="300" cy="390" r="38" fill="rgba(255,46,126,.14)" /><circle cx="300" cy="390" r="22" fill="#fff" stroke="#C1004F" stroke-width="2.8" /><circle cx="300" cy="390" r="7" fill="#C1004F" /><text x="300" y="452" font-family="JetBrains Mono, monospace" font-size="24" letter-spacing="1.2" fill="#5A6462" text-anchor="middle">WATER HEATER</text></g><g><circle cx="515" cy="390" r="38" fill="rgba(255,46,126,.14)" /><circle cx="515" cy="390" r="22" fill="#fff" stroke="#C1004F" stroke-width="2.8" /><circle cx="515" cy="390" r="7" fill="#C1004F" /><text x="515" y="452" font-family="JetBrains Mono, monospace" font-size="24" letter-spacing="1.2" fill="#5A6462" text-anchor="middle">WATER MAIN</text></g><g><circle cx="700" cy="390" r="38" fill="rgba(255,46,126,.14)" /><circle cx="700" cy="390" r="22" fill="#fff" stroke="#C1004F" stroke-width="2.8" /><circle cx="700" cy="390" r="7" fill="#C1004F" /><text x="700" y="452" font-family="JetBrains Mono, monospace" font-size="24" letter-spacing="1.2" fill="#5A6462" text-anchor="middle">PANEL</text></g><g><circle cx="450" cy="556" r="38" fill="rgba(255,46,126,.14)" /><circle cx="450" cy="556" r="22" fill="#fff" stroke="#C1004F" stroke-width="2.8" /><circle cx="450" cy="556" r="7" fill="#C1004F" /><text x="450" y="618" font-family="JetBrains Mono, monospace" font-size="24" letter-spacing="1.2" fill="#5A6462" text-anchor="middle">FRONT OAK</text></g><text x="450" y="38" font-family="JetBrains Mono, monospace" font-size="25" letter-spacing="2" fill="#5A6462" text-anchor="middle">1114 OAKHURST DR &#183; BUILT 1994 &#183; 2,180 SQ FT</text></svg>
+        <figcaption>Every repair pinned to the spot in your house it belongs to</figcaption>
+      </figure>
+    </div>
+
+    <!-- ============ SEND BLOCK ============ -->
+    <div class="trust">
+      <div class="trusttop">
+        <div>
+          <p class="trust-eyebrow">Trust Network</p>
+          <h2>You already know someone who knows someone.</h2>
+          <p class="sub">Your neighbourhood already did the research — it just needs somewhere to keep the answer. Let the trust travel, and send the same clear picture to someone worth calling.</p>
+        </div>
+        <figure class="trustfig">
+          <svg viewBox="0 0 900 520" class="tmap" role="img" aria-label="A constellation of the people around your home — friends, neighbors, family, coworkers, community — each connected to providers they trust. One path from your house through a neighbor to a nearby proven provider is highlighted.">
+          <g stroke="rgba(18,22,26,.16)" stroke-width="1" stroke-dasharray="3 5" fill="none">
+            <path d="M450 260 L190 110" /><path d="M450 260 L700 110" /><path d="M450 260 L790 285" /><path d="M450 260 L660 445" /><path d="M450 260 L400 470" /><path d="M450 260 L155 400" />
+            <path d="M190 110 L110 200" /><path d="M190 110 L300 60" /><path d="M700 110 L800 175" /><path d="M700 110 L620 45" /><path d="M790 285 L850 370" /><path d="M660 445 L555 490" /><path d="M400 470 L270 500" /><path d="M155 400 L80 320" /><path d="M155 400 L215 490" />
+          </g>
+
+          <g stroke="#FF2E7E" stroke-width="2.6" fill="none" opacity="0.25"><path d="M450 260 L700 110 L800 175" stroke-width="9" /></g>
+          <g stroke="#FF2E7E" stroke-width="2.6" fill="none"><path d="M450 260 L700 110 L800 175" stroke-dasharray="8 6"  /></g>
+
+          <g font-family="JetBrains Mono, monospace" font-size="22" letter-spacing="2.2" fill="#5A6462" text-anchor="middle">
+            <text x="190" y="66">FRIENDS</text>
+            <text x="700" y="66">NEIGHBORS</text>
+            <text x="790" y="335">FAMILY</text>
+            <text x="660" y="495">COMMUNITY</text>
+            <text x="400" y="500">SCHOOL PARENTS</text>
+            <text x="155" y="356">COWORKERS</text>
+          </g>
+
+          <g fill="#12161A" opacity=".55">
+            <circle cx="110" cy="200" r="7" /><circle cx="300" cy="60" r="7" /><circle cx="620" cy="45" r="7" /><circle cx="850" cy="370" r="7" /><circle cx="555" cy="490" r="7" /><circle cx="270" cy="500" r="7" /><circle cx="80" cy="320" r="7" /><circle cx="215" cy="490" r="7" />
+          </g>
+
+          <circle cx="190" cy="110" r="26" fill="#fff" stroke="#12161A" stroke-width="1.6" />
+          <circle cx="190" cy="110" r="9" fill="#3E6E7A" />
+          <circle cx="700" cy="110" r="30" fill="#fff" stroke="#FF2E7E" stroke-width="2.4" />
+          <circle cx="700" cy="110" r="10" fill="#FF2E7E" />
+          <circle cx="790" cy="285" r="26" fill="#fff" stroke="#12161A" stroke-width="1.6" />
+          <circle cx="790" cy="285" r="9" fill="#7A5C2E" />
+          <circle cx="660" cy="445" r="26" fill="#fff" stroke="#12161A" stroke-width="1.6" />
+          <circle cx="660" cy="445" r="9" fill="#3E6E7A" />
+          <circle cx="400" cy="470" r="26" fill="#fff" stroke="#12161A" stroke-width="1.6" />
+          <circle cx="400" cy="470" r="9" fill="#7A5C2E" />
+          <circle cx="155" cy="400" r="26" fill="#fff" stroke="#12161A" stroke-width="1.6" />
+          <circle cx="155" cy="400" r="9" fill="#3E6E7A" />
+
+          <g>
+            <circle cx="800" cy="175" r="34" fill="#FF2E7E" opacity=".14" style="animation:prnglow 2.4s ease-in-out infinite" />
+            <circle cx="800" cy="175" r="22" fill="#12161A" />
+            <path d="M793 168 h14 M800 168 v14" stroke="#F7F7F5" stroke-width="2.4" />
+            <text x="800" y="222" font-family="JetBrains Mono, monospace" font-size="22" letter-spacing="2.2" fill="#C1004F" text-anchor="middle">A GUY THEY TRUST</text>
+          </g>
+
+          <g>
+            <circle cx="450" cy="260" r="46" fill="#12161A" />
+            <path d="M430 265 L450 246 L470 265 V284 H430 Z" fill="none" stroke="#F7F7F5" stroke-width="2.2" />
+            <text x="450" y="330" font-family="JetBrains Mono, monospace" font-size="22" letter-spacing="2.2" fill="#12161A" text-anchor="middle">YOUR HOUSE</text>
+          </g>
+        </svg>
+          <figcaption>The people already around your home — and the one path that ends at a name they trust</figcaption>
+        </figure>
+      </div>
+
+      <div class="paths">
+
+        <div class="path">
+          <div class="ic52 icq"><svg viewBox="0 0 52 52" fill="none" aria-hidden="true"><circle cx="26" cy="26" r="25" stroke="rgba(18,22,26,.15)" /><circle cx="20" cy="22" r="5" stroke="#12161A" stroke-width="1.6" /><circle cx="33" cy="24" r="4" stroke="#3E6E7A" stroke-width="1.6" /><path d="M12 37c0-5 4-7 8-7s8 2 8 7M28 37c0-3.5 2.5-5 5-5s5 1.5 5 5" stroke="#12161A" stroke-width="1.6" /><path d="M40 16l3 3-3 3" stroke="#FF2E7E" stroke-width="1.8" /></svg></div>
+          <b>I already have someone</b>
+          <span>Save them to your people, and send this over in one tap.</span>
+        </div>
+
+        <div class="path lead">
+          <div class="ic52 icg">
+            <svg viewBox="0 0 52 52" fill="none" aria-hidden="true"><circle cx="26" cy="26" r="25" stroke="rgba(18,22,26,.15)" /><path d="M40 27.4c0 5.6-5.7 10.1-12.8 10.1a16 16 0 01-4-.5L15 40l2-5.6a9.6 9.6 0 01-3.9-7.4c0-5.6 5.7-10.1 12.8-10.1S40 21.8 40 27.4z" stroke="#12161A" stroke-width="1.6" stroke-linejoin="round" /><path d="M20.5 26.6h11" stroke="#12161A" stroke-width="1.6" stroke-linecap="round" /><path d="M35 13.5l2.4 2.4 4.6-4.8" stroke="#FF2E7E" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" /></svg>
+          </div>
+          <b>Ask my people</b>
+          <span>One private question to friends and neighbours. They answer in a tap.</span>
+        </div>
+
+        <div class="path">
+          <div class="ic52 icq">
+            <svg viewBox="0 0 52 52" fill="none" aria-hidden="true"><circle cx="26" cy="26" r="25" stroke="rgba(18,22,26,.15)" /><path d="M24 40.5s10-8 10-15.7A10 10 0 1014 24.8C14 32.5 24 40.5 24 40.5z" stroke="#12161A" stroke-width="1.6" stroke-linejoin="round" /><circle cx="24" cy="24.4" r="3.8" stroke="#12161A" stroke-width="1.6" /><path d="M37 14.5h6M40 11.5v6" stroke="#FF2E7E" stroke-width="1.8" stroke-linecap="round" /></svg>
+          </div>
+          <b>Find someone for me</b>
+          <span>A short, considered shortlist, matched to what is actually wrong.</span>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ============ PRODUCT CARDS ============ -->
+    <div class="prods">
+      <h2>All four, free to you</h2>
+      <p class="sub">Your home starts working like one connected asset instead of twenty unrelated problems.</p>
+      <div class="pgrid">
+
+        <a class="p" href="#">
+          <div class="ic52 icp" data-icon="dashboard"><svg viewBox="0 0 52 52" fill="none" aria-hidden="true"><circle cx="26" cy="26" r="25" stroke="rgba(18,22,26,.15)" /><path d="M14 16h20a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H14a2 2 0 0 1-2-2V18a2 2 0 0 1 2-2z" stroke="#12161A" stroke-width="1.6" /><path d="M12 22h24M15 19h7" stroke="#12161A" stroke-width="1.6" /><circle cx="17.5" cy="27" r="2.5" stroke="#12161A" stroke-width="1.6" /><path d="M13.5 32.5c0-2 1.8-3.2 4-3.2s4 1.2 4 3.2" stroke="#12161A" stroke-width="1.6" /><circle cx="29.5" cy="28" r="4.5" stroke="#3E6E7A" stroke-width="1.6" /><path d="M29.5 25.2V28l2 1.5" stroke="#12161A" stroke-width="1.6" /><path d="M39 24l3 3-3 3" stroke="#FF2E7E" stroke-width="1.8" /></svg></div>
+          <div>
+            <div class="num">01 · CUSTOMER DASHBOARD</div>
+            <b>Every repair has two workers. Only one gets paid, and it isn't you.</b>
+            <span class="d">Uncertainty removed: a named provider, a visible response deadline, the price approved from your desk, and nobody burning a vacation day to unlock a door.</span>
+            <div class="arrow">SEE THE DASHBOARD →</div>
+          </div>
+        </a>
+
+        <a class="p" href="#">
+          <div class="ic52 icp" data-icon="trust"><svg viewBox="0 0 52 52" fill="none" aria-hidden="true"><circle cx="26" cy="26" r="25" stroke="rgba(18,22,26,.15)" /><circle cx="13" cy="31" r="4" stroke="#12161A" stroke-width="1.6" /><circle cx="26" cy="18" r="4" stroke="#12161A" stroke-width="1.6" /><circle cx="37" cy="29" r="4" stroke="#3E6E7A" stroke-width="1.6" /><circle cx="19" cy="41" r="3" stroke="#12161A" stroke-width="1.6" /><circle cx="39" cy="17" r="3" stroke="#12161A" stroke-width="1.6" /><path d="M16 28L23 21M29 21L34 26M15 35L17 38M30 18L36 17" stroke="#12161A" stroke-width="1.6" /><path d="M42 31l3 3-3 3" stroke="#FF2E7E" stroke-width="1.8" /></svg></div>
+          <div>
+            <div class="num">02 · TRUST NETWORK</div>
+            <b>Five stars tell you what strangers think.</b>
+            <span class="d">Your neighborhood already has a better network than any search engine. Use the people you already trust, trust — and hand the answer forward when it's your turn.</span>
+            <div class="arrow">SEE THE TRUST MAP →</div>
+          </div>
+        </a>
+
+        <a class="p" href="#">
+          <div class="ic52 icp" data-icon="smartquote"><svg viewBox="0 0 52 52" fill="none" aria-hidden="true"><circle cx="26" cy="26" r="25" stroke="rgba(18,22,26,.15)" /><path d="M14 14h12l5 5v19H14z" stroke="#12161A" stroke-width="1.6" /><path d="M26 14v5h5" stroke="#12161A" stroke-width="1.6" /><path d="M18 21h5M18 25h9M18 29h9M18 33h6" stroke="#12161A" stroke-width="1.6" /><path d="M36 18v16M34 18h4M34 34h4M33 27h6" stroke="#3E6E7A" stroke-width="1.6" /><path d="M35 12l3 3 5-6" stroke="#FF2E7E" stroke-width="1.8" /></svg></div>
+          <div>
+            <div class="num">03 · SMARTQUOTE ANALYZER</div>
+            <b>You shouldn't have to read it to know it's fair.</b>
+            <span class="d">Any quote, from anyone — ours, yours, or your neighbor's guy. Plain English, local price context, and the questions written for you.</span>
+            <div class="arrow">READ A QUOTE WITH US →</div>
+          </div>
+        </a>
+
+        <a class="p" href="#">
+          <div class="ic52 icp" data-icon="memory"><svg viewBox="0 0 52 52" fill="none" aria-hidden="true"><circle cx="26" cy="26" r="25" stroke="rgba(18,22,26,.15)" /><path d="M12 26L26 15l14 11" stroke="#12161A" stroke-width="1.6" /><path d="M16 26h20M16 26v12h20V26" stroke="#12161A" stroke-width="1.6" /><path d="M20 28h12v7.5H20zM23 31h6M23 33.5h3.5" stroke="#3E6E7A" stroke-width="1.6" /><path d="M41 18s-3.2-3.4-3.2-5.6a3.2 3.2 0 1 1 6.4 0C44.2 14.6 41 18 41 18z" stroke="#FF2E7E" stroke-width="1.8" /></svg></div>
+          <div>
+            <div class="num">04 · HOME MEMORY</div>
+            <b>Your most expensive asset has amnesia.</b>
+            <span class="d">Model numbers, warranties, who did it, what it cost, where the shutoff is. Stop renting your brain to your house for $0/hr and go live your life.</span>
+            <div class="arrow">OPEN THE FLOOR PLAN →</div>
+          </div>
+        </a>
+
+      </div>
+      <div class="signoff">
+        <p class="signoff-line">You stop carrying it in your head.<br><span class="so-accent">You get your days back.</span></p>
+      </div>
+    </div>
+
+    <p class="legal">This is a preparation record. A qualified technician does their own testing on site, and the price stays theirs to set. What you entered stays with you until you choose to send it.</p>
+
+    <!-- ============ FEEDBACK POPUP ============ -->
+    <div class="fbwrap">
+      <div class="fblabel">↓ Feedback popup — shown here for review only, not part of the page</div>
+      <div class="fb">
+        <h4>Did that help narrow things down?</h4>
+        <p class="fsub">30 seconds, and it makes this better for the next person.</p>
+
+        <div class="chips">
+          <span class="fchip">Not really</span>
+          <span class="fchip">Somewhat</span>
+          <span class="fchip sel">Very helpful</span>
+        </div>
+
+        <p class="q">What did it get right?</p>
+        <div class="opts">
+          <div class="opt">It asked about things I would not have thought of</div>
+          <div class="opt">It remembered what I had already told it</div>
+          <div class="opt">I understand my problem better than I did</div>
+          <div class="opt">I feel ready to talk to someone about it</div>
+        </div>
+
+        <p class="q">Where did it get slow or confusing?</p>
+        <div class="opts">
+          <div class="opt">One line is plenty…</div>
+        </div>
+
+        <div class="fbbtn">
+          <a href="#">Send</a>
+          <a href="#">Skip</a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</div>

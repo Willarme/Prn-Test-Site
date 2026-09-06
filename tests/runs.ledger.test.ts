@@ -91,15 +91,43 @@ describe("A00 agent run ledger", () => {
      * emitted `intake.clarifier_asked` envelopes: a selection that left a ledger
      * row but no instrument (or the reverse) fails here.
      */
+    /**
+     * A FOURTH AND FIFTH ACCOUNTED KIND, 2026-09-05 (campaign track F1). The
+     * model-backed alternates are now consulted (Josh's test-environment
+     * clearance, "use them now"; Melissa's countersign T0-03 open), and each
+     * consultation is its own AI-gateway ledger row: `classify_problem` beside
+     * the deterministic `classify_home_problem`, and `select_clarifying_questions`
+     * beside each `select_next_clarifier`. Those rows are the POINT of the
+     * ledger — a model consulted about a customer's words and refused, or ran,
+     * and either way it is written down. The pin is unchanged in substance: one
+     * row per agent RUN, never one per event, and still no writer nobody
+     * accounted for.
+     */
     const a01Runs = runs.filter((r) => r.agent_id === "A01");
     const classifyRuns = a01Runs.filter((r) => r.capabilities_used.includes("classify_home_problem"));
     const clarifierRuns = a01Runs.filter((r) => r.capabilities_used.includes("select_next_clarifier"));
+    const modelClassifyRuns = a01Runs.filter((r) => r.capabilities_used.includes("classify_problem"));
+    const modelClarifierRuns = a01Runs.filter((r) =>
+      r.capabilities_used.includes("select_clarifying_questions")
+    );
     const asked = readDevDb().events.filter((e) => e.event_name === "intake.clarifier_asked");
     expect(classifyRuns.length).toBe(1);
     expect(clarifierRuns.length).toBe(asked.length);
     expect(clarifierRuns.length).toBeGreaterThan(0);
-    // Every A01 row is one of those two — no unaccounted A01 run.
-    expect(a01Runs.length).toBe(classifyRuns.length + clarifierRuns.length);
+    // One alternate consulted per classification, and never more alternates
+    // than deterministic passes: `selectClarifier` refuses at its own ceiling
+    // BEFORE the alternate is reached, so the last pass of a capped loop can
+    // leave a deterministic row with no alternate beside it. Fewer model calls
+    // than passes is the safe direction; more would mean an unaccounted call.
+    expect(modelClassifyRuns.length).toBe(classifyRuns.length);
+    expect(modelClarifierRuns.length).toBeLessThanOrEqual(clarifierRuns.length);
+    // Every A01 row is one of those four — no unaccounted A01 run.
+    expect(a01Runs.length).toBe(
+      classifyRuns.length +
+        clarifierRuns.length +
+        modelClassifyRuns.length +
+        modelClarifierRuns.length
+    );
     expect(runs.filter((r) => r.agent_id === "A02").length).toBe(1);
     expect(runs.filter((r) => r.agent_id === "A09").length).toBe(1);
     expect(runs.length).toBe(a01Runs.length + 2);

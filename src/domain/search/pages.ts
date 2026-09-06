@@ -6,6 +6,7 @@ import {
   SchemaVersion,
 } from "@/domain/shared/primitives";
 import { PageLifecycleStatus } from "@/domain/search/lifecycle";
+import { DoorTemplateBinding, v43ProtectedFieldIssues, V43_TEMPLATE_ID } from "@/domain/search/door-template";
 
 export const ContentBlockKind = z.enum([
   "intent_answer",
@@ -76,8 +77,9 @@ export const PageSpec = z
     problem_family: z.string().nullable(),
     geography: GeographyScope,
     canonical_path: z.string().regex(/^\/[a-z0-9\-/]*$/, "lowercase kebab path"),
-    title: z.string().min(1).max(70),
-    meta_description: z.string().min(1).max(170),
+    // Generic writer limits are enforced below; reviewed frozen metadata stays exact.
+    title: z.string().min(1),
+    meta_description: z.string().min(1),
     h1: z.string().min(1),
     hero: z.object({
       headline: z.string().min(1),
@@ -102,6 +104,8 @@ export const PageSpec = z
     noindex_reason: z.string().nullable(),
     template_id: Id,
     template_version: z.string().min(1),
+    /** Additive reviewed-source binding. Older/rejected specs retain their exact payloads. */
+    door_template: DoorTemplateBinding.optional(),
     /** Which experiment/variant this page version belongs to (#14A §15.2). */
     experiment: z.object({
       experiment_id: Id.nullable(),
@@ -112,12 +116,40 @@ export const PageSpec = z
       prompt_id: Id.nullable(),
       prompt_version: z.string().nullable(),
     }),
-    qa: z.object({ state: QaState, reasons: z.array(z.string()) }),
+    qa: z.object({
+      state: QaState,
+      reasons: z.array(z.string()),
+      /** Optional for older specs. A real critic verdict must survive storage
+       * and the synchronous publish check; a missing model cannot erase FAIL. */
+      ai_critic: z.object({
+        status: z.enum(["PASS", "FAIL", "SKIPPED_NO_MODEL", "NOT_RUN"]),
+        reason: z.string(),
+        findings: z.array(z.object({
+          check: z.string(), severity: z.enum(["blocker", "major", "minor"]),
+          where: z.string(), message: z.string(), repair_instructions: z.string().nullable(),
+        })),
+        provider: z.string().nullable(),
+        cost_usd: z.number().nonnegative().nullable(),
+        latency_ms: z.number().nonnegative().nullable(),
+      }).optional(),
+    }),
     source_fact_bundle_ids: z.array(Id),
     created_at: IsoDateTime,
     updated_at: IsoDateTime.nullable(),
   })
   .superRefine((spec, ctx) => {
+    if (!spec.door_template) {
+      for (const [key, maximum] of [["title", 70], ["meta_description", 170]] as const) {
+        if (spec[key].length > maximum) ctx.addIssue({ code: z.ZodIssueCode.too_big, path: [key], maximum, type: "string", inclusive: true, exact: false });
+      }
+    }
+    if (spec.door_template) {
+      for (const key of v43ProtectedFieldIssues(spec)) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, path: [key], message: "Frozen v43 page field differs from its reviewed source binding" });
+      }
+    } else if (spec.template_id === V43_TEMPLATE_ID || spec.generation.model === "frozen-template-v43") {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["door_template"], message: "Frozen v43 specs require their reviewed source binding" });
+    }
     if (spec.monetization_eligible && spec.monetization_policy_id === null) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,

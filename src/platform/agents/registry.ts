@@ -100,6 +100,13 @@ export const TRIAL_AGENT_REGISTRY: readonly AgentDefinition[] = [
       "classify_home_problem",
       "select_clarifying_questions",
       "select_next_clarifier",
+      /**
+       * 2026-09-05: the rating-plate reader (capabilities/registry.ts
+       * `read_equipment_label`). A01's mandate already says "photos"; this is
+       * the first capability that actually reads one. Governed like the other
+       * two: privacy rule, spend caps, kill switch, deterministic fallback.
+       */
+      "read_equipment_label",
     ],
     schedule: "in-request",
     kill_switch_ref: killRef("A01"),

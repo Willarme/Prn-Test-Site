@@ -1,0 +1,30 @@
+{
+  "_what": "Everything inside #intake (design doc §4.2 rows 11-13, §2 INTAKE): the console heading and lede, the field label, the textarea placeholder and its help sentence, the three typed guiding prompts in order, the three 'so far' evidence items, and the submit button text. Keys that start with an underscore (_type on each prompt, _attribution_note) are documentation for the next author and are not rendered.",
+  "h2_html": "Tell us what <span class=\"accent\">your AC</span> is doing.",
+  "lede": "Not a generic checklist. We work from your actual thermostat, your filter, your outdoor unit, so you can go live your life.",
+  "field_label": "What is your AC doing right now?",
+  "placeholder": "The air is coming out, but it isn't cold. Started yesterday afternoon. Thermostat says 78 even though I set it to 70...",
+  "help": "What you see, hear and smell, when it started, and anything that changes it.",
+  "prompts": [
+    {
+      "_type": "known_reading",
+      "text": "Know your thermostat reading? Say it."
+    },
+    {
+      "_type": "photograph_label",
+      "text": "Can you photograph the label on the unit? We read the model for you, no typing."
+    },
+    {
+      "_type": "know_nothing",
+      "text": "Only know \"it stopped being cold\"? Start there. We will take it from the top."
+    }
+  ],
+  "so_far_label": "What you have given us about your AC so far",
+  "so_far_items": [
+    "The problem, in your words",
+    "Photos or video of your unit",
+    "Your equipment label, read for you"
+  ],
+  "submit": "Start with MY AC, right now",
+  "_attribution_note": "OPTIONAL: add an \"attribution\" object {page_id, intent_cluster_id, search_opportunity_id, problem_family_hint, landing_path} and the form carries them as hidden inputs to the intake adapter (CONNECTION MAP §3-C). Absent on v41 by design."
+}

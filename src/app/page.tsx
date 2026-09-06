@@ -69,7 +69,7 @@ export default async function Home() {
 
       {/* Trial navigator: staging is private (noindex + robots-blocked), so
           every surface is linked here for the owner and testers. */}
-      <section className="section">
+      {process.env.PRN_CLIENT_DEMO !== "1" && <section className="section">
         <div className="wrap">
           <div className="eyebrow">Trial navigator · staging only</div>
           <h2 className="d3" style={{ marginBottom: 18 }}>Everything built so far, one click away</h2>
@@ -106,7 +106,7 @@ export default async function Home() {
             </div>
           )}
         </div>
-      </section>
+      </section>}
     </main>
   );
 }

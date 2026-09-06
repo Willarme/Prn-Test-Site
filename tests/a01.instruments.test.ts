@@ -9,6 +9,7 @@ import { reclassifyOnNewEvidence, selectClarifier } from "@/domain/problem/capab
 import { findPlaybook } from "@/domain/intake/playbooks";
 import { readDevDb } from "@/platform/stores/dev-db";
 import { requirePolicyNumber } from "@/platform/policy/store";
+import { ownerTokenFor, rememberOwner } from "./helpers/journey-auth";
 
 /**
  * A01 STEP 9 — THE INSTRUMENTS, PROVEN THROUGH THE REAL SURFACES.
@@ -60,7 +61,12 @@ async function startJourney(): Promise<string> {
       }),
     })
   );
-  return (await res.json()).request_id as string;
+  const requestId = (await res.json()).request_id as string;
+  // The answer and media routes are owner-gated (platform/links/owner.ts):
+  // carry the signed owner proof the intake route just issued, as `k`, the
+  // way a direct handler call without a Next cookie context has to.
+  rememberOwner(requestId, res);
+  return requestId;
 }
 
 function events(name: string) {
@@ -78,6 +84,7 @@ describe("A01 — intake.clarifier_answered fires on the live answer route", () 
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           request_id: requestId,
+          k: ownerTokenFor(requestId),
           fields: [
             { field_key: "system_age", value: "about 9 years old" },
             // Not a field this playbook asks for — must be ignored by both the
@@ -107,6 +114,7 @@ describe("A01 — intake.clarifier_answered fires on the live answer route", () 
     const form = new FormData();
     form.set("request_id", requestId);
     form.set("target", "unit_photo");
+    form.set("k", ownerTokenFor(requestId));
     form.set("file", new File([new Uint8Array(PNG)], "plate.png", { type: "image/png" }));
     const res = await mediaPost(
       new Request("http://localhost/api/intake/media", { method: "POST", body: form })

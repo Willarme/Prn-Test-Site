@@ -101,7 +101,8 @@ describe("green checks from the customer's own words", () => {
     expect(keys).toContain("system_age");
     expect(keys).toContain("symptom_timing");
     expect(found.find((f) => f.field_key === "brand")!.value_text.toLowerCase()).toBe("carrier");
-    expect(found.find((f) => f.field_key === "system_age")!.value_text).toMatch(/8 years old/);
+    // Normalised to "8 years" since track P4 (the acknowledgement says "about 8 years old").
+    expect(found.find((f) => f.field_key === "system_age")!.value_text).toMatch(/^8 years/);
     expect(found.find((f) => f.field_key === "symptom_timing")!.value_text).toMatch(/since yesterday/);
   });
 

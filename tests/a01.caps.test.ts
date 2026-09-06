@@ -16,6 +16,7 @@ import {
 import { findPlaybook } from "@/domain/intake/playbooks";
 import { ACTIVE_DISCLOSURE } from "@/domain/privacy/disclosures";
 import { getPolicySetting, requirePolicyNumber } from "@/platform/policy/store";
+import { rememberOwner, ownerTokenFor } from "./helpers/journey-auth";
 
 /**
  * A01 STEP 5 — THE TWO CAPS.
@@ -67,12 +68,14 @@ async function startJourney(): Promise<string> {
     })
   );
   const body = await res.json();
+  rememberOwner(body.request_id, res);
   return body.request_id as string;
 }
 
 async function uploadPhoto(requestId: string, target: string, index: number): Promise<Response> {
   const form = new FormData();
   form.set("request_id", requestId);
+  form.set("k", ownerTokenFor(requestId));
   form.set("target", target);
   form.set("file", new File([new Uint8Array(PNG)], `photo-${index}.png`, { type: "image/png" }));
   return mediaPost(
@@ -85,8 +88,11 @@ describe("A01 — the photo cap", () => {
     const setting = getPolicySetting<number>("intake.max_photos_per_request");
     expect(setting).not.toBeNull();
     expect(setting?.level).toBe("COMPANY");
-    // 4 is the standing decision of 20 Aug, not a guess this build made.
-    expect(maxPhotosPerRequest()).toBe(4);
+    // 6 since 2026-09-05: DEFAULT pending Melissa, decision 2 recommendation B
+    // (was 4, the standing decision of 20 Aug). The policy store carries the
+    // reason; this pins that the number moved deliberately, version bumped.
+    expect(maxPhotosPerRequest()).toBe(6);
+    expect(setting?.version).toBe(2);
     expect(maxPhotosPerRequest()).toBe(requirePolicyNumber("intake.max_photos_per_request"));
   });
 
@@ -101,35 +107,38 @@ describe("A01 — the photo cap", () => {
   });
 
   it("allows up to the cap and refuses at it, with copy that is not a scolding", () => {
-    expect(photoCapDecision(3, 4).allowed).toBe(true);
-    const refused = photoCapDecision(4, 4);
+    expect(photoCapDecision(5, 6).allowed).toBe(true);
+    const refused = photoCapDecision(6, 6);
     expect(refused.allowed).toBe(false);
-    expect(refused.message).toMatch(/four clear pictures/);
-    expect(refused.max).toBe(4);
+    // The closing number in the copy tracks the cap, so it can never contradict it.
+    expect(refused.message).toMatch(/6 clear pictures/);
+    expect(refused.message).toMatch(/most we ask for \(6\)/);
+    expect(refused.max).toBe(6);
     // A record that somehow holds more than the cap still refuses.
-    expect(photoCapDecision(9, 4).allowed).toBe(false);
+    expect(photoCapDecision(9, 6).allowed).toBe(false);
   });
 
-  it("THE FIFTH PHOTO IS REFUSED BY THE SERVER, and nothing is stored", async () => {
+  it("THE PHOTO PAST THE CAP IS REFUSED BY THE SERVER, and nothing is stored", async () => {
     const requestId = await startJourney();
     const target = "unit_photo";
+    const max = maxPhotosPerRequest();
 
-    for (let i = 1; i <= 4; i += 1) {
+    for (let i = 1; i <= max; i += 1) {
       const res = await uploadPhoto(requestId, target, i);
       expect(res.status, `photo ${i} should be accepted`).toBe(200);
     }
 
-    const fifth = await uploadPhoto(requestId, target, 5);
-    expect(fifth.status).toBe(409);
-    const body = await fifth.json();
+    const over = await uploadPhoto(requestId, target, max + 1);
+    expect(over.status).toBe(409);
+    const body = await over.json();
     expect(body.error).toMatch(/most we ask for/i);
-    expect(body.photos).toBe(4);
-    expect(body.max_photos).toBe(4);
+    expect(body.photos).toBe(max);
+    expect(body.max_photos).toBe(max);
     // No evidence id came back, because nothing was created.
     expect(body.evidence_id).toBeUndefined();
 
-    // …and the sixth is refused identically — the cap is a state, not a one-off.
-    expect((await uploadPhoto(requestId, target, 6)).status).toBe(409);
+    // …and the next is refused identically — the cap is a state, not a one-off.
+    expect((await uploadPhoto(requestId, target, max + 2)).status).toBe(409);
   });
 
   it("the refusal is the ONLY customer-visible change: a first photo still works", async () => {

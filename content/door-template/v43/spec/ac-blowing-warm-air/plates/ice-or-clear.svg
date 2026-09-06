@@ -1,0 +1,64 @@
+<svg viewBox="0 0 880 300" style="width:100%;height:auto;display:block" role="img" aria-labelledby="ice-t ice-d">
+          <title id="ice-t">How to tell an iced refrigerant line from a normal one, and what to do about each</title>
+          <desc id="ice-d">Two side by side views of the copper refrigerant lines where they enter the house. On the left, the larger insulated suction line is coated in white frost and ice, with droplets forming below it, and the label says to switch cooling off at the thermostat while leaving the fan running so the coil can thaw. On the right, the same line is clean and dry with intact black foam insulation, and the label says cooling may keep running while a visit is arranged. Both views show the smaller uninsulated liquid line beneath, which stays clear in each case.</desc>
+
+          <rect x="60" y="58" width="350" height="170" rx="14" fill="#FFFFFF" stroke="#12161A" stroke-width="2" stroke-linejoin="round"/>
+          <rect x="470" y="58" width="350" height="170" rx="14" fill="#FFFFFF" stroke="#12161A" stroke-width="2" stroke-linejoin="round"/>
+
+          <rect x="76" y="78" width="318" height="94" rx="18" style="fill:color-mix(in srgb, var(--b) 10%, white)"/>
+          <rect x="486" y="78" width="318" height="94" rx="18" style="fill:var(--a-tint)"/>
+
+          <rect x="384" y="58" width="26" height="170" fill="#F2F3F0" stroke="#12161A" stroke-width="2" stroke-linejoin="round"/>
+          <rect x="794" y="58" width="26" height="170" fill="#F2F3F0" stroke="#12161A" stroke-width="2" stroke-linejoin="round"/>
+
+          <!-- iced line: pipe silhouette drawn as one furred/scalloped outline -->
+          <path d="M108,90 q21,-14 42,0 q21,-14 42,0 q21,-14 42,0 q21,-14 42,0 q21,-14 42,0 q21,-14 42,0 a24,24 0 0 1 0,48 q-21,14 -42,0 q-21,14 -42,0 q-21,14 -42,0 q-21,14 -42,0 q-21,14 -42,0 q-21,14 -42,0 a24,24 0 0 1 0,-48 Z"
+            fill="#FFFFFF" stroke="#12161A" stroke-width="2.2" stroke-linejoin="round"/>
+          <g fill="#FFFFFF" stroke="#12161A" stroke-width="1.4">
+            <circle cx="205" cy="98" r="2.6"/><circle cx="295" cy="130" r="2.6"/>
+          </g>
+
+          <!-- clear line: plain foam-wrapped pipe with seam lines -->
+          <rect x="494" y="90" width="300" height="48" rx="24" fill="#F2F3F0" stroke="#12161A" stroke-width="2.4" stroke-linejoin="round"/>
+          <g stroke="#C8CCC4" stroke-width="1.6" stroke-linecap="round">
+            <line x1="512" y1="104" x2="776" y2="104"/>
+            <line x1="512" y1="124" x2="776" y2="124"/>
+          </g>
+
+          <!-- a few ice crystals and droplets under the iced line -->
+          <g style="fill:var(--a-tint)" stroke="#12161A" stroke-width="1.2" stroke-linejoin="round">
+            <polygon points="180,146 189,155 180,164 171,155"/>
+            <polygon points="240,150 249,159 240,168 231,159"/>
+            <polygon points="300,146 309,155 300,164 291,155"/>
+          </g>
+          <g style="fill:var(--a-tint)" stroke="#12161A" stroke-width="1.2">
+            <ellipse cx="210" cy="174" rx="5" ry="7"/>
+            <ellipse cx="270" cy="174" rx="5" ry="7"/>
+          </g>
+
+          <!-- copper lines, both sides -->
+          <line x1="84" y1="200" x2="384" y2="200" stroke="#8C928E" stroke-width="9" stroke-linecap="round"/>
+          <line x1="494" y1="200" x2="794" y2="200" stroke="#8C928E" stroke-width="9" stroke-linecap="round"/>
+
+          <!-- pipe clamps, one per panel, clear of the end caps -->
+          <rect x="128" y="84" width="20" height="60" rx="6" fill="#FFFFFF" stroke="#12161A" stroke-width="2" stroke-linejoin="round"/>
+          <rect x="538" y="84" width="20" height="60" rx="6" fill="#FFFFFF" stroke="#12161A" stroke-width="2" stroke-linejoin="round"/>
+          <g fill="#FFFFFF" stroke="#12161A" stroke-width="1.6">
+            <circle cx="138" cy="80" r="4"/><circle cx="138" cy="148" r="4"/>
+            <circle cx="548" cy="80" r="4"/><circle cx="548" cy="148" r="4"/>
+          </g>
+
+          <circle cx="88" cy="40" r="13" style="fill:var(--a)"/>
+          <circle cx="498" cy="40" r="13" style="fill:var(--a)"/>
+
+          <text x="235" y="45" text-anchor="middle" font-family="inherit" font-weight="800" font-size="20" style="fill:var(--b-deep)">Iced</text>
+          <text x="645" y="45" text-anchor="middle" font-family="inherit" font-weight="800" font-size="20" style="fill:var(--a)">Clear</text>
+          <text x="235" y="248" text-anchor="middle" font-family="inherit" font-size="14" fill="#5A6462">large insulated line, white and furred</text>
+          <text x="235" y="268" text-anchor="middle" font-family="inherit" font-size="14" fill="#5A6462">small copper line stays clear</text>
+          <text x="645" y="248" text-anchor="middle" font-family="inherit" font-size="14" fill="#5A6462">foam insulation intact and dry</text>
+          <text x="645" y="268" text-anchor="middle" font-family="inherit" font-size="14" fill="#5A6462">small copper line stays clear</text>
+          <text x="88" y="45" text-anchor="middle" font-family="inherit" font-weight="700" font-size="14" fill="#FFFFFF">4</text>
+          <text x="498" y="45" text-anchor="middle" font-family="inherit" font-weight="700" font-size="14" fill="#FFFFFF">4</text>
+          <text x="235" y="292" text-anchor="middle" font-family="inherit" font-weight="700" font-size="15" style="fill:var(--b-deep)">Cooling off, fan on, let it thaw</text>
+          <text x="645" y="292" text-anchor="middle" font-family="inherit" font-weight="700" font-size="15" style="fill:var(--a)">Safe to keep running for now</text>
+        </svg>

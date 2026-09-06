@@ -174,7 +174,7 @@ describe("what the critic may do: ADD findings", () => {
     expect(out.status).toBe("FAIL");
     expect(out.findings).toHaveLength(1);
     expect(out.findings[0].check).toBe("voice_claim_policy");
-    expect(out.provider).toMatch(/^fake:stealth\/ox-alpha$/);
+    expect(out.provider).toMatch(/^fake:deepseek\/deepseek-v4-flash-0731$/);
     expect(out.cost_usd).toBe(0);
   });
 

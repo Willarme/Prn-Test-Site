@@ -1,0 +1,28 @@
+<!-- ================= JOB PACKET, HIGH UP ================= -->
+<section class="sec tint tint-warm chapter" id="job-packet">
+  <div class="wrap">
+    <p class="eyebrow"><i class="pennant" aria-hidden="true"></i>What you walk away with</p>
+    <h2 class="display h2">{%job_packet.heading_html%}</h2>
+    <div class="sheet packet">
+      <div class="packet-grid">
+        <div>
+          <div class="benefits">
+            <div class="benefit"><span class="b-ico ico-green"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 22h14"/><path d="M5 2h14"/><path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"/><path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"/></svg></span><span><b class="bold b-h c-green">Shorter billable hour</b><span class="b-p muted">Less diagnostic time on the clock may mean less money out of your pocket.</span></span></div>
+            <div class="benefit"><span class="b-ico ico-blue"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 22h14a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v4"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M2 15h10"/><path d="m9 18 3-3-3-3"/></svg></span><span><b class="bold b-h c-blue">They arrive with more context</b><span class="b-p muted">Your photos, your readings and what you already ruled out, before they load the van.</span></span></div>
+            <div class="benefit"><span class="b-ico ico-ink"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21h10"/><path d="M12 3v18"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/></svg></span><span><b class="bold b-h">Quotes you can compare</b><span class="b-p muted">The same facts go to every company, so the numbers finally mean the same thing.</span></span></div>
+            <div class="benefit"><span class="b-ico ico-pink"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg></span><span><b class="bold b-h c-pink">Yours to keep</b><span class="b-p muted">Free, and yours to send anywhere. You never have to hire through us.</span></span></div>
+          </div>
+          <a href="#intake" class="cta packet-cta">{%job_packet.cta%}</a>
+        </div>
+        <div class="jp">
+          <div class="jp-head"><span class="jp-dia">&#9670;</span><span>Job Packet</span><span class="jp-ex">example</span></div>
+          <div class="jp-rows">
+{%each job_packet.example_rows%}            <div class="jp-row"><span class="jp-k">{%.key%}</span><span>{%.value%}</span></div>
+{%/each%}          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="band bar" id="band-2"><div class="wrap"><p>{%job_packet.band_2_hook%}</p></div></div>
+</section>
+

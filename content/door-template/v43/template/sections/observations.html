@@ -1,0 +1,18 @@
+<!-- ================= WHAT CHANGES THE ANSWER ================= -->
+<section class="sec chapter" id="observations-that-matter">
+  <div class="wrap">
+    <p class="eyebrow"><i class="pennant" aria-hidden="true"></i>The fastest way through</p>
+    <h2 class="display h2">{%observations.heading_html%}</h2><span class="orn-giant" aria-hidden="true" data-orn>{%observations.orn_numeral%}</span>
+    <div class="ledger"><div class="scroll" tabindex="0" role="group" aria-label="Table, scrolls sideways on small screens">
+      <table>
+        <thead><tr>
+{%each observations.columns%}          <th scope="col" class="{%.mw_class%}">{%.label%}</th>
+{%/each%}        </tr></thead>
+        <tbody>
+{%each observations.rows%}          <tr><td><strong>{%.look%}</strong></td><td class="muted">{%.rules_out%}</td></tr>
+{%/each%}        </tbody>
+      </table>
+    </div><span class="scroll-hint" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none"><path d="M4 12h15M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+  </div>
+</section>
+

@@ -1,0 +1,9 @@
+{
+  "_what": "THE FLIP section (catalogue §2 THE FLIP, design-doc §4.2 row 17): the heading and the three flip-column bodies. The section eyebrow, the lede, the three column eyebrows and the three-column shape are template-constant and stay in template/sections/flip.html.",
+  "heading_html": "Why should fixing your AC <span class=\"accent\">start with a search?</span>",
+  "columns": [
+    { "orn": "01", "head": "Read nine tabs, guess which one is your AC.", "body": "A blog for a different unit. A Reddit thread from 2019. A video of somebody else's basement. None of them can see what yours is doing." },
+    { "orn": "02", "head": "Start with your thermostat, your filter, your unit.", "body": "The evidence you already have narrows it faster than any general list can, because it rules things out instead of adding to them." },
+    { "orn": "03", "head": "A LIVE walkthrough of your actual system.", "body": "We ask the next question based on what you just showed us, and end with a packet you can hand to any company." }
+  ]
+}

@@ -2,10 +2,12 @@ import { mkdtemp } from "node:fs/promises";
 import { readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { ACTIVE_DISCLOSURE } from "@/domain/privacy/disclosures";
 import { readDevDb } from "@/platform/stores/dev-db";
 import { engageKillSwitch, resetKillSwitchForTests } from "@/platform/killswitch";
+import { decodeLink } from "@/platform/links/tokens";
+const ownerProofs = new Map<string, string>();
 
 /**
  * A02 STEP 5 — THE THREE LIVE CALL SITES (Trial Spec Audit HO-4).
@@ -22,11 +24,25 @@ let answerPost: (req: Request) => Promise<Response>;
 beforeAll(async () => {
   const dir = await mkdtemp(join(tmpdir(), "prn-a02-"));
   process.env.PRN_DEV_DB_PATH = join(dir, "dev-db.json");
+  vi.stubEnv("PRN_RUNTIME_STORE", "file");
+  vi.stubGlobal("fetch", () => { throw new Error("No network in A02 route fixtures"); });
   ({ POST: intakePost } = await import("@/app/api/intake/route"));
+  const realIntake = intakePost;
+  intakePost = async request => {
+    const response = await realIntake(request);
+    const pair = response.headers.get("set-cookie")?.split(";")[0];
+    if (pair) {
+      const token = decodeURIComponent(pair.slice(pair.indexOf("=") + 1));
+      const owner = decodeLink(token);
+      if (owner.ok) ownerProofs.set(owner.request_id, token);
+    }
+    return response;
+  };
   ({ POST: answerPost } = await import("@/app/api/intake/answer/route"));
 });
 
 afterAll(() => {
+  vi.unstubAllEnvs(); vi.unstubAllGlobals();
   delete process.env.PRN_DEV_DB_PATH;
   resetKillSwitchForTests();
 });
@@ -112,9 +128,19 @@ describe("A02 — call site 1: the intake route", () => {
   });
 
   it("the route no longer calls the packet builder directly", () => {
-    const src = readFileSync(join(process.cwd(), "src/app/api/intake/route.ts"), "utf-8");
-    expect(src).not.toMatch(/buildJobPacketFixture/);
-    expect(src).toMatch(/buildPacket\(/);
+    /**
+     * MOVED, 2026-09-05 (campaign track F1). Call site 1 is now
+     * `platform/intake/start.ts::startIntake`, which BOTH the JSON route and
+     * the static door page's multipart adapter (`POST /api/intake/start`) call.
+     * The property under test is unchanged — the fixture builder is never
+     * called and generation goes through the governed `buildPacket` — so the
+     * assertion follows the code to its new home instead of being deleted.
+     */
+    const route = readFileSync(join(process.cwd(), "src/app/api/intake/route.ts"), "utf-8");
+    const callSite = readFileSync(join(process.cwd(), "src/platform/intake/start.ts"), "utf-8");
+    expect(route).not.toMatch(/buildJobPacketFixture/);
+    expect(callSite).not.toMatch(/buildJobPacketFixture/);
+    expect(callSite).toMatch(/buildPacket\(/);
   });
 });
 
@@ -133,8 +159,8 @@ describe("A02 — call site 2: regeneration through platform/intake/complete.ts"
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           request_id,
-          field_key: "system_age",
-          value_text: "About 9 years old",
+          k: ownerProofs.get(request_id),
+          fields: [{ field_key: "system_age", value: "About 9 years old" }],
         }),
       })
     );
@@ -182,7 +208,7 @@ describe("A02 — call site 2: regeneration through platform/intake/complete.ts"
       new Request("http://localhost/api/intake/answer", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ request_id, field_key: "brand", value_text: "Whirlpool" }),
+        body: JSON.stringify({ request_id, k: ownerProofs.get(request_id), fields: [{ field_key: "brand", value: "Whirlpool" }] }),
       })
     );
     // The customer's write succeeded; only the refresh was refused.

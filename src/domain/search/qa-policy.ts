@@ -60,6 +60,12 @@ export const A06_CHECK_IDS = [
   // --- template --------------------------------------------------------------
   "template.registered",
   "template.conformance",
+  "door_template.integrity",
+  "door_template.claim_binding",
+  "door_template.source_verification",
+  "door_template.asset_receipt",
+  "door_template.capability_runtime",
+  "door_template.production_release",
   // --- structured data -------------------------------------------------------
   "structured_data.allow_list",
   "structured_data.denied_type",
@@ -153,7 +159,7 @@ export const DEFAULT_CRITIC_RULES: readonly string[] = [
   "The page must answer, on the page itself, the search intent it claims to serve. A page that redirects the question to a form or a phone call has not answered it.",
   "No manufactured urgency: no countdowns, no scarcity, no 'act now', and no implied damage or cost that is not evidenced in the copy itself.",
   "No comparison-shopping or directory framing: the page offers one clear next step, never a browsable list of providers to choose between.",
-  "No prices, cost ranges, or money figures of any kind in customer-facing copy.",
+  "Never invent prices, cost ranges or money figures. A reviewed price must trace to an exact claim/source binding and current supporting evidence; preserve approved sourced prices.",
   "No claim about anyone's credentials, verification, vetting, licensing or insurance — including implied ones.",
   "No guarantees of outcome, and no superlatives about price or quality.",
   "No ratings, reviews, star markup, or counts of either.",

@@ -37,13 +37,14 @@ import type { PromptIdentity } from "@/platform/ai/prompt";
  *   - `block_id` is a CLOSED ENUM of the slots the deterministic spec already
  *     built. The model cannot add a section, remove one, or reorder the page.
  *   - `source_fact_bundle_ids` is a CLOSED ENUM of the bundle ids it was
- *     handed. "No claim not traceable to a supplied bundle" is therefore not a
- *     policy the model is asked to follow — it cannot name a source it was not
- *     given, and a block that cites none fails the schema's `.min(1)`.
+ *     handed; a block citing none fails `.min(1)`. This proves reference
+ *     membership only. It does not prove that a sentence is supported by the
+ *     referenced statement; the review must not claim semantic provenance.
  *
  * The other three — invented prices, manufactured urgency, directory framing —
- * are stated in the prompt AND checked in code afterwards, because a prompt is a
- * request and a check is a guarantee.
+ * are stated in the prompt and checked against bounded patterns afterwards.
+ * Those patterns catch named prohibited classes; they are not a complete
+ * semantic safety or factual-support checker.
  *
  * ─── AND ONE MORE, WHICH IS THE REASON FOR THE WHOLE FILE'S CAUTION ────────
  *
@@ -101,6 +102,26 @@ const CREDENTIAL_CLAIM =
 const SAFETY_INSTRUCTION =
   /\b(call 9-?1-?1|dial 9-?1-?1|emergency (line|services|number)|evacuate|leave the (building|house|home) (now|immediately)|shut off the (gas|main|water main|breaker)|turn off the (gas|main|power) at|gas utility|utility'?s emergency)\b/i;
 
+// These checks apply in every generated body, including an allowed intent-answer
+// slot. Protecting the safety block IDs alone does not stop a model from placing
+// work instructions in another paragraph. Match action/subject co-occurrence
+// across unapproved sentences to also catch passive and pronoun continuations.
+// Deliberately conservative: an uncertain new instruction falls back to the
+// reviewed bank. These are bounded patterns, never a complete safety guarantee.
+const HAZARDOUS_SUBJECT = /\b(capacitors?|contactors?|refrigerant|freon|r[- ]?410a|r[- ]?22|(?:live|energized|electrical)\s+(?:circuits?|wires?|terminals?|contacts?))\b/i;
+const WORK_ACTION = /\b(open(?:ed|ing)?|remov(?:e|ed|ing)|touch(?:ed|ing)?|short(?:ed|ing)?|bridg(?:e|ed|ing)|discharg(?:e|ed|ing)|bypass(?:ed|ing)?|charg(?:e|ed|ing)|recharg(?:e|ed|ing)|add(?:ed|ing)?|inject(?:ed|ing)?|refill(?:ed|ing)?|vent(?:ed|ing)?|releas(?:e|ed|ing)|test(?:ed|ing)?|measur(?:e|ed|ing)|prob(?:e|ed|ing)|check(?:ed|ing)?|inspect(?:ed|ing)?|swap(?:ped|ping)?|replac(?:e|ed|ing)|connect(?:ed|ing)?|disconnect(?:ed|ing)?)\b|\btop(?:ped|ping)?\b.{0,50}\b(?:up|off)\b/i;
+const ENCLOSURE_SUBJECT = /\b(panels?|compartments?|covers?|cabinets?|(?:outdoor|indoor|condenser|air[ -]?handler)\s+units?)\b/i;
+const ACCESS_ACTION = /\b(open(?:ed|ing)?|remov(?:e|ed|ing)|unscrew(?:ed|ing)?|detach(?:ed|ing)?|disassembl(?:e|ed|ing)|lift(?:ed|ing)?|pry|pried|prying|access(?:ed|ing)?|reach(?:ed|ing)?\s+(?:inside|into)|expos(?:e|ed|ing))\b|\btak(?:e|en|ing)\b.{0,60}\b(?:off|apart)\b/i;
+
+function safetySentences(text: string): string[] {
+  // Compare complete source sentences, ignoring layout-only Markdown/whitespace.
+  // A shared short match such as "shut off the main" grants no exception to a
+  // longer/new instruction that happens to start with those same words.
+  return (text.normalize("NFKC").replace(/[*_`]/g, "").match(/[^.!?\n]+[.!?]?/g) ?? [])
+    .map(sentence => sentence.replace(/^\s*[-+]\s+/, "").replace(/\s+/g, " ").trim().toLowerCase())
+    .filter(Boolean);
+}
+
 export interface CopyRejection {
   check: string;
   where: string;
@@ -117,7 +138,10 @@ export function checkGeneratedCopy(
   approvedSafetyText: string
 ): CopyRejection[] {
   const rejections: CopyRejection[] = [];
-  const approved = approvedSafetyText.toLowerCase();
+  const approvedSentences = new Set(safetySentences(approvedSafetyText));
+  // A model can introduce equipment in one block and refer to it as "it" in
+  // another. Section boundaries cannot erase that hazardous subject context.
+  const subjectContext = blocks.flatMap(block => safetySentences(block.body_md)).join(" ");
 
   for (const block of blocks) {
     for (const [check, pattern, message] of [
@@ -136,16 +160,21 @@ export function checkGeneratedCopy(
       }
     }
 
-    /**
-     * NEW safety instructions only. A block that repeats an instruction already
-     * present in the approved bank copy is fine — that IS the approved copy.
-     */
-    const safety = block.body_md.match(SAFETY_INSTRUCTION);
-    if (safety && !approved.includes(safety[0].toLowerCase())) {
+    const sentences = safetySentences(block.body_md);
+    const unapproved = sentences.filter(sentence => !approvedSentences.has(sentence)).join(" ");
+    if (SAFETY_INSTRUCTION.test(unapproved)) {
       rejections.push({
         check: "copy.no_new_safety_instruction",
         where: block.block_id,
-        message: `an emergency instruction that is not in the approved safety copy: "${safety[0].trim()}" — safety guidance is human-written, jurisdiction-specific and reviewed elsewhere`,
+        message: "Generated emergency guidance is not an exact approved-source sentence; use the reviewed safety copy unchanged.",
+      });
+    }
+    if ((HAZARDOUS_SUBJECT.test(subjectContext) && WORK_ACTION.test(unapproved)) ||
+      (ENCLOSURE_SUBJECT.test(subjectContext) && ACCESS_ACTION.test(unapproved))) {
+      rejections.push({
+        check: "copy.no_hazardous_work_instruction",
+        where: block.block_id,
+        message: "Generated copy combines a high-risk electrical, refrigerant or enclosure subject with work/access directions; use the reviewed source unchanged.",
       });
     }
   }
@@ -245,6 +274,8 @@ function userPrompt(
 }
 
 export interface GeneratePageCopyOptions {
+  /** A caller can keep approved safety sections outside the model's writable schema. */
+  writableBlockIds?: readonly string[];
   /** A05's namespaced policy sub-block, for the lint. */
   policy?: PageFactoryPolicy;
   /** Context for A06's deterministic re-check. Same shape the QA run uses. */
@@ -258,7 +289,7 @@ export interface PageCopyOutcome {
    * that was handed in — the content bank's page, unchanged, byte for byte.
    */
   spec: PageSpec;
-  engine: "content_bank" | "model";
+  engine: "content_bank" | "model" | "frozen_template";
   /** Null on the model path; the recorded reason on every fallback. */
   fallback_reason: string | null;
   /** Which gauntlet rejected the draft, when one did. Empty otherwise. */
@@ -273,6 +304,10 @@ export async function generatePageCopy(
   bundles: readonly FactBundle[],
   options: GeneratePageCopyOptions = {}
 ): Promise<PageCopyOutcome> {
+  if (spec.door_template || spec.template_id === "door-v43") {
+    PageSpec.parse(spec);
+    return { spec, engine: "frozen_template", fallback_reason: "Reviewed v43 copy is frozen; update the reviewed source kit before creating a new version.", rejections: [], run_id: null, cost_usd: null };
+  }
   const fallback = (
     reason: string,
     rejections: CopyRejection[] = [],
@@ -293,11 +328,12 @@ export async function generatePageCopy(
     );
   }
 
-  const slots = spec.content_blocks.map((b) => ({
+  const slots = spec.content_blocks.filter(b => !options.writableBlockIds || options.writableBlockIds.includes(b.block_id)).map((b) => ({
     block_id: b.block_id,
     kind: b.kind as string,
     heading: b.heading,
   }));
+  if (slots.length === 0) return fallback("no writable content blocks were supplied");
   const blockIds = slots.map((s) => s.block_id);
   const bundleIds = bundles.map((b) => b.fact_bundle_id);
 

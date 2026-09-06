@@ -3,6 +3,8 @@
 
 # next.js
 /.next/
+# per-track build directories (NEXT_DIST_DIR=.next-<track>, next.config.mjs)
+/.next-*/
 /out/
 next-env.d.ts
 

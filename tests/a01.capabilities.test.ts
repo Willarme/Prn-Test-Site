@@ -161,7 +161,7 @@ describe("A01 — classifyProblem", () => {
     // Taxonomy AND safety package versions — "which trade list was in force" is
     // exactly the question a wrong classification raises.
     expect(out.derivation?.policy_version).toMatch(/prn_trial_home_services_v1@1/);
-    expect(out.derivation?.policy_version).toMatch(/prn_trial_us_v1@1/);
+    expect(out.derivation?.policy_version).toMatch(/prn_trial_us_v1@2/);
     expect(out.derivation?.claim_ids).toEqual(out.claims.map((c) => c.claim_id));
   });
 
@@ -274,19 +274,38 @@ describe("A01 — the file it was told not to touch", () => {
    * goes THROUGH A01's surface rather than around it. The packet path is
    * unchanged and still does not import it — A02 owns that side.
    */
-  it("the live intake route goes THROUGH A01's surface, not around it", () => {
+  /**
+   * MOVED AND ONE LINE REVERSED, 2026-09-05 (campaign track F1).
+   *
+   * MOVED: the live path is now `platform/intake/start.ts::startIntake`, which
+   * the JSON route AND the static door page's multipart adapter both call. The
+   * invariant is unchanged and is checked where the code went; the route is
+   * still checked for the thing it must never do.
+   *
+   * REVERSED: `allow_model: false` became `allow_model: true`. That line was
+   * pinned here because no model was cleared for customer data, so consulting
+   * one bought a refusal row and nothing else. Josh cleared the test
+   * environment on 2026-09-05 ("use them now"); Melissa's countersign T0-03 is
+   * still open on the record. The deterministic pass is still the fallback and
+   * still owns safety, which is what the rest of this file pins.
+   */
+  it("the live intake path goes THROUGH A01's surface, not around it", () => {
     const route = readFileSync(join(process.cwd(), "src/app/api/intake/route.ts"), "utf-8");
-    expect(route).toMatch(/from "@\/domain\/problem\/capabilities"/);
-    expect(route).toMatch(/classifyProblem\(/);
-    expect(route).toMatch(/selectClarifier\(/);
+    const live = readFileSync(join(process.cwd(), "src/platform/intake/start.ts"), "utf-8");
+    expect(live).toMatch(/from "@\/domain\/problem\/capabilities"/);
+    expect(live).toMatch(/classifyProblem\(/);
+    expect(live).toMatch(/selectClarifier\(/);
     // The whole point: no direct CALL to the implementation, which would mean a
     // kill switch on A01 stops nothing. (The name may still appear in the note
-    // recording what this route used to do — a check that cannot tell a rule
+    // recording what this path used to do — a check that cannot tell a rule
     // from its own explanation reports the documentation as the violation.)
-    expect(route).not.toMatch(/analyzeProblemFixture\s*\(/);
-    expect(route).not.toMatch(/import .*analyzeProblemFixture/);
-    // And it asks for the deterministic answer explicitly — AI flags stay off.
-    expect(route).toMatch(/allow_model: false/);
+    for (const source of [route, live]) {
+      expect(source).not.toMatch(/analyzeProblemFixture\s*\(/);
+      expect(source).not.toMatch(/import .*analyzeProblemFixture/);
+    }
+    // The model-backed alternate is consulted, under the owner's clearance.
+    expect(live).toMatch(/allow_model: true/);
+    expect(live).not.toMatch(/allow_model: false/);
   });
 
   it("A02's packet path still does not import A01's surface", () => {

@@ -1,0 +1,75 @@
+{
+  "_what": "CAPABILITY QUESTIONS section (design doc §2 CAPABILITY QUESTIONS, §4.2 row 20): the heading, the three ledger column headers, the 5-to-10 'you ask / what your system tells us / how far we get' rows, and the band-3 hook. Eyebrow 'LIVE, on your system' stays in the partial as template-constant.",
+  "heading_html": "What we can settle about <span class=\"accent\">your AC right now</span>",
+  "columns": [
+    {
+      "label": "You ask",
+      "mw_class": "mw240"
+    },
+    {
+      "label": "What your system tells us",
+      "mw_class": "mw310"
+    },
+    {
+      "label": "How far we get",
+      "mw_class": "mw165"
+    }
+  ],
+  "rows": [
+    {
+      "ask": "Why is my AC running but still blowing warm?",
+      "tells": "Your thermostat, airflow, outdoor unit, ice and timing rule branches out one by one.",
+      "chip_class": "chip-blue",
+      "chip_label": "CAN NARROW"
+    },
+    {
+      "ask": "Is it just my thermostat or fan setting?",
+      "tells": "One photo of your display settles mode, set point, room temperature and fan.",
+      "chip_class": "chip-green",
+      "chip_label": "CAN OFTEN ANSWER"
+    },
+    {
+      "ask": "Does my filter actually matter here?",
+      "tells": "Weighed against your airflow and ice, instead of blamed by default.",
+      "chip_class": "chip-blue",
+      "chip_label": "CAN NARROW"
+    },
+    {
+      "ask": "There is ice on my line. What now?",
+      "tells": "Ice changes your immediate next step, and we tell you that step first.",
+      "chip_class": "chip-green",
+      "chip_label": "CAN ANSWER WHAT IT CHANGES"
+    },
+    {
+      "ask": "Is my outdoor unit part of this?",
+      "tells": "A safe photo or short video shows whether your fan is turning, and how it sounds.",
+      "chip_class": "chip-blue",
+      "chip_label": "CAN NARROW"
+    },
+    {
+      "ask": "Can you read my model from a photo?",
+      "tells": "Yes. Your label fills in make, model and capacity without typing.",
+      "chip_class": "chip-green",
+      "chip_label": "CAN OFTEN ANSWER"
+    },
+    {
+      "ask": "Is my capacitor definitely bad?",
+      "tells": "Your evidence changes how likely it is. Confirming it needs an electrical measurement.",
+      "chip_class": "chip-pink",
+      "chip_label": "STILL NEEDS TESTING"
+    },
+    {
+      "ask": "Is my refrigerant charge right?",
+      "tells": "We organise the clues. Pressures cannot be measured down a phone line.",
+      "chip_class": "chip-pink",
+      "chip_label": "STILL NEEDS TESTING"
+    },
+    {
+      "ask": "What do I send a provider before they come?",
+      "tells": "Your packet: the problem, your equipment, your photos, what is ruled out, what is left.",
+      "chip_class": "chip-green",
+      "chip_label": "CAN ANSWER"
+    }
+  ],
+  "band_hook_html": "A few minutes on your actual system <span class=\"accent\">can be more useful than hours of generic troubleshooting.</span>"
+}

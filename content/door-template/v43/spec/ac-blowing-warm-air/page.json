@@ -1,0 +1,8 @@
+{
+  "_what": "PER-PAGE head values for this door (design doc §4.2 rows 1–4, 34). Everything the <head> and the JSON-LD need that is specific to this problem.",
+  "slug": "ac-blowing-warm-air",
+  "title": "AC running but blowing warm air? Get a LIVE walkthrough for YOUR system",
+  "meta_description": "AC running but blowing warm air? Start with the thermostat, filter, outdoor unit and ice. Then get a LIVE walkthrough of YOUR actual AC and a provider-ready Job Packet. Free.",
+  "og_description": "Not a general article. A LIVE walkthrough of your actual AC, and a Job Packet you can hand to any company.",
+  "_date_modified": "DERIVED, NOT AUTHORED. The JSON-LD dateModified is computed by build.js from the newest modification time across this spec folder, template/ and the order file — the three things that actually change the rendered page. It used to be hand-typed here as 2026-09-01 while the approved build was 2026-09-05, which is exactly the failure completion-plan item 4 (P0) names. Putting a literal date_modified key back in this file is now a BUILD FAILURE, on purpose. Never type a date."
+}

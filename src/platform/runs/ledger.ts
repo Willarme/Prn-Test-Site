@@ -1,4 +1,6 @@
 import { randomUUID } from "node:crypto";
+import { dirname, join } from "node:path";
+import { writeFileAtomic } from "@/platform/stores/atomic-file";
 import { z } from "zod";
 import { IsoDateTime } from "@/domain/shared/primitives";
 import { AgentId } from "@/platform/agents/contracts";
@@ -101,6 +103,13 @@ export async function recordAgentRun(
   try {
     const client = clientProvider();
     if (!client) {
+      // The file-backed desktop demo needs durable real receipts as well.
+      // A separate immutable file per run avoids inter-worker append races.
+      if (process.env.PRN_RUNTIME_STORE === "file" && !process.env.VITEST) {
+        const root = process.env.PRN_DEV_DB_PATH ? dirname(process.env.PRN_DEV_DB_PATH) : join(process.cwd(), "data", "runtime");
+        writeFileAtomic(join(root, "agent-runs", `${record.run_id}.json`), JSON.stringify(record));
+        return record;
+      }
       logMiss("no database configured");
       return record;
     }

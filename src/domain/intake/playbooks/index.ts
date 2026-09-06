@@ -11,6 +11,8 @@ const COMMON_FIELDS: Record<string, FieldRequirement> = {
     field_key: "symptom_timing",
     label: "When did it start, and is it constant or on-and-off?",
     why_it_matters: "Constant vs. intermittent points at very different causes.",
+    // Narrows the cause hypothesis the packet hands the provider.
+    value_reason: "packet",
     how_to_find: "Just your best memory is fine.",
     photo_prompt: null,
     accepts: ["text"],
@@ -24,6 +26,8 @@ const COMMON_FIELDS: Record<string, FieldRequirement> = {
     field_key: "problem_photo",
     label: "A photo of the problem area",
     why_it_matters: "A picture answers a dozen questions at once and helps the provider bring the right things.",
+    // "helps the provider bring the right things" — tools and parts.
+    value_reason: "tools_parts",
     how_to_find: "Stand back far enough that we can see the whole area, then one close-up.",
     photo_prompt: "One wide shot and one close-up of the problem.",
     accepts: ["photo"],
@@ -147,7 +151,7 @@ const HVAC_NO_POWER: IntakePlaybook = IntakePlaybook.parse({
   ],
   generated_by: "content-bank-v1",
   created_at: "2026-08-19T00:00:00Z",
-});
+} satisfies IntakePlaybook);
 
 const PLUMBING_LEAK: IntakePlaybook = IntakePlaybook.parse({
   playbook_id: "pb_plumbing_leak_v1",
@@ -165,6 +169,9 @@ const PLUMBING_LEAK: IntakePlaybook = IntakePlaybook.parse({
       field_key: "fixture_or_appliance",
       label: "Which fixture or appliance is nearby?",
       why_it_matters: "A water heater, toilet, shower, dishwasher or washing machine each leak for different reasons.",
+      // A washer/dishwasher leak is an appliance-repair call, not a plumber
+      // (this playbook's own appliance_leak outcome) — the answer picks the trade.
+      value_reason: "provider_type",
       how_to_find: "Name whatever is closest — above or behind the wet spot.",
       photo_prompt: "If an appliance or water heater is involved, snap its label (model/serial).",
       accepts: ["photo", "text"],
@@ -176,6 +183,8 @@ const PLUMBING_LEAK: IntakePlaybook = IntakePlaybook.parse({
       field_key: "shutoff_known",
       label: "Do you know where your main water shutoff is?",
       why_it_matters: "If it gets worse, this is how you stop it in seconds.",
+      // Stopping active water fast is damage prevention — a safety licence.
+      value_reason: "safety",
       how_to_find: "Usually where the main line enters the house: basement wall, utility room, crawlspace, or near the water meter.",
       photo_prompt: null,
       accepts: ["text"],
@@ -279,7 +288,7 @@ const PLUMBING_LEAK: IntakePlaybook = IntakePlaybook.parse({
   ],
   generated_by: "content-bank-v1",
   created_at: "2026-08-19T00:00:00Z",
-});
+} satisfies IntakePlaybook);
 
 const ELECTRICAL: IntakePlaybook = IntakePlaybook.parse({
   playbook_id: "pb_electrical_v1",
@@ -297,6 +306,9 @@ const ELECTRICAL: IntakePlaybook = IntakePlaybook.parse({
       field_key: "affected_scope",
       label: "How much is affected?",
       why_it_matters: "One outlet, one room, or whole-house point at completely different causes.",
+      // "the scope you noted is exactly what they need" (needs_electrician
+      // outcome) — the answer sharpens what the packet tells the electrician.
+      value_reason: "packet",
       how_to_find: "Check a couple of nearby outlets and lights.",
       photo_prompt: null,
       accepts: ["text"],
@@ -308,6 +320,9 @@ const ELECTRICAL: IntakePlaybook = IntakePlaybook.parse({
       field_key: "panel_photo",
       label: "Breaker panel (cover closed)",
       why_it_matters: "Shows the panel type, age and labeling — without opening anything.",
+      // Panel type/age/labeling is context the electrician reads off the
+      // packet before arriving.
+      value_reason: "packet",
       how_to_find: "Your main electrical panel, usually garage, basement or utility room.",
       photo_prompt: "Photo of the panel with the door open but the inner cover ON, so breakers and labels are visible.",
       accepts: ["photo"],
@@ -409,7 +424,7 @@ const ELECTRICAL: IntakePlaybook = IntakePlaybook.parse({
   ],
   generated_by: "content-bank-v1",
   created_at: "2026-08-19T00:00:00Z",
-});
+} satisfies IntakePlaybook);
 
 const GENERIC: IntakePlaybook = IntakePlaybook.parse({
   playbook_id: "pb_generic_home_problem_v1",
@@ -426,7 +441,7 @@ const GENERIC: IntakePlaybook = IntakePlaybook.parse({
   outcomes: [],
   generated_by: "content-bank-v1",
   created_at: "2026-08-19T00:00:00Z",
-});
+} satisfies IntakePlaybook);
 
 export const PLAYBOOKS: readonly IntakePlaybook[] = [
   HVAC_COOLING_PLAYBOOK,

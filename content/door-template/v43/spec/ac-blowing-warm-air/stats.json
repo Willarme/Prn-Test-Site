@@ -1,0 +1,32 @@
+{
+  "_what": "STAT CARDS per-page content (design doc §4.2 rows 14-15, §2 STAT CARDS): the H2 (names the problem, its numeral must equal the card count), 3-5 stat cards each with an icon, a numeral headline with footnote, a human statement, a qualifier note and a source-class line, the stat-source sentence, and the band-1 hook.",
+  "heading_html": "3 numbers worth knowing about warm air",
+  "cards": [
+    {
+      "icon_class": "ico-green",
+      "icon_svg": "<svg width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><rect x=\"8\" y=\"2\" width=\"8\" height=\"4\" rx=\"1\"/><path d=\"M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2\"/><path d=\"m9 14 2 2 4-4\"/></svg>",
+      "value_html": "≈ 1 in 2<sup class=\"fn\"><a href=\"#src-1\">1–4</a></sup>",
+      "statement": "warm-air calls may trace to something simple you can check first.",
+      "note": "HVAC companies in four U.S. markets report 40 to 50% of warm-air calls resolving on simple checks.",
+      "source_class": "Practitioner field reports &middot; 4 U.S. markets"
+    },
+    {
+      "icon_class": "ico-blue",
+      "icon_svg": "<svg width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z\"/><path d=\"M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8\"/><path d=\"M12 17.5v-11\"/></svg>",
+      "value_html": "$200–$1,500<sup class=\"fn\"><a href=\"#src-5\">5</a></sup>",
+      "statement": "is Carrier’s published repair range for an AC blowing hot or warm air, depending on the cause.",
+      "note": "Carrier puts thermostat replacements at the low end, compressor and leak repairs at the high end.",
+      "source_class": "Manufacturer guidance &middot; Carrier"
+    },
+    {
+      "icon_class": "ico-pink",
+      "icon_svg": "<svg width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><line x1=\"2\" x2=\"22\" y1=\"12\" y2=\"12\"/><line x1=\"12\" x2=\"12\" y1=\"2\" y2=\"22\"/><path d=\"m20 16-4-4 4-4\"/><path d=\"m4 8 4 4-4 4\"/><path d=\"m16 4-4 4-4-4\"/><path d=\"m8 20 4-4 4 4\"/></svg>",
+      "value_html": "0 min<sup class=\"fn\"><a href=\"#src-6\">6</a></sup>",
+      "statement": "of extra cooling run time after you confirm the coil is frozen.",
+      "note": "Carrier and Trane both say switch cooling to OFF and leave the fan running. Running a frozen coil can lead to severe compressor damage.",
+      "source_class": "Manufacturer guidance &middot; Carrier, Trane"
+    }
+  ],
+  "stat_src_html": "Sources: multi-market HVAC field reports &middot; Carrier and Trane expert-reviewed guidance.",
+  "band_html": "Forty articles were written for somebody else's house. <span class=\"accent\">Yours has a model number, a filter, and a thing it is doing right now.</span>"
+}

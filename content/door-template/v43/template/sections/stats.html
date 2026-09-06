@@ -1,0 +1,13 @@
+<!-- ================= STAT CARDS ================= -->
+<section class="sec sec-stats chapter" id="stats">
+  <div class="wrap">
+    <p class="eyebrow"><i class="pennant" aria-hidden="true"></i>Before you call anyone</p>
+    <h2 class="display h2 stats-h2">{%stats.heading_html%}</h2>
+    <div class="stats">
+{%each stats.cards%}      <div class="stat"><span class="stat-ico {%.icon_class%}">{%.icon_svg%}</span><b>{%.value_html%}</b><span>{%.statement%}</span><span class="stat-note">{%.note%}</span><em>{%.source_class%}</em></div>
+{%/each%}    </div>
+    <p class="stat-src dim">{%stats.stat_src_html%} <a href="#sources-and-review">See all sources and review notes</a></p>
+  </div>
+  <div class="band bar" id="band-1"><div class="wrap"><p>{%stats.band_html%}</p></div></div>
+</section>
+

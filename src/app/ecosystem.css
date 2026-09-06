@@ -1,0 +1,176 @@
+/*
+ * Shared preview chrome, inferred from the approved AC v43 source: paper
+ * navigation, teal action, ink stage and pink focus. This is a scoped adaptation,
+ * not a new approval of the source's every design choice. Existing card tokens,
+ * card selectors, typography and frozen HTML assets remain untouched.
+ */
+:root {
+  --chrome-ink: #0f1114;
+  --chrome-text: #12161a;
+  --chrome-paper: #f7f7f5;
+  --chrome-paper-2: #eff0ec;
+  --chrome-teal: #2d5c68;
+  --chrome-teal-hover: #234853;
+  --chrome-pink: #ff2e7e;
+  --chrome-muted: #5a6462;
+  --chrome-on-ink: #f2f3f5;
+  --chrome-on-ink-muted: #a8aeb6;
+  --chrome-line: rgba(18, 22, 26, 0.13);
+  --chrome-wrap: 1160px;
+}
+
+.ecosystem-header.site-header {
+  background: rgba(247, 247, 245, 0.96);
+  color: var(--chrome-text);
+  border-bottom-color: var(--chrome-line);
+  backdrop-filter: blur(10px);
+}
+
+.ecosystem-header .bar {
+  min-height: 64px;
+  max-width: var(--chrome-wrap);
+  padding: 10px 22px;
+  flex-wrap: wrap;
+  gap: 10px 24px;
+}
+
+.ecosystem-header .brand {
+  min-height: 44px;
+  color: var(--chrome-text);
+}
+
+.ecosystem-header .brand-mark {
+  width: 13px;
+  height: 17px;
+  background: var(--chrome-ink);
+}
+
+.ecosystem-header .brand-text small {
+  color: var(--chrome-muted);
+  margin-top: 4px;
+}
+
+.ecosystem-navigation {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px 22px;
+  margin-left: auto;
+}
+
+.ecosystem-nav-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: inherit;
+  font-family: var(--font-body), system-ui, sans-serif;
+  font-size: 0.86rem;
+  font-weight: 600;
+  line-height: 1.4;
+  text-decoration: underline;
+  text-underline-offset: 5px;
+  text-decoration-color: transparent;
+  transition: text-decoration-color 0.15s ease;
+}
+
+.ecosystem-nav-link:hover {
+  text-decoration-color: currentColor;
+}
+
+.ecosystem-header-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 11px 18px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: var(--chrome-teal);
+  color: #fff;
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-size: 0.88rem;
+  font-weight: 700;
+  line-height: 1.3;
+  text-align: center;
+  text-decoration: none;
+  transition: background 0.15s ease;
+}
+
+.ecosystem-header-cta:hover {
+  background: var(--chrome-teal-hover);
+}
+
+.ecosystem-header :focus-visible,
+.ecosystem-footer :focus-visible {
+  outline: 2px solid var(--chrome-pink);
+  outline-offset: 3px;
+}
+
+.ecosystem-footer.site-footer {
+  background: var(--chrome-ink);
+  color: var(--chrome-on-ink-muted);
+  border-top: 1px solid rgba(237, 239, 235, 0.14);
+  padding: 28px 0;
+}
+
+.ecosystem-footer-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px 28px;
+  max-width: var(--chrome-wrap);
+  padding-inline: 22px;
+}
+
+.ecosystem-footer-brand {
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-weight: 700;
+  color: var(--chrome-on-ink);
+  margin-bottom: 4px;
+}
+
+/* Color only the surrounding process stages. Card dimensions, descendants,
+ * shared variables and each stage's existing content hierarchy stay as-is.
+ * Screen scope also preserves the existing paper/PDF rules.
+ */
+@media screen {
+  body {
+    background-color: var(--chrome-ink);
+    background-image: radial-gradient(ellipse at 85% 0%, rgba(45, 92, 104, 0.18), transparent 42rem);
+    background-repeat: no-repeat;
+  }
+
+  body > main.section-light,
+  body > main > .section-light {
+    background: var(--chrome-paper);
+  }
+
+  body > main.section-lighter,
+  body > main > .section-lighter {
+    background: var(--chrome-paper-2);
+  }
+}
+
+@media (max-width: 560px) {
+  .ecosystem-header .bar {
+    gap: 4px;
+  }
+
+  .ecosystem-navigation {
+    width: 100%;
+    justify-content: space-between;
+    gap: 8px 16px;
+    margin-left: 0;
+  }
+
+  .ecosystem-header-cta {
+    max-width: 60%;
+    flex: 1;
+  }
+
+  .ecosystem-footer-inner {
+    align-items: flex-start;
+  }
+}

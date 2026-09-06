@@ -1,0 +1,207 @@
+{
+  "_what": "THE SOURCE OF TRUTH behind this door's visible capability table. Completion-plan item 22 (P0). capability.json holds the nine rows the reader sees; this file holds the machine record for the same nine capabilities, one entry each, in the same order. tools/build-capability-manifest.js REFUSES to run unless every row here matches the visible table's question and status character for character, so the registry can never claim something the page does not, and the page can never claim something the registry does not.",
+  "_not_rendered": "build.js does not read this file. Nothing in it reaches the page. It is read only by tools/build-capability-manifest.js, which writes assets/capabilities/home-problem-analyzer.json. Not one visible character of the door page changes because this file exists.",
+  "_live_status_is_the_dangerous_field": "Completion-plan item 22 ends: 'A06 must fail a page that claims a capability that is not live.' Nobody has yet run these nine capabilities against the production runtime, and the trial build is documented as running on deterministic stand-ins with no model wired (Project/03 Build/PRN Trial Build State 2026-08-20.md). So every row below is CLAIMED_ON_PAGE_PENDING_RUNTIME_VERIFICATION. That is not pessimism, it is the only honest value available today. Flipping a row to LIVE is a human act backed by a runtime test, not an edit made because the page reads well. Do not bulk-set this field.",
+  "_status_vocabulary": {
+    "_note": "The six truthful boundary statuses from completion-plan item 22. This page uses five of them; NOT SAFE TO DETERMINE REMOTELY appears nowhere in the built page and is therefore claimed by no row here.",
+    "CAN ANSWER": "The tool settles the question outright from what the homeowner can safely give it.",
+    "CAN OFTEN ANSWER": "Usually settled from one piece of evidence; not guaranteed for every system or photo.",
+    "CAN ANSWER WHAT IT CHANGES": "The tool cannot name the cause, but it can say what this observation changes about the next step.",
+    "CAN NARROW": "The tool rules branches out; it does not close the question on its own.",
+    "STILL NEEDS TESTING": "The tool organises the evidence and shifts likelihood. Confirmation needs a licensed measurement on site.",
+    "NOT SAFE TO DETERMINE REMOTELY": "UNUSED ON THIS PAGE. Reserved for questions where attempting a remote answer would itself be unsafe."
+  },
+  "registry_version": "1.0.0",
+  "updated_at": "2026-09-05",
+  "tool": {
+    "capability_id": "home_problem_analyzer",
+    "_capability_id_source": "The literal data-capability-id on the intake form in the built page (line 2417): data-capability-id=\"home_problem_analyzer\".",
+    "name": "Guided home problem walkthrough",
+    "endpoint": "/api/intake/start",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "input_schema_version": "1",
+    "_endpoint_source": "The form's own action/method/enctype and data-input-schema-version attributes in the built page.",
+    "accepted_inputs": [
+      { "field": "problem_description", "type": "text", "required": true, "control": "<textarea name=\"problem_description\" required>", "page_words": "What is your AC doing right now?" },
+      { "field": "voice_note", "type": "audio", "required": false, "control": "<input type=\"file\" name=\"voice_note\" accept=\"audio/*\">", "page_words": "Talk through it" },
+      { "field": "photos", "type": "image", "required": false, "multiple": true, "control": "<input type=\"file\" name=\"photos\" accept=\"image/*\" multiple>", "page_words": "Show us your unit" },
+      { "field": "video", "type": "video", "required": false, "control": "<input type=\"file\" name=\"video\" accept=\"video/*\">", "page_words": "Add a short video" }
+    ],
+    "outputs": [
+      { "id": "next_question", "page_words": "adapts each next question to the evidence already given" },
+      { "id": "ruled_out", "page_words": "what is ruled out" },
+      { "id": "still_to_test", "page_words": "what still needs professional testing" },
+      { "id": "safe_vs_licensed", "page_words": "Separates safe homeowner checks from licensed work" },
+      { "id": "job_packet", "page_words": "Produces a provider-ready Job Packet", "fields_shown_on_page": ["Problem", "Thermostat", "Equipment", "Ruled out", "Still to test"] }
+    ],
+    "public_routes": ["/ac-blowing-warm-air", "/cooling/", "/what-this-tool-can-help-with/", "/local-records/methodology", "/terms", "/privacy"],
+    "_public_routes_note": "Every internal href the built page actually emits, plus this page's own canonical path. NONE of them is confirmed to return 200 — the domain is not bought (completion-plan items 6 and 7, both OWNER ACTION). /local-records/methodology vs /repair-records/methodology is item 6's unresolved route choice; this registry records what the page links TODAY and takes no side."
+  },
+  "problem_family": {
+    "id": "hvac.cooling.ac_blowing_warm_air",
+    "label": "AC blowing warm air",
+    "parent_id": "hvac.cooling",
+    "parent_label": "Cooling",
+    "_source": "spec/ac-blowing-warm-air/crumb.json — the breadcrumb the page renders and mirrors into its BreadcrumbList."
+  },
+  "safety_boundaries": {
+    "_source": "spec/ac-blowing-warm-air/safe_observations.json, verbatim. These are the page's own words to the homeowner, not a paraphrase.",
+    "never": [
+      "Open an electrical compartment or test a live circuit",
+      "Touch a capacitor. They hold a charge with the power off",
+      "Add refrigerant or open any sealed part",
+      "Take a panel off the indoor or outdoor unit"
+    ],
+    "stop_and_call_now": [
+      "You smell burning, see smoke or see sparking. Cut power at the breaker first",
+      "The breaker trips again after you reset it once",
+      "Water is pooling near anything electrical",
+      "The heat is dangerous for an infant, an older adult, or someone unwell"
+    ]
+  },
+  "limitations": [
+    "Cannot take an electrical measurement. Confirming a capacitor or contactor needs a licensed technician on site.",
+    "Cannot measure refrigerant pressures. The page's words: pressures cannot be measured down a phone line.",
+    "Cannot open, or ask a homeowner to open, any sealed or electrical panel.",
+    "Does not dispatch, quote or perform work. It produces a packet the homeowner carries to whichever provider they choose.",
+    "Reads an equipment label from a photo only when the label is legible; an unreadable label is reported as unread, never guessed."
+  ],
+  "capabilities": [
+    {
+      "capability_id": "cap.ac_warm_air.narrow_why_still_warm",
+      "question_family": "why_is_it_still_warm",
+      "representative_questions": ["Why is my AC running but still blowing warm?"],
+      "visible_row_question": "Why is my AC running but still blowing warm?",
+      "visible_row_answer": "Your thermostat, airflow, outdoor unit, ice and timing rule branches out one by one.",
+      "status": "CAN NARROW",
+      "required_inputs": ["problem_description"],
+      "optional_inputs": ["thermostat_photo", "outdoor_unit_photo", "outdoor_unit_video", "refrigerant_line_photo", "filter_photo", "onset_timing", "room_by_room_observation"],
+      "possible_outputs": ["branches_ruled_out", "branches_moved_up", "next_question"],
+      "safety_class": "observation_only",
+      "live_status": "CLAIMED_ON_PAGE_PENDING_RUNTIME_VERIFICATION",
+      "version": "1.0.0",
+      "updated_at": "2026-09-05"
+    },
+    {
+      "capability_id": "cap.ac_warm_air.thermostat_or_fan_setting",
+      "question_family": "is_it_the_thermostat_or_fan_setting",
+      "representative_questions": ["Is it just my thermostat or fan setting?", "Is my fan set to ON instead of AUTO?"],
+      "visible_row_question": "Is it just my thermostat or fan setting?",
+      "visible_row_answer": "One photo of your display settles mode, set point, room temperature and fan.",
+      "status": "CAN OFTEN ANSWER",
+      "required_inputs": ["thermostat_photo"],
+      "optional_inputs": ["thermostat_reading_stated"],
+      "possible_outputs": ["mode_read", "set_point_read", "room_temperature_read", "fan_setting_read", "branches_ruled_out"],
+      "safety_class": "observation_only",
+      "live_status": "CLAIMED_ON_PAGE_PENDING_RUNTIME_VERIFICATION",
+      "version": "1.0.0",
+      "updated_at": "2026-09-05"
+    },
+    {
+      "capability_id": "cap.ac_warm_air.filter_relevance",
+      "question_family": "does_my_filter_matter_here",
+      "representative_questions": ["Does my filter actually matter here?"],
+      "visible_row_question": "Does my filter actually matter here?",
+      "visible_row_answer": "Weighed against your airflow and ice, instead of blamed by default.",
+      "status": "CAN NARROW",
+      "required_inputs": ["filter_photo"],
+      "optional_inputs": ["filter_label_photo", "airflow_description", "refrigerant_line_observation"],
+      "possible_outputs": ["filter_weighted_against_airflow_and_ice", "filter_size_read_from_label", "branches_ruled_out"],
+      "safety_class": "observation_only",
+      "live_status": "CLAIMED_ON_PAGE_PENDING_RUNTIME_VERIFICATION",
+      "version": "1.0.0",
+      "updated_at": "2026-09-05"
+    },
+    {
+      "capability_id": "cap.ac_warm_air.ice_on_line_next_step",
+      "question_family": "there_is_ice_what_now",
+      "representative_questions": ["There is ice on my line. What now?", "Can I keep running the AC if the line is frozen?"],
+      "visible_row_question": "There is ice on my line. What now?",
+      "visible_row_answer": "Ice changes your immediate next step, and we tell you that step first.",
+      "status": "CAN ANSWER WHAT IT CHANGES",
+      "required_inputs": ["refrigerant_line_observation"],
+      "optional_inputs": ["refrigerant_line_photo"],
+      "possible_outputs": ["immediate_next_step", "branches_moved_up", "provider_urgency_note"],
+      "safety_class": "safe_homeowner_action",
+      "live_status": "CLAIMED_ON_PAGE_PENDING_RUNTIME_VERIFICATION",
+      "version": "1.0.0",
+      "updated_at": "2026-09-05"
+    },
+    {
+      "capability_id": "cap.ac_warm_air.outdoor_unit_involved",
+      "question_family": "is_the_outdoor_unit_part_of_this",
+      "representative_questions": ["Is my outdoor unit part of this?", "Is my outdoor fan supposed to be turning?"],
+      "visible_row_question": "Is my outdoor unit part of this?",
+      "visible_row_answer": "A safe photo or short video shows whether your fan is turning, and how it sounds.",
+      "status": "CAN NARROW",
+      "required_inputs": ["outdoor_unit_photo"],
+      "optional_inputs": ["outdoor_unit_video", "outdoor_unit_sound_description"],
+      "possible_outputs": ["fan_turning_observed", "sound_characterised", "branches_ruled_out", "branches_moved_up"],
+      "safety_class": "observation_only",
+      "live_status": "CLAIMED_ON_PAGE_PENDING_RUNTIME_VERIFICATION",
+      "version": "1.0.0",
+      "updated_at": "2026-09-05"
+    },
+    {
+      "capability_id": "cap.ac_warm_air.read_model_from_label_photo",
+      "question_family": "can_you_read_my_model_from_a_photo",
+      "representative_questions": ["Can you read my model from a photo?", "Can an AI read my AC model from a photo?"],
+      "visible_row_question": "Can you read my model from a photo?",
+      "visible_row_answer": "Yes. Your label fills in make, model and capacity without typing.",
+      "status": "CAN OFTEN ANSWER",
+      "required_inputs": ["equipment_label_photo"],
+      "optional_inputs": [],
+      "possible_outputs": ["make_read", "model_read", "capacity_read", "unreadable_label_reported"],
+      "safety_class": "observation_only",
+      "live_status": "CLAIMED_ON_PAGE_PENDING_RUNTIME_VERIFICATION",
+      "version": "1.0.0",
+      "updated_at": "2026-09-05"
+    },
+    {
+      "capability_id": "cap.ac_warm_air.capacitor_confirmation",
+      "question_family": "is_my_capacitor_bad",
+      "representative_questions": ["Is my capacitor definitely bad?"],
+      "visible_row_question": "Is my capacitor definitely bad?",
+      "visible_row_answer": "Your evidence changes how likely it is. Confirming it needs an electrical measurement.",
+      "status": "STILL NEEDS TESTING",
+      "required_inputs": ["problem_description"],
+      "optional_inputs": ["outdoor_unit_photo", "outdoor_unit_video", "outdoor_unit_sound_description"],
+      "possible_outputs": ["likelihood_shifted", "added_to_still_to_test", "licensed_measurement_required"],
+      "safety_class": "licensed_electrical",
+      "live_status": "CLAIMED_ON_PAGE_PENDING_RUNTIME_VERIFICATION",
+      "version": "1.0.0",
+      "updated_at": "2026-09-05"
+    },
+    {
+      "capability_id": "cap.ac_warm_air.refrigerant_charge_confirmation",
+      "question_family": "is_my_refrigerant_charge_right",
+      "representative_questions": ["Is my refrigerant charge right?"],
+      "visible_row_question": "Is my refrigerant charge right?",
+      "visible_row_answer": "We organise the clues. Pressures cannot be measured down a phone line.",
+      "status": "STILL NEEDS TESTING",
+      "required_inputs": ["problem_description"],
+      "optional_inputs": ["refrigerant_line_observation", "refrigerant_line_photo", "airflow_description"],
+      "possible_outputs": ["clues_organised", "added_to_still_to_test", "licensed_measurement_required"],
+      "safety_class": "licensed_refrigerant",
+      "live_status": "CLAIMED_ON_PAGE_PENDING_RUNTIME_VERIFICATION",
+      "version": "1.0.0",
+      "updated_at": "2026-09-05"
+    },
+    {
+      "capability_id": "cap.ac_warm_air.job_packet_for_provider",
+      "question_family": "what_do_i_send_a_provider",
+      "representative_questions": ["What do I send a provider before they come?", "What do I send an HVAC company before they come?"],
+      "visible_row_question": "What do I send a provider before they come?",
+      "visible_row_answer": "Your packet: the problem, your equipment, your photos, what is ruled out, what is left.",
+      "status": "CAN ANSWER",
+      "required_inputs": ["problem_description"],
+      "optional_inputs": ["thermostat_photo", "equipment_label_photo", "photos", "video", "voice_note"],
+      "possible_outputs": ["job_packet"],
+      "safety_class": "documentation",
+      "live_status": "CLAIMED_ON_PAGE_PENDING_RUNTIME_VERIFICATION",
+      "version": "1.0.0",
+      "updated_at": "2026-09-05"
+    }
+  ]
+}

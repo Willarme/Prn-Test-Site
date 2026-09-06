@@ -205,8 +205,19 @@ describe("A02 — nothing customer-visible changed except invisible instruments"
   });
 
   it("the confidence display is untouched — three levels, rendered as words", () => {
+    // Campaign track P2 (2026-09-05): PRN Master Build Spec MERGED §6.4 rules
+    // the results page a TEMPLATE with no per-request value, so the packet —
+    // and its confidence line — no longer renders there. The packet itself
+    // (track P1, src/domain/packet) prints confidence per the Directions §7.3
+    // closed vocabulary: three levels, words only, a digit refused by its
+    // self-check. The constraint this case guards (words, never a number) is
+    // unchanged; only where the words print has moved.
     const page = read("src/app/results/[request_id]/page.tsx");
-    expect(page).toMatch(/inference_badge_template/);
+    expect(page).not.toMatch(/inference_badge_template/);
+    const types = read("src/domain/packet/types.ts");
+    expect(types).toMatch(/ConfidenceWord = "Most consistent" \| "Possible" \| "Less likely"/);
+    const selfCheck = read("src/domain/packet/self-check.ts");
+    expect(selfCheck).toMatch(/a number in a confidence word/);
     expect(ACTIVE_PACKET_COPY.sections.inference_badge_template).toBe(
       "inference · {confidence} confidence"
     );

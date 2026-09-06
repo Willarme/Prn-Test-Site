@@ -1,0 +1,18 @@
+{
+  "_what": "HERO per-page copy (design doc §4.2 rows 6-10): the badge's problem clause and its attribution tail, the H1, the answer capsule body and its possessive close, and the value panel's head strong + claim + 5 generic-vs-ours rows + foot sentence.",
+  "badge_problem": "AC problem guide",
+  "badge_tail": "Written by people who have been in a hot house",
+  "h1_html": "AC running but blowing <em>warm air?</em>",
+  "answer_body_html": "Check 4 things: <strong>thermostat mode and fan setting</strong>, the <strong>filter</strong>, whether the <strong>outdoor unit</strong> is running, and <strong>ice on the copper line</strong>. Ice means switch cooling off and leave the fan on first. If those look normal, it is something you cannot confirm by eye: an <strong>outdoor electrical or start issue</strong>, a <strong>coil or airflow problem</strong>, or <strong>refrigerant</strong>. Those need measurements at the equipment.",
+  "cap_last_html": "Start with what <em class=\"accent\">your</em> AC is actually doing.",
+  "vp_head_strong": "This is not another AC troubleshooting article.",
+  "vp_claim_pos": "Articles list every possible cause. We use our tool to walk your actual system LIVE.",
+  "value_rows": [
+    { "generic": "An article lists eight causes for no particular house.", "ours_html": "We rule causes out using <em>your</em> thermostat reading and <em>your</em> filter." },
+    { "generic": "A video is somebody else's unit, filmed once, in good light.", "ours_html": "We look at <em>yours</em>, in whatever state it is in at 9pm tonight." },
+    { "generic": "A forum reply says just swap the capacitor.", "ours_html": "We tell you which parts hold a charge after the power is off, so you don't fry yourself." },
+    { "generic": "An AI summary cannot see your equipment.", "ours_html": "We read <em>your</em> model from a photo and narrow it from there." },
+    { "generic": "Calling around means explaining it four times.", "ours_html": "You leave with a packet that arrives before the technician does." }
+  ],
+  "vp_foot_html": "<strong>Two houses with the same symptom often need different next steps.</strong> We build from your equipment, your observations and what you have already ruled out, not from an average of everyone else's AC."
+}

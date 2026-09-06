@@ -92,7 +92,7 @@ function a01Policy(): AiPolicy {
 }
 
 /**
- * A CATALOGUE WITH stealth/ox-alpha CLEARED FOR CUSTOMER DATA.
+ * A CATALOGUE WITH THE DEFAULT MODEL CLEARED FOR CUSTOMER DATA.
  *
  * This configuration does not exist in the shipped catalogue and this build does
  * not create it: clearing a model for a homeowner's own words is a
@@ -100,9 +100,12 @@ function a01Policy(): AiPolicy {
  * injected here for the same reason `estimateVendorCall` takes an injectable
  * rates list — so the MODEL PATH can be exercised at all. The test immediately
  * below this block proves that with the real catalogue the same call is refused.
+ * (The cleared model is the CURRENT DEFAULT, deepseek/deepseek-v4-flash-0731,
+ * chosen by the owner on 2026-08-27 — the injected clearance follows whatever is
+ * the shipped default, so this fixture survives future swaps.)
  */
 const CLEARED_CATALOGUE = MODEL_CATALOGUE.map((m) =>
-  m.id === "stealth/ox-alpha" ? { ...m, allows_customer_data: true } : m
+  m.id === "deepseek/deepseek-v4-flash-0731" ? { ...m, allows_customer_data: true } : m
 );
 
 function deps(
@@ -146,7 +149,7 @@ describe("classification: the safety gate is not something the model can reach",
     expect(outcome.result.problem.safety_rule_id).toBe("safety_gas");
   });
 
-  it("a SOFT safety rule still classifies — and the safety fields still come from the gate", async () => {
+  it("the flood rule now hard-stops before a model can reclassify it (Melissa F1)", async () => {
     const p = provider([
       reply(
         JSON.stringify({
@@ -165,14 +168,15 @@ describe("classification: the safety gate is not something the model can reach",
     );
     const baseline = analyzeProblemFixture({ ...INPUT, description });
 
-    expect(outcome.engine).toBe("model");
-    expect(p.calls).toBe(1);
-    // The model changed the trade — that is its job.
-    expect(outcome.result.problem.service_category).toBe("plumbing");
-    // It did NOT change safety, and could not have: the schema has no such field.
+    expect(outcome.engine).toBe("deterministic");
+    expect(outcome.fallback_reason).toMatch(/hard stop/);
+    expect(p.calls).toBe(0);
+    // The model's proposed reclassification is never read on a hard stop.
+    expect(outcome.result.problem.service_category).toBe(baseline.problem.service_category);
     expect(outcome.result.problem.safety_state).toBe(baseline.problem.safety_state);
     expect(outcome.result.problem.safety_rule_id).toBe(baseline.problem.safety_rule_id);
-    expect(outcome.result.problem.safety_state).toBe("review");
+    expect(outcome.result.problem.safety_state).toBe("urgent");
+    expect(outcome.result.problem.safety_rule_id).toBe("safety_flood_electric");
   });
 
   it("a model that tries to send safety fields has them ignored — the schema drops them", async () => {
@@ -184,17 +188,19 @@ describe("classification: the safety gate is not something the model can reach",
           intent_cluster: "ac not cooling",
           facts: [],
           reason: "ok",
-          safety_state: "normal",
-          safety_rule_id: null,
+          safety_state: "urgent",
+          safety_rule_id: "safety_gas",
         })
       ),
     ]);
     const outcome = await classifyHomeProblem(
-      { ...INPUT, description: "there is standing water spreading across the basement floor" },
+      INPUT,
       { deps: deps(p.provider) }
     );
     expect(outcome.engine).toBe("model");
-    expect(outcome.result.problem.safety_state).toBe("review");
+    expect(p.calls).toBe(1);
+    expect(outcome.result.problem.safety_state).toBe("normal");
+    expect(outcome.result.problem.safety_rule_id).toBeNull();
   });
 });
 
@@ -290,13 +296,15 @@ describe("classification: the fallback contract, reason by reason", () => {
     expect(outcome.result).toEqual(analyzeProblemFixture(INPUT));
   });
 
-  it("PRIVACY: on an uncleared model — every seeded model — it refuses before the wire", async () => {
+  it("PRIVACY: on an uncleared model it refuses before the wire", async () => {
     const p = provider([reply("{}")]);
     /**
-     * This is the shipped state, not a contrived one: the policy is ON, the key
-     * is present, and the call is still refused because no model in the
-     * catalogue is cleared for customer data. On stealth/ox-alpha this is what
-     * A01 does, and it is correct.
+     * The policy is ON, the key is present, and the call is still refused
+     * because the named model is not cleared for customer data. Until
+     * 2026-09-05 that was every seeded model; the owner's default now carries a
+     * TEST-environment clearance (models.ts), so the uncleared model is named
+     * here explicitly — the free stealth model, uncleared on the evidence alone.
+     * What is being pinned is that the CONFIG decides, before any network call.
      */
     const policy = AiPolicy.parse({
       ...DEFAULT_AI_POLICY,

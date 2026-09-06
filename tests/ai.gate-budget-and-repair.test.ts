@@ -7,6 +7,7 @@ import { AiPolicy, DEFAULT_AI_POLICY } from "@/platform/ai/policy";
 import { MemoryAiPolicyStore } from "@/platform/ai/policy-store";
 import { extractJsonObject, renderSchemaInstructions, unfence } from "@/platform/ai/prompt";
 import type { ModelCallInput, ModelCallResult, ModelProvider } from "@/platform/ai/provider";
+import { createOpenRouterProvider } from "@/platform/ai/providers/openrouter";
 import { MemorySpendLedger } from "@/platform/ai/spend";
 import {
   engageKillSwitch,
@@ -127,6 +128,34 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
+describe("spend-ledger faults remain explicit fallbacks", () => {
+  it("refuses before the provider when the known spend cannot be read", async () => {
+    const fake = fakeProvider([okReply('{"ok":true,"note":"fixture"}')]);
+    const spend = new MemorySpendLedger();
+    vi.spyOn(spend, "read").mockRejectedValue(new Error("damaged spend ledger"));
+    const result = await callModel({ ...criticCall(), deps: deps(fake.provider, enabledPolicy(), spend) });
+    expect(result).toMatchObject({ ok: false, reason: "disabled" });
+    expect(fake.calls).toHaveLength(0);
+  });
+
+  it("withholds a valid model reply after a failed cost write and records the incurred cost", async () => {
+    const fake = fakeProvider([okReply('{"ok":true,"note":"fixture"}')]);
+    const spend = new MemorySpendLedger();
+    vi.spyOn(spend, "settle").mockRejectedValue(Object.assign(new Error("private internal path"), { code: "ENOSPC" }));
+    const result = await callModel({ ...criticCall(), deps: deps(fake.provider, enabledPolicy(), spend) });
+    expect(result).toMatchObject({ ok: false, reason: "disabled", detail: expect.stringContaining("spend ledger") });
+    expect(result).not.toHaveProperty("value");
+    expect(fake.calls).toHaveLength(1);
+    if (!result.ok) {
+      expect(result.detail).toContain("ENOSPC");
+      expect(result.detail).not.toContain("private internal path");
+      const run = recentAgentRuns().find(row => row.run_id === result.run_id);
+      expect(run?.cost_usd).toBeGreaterThan(0);
+      expect(run?.errors?.join(" ")).toContain("spend ledger");
+    }
+  });
+});
+
 describe("the default state is OFF, and off is the first thing reported", () => {
   it("the shipped policy has the master switch and every capability disabled", () => {
     expect(DEFAULT_AI_POLICY.enabled).toBe(false);
@@ -160,6 +189,171 @@ describe("the default state is OFF, and off is the first thing reported", () => 
     expect(result.ok).toBe(false);
     if (result.ok) throw new Error("unreachable");
     expect(result.reason).toBe("disabled");
+  });
+});
+
+describe("one atomic allowance covers calls, transport retries and repairs", () => {
+  it.each([
+    { total_tokens: 150 },
+    { prompt_tokens: 100, total_tokens: 150 },
+    { prompt_tokens: 100, completion_tokens: 50 },
+    { prompt_tokens: 0, completion_tokens: 0, total_tokens: 150 },
+    { prompt_tokens: 100.5, completion_tokens: 50, total_tokens: 150.5 },
+    { prompt_tokens: -1, completion_tokens: 151, total_tokens: 150 },
+  ])("the real adapter retains unknown billing for incomplete or inconsistent counters %#", async counters => {
+    const transport = vi.fn(async () => new Response(JSON.stringify({
+      choices: [{ message: { content: '{"ok":true,"note":"fixture"}' }, finish_reason: "stop" }],
+      usage: counters,
+    }), { status: 200, headers: { "Content-Type": "application/json" } }));
+    const provider = createOpenRouterProvider("fixture-only-not-a-real-key", transport as typeof fetch);
+    const ledger = new MemorySpendLedger();
+    const settle = vi.spyOn(ledger, "settle");
+    const result = await callModel({ ...criticCall(), deps: deps(provider, enabledPolicy(), ledger) });
+    expect(result).toMatchObject({ ok: false, reason: "http_error", detail: expect.stringContaining("trustworthy usage or cost") });
+    expect(transport).toHaveBeenCalledTimes(1);
+    expect(settle.mock.calls[0][1]).toBe(0);
+    expect(settle.mock.calls[0][2]).toBeGreaterThan(0);
+    expect(await ledger.reserve({ day: "2026-08-26", capability: "seo.critique_page", usd: 0.5, global_cap_usd: 1, capability_cap_usd: 0.5 })).toBeNull();
+  });
+
+  it.each([0, 0.002])("explicit finite reported cost %s remains authoritative when token counters are absent", async cost => {
+    const transport = vi.fn(async () => new Response(JSON.stringify({
+      choices: [{ message: { content: '{"ok":true,"note":"fixture"}' } }], usage: { total_tokens: 150, cost },
+    }), { status: 200, headers: { "Content-Type": "application/json" } }));
+    const provider = createOpenRouterProvider("fixture-only-not-a-real-key", transport as typeof fetch);
+    const ledger = new MemorySpendLedger();
+    const settle = vi.spyOn(ledger, "settle");
+    const result = await callModel({ ...criticCall(), deps: deps(provider, enabledPolicy(), ledger) });
+    expect(result).toMatchObject({ ok: true, cost_usd: cost, usage: { prompt_tokens: null, completion_tokens: null, total_tokens: 150 } });
+    expect(settle.mock.calls[0][1]).toBe(cost);
+    expect(settle.mock.calls[0][2]).toBe(0);
+  });
+
+  it("repair aggregation preserves unknown token counts instead of inventing zeros", async () => {
+    const policy = enabledPolicy(); policy.capabilities["seo.critique_page"].model_id = "stealth/ox-alpha";
+    let index = 0;
+    const transport = vi.fn(async () => {
+      index += 1;
+      return new Response(JSON.stringify({
+        choices: [{ message: { content: index === 1 ? '{"wrong":"shape"}' : '{"ok":true,"note":"fixture"}' } }],
+        usage: index === 1 ? { total_tokens: 100, cost: 0.001 } : { prompt_tokens: 100, completion_tokens: 50, total_tokens: 150, cost: 0.002 },
+      }), { status: 200, headers: { "Content-Type": "application/json" } });
+    });
+    const provider = createOpenRouterProvider("fixture-only-not-a-real-key", transport as typeof fetch);
+    const result = await callModel({ ...criticCall(), deps: deps(provider, policy) });
+    expect(result).toMatchObject({ ok: true, repaired: true, cost_usd: 0.003,
+      usage: { prompt_tokens: null, completion_tokens: null, total_tokens: 250, reported_cost_usd: 0.003 } });
+    expect(transport).toHaveBeenCalledTimes(2);
+  });
+
+  it("only three overlapping calls reach the provider when three allowances remain globally", async () => {
+    const policy = enabledPolicy();
+    policy.capabilities["seo.critique_page"].max_cost_per_call_usd = 0.02;
+    const spend = new MemorySpendLedger();
+    await spend.record("2026-08-25", "other", 0.94);
+    let entered = 0;
+    let markStarted!: () => void;
+    let release!: () => void;
+    const started = new Promise<void>(resolve => { markStarted = resolve; });
+    const paused = new Promise<void>(resolve => { release = resolve; });
+    const provider: ModelProvider = {
+      id: "fixture",
+      async complete(input) {
+        expect(input.maxAttempts).toBeGreaterThan(0);
+        entered += 1;
+        if (entered === 3) markStarted();
+        await paused;
+        const reply = okReply('{"ok":true,"note":"fixture"}');
+        if (reply.ok) reply.usage.reported_cost_usd = 0.001;
+        return reply;
+      },
+    };
+    const calls = Array.from({ length: 6 }, () => callModel({ ...criticCall(), deps: deps(provider, policy, spend) }));
+    await started;
+    // Give all refusals time to finish; the admitted calls still hold their
+    // allowances because the simulated upstream has not returned.
+    await new Promise(resolve => setTimeout(resolve, 100));
+    expect(entered).toBe(3);
+    release();
+    const results = await Promise.all(calls);
+    expect(results.filter(r => r.ok)).toHaveLength(3);
+    expect(results.filter(r => !r.ok && r.reason === "over_budget")).toHaveLength(3);
+    expect(await spend.read("2026-08-25")).toMatchObject({ calls: 4, total_usd: 0.943 });
+  });
+
+  it("an accounting-only custom ledger cannot silently bypass admission", async () => {
+    const fake = fakeProvider([okReply('{"ok":true,"note":"fixture"}')]);
+    const ledger = new MemorySpendLedger();
+    const custom = { read: ledger.read.bind(ledger), record: ledger.record.bind(ledger) };
+    const result = await callModel({ ...criticCall(), deps: { ...deps(fake.provider), spend: custom } });
+    expect(result).toMatchObject({ ok: false, reason: "disabled", detail: expect.stringContaining("atomic budget reservations") });
+    expect(fake.calls).toHaveLength(0);
+  });
+
+  it("reservation-write failure refuses before any provider call", async () => {
+    const fake = fakeProvider([okReply('{"ok":true,"note":"fixture"}')]);
+    const ledger = new MemorySpendLedger();
+    vi.spyOn(ledger, "reserve").mockRejectedValue(new Error("private ledger path"));
+    const result = await callModel({ ...criticCall(), deps: deps(fake.provider, enabledPolicy(), ledger) });
+    expect(result).toMatchObject({ ok: false, reason: "disabled" });
+    expect(JSON.stringify(result)).not.toContain("private ledger path");
+    expect(fake.calls).toHaveLength(0);
+  });
+
+  it("a repair cannot acquire a second allowance when the first response used the full per-call cap", async () => {
+    const policy = enabledPolicy();
+    policy.capabilities["seo.critique_page"].max_cost_per_call_usd = 0.02;
+    policy.capabilities["seo.critique_page"].model_id = "stealth/ox-alpha";
+    const invalid = okReply('{"wrong":"shape"}');
+    if (invalid.ok) invalid.usage.reported_cost_usd = 0.02;
+    const fake = fakeProvider([invalid, okReply('{"ok":true,"note":"fixture"}')]);
+    const ledger = new MemorySpendLedger();
+    const result = await callModel({ ...criticCall(), deps: deps(fake.provider, policy, ledger) });
+    expect(result).toMatchObject({ ok: false, reason: "over_budget" });
+    expect(fake.calls).toHaveLength(1);
+    expect(await ledger.read("2026-08-25")).toMatchObject({ calls: 1, total_usd: 0.02 });
+  });
+
+  it("a zero-attempt refusal releases the allowance and is never counted as billed", async () => {
+    const fake = fakeProvider([{ ok: false, reason: "not_permitted", detail: "fixture denied before network", provider: "fixture", attempts: 0 }]);
+    const ledger = new MemorySpendLedger();
+    const settle = vi.spyOn(ledger, "settle");
+    expect(await callModel({ ...criticCall(), deps: deps(fake.provider, enabledPolicy(), ledger) })).toMatchObject({ ok: false, reason: "not_permitted" });
+    expect(settle).toHaveBeenCalledWith(expect.any(Object), 0, 0, false);
+    expect(await ledger.read("2026-08-25")).toMatchObject({ calls: 0, total_usd: 0 });
+  });
+
+  it("timeouts keep an uncertain amount held rather than becoming zero-cost retries", async () => {
+    const fake = fakeProvider([{ ok: false, reason: "timeout", detail: "fixture timeout", provider: "fixture", attempts: 1 }]);
+    const ledger = new MemorySpendLedger();
+    const settle = vi.spyOn(ledger, "settle");
+    expect(await callModel({ ...criticCall(), deps: deps(fake.provider, enabledPolicy(), ledger) })).toMatchObject({ ok: false, reason: "timeout" });
+    const held = settle.mock.calls[0][2];
+    expect(held).toBeGreaterThan(0);
+    expect(await ledger.reserve({ day: "2026-08-26", capability: "seo.critique_page", usd: 0.5, global_cap_usd: 1, capability_cap_usd: 0.5 })).toBeNull();
+  });
+
+  it("a success after an internal retry keeps the earlier attempt's unknown charge held", async () => {
+    const reply = okReply('{"ok":true,"note":"fixture"}');
+    if (reply.ok) reply.attempts = 2;
+    const fake = fakeProvider([reply]);
+    const ledger = new MemorySpendLedger();
+    const settle = vi.spyOn(ledger, "settle");
+    const result = await callModel({ ...criticCall(), deps: deps(fake.provider, enabledPolicy(), ledger) });
+    expect(result.ok).toBe(true);
+    expect(settle.mock.calls[0][1]).toBeGreaterThan(0);
+    expect(settle.mock.calls[0][2]).toBeGreaterThan(0);
+    if (result.ok) expect(result.cost_basis).toContain("remains reserved");
+  });
+
+  it("a call crossing midnight settles on its admission day, never a freshly reset budget", async () => {
+    const ledger = new MemorySpendLedger();
+    let instant = new Date("2026-08-25T23:59:59Z");
+    const fake = fakeProvider(() => { instant = new Date("2026-08-26T00:00:01Z"); return okReply('{"ok":true,"note":"fixture"}'); });
+    const result = await callModel({ ...criticCall(), deps: { ...deps(fake.provider, enabledPolicy(), ledger), now: () => instant } });
+    expect(result.ok).toBe(true);
+    expect(await ledger.read("2026-08-25")).toMatchObject({ calls: 1 });
+    expect(await ledger.read("2026-08-26")).toMatchObject({ calls: 0, total_usd: 0 });
   });
 });
 
@@ -226,6 +420,21 @@ describe("the governance ladder is the gateway's, in the gateway's order", () =>
 describe("the privacy rule — enforced on CONFIG, before the wire", () => {
   it("a customer-data capability on an uncleared model is refused with no network call", async () => {
     const { provider, calls } = fakeProvider([okReply('{"ok":true,"note":"x"}')]);
+    /**
+     * 2026-09-05: the shipped default (deepseek-v4-flash-0731) carries a
+     * TEST-environment clearance, so the uncleared model here is named
+     * explicitly — the free stealth model, uncleared on the evidence alone.
+     * The rule under test is unchanged: config decides, before the wire.
+     */
+    const uncleared = enabledPolicy({
+      capabilities: {
+        ...enabledPolicy().capabilities,
+        classify_home_problem: {
+          ...enabledPolicy().capabilities.classify_home_problem,
+          model_id: "stealth/ox-alpha",
+        },
+      },
+    });
     const result = await callModel({
       ...criticCall({
         agent_id: "A01",
@@ -236,7 +445,7 @@ describe("the privacy rule — enforced on CONFIG, before the wire", () => {
         capability: "classify_problem",
         handles_customer_data: true,
       }),
-      deps: deps(provider),
+      deps: deps(provider, uncleared),
     });
     expect(result.ok).toBe(false);
     if (result.ok) throw new Error("unreachable");
@@ -349,16 +558,20 @@ describe("the budget is checked before the call and re-checked after it", () => 
    * THE EXHAUSTION BOUNDARY, ON THE MODEL THE POLICY ACTUALLY NAMES.
    *
    * Every budget test above swaps in a PRICED model to make the sum cross the
-   * cap. That is what hid this: the shipped policy names stealth/ox-alpha, which
-   * the catalogue prices $0/$0, so the additive test `spent + 0 > cap` answers
-   * "no" for ever once the ledger sits exactly on the cap. The expected-outcome
-   * harness exhausted a real ledger against the shipped cap and watched the next
-   * call sail through to the provider factory (NEVER-A04-3).
+   * cap. That is what hid this (NEVER-A04-3): when the shipped policy named
+   * stealth/ox-alpha — priced $0/$0 — the additive test `spent + 0 > cap`
+   * answered "no" for ever once the ledger sat exactly on the cap. The
+   * expected-outcome harness exhausted a real ledger against the shipped cap
+   * and watched the next call sail through to the provider factory.
+   *
+   * Since 2026-08-27 the default model is `deepseek/deepseek-v4-flash-0731`,
+   * which is PAID — so this test now guards the boundary on a priced model,
+   * and its `spent == cap` refusal must hold for the same reason it must hold
+   * if the owner ever swaps back to a free one: exhaustion means SPENT.
    *
    * A04 §7: spend caps are HARD and exhaustion stops enrichment CLEANLY.
-   * Exhausted means SPENT, not overspent.
    */
-  it("a capability whose cap is exactly exhausted is refused even on a $0-priced model", async () => {
+  it("a capability whose cap is exactly exhausted is refused, whatever the model prices", async () => {
     const spend = new MemorySpendLedger();
     const policy = enabledPolicy();
     const cap = policy.capabilities["seo.critique_page"].daily_cap_usd;
@@ -384,8 +597,9 @@ describe("the budget is checked before the call and re-checked after it", () => 
     // The brake is BEFORE the network: the provider factory is never reached,
     // so the refusal cannot be mistaken for "there was no key anyway".
     expect(providerConstructions).toBe(0);
-    // …and the shipped model really is the free one, or this proves nothing.
-    expect(policy.capabilities["seo.critique_page"].model_id).toBe("stealth/ox-alpha");
+    // …and the shipped model really is the owner's chosen default, or this
+    // proves nothing about the shipped configuration.
+    expect(policy.capabilities["seo.critique_page"].model_id).toBe("deepseek/deepseek-v4-flash-0731");
   });
 
   it("an exhausted GLOBAL budget refuses a capability that has spent nothing itself", async () => {
@@ -475,10 +689,28 @@ describe("the budget is checked before the call and re-checked after it", () => 
 });
 
 describe("json_object mode: schema in the prompt, one repair, then fall back", () => {
+  /**
+   * These tests exercise json_object-MODE BEHAVIOUR (schema rendered into the
+   * prompt, one repair turn), so they pin `stealth/ox-alpha` explicitly. They
+   * cannot lean on the default policy any more: since 2026-08-27 the owner's
+   * default model is `deepseek/deepseek-v4-flash-0731`, a json_schema model the
+   * API enforces server-side — the separate test below proves it is NOT repaired.
+   */
+  const jsonObjectPolicy = () =>
+    AiPolicy.parse({
+      ...enabledPolicy(),
+      capabilities: {
+        ...enabledPolicy().capabilities,
+        "seo.critique_page": {
+          ...enabledPolicy().capabilities["seo.critique_page"],
+          model_id: "stealth/ox-alpha",
+        },
+      },
+    });
+
   it("renders the schema into the system prompt for a json_object model", async () => {
     const { provider, calls } = fakeProvider([okReply('{"ok":true,"note":"x"}')]);
-    await callModel({ ...criticCall(), deps: deps(provider) });
-    // The default policy model is ox-alpha, which is json_object mode.
+    await callModel({ ...criticCall(), deps: deps(provider, jsonObjectPolicy()) });
     expect(calls[0].mode).toBe("json_object");
     expect(calls[0].system).toContain("OUTPUT CONTRACT");
     expect(calls[0].system).toContain('"note"');
@@ -498,7 +730,7 @@ describe("json_object mode: schema in the prompt, one repair, then fall back", (
       okReply('{"ok":"yes"}'),
       okReply('{"ok":true,"note":"fixed"}'),
     ]);
-    const result = await callModel({ ...criticCall(), deps: deps(provider) });
+    const result = await callModel({ ...criticCall(), deps: deps(provider, jsonObjectPolicy()) });
     expect(result.ok).toBe(true);
     if (!result.ok) throw new Error("unreachable");
     expect(result.repaired).toBe(true);
@@ -512,7 +744,7 @@ describe("json_object mode: schema in the prompt, one repair, then fall back", (
 
   it("a reply that is still invalid after the repair is `invalid_after_repair`, never a guess", async () => {
     const { provider, calls } = fakeProvider([okReply('{"nope":1}'), okReply("still wrong")]);
-    const result = await callModel({ ...criticCall(), deps: deps(provider) });
+    const result = await callModel({ ...criticCall(), deps: deps(provider, jsonObjectPolicy()) });
     expect(result.ok).toBe(false);
     if (result.ok) throw new Error("unreachable");
     expect(result.reason).toBe("invalid_after_repair");
@@ -587,12 +819,9 @@ describe("every provider failure becomes a typed reason, and none of them throws
     };
     await expect(
       callModel({ ...criticCall(), deps: deps(exploding) })
-    ).rejects.toThrow("unexpected");
-    // NOTE: the contract is that PROVIDERS never throw (asserted in
-    // tests/ai.port-and-models.test.ts). callModel deliberately does not swallow
-    // a programming error from a hand-written provider — that would hide a bug in
-    // a file whose whole job is to never have one. Every SHIPPED provider path is
-    // proven non-throwing at the port.
+    ).resolves.toMatchObject({ ok: false, reason: "http_error", detail: expect.stringContaining("confirmed billing outcome") });
+    // Unknown billing remains reserved even when an adapter violates its
+    // non-throwing contract; the caller can still use its fallback.
   });
 });
 
@@ -608,7 +837,7 @@ describe("one ledger row per call, carrying what an owner needs", () => {
     const row = runs[0];
     expect(row.agent_id).toBe("A06");
     expect(row.tool_provider).toBe("fake");
-    expect(row.tool_model_version).toBe("stealth/ox-alpha");
+    expect(row.tool_model_version).toBe("deepseek/deepseek-v4-flash-0731");
     expect(row.capabilities_used).toEqual(["seo.critique_page"]);
     expect(row.latency_ms).toBeGreaterThanOrEqual(0);
     const summary = row.outputs_summary as Record<string, unknown>;

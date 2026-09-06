@@ -1,6 +1,7 @@
-import { createClient } from "@supabase/supabase-js";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { SeoFactoryPolicy, TRIAL_DEFAULT_SEO_FACTORY_POLICY } from "@/domain/search/policy";
 import type { PolicyStore } from "@/platform/stores/interfaces";
+import { requireServiceClient } from "@/platform/db/client";
 
 /**
  * Database-backed page-creator policy. Every save is a new immutable version
@@ -8,13 +9,14 @@ import type { PolicyStore } from "@/platform/stores/interfaces";
  * policy is the highest version; nothing is ever overwritten in place.
  * Validation runs on save, so a policy that breaks a trial invariant (owner
  * publish approval, target vs cap, geography rules) can never be persisted.
+ *
+ * INTERNAL (service-role) by design — see docs/security/SERVICE-KEY-AUDIT.md:
+ * this is admin configuration (the owner's SEO-factory tuning), not a
+ * per-homeowner row, so there is no "which subject owns this row" question
+ * for the request-scoped seam to answer.
  */
 export class SupabasePolicyStore implements PolicyStore {
-  private db = createClient(
-    process.env.SUPABASE_URL as string,
-    process.env.SUPABASE_SERVICE_ROLE_KEY as string,
-    { auth: { persistSession: false, autoRefreshToken: false } }
-  );
+  private db: SupabaseClient = requireServiceClient();
 
   constructor(private readonly fallback: SeoFactoryPolicy = TRIAL_DEFAULT_SEO_FACTORY_POLICY) {}
 

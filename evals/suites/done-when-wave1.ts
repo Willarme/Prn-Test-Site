@@ -16,15 +16,18 @@ const GROUP = "Done when — Wave 1 (T1-04 A01, T1-05 A02)";
  * Every expectation below is one clause of a "Done when:" line, split at the
  * record's own semicolons, plus the two KPI lines that are checkable as stated.
  *
- * TWO CLAUSES ARE DELIBERATELY NOT MEASURED HERE. "Full gauntlet green at or
+ * ONE CLAUSE IS DELIBERATELY NOT MEASURED HERE. "Full gauntlet green at or
  * above the audited baseline" is what `npm test` is; re-measuring it from
  * inside a harness that runs in the same process would be a check marking its
- * own homework. And T1-04's eval-breadth clause is SUPERSEDED — see T1-04.6.
+ * own homework. T1-04's eval-breadth clause is AMENDED, not superseded — the
+ * trade spread narrows to the AC cluster (Amendment 1A) and the 50-100 count
+ * stays, met inside it (Amendment 2A) — see T1-04.6.
  */
 export async function wave1Suite(): Promise<Suite> {
   const [
     { classifyProblem, selectClarifier },
-    { selectPlaybook, findPlaybook },
+    { selectPlaybook, findPlaybook, PLAYBOOKS },
+    { FieldRequirement, ValueReason },
     { ACTIVE_SAFETY_PACKAGE, SafetyPackage },
     { checkSafety, SAFETY_PACKAGE_VERSION },
     { clarifierCandidates },
@@ -46,6 +49,7 @@ export async function wave1Suite(): Promise<Suite> {
   ] = await Promise.all([
     import("@/domain/problem/capabilities"),
     import("@/domain/intake/playbooks"),
+    import("@/domain/intake/playbook"),
     import("@/domain/problem/safety-package"),
     import("@/domain/problem/safety"),
     import("@/domain/problem/clarifier"),
@@ -295,32 +299,82 @@ export async function wave1Suite(): Promise<Suite> {
       group: GROUP,
       expectation:
         "every clarifying question carries one of the SIX CANON `value_reason` tags, and a question without one is rejected at validation",
-      source: `${TODO} §T1-04 "Done when" clause 4; A01 spec §9 step 4 and §4 (the enum: safety | packet | diy_viability | provider_type | tools_parts | next_step)`,
-      how: "Looks for the enum on the shipped clarifier candidates and in the contracts, and reports what stands in its place.",
-      measure() {
-        const enumHits = filesUnder("src").filter((f) => /value_reason/.test(f.text));
+      source: `${TODO} §T1-04 "Done when" clause 4; A01 spec §9 step 4 and §4 (the enum: safety | packet | diy_viability | provider_type | tools_parts | next_step); §10 conflict RULED — canon's six stand (Josh 2026-08-28, A01/A02 approval record condition 3: 08_INTAKE_PACKET.md's eight-category list superseded on this point, *urgency* deliberately not added) and hardened into the build-time type per the crew ruling of 2026-08-30 (the canon extract's six-category enum IS the contract; 08_INTAKE_PACKET.md's differently-worded clarifier rule becomes guidance prose mapped onto the six tags — \`why_it_matters\` stays as the human-readable half)`,
+      how: "Walks every required field of every shipped playbook and checks its tag is one of the six canon values; feeds the schema a question with the ruled-out seventh tag (urgency) and one with no tag at all and requires both be rejected; checks the tag rides the clarifier candidates; then drives the REAL intake route and reads the tag back off every `intake.clarifier_asked` envelope the journey emitted.",
+      async measure() {
+        const six = ValueReason.options as readonly string[];
+        const badTag: string[] = [];
+        const distribution = new Map<string, number>();
+        let fieldsChecked = 0;
+        for (const pb of PLAYBOOKS) {
+          for (const f of pb.required_fields) {
+            fieldsChecked += 1;
+            if (!six.includes(f.value_reason)) {
+              badTag.push(`${pb.playbook_id}/${f.field_key}: "${f.value_reason}"`);
+            }
+            distribution.set(f.value_reason, (distribution.get(f.value_reason) ?? 0) + 1);
+          }
+        }
+
+        // "rejected at validation" — the schema, fed the two ways a question
+        // could dodge the rule: the tag the ruling considered and deliberately
+        // left out, and no tag at all.
+        const template = PLAYBOOKS[0].required_fields[0];
+        const urgency = FieldRequirement.safeParse({ ...template, value_reason: "urgency" });
+        const untagged = FieldRequirement.safeParse(
+          Object.fromEntries(Object.entries(template).filter(([k]) => k !== "value_reason"))
+        );
+
         const playbook = selectPlaybook("AC blowing warm air", "hvac");
         const candidates = clarifierCandidates(playbook, []);
-        const reasoned = candidates.filter((c) => c.why_it_matters.trim().length > 0).length;
-        if (enumHits.length > 0) {
-          return pass(`value_reason is implemented in ${enumHits.length} file(s)`, enumHits.map((f) => f.path));
-        }
-        return blocked(
-          `the six-tag enum is NOT implemented. Every candidate question does carry a written reason — the playbook's own \`why_it_matters\`, non-empty on ${reasoned} of ${candidates.length} shipped candidates — but it is prose a human wrote, not one of six machine-checkable tags, so "a question without one is rejected at validation" has nothing to reject against`,
-          "an owner ruling on the clarifier-rule conflict the A01 spec itself flags (§10): the canon extract's six-category value_reason enum and 08_INTAKE_PACKET.md's differently-worded clarifier rule are unreconciled, and the spec instructs the builder to follow the extract AND flag the conflict rather than blend the lists. Until that is ruled, implementing one of the two lists as a closed type would decide it by code.",
+
+        const journey = await driveIntake("The AC is blowing warm air and the house won't cool down");
+        const asked = journey.events.filter((e) => e.event_name === "intake.clarifier_asked");
+
+        return all([
           [
-            `candidates checked: ${candidates.map((c) => c.field_key).join(", ")}`,
-            "each carries why_it_matters, which the /complete screen shows the homeowner verbatim",
-          ]
-        );
+            "every question in every shipped bank carries one of the six canon tags",
+            badTag.length === 0 && fieldsChecked > 0,
+            badTag.length > 0 ? badTag.join("; ") : `${fieldsChecked} questions across ${PLAYBOOKS.length} playbooks`,
+          ],
+          [
+            "the enum is exactly canon's six",
+            six.length === 6 &&
+              ["safety", "packet", "diy_viability", "provider_type", "tools_parts", "next_step"].every((t) =>
+                six.includes(t)
+              ),
+            six.join(" | "),
+          ],
+          ["a question tagged with the ruled-out *urgency* is rejected", urgency.success === false],
+          ["a question with no tag at all is rejected", untagged.success === false],
+          [
+            "the tag rides every clarifier candidate the selector offers",
+            candidates.length > 0 && candidates.every((c) => six.includes(c.value_reason)),
+            candidates.map((c) => `${c.field_key}:${c.value_reason}`).join(", "),
+          ],
+          [
+            "…without displacing the prose — why_it_matters is still on every candidate",
+            candidates.every((c) => c.why_it_matters.trim().length > 0),
+          ],
+          [
+            "and a REAL journey's asked questions each expose their tag on the event stream",
+            asked.length > 0 && asked.every((e) => six.includes(String(e.context.value_reason))),
+            asked.map((e) => `${e.context.field_key}:${e.context.value_reason}`).join(", "),
+          ],
+          [
+            "tag distribution is a mapping, not a rubber stamp",
+            distribution.size >= 3,
+            [...distribution.entries()].sort((a, b) => b[1] - a[1]).map(([t, n]) => `${t}=${n}`).join(", "),
+          ],
+        ]);
       },
     },
     {
       id: "T1-04.6",
       group: GROUP,
       expectation:
-        "the eval corpus covers the trial's cluster and passes at 100% — NARROWED from the record's own \"50-100 cases across the four trades\" to the AC/not-cooling cluster plus safe out-of-scope routing",
-      source: `${TODO} §T1-04 "Done when" clause 6, SUPERSEDED by ${CRITIQUE} finding 2 ("too broad for the Black Car trial — 50-100 cases across four trades fights the narrow vertical slice", CONFIRMED) and §7 question 3; cluster defined by ${NOTES} §16 and §24`,
+        "the eval corpus is canon's 50-100 cases, met INSIDE the AC/not-cooling cluster plus safety and safe out-of-scope routing, and passes at 100% — the trade spread narrowed (Amendment 1A), the count did not (Amendment 2A)",
+      source: `${TODO} §T1-04 "Done when" clause 6, AMENDED by the A01 spec's Amendments 1A and 2A (2026-08-28, crew 23966f — trade spread narrows per ${CRITIQUE} finding 2, count stays at canon's 50-100 per 01 Canon doc 20 step 7); cluster defined by ${NOTES} §16 and §24`,
       how: "Runs every corpus case through A01's PRODUCTION surface with the model off, and checks the trade, the safety verdict and the playbook against what the case says the problem actually is. Cases whose phrasing is outside the shipped vocabulary are held to safe routing instead, and named below.",
       async measure() {
         const wrong: string[] = [];
@@ -363,6 +417,12 @@ export async function wave1Suite(): Promise<Suite> {
           if (problem.service_category && !problem.service_category_confidence) {
             wrong.push(`${c.id}: a trade with no confidence label`);
           }
+        }
+        // Amendment 2A restored canon's count: 50-100 cases, met inside the
+        // cluster. A corpus that shrinks below 50 is a regression against the
+        // amended clause, so the count is gated here, not merely reported.
+        if (checked < 50) {
+          wrong.push(`the corpus holds ${checked} cases — Amendment 2A restored canon's 50-100`);
         }
         const detail = [
           `${checked} cases: ${PROBLEM_CASES.filter((c) => c.group === "ac_cluster").length} AC cluster, ${PROBLEM_CASES.filter((c) => c.group === "safety").length} safety, ${PROBLEM_CASES.filter((c) => c.group === "hvac_neighbour").length} HVAC neighbours, ${PROBLEM_CASES.filter((c) => c.group === "misrouted").length} misrouted from the AC door, ${PROBLEM_CASES.filter((c) => c.group === "out_of_playbook").length} out of playbook`,
@@ -825,7 +885,7 @@ export async function wave1Suite(): Promise<Suite> {
   return {
     group: GROUP,
     preamble:
-      "T1-04 (A01) and T1-05 (A02) are the trial's equal-priority pair — the agent that turns a homeowner's sentence into structured facts, and the agent that turns those facts into the packet a provider reads. Every row below is one clause of their \"Done when\" lines, measured against the code as it stands, and most of them are measured by DRIVING THE REAL /api/intake route rather than by calling a function: the gap this suite exists to close was a production surface that every unit test called directly and nothing in the running app called at all. Three rows are BLOCKED and each names what is missing: the six-tag value_reason enum (an unreconciled spec conflict), a roofing playbook (T1-21), and the shadow-mode review a human still has to do with their own eyes. T1-04's \"50-100 cases across the four trades\" is SUPERSEDED — see T1-04.6 for the ruling and the corpus that replaced it.",
+      "T1-04 (A01) and T1-05 (A02) are the trial's equal-priority pair — the agent that turns a homeowner's sentence into structured facts, and the agent that turns those facts into the packet a provider reads. Every row below is one clause of their \"Done when\" lines, measured against the code as it stands, and most of them are measured by DRIVING THE REAL /api/intake route rather than by calling a function: the gap this suite exists to close was a production surface that every unit test called directly and nothing in the running app called at all. Two rows are BLOCKED and each names what is missing: a roofing playbook (T1-21), and the shadow-mode review a human still has to do with their own eyes. The six-tag value_reason enum, formerly blocked on an unreconciled spec conflict, was ruled (2026-08-28 condition 3, hardened 2026-08-30) and is now implemented and measured in T1-04.5. T1-04's \"50-100 cases across the four trades\" is AMENDED, not superseded: the trade spread narrows to the AC cluster (Amendment 1A) and the count stays at canon's 50-100, met inside it (Amendment 2A) — see T1-04.6 for the corpus that meets it.",
     expectations,
   };
 }

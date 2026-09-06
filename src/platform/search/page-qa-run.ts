@@ -28,6 +28,7 @@ import {
   emitPageQaPassed,
 } from "@/platform/search/page-qa-events";
 import { pageRegistryStore } from "@/platform/search/page-registry-store";
+import { collectDoorTemplateEvidence } from "@/platform/search/door-template-evidence";
 
 /**
  * THE A06 QA RUN — pre-answer 4, condition C6/C8, coherence issues 4 and 13.
@@ -154,6 +155,7 @@ export async function runPageQaBatch(
 
   const gate = humanGate(input.policy);
   const context: PageQaContext = {
+    door_template_evidence: collectDoorTemplateEvidence(input.specs),
     registry: input.registry,
     // A06's own namespaced sub-block, resolved per tenant from the
     // runtime-editable document (C8 / pre-answer 9).

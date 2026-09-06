@@ -54,7 +54,9 @@ const REGISTRY: IntentPage[] = [SAMPLE_PAGE_SPEC, ...COMMITTED].map((s) =>
 const noDb = () => null;
 
 /** The same page, broken two different ways, so a repair is observable. */
-const HEALTHY = COMMITTED[0];
+// Exercise the generic refresh contract on an existing generic door. The AC
+// warm-air intent now binds frozen v43 and correctly fails its production gate.
+const HEALTHY = COMMITTED.find((spec) => spec.primary_query === "furnace blowing cold air")!;
 const BROKEN_PROVENANCE = PageSpec.parse({ ...HEALTHY, source_fact_bundle_ids: [] });
 
 describe("the defect events are registered by A08, not minted by A06", () => {
@@ -183,7 +185,7 @@ describe("the regeneration trigger (coherence issue 4) — a REFRESH page re-ent
   ) as SeedFile;
   const opportunity = {
     ...importSeedRows(seedFile, "2026-08-14T00:00:00Z").find(
-      (o) => o.keyword === "ac blowing warm air"
+      (o) => o.keyword === "furnace blowing cold air"
     )!,
     recommendation: "NEW" as const,
     status: "approved" as const,

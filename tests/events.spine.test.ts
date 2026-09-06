@@ -68,14 +68,33 @@ describe("A00 event + metric spine", () => {
      * the classification. Scope to the run that ran the classify capability —
      * which is the run `agent.run_completed` is about.
      */
-    const run = recentAgentRuns().find(
-      (r) => r.agent_id === "A01" && r.capabilities_used.includes("classify_home_problem")
-    )!;
+    /**
+     * WIDENED 2026-09-05 (campaign track F1). With the model-backed alternate
+     * cleared for the test environment, A01's classification is TWO ledger
+     * rows: the gateway's row for the deterministic pass
+     * (`classify_home_problem`) and the AI gateway's row for the alternate it
+     * consulted (`classify_problem`), and `classifyProblem` reports the
+     * alternate's run id when there is one. Both rows are real runs of the
+     * classification, so the property pinned here is the one that matters:
+     * the envelope's `agent_run_id` resolves to an A01 classification run that
+     * is actually in the ledger, never to a made-up or missing id.
+     */
+    const classifyRunIds = new Set(
+      recentAgentRuns()
+        .filter(
+          (r) =>
+            r.agent_id === "A01" &&
+            (r.capabilities_used.includes("classify_home_problem") ||
+              r.capabilities_used.includes("classify_problem"))
+        )
+        .map((r) => r.run_id)
+    );
+    expect(classifyRunIds.size).toBeGreaterThan(0);
     const events = readDevDb().events.filter((e) => e.event_name === "agent.run_completed");
     expect(events.length).toBe(1);
     const envelope = events[0];
     expect(EventEnvelope.safeParse(envelope).success).toBe(true);
-    expect(envelope.agent_run_id).toBe(run.run_id);
+    expect(classifyRunIds.has(envelope.agent_run_id as string)).toBe(true);
     expect(envelope.actor.actor_type).toBe("agent");
     expect(envelope.actor.actor_id).toBe("A01");
     expect(envelope.context.problem_id).toMatch(/^pr/);

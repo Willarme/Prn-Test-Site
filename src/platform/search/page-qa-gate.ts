@@ -9,6 +9,7 @@ import {
   type PlatformClientProvider,
 } from "@/platform/db/client";
 import { pageRegistryStore } from "@/platform/search/page-registry-store";
+import { collectDoorTemplateEvidence } from "@/platform/search/door-template-evidence";
 
 /**
  * THE PUBLISH GATE'S ONE INPUT — condition C10, coherence report issue 6.
@@ -99,6 +100,7 @@ export async function publishGate(input: PublishGateInput): Promise<PublishGateR
   const registry = await pageRegistrySnapshot(specs, clientProvider);
 
   const decision = evaluateReleaseForPublish(spec, {
+    door_template_evidence: collectDoorTemplateEvidence([spec]),
     existing: specs,
     registry,
     // A06's own namespaced sub-block — per tenant, runtime-editable (C8/C9).
@@ -140,6 +142,7 @@ export async function publishQueueSnapshot(
   return specs.map((spec) => ({
     spec,
     decision: evaluateReleaseForPublish(spec, {
+      door_template_evidence: collectDoorTemplateEvidence([spec]),
       existing: specs,
       registry,
       policy: policy.page_qa,

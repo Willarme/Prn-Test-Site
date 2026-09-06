@@ -1,0 +1,104 @@
+<!-- ================= HERO ================= -->
+<section class="hero chapter" id="hero">
+  <div class="hero-deco" aria-hidden="true"></div>
+  <div class="wrap hero-inner">
+    <p class="crumb">
+      <a href="/">Home</a> / <a href="{%crumb.family_href%}">{%crumb.family_label%}</a> / <span>{%crumb.problem_label%}</span>
+    </p>
+      <div class="hero-copy">
+        <span class="hero-badge">{%hero.badge_problem%} &nbsp;&middot;&nbsp; Free LIVE walkthrough<span class="badge-tail"> &nbsp;&middot;&nbsp; {%hero.badge_tail%}</span></span>
+        <h1>{%hero.h1_html%}</h1>
+
+        <div class="answer-capsule" id="direct-answer">
+          <span class="cap-label"><i class="pennant" aria-hidden="true"></i>The short answer</span>
+          <p>{%hero.answer_body_html%}</p>
+          <p class="cap-last"><strong>{%hero.cap_last_html%}</strong></p>
+        </div>
+      </div>
+
+        <div class="value-panel fold" id="vp" tabindex="0">
+          <div class="vp-head">
+            <span class="vp-eyebrow"><i class="pennant" aria-hidden="true"></i>Why this is different</span>
+            <strong>{%hero.vp_head_strong%}</strong>
+            <span class="claim-pos">{%hero.vp_claim_pos%}</span>
+          </div>
+          <div class="vp-rows">
+{%each hero.value_rows%}            <div class="vp-row">
+              <p class="vp-generic">{%.generic%}</p>
+              <span class="vp-arrow" aria-hidden="true">&rarr;</span>
+              <p class="vp-ours">{%.ours_html%}</p>
+            </div>
+{%/each%}          </div>
+          <p class="vp-foot">{%hero.vp_foot_html%}</p>
+        </div>
+
+      <!-- ================= INTAKE ================= -->
+      <div id="intake" class="console">
+        <div class="door-flag"><span><i class="pennant" aria-hidden="true"></i>Start here</span><span class="flag-time">Takes 1 to 5 minutes</span></div>
+        <div class="con-head">
+          <h2 class="display con-h2">{%intake.h2_html%}</h2>
+          <div class="con-pop" id="con-pop">
+          <p class="eyebrow con-eyebrow"><i class="pennant" aria-hidden="true"></i>LIVE Walkthrough Tool</p>
+          <p class="muted con-lede">{%intake.lede%}</p>
+          </div>
+        </div>
+
+        <form id="home-problem-intake" action="/api/intake/start" method="post" enctype="multipart/form-data"
+              data-capability-id="home_problem_analyzer" data-input-schema-version="1" class="con-form">
+{%if intake.attribution%}          <input type="hidden" name="page_id" value="{%intake.attribution.page_id%}">
+          <input type="hidden" name="intent_cluster_id" value="{%intake.attribution.intent_cluster_id%}">
+          <input type="hidden" name="search_opportunity_id" value="{%intake.attribution.search_opportunity_id%}">
+          <input type="hidden" name="problem_family_hint" value="{%intake.attribution.problem_family_hint%}">
+          <input type="hidden" name="landing_path" value="{%intake.attribution.landing_path%}">
+{%/if%}
+          <label for="problem-description" class="con-label">{%intake.field_label%}</label>
+          <div class="field">
+          <textarea id="problem-description" name="problem_description" required rows="4"
+            aria-describedby="problem-description-help"
+            placeholder="{%intake.placeholder%}"
+            class="con-ta"></textarea>
+          <p id="problem-description-help" class="con-help dim">{%intake.help%}</p>
+
+          <div class="media-row">
+            <label class="cta-quiet">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>
+              <span class="tip">Talk through it</span>
+              <input type="file" name="voice_note" accept="audio/*" class="file-in">
+            </label>
+            <label class="cta-quiet">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+              <span class="tip">Show us your unit</span>
+              <input type="file" name="photos" accept="image/*" multiple class="file-in">
+            </label>
+            <label class="cta-quiet">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5"/><rect x="2" y="6" width="14" height="12" rx="2"/></svg>
+              <span class="tip">Add a short video</span>
+              <input type="file" name="video" accept="video/*" class="file-in">
+            </label>
+            <span class="dim opt">Optional</span>
+          </div>
+          </div>
+
+          <!-- guiding prompts, the shed pattern: tell them what helps and why -->
+          <div class="prompts" id="prompts">
+            <div class="qline" aria-hidden="true"><span class="qtype" id="qtype"></span></div>
+{%each intake.prompts%}            <div class="qmark"><span class="q">?</span><span class="qt">{%.text%}</span></div>
+{%/each%}          </div>
+
+          <div class="sofar">
+            <p class="sofar-l dim">{%intake.so_far_label%}</p>
+            <div class="sofar-list">
+{%each intake.so_far_items%}              <div class="sofar-row"><span class="tick"></span><span class="qt">{%.%}</span></div>
+{%/each%}            </div>
+          </div>
+
+          <div class="cta-wrap">
+          <button type="submit" class="cta cta-main" id="startBtn">{%intake.submit%}</button>
+          <p class="free dim" id="free-note">Free. No email to start. We ask for one only if you want the packet emailed to you.</p>
+          </div>
+        </form>
+      </div>
+    </div>
+  
+</section>
+

@@ -274,6 +274,29 @@ export function applyQualityGuard(inner: RuntimeStore, deps: GuardDeps = {}): Ru
      * version nobody will look at again.
      */
     supersedePacket: inner.supersedePacket.bind(inner),
+    /**
+     * LOOP SURFACES (campaign track F2b, 2026-09-05) — passthroughs. None of
+     * these rows is an A09 quality subject (invariants.ts names problem
+     * records, packets, consents, sessions and events); a link revocation, a
+     * claim, a friend's answer, a feedback score, an outbox message, an
+     * address or a vote has no invariant to check here, and A09 must never
+     * become a gate on them. Bound, not wrapped, for the reason above.
+     */
+    revokeLink: inner.revokeLink.bind(inner),
+    isLinkRevoked: inner.isLinkRevoked.bind(inner),
+    saveKeepClaim: inner.saveKeepClaim.bind(inner),
+    getKeepClaim: inner.getKeepClaim.bind(inner),
+    saveMagicLink: inner.saveMagicLink.bind(inner),
+    consumeMagicLink: inner.consumeMagicLink.bind(inner),
+    saveAskAnswer: inner.saveAskAnswer.bind(inner),
+    listAskAnswers: inner.listAskAnswers.bind(inner),
+    saveFeedback: inner.saveFeedback.bind(inner),
+    enqueueEmail: inner.enqueueEmail.bind(inner),
+    getEmail: inner.getEmail.bind(inner),
+    markEmailSent: inner.markEmailSent.bind(inner),
+    saveJobAddress: inner.saveJobAddress.bind(inner),
+    getJobAddress: inner.getJobAddress.bind(inner),
+    saveSignup: inner.saveSignup.bind(inner),
 
     // --- validated writes --------------------------------------------------
     async recordJourney(input: RecordJourneyInput): Promise<void> {
@@ -303,8 +326,8 @@ export function applyQualityGuard(inner: RuntimeStore, deps: GuardDeps = {}): Ru
       }
     },
 
-    async savePacket(packet: JobPacket): Promise<void> {
-      await inner.savePacket(packet);
+    async savePacket(packet: JobPacket, requestId: string): Promise<void> {
+      await inner.savePacket(packet, requestId);
       if (!guardEnabled(deps)) return;
       const startedAt = Date.now();
       try {

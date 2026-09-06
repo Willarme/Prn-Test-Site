@@ -8,6 +8,7 @@ import {
 } from "@/domain/problem/packet-copy";
 import type { DiagnosisAnswer, IntakeAnswer, IntakePlaybook } from "@/domain/intake/playbook";
 import { nextFor } from "@/domain/intake/playbook";
+import { fieldConflictText, heldFieldConflicts } from "@/domain/intake/field-conflicts";
 
 /**
  * Assemble a packet VERSION from everything the customer has supplied so far:
@@ -133,12 +134,14 @@ export function assemblePacket(input: AssembleInput): JobPacket {
   // Latest answer per field wins; photos count as "attached".
   const latest = new Map<string, IntakeAnswer>();
   for (const a of input.answers) latest.set(a.field_key, a);
+  const conflicts = heldFieldConflicts(input.answers, input.allEvidence, input.playbook?.required_fields ?? []);
   const collected = [...latest.values()].map((a) => ({
     label: labelFor(a.field_key),
-    value:
-      a.value_text ??
+    value: conflicts.some(c => c.field_key === a.field_key)
+      ? fieldConflictText(conflicts.find(c => c.field_key === a.field_key)!)
+      : a.value_text ??
       (a.evidence_id ? copy.content.answer_photo_attached : copy.content.answer_provided),
-    source: a.source,
+    source: conflicts.some(c => c.field_key === a.field_key) ? "customer_text" : a.source,
   }));
 
   const media = input.allEvidence.filter((e) => e.kind === "photo" || e.kind === "video").length;
@@ -155,6 +158,7 @@ export function assemblePacket(input: AssembleInput): JobPacket {
   const unknowns = base.what_remains_unknown.filter(
     (u) => !(diagnosis && u === copy.content.unknown_exact_cause && !walkthroughIncomplete)
   );
+  unknowns.push(...conflicts.map(fieldConflictText));
   const questions = base.questions_for_provider.filter((q) => {
     const ql = q.toLowerCase();
     if ((knownKeys.has("unit_model_serial") || knownKeys.has("brand") || knownKeys.has("system_age")) && /(brand|how old|age of)/.test(ql)) return false;

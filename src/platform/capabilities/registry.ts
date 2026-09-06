@@ -47,6 +47,29 @@ export const CAPABILITY_REGISTRY: readonly CapabilityDefinition[] = [
    * already said in order to choose what to ask next.
    */
   { capability_key: "select_next_clarifier", version: V, risk_class: "R1", status: "TEST", input_schema_ref: "contracts://problem/ClarifierInput", output_schema_ref: "contracts://problem/ClarifierOutput", required_scopes: ["problem.own.read"], current_implementation: "deterministic", implementation_ref: "selectNextClarifierDeterministic @ src/domain/problem/clarifier.ts", owning_agent_ids: ["A01"], aliases: ["select_clarifying_questions"], alternate_implementations: [{ kind: "model", ref: "selectNextClarifierWithModel @ src/platform/problem/ai-clarifier.ts", enabled_policy_key: "select_next_clarifier", handles_customer_data: true, falls_back_to: "selectNextClarifierDeterministic — the playbook's own field order, unchanged" }] },
+  /**
+   * THE RATING-PLATE READER, 2026-09-05 (campaign routine decision 2 —
+   * DECISIONS FOR MELISSA decision 1, recommendation B: "one narrow capability
+   * that reads a photograph of a metal plate").
+   *
+   * There is NO deterministic implementation and none is pretended: nothing in
+   * this codebase can read printed text off a photo without a model, so
+   * `current_implementation` is "model" and `falls_back_to` is the honest
+   * answer — the homeowner is asked to type the brand, model and age in the
+   * walkthrough, exactly as before this capability existed. A failed, slow,
+   * refused or disabled read costs them nothing (media.ts treats the read as a
+   * bonus on a photo already stored).
+   *
+   * `handles_customer_data: true` — the input IS homeowner material (their
+   * photograph), so the privacy rule applies in full: refused before any
+   * network call unless the model is cleared, and the bytes are passed through
+   * platform/media/exif.ts first so location metadata never leaves.
+   *
+   * R1 for the same reason classify_home_problem is R1: it reads the
+   * homeowner's own private data and writes nothing itself; the intake path
+   * decides what to do with the answer.
+   */
+  { capability_key: "read_equipment_label", version: V, risk_class: "R1", status: "TEST", input_schema_ref: "contracts://problem/LabelReadInput", output_schema_ref: "contracts://problem/LabelReadOutput", required_scopes: ["problem.own.read"], current_implementation: "model", implementation_ref: "readEquipmentLabel @ src/platform/problem/ai-label.ts", owning_agent_ids: ["A01"], alternate_implementations: [{ kind: "model", ref: "readEquipmentLabel @ src/platform/problem/ai-label.ts", enabled_policy_key: "read_equipment_label", handles_customer_data: true, falls_back_to: "no read at all — the homeowner types brand, model and age in the walkthrough, exactly as before; a failed or absent read never becomes an error" }] },
   // A00 implementation binding — alias "build_job_packet" is the A00-spec name.
   /**
    * A02 BUILD, 2026-08-25. `current_implementation` STAYS "deterministic" and

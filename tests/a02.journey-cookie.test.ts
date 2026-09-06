@@ -166,26 +166,84 @@ describe("A02 — exactly what the prn_last_journey cookie may contain", () => {
 });
 
 describe("A02 — the mitigations are not relaxed, and there is only ONE cookie", () => {
-  const routeSrc = readFileSync(
-    join(process.cwd(), "src/app/api/intake/route.ts"),
-    "utf-8"
-  );
+  /**
+   * MOVED 2026-09-05 (campaign track F1). The cookie is DECIDED in one place
+   * and SET by whichever transport called `startIntake`: the JSON route, or
+   * the static door page's multipart adapter. Both write the same name with
+   * the same options, because neither of them chooses any of it.
+   *
+   * REPLACED 2026-09-05 (campaign track P3, `platform/links/owner.ts`). What
+   * `startIntake` hands the transports is no longer the journey SNAPSHOT
+   * (packet projection + safety rule, file store only, path=/results). It is
+   * a signed, request-bound OWNER CAPABILITY: a keep-scoped link token, one
+   * cookie name per request, path=/ so the results, links and revoke routes
+   * all receive the same proof, set after the journey was saved, on every
+   * store. It carries NO journey data, which is why the /results path scope
+   * and the file-store-only guard that bounded the snapshot's exposure are
+   * gone: there is nothing in it to expose. The snapshot cookie still exists
+   * as a read-only fallback on the results page ("data only, grants no
+   * authority" — owner.ts), so its allow-list above is still pinned, and this
+   * block now pins the capability where IT is decided.
+   */
+  const liveSrc = readFileSync(join(process.cwd(), "src/platform/intake/start.ts"), "utf-8");
+  const ownerSrc = readFileSync(join(process.cwd(), "src/platform/links/owner.ts"), "utf-8");
 
-  it("still httpOnly, sameSite lax, secure in production, path-scoped to /results", () => {
-    const block = routeSrc.match(/res\.cookies\.set\([\s\S]*?\n {6}\}\);/)![0];
-    expect(block).toMatch(/httpOnly: true/);
-    expect(block).toMatch(/sameSite: "lax"/);
-    expect(block).toMatch(/secure: process\.env\.NODE_ENV === "production"/);
-    expect(block).toMatch(/path: "\/results"/);
+  it("still httpOnly, sameSite lax, secure in production — decided in owner.ts, set by start.ts", () => {
+    const fn = ownerSrc.match(/export function createOwnerCookie[\s\S]*?\n\}/)![0];
+    expect(fn).toMatch(/httpOnly: true/);
+    expect(fn).toMatch(/sameSite: "lax"/);
+    expect(fn).toMatch(/secure: process\.env\.NODE_ENV === "production"/);
+    // path=/ is deliberate: a signed capability with no data in it is what
+    // /results, /links and POST /api/links/revoke all check.
+    expect(fn).toMatch(/path: "\/"/);
+    // start.ts decides nothing itself: no inline options, no cookie name.
+    expect(liveSrc).toMatch(/const cookie = createOwnerCookie\(requestId\)/);
+    expect(liveSrc).not.toMatch(/options: \{/);
+    expect(liveSrc).not.toMatch(/httpOnly/);
   });
 
-  it("is set ONLY when there is no database at all", () => {
-    expect(routeSrc).toMatch(/if \(store\.kind === "file"\) \{\s*\n\s*const payload = encodeJourneyCookie/);
+  it("carries a signed request-bound capability, never the journey snapshot", async () => {
+    // The snapshot's projection is not what start.ts sets any more.
+    expect(liveSrc).not.toMatch(/encodeJourneyCookie|projectPacketForCookie|JOURNEY_COOKIE_NAME/);
+    // The capability is created only AFTER the journey write succeeded.
+    const saveAt = liveSrc.indexOf("await store.recordJourney(");
+    const cookieAt = liveSrc.indexOf("createOwnerCookie(requestId)");
+    expect(saveAt).toBeGreaterThan(0);
+    expect(cookieAt).toBeGreaterThan(saveAt);
+
+    const prior = process.env.LINK_SIGNING_SECRET;
+    process.env.LINK_SIGNING_SECRET = "a02-cookie-pin-not-a-deploy-key-0123456789";
+    try {
+      const { __resetLinkSecretForTests, decodeLink } = await import("@/platform/links/tokens");
+      const { createOwnerCookie, ownerCookieName } = await import("@/platform/links/owner");
+      __resetLinkSecretForTests();
+      const cookie = createOwnerCookie("rq_1");
+      expect(cookie.name).toBe(ownerCookieName("rq_1"));
+      expect(cookie.name).not.toBe(JOURNEY_COOKIE_NAME);
+      // One name per request, so a second request's cookie cannot shadow it.
+      expect(ownerCookieName("rq_other")).not.toBe(cookie.name);
+      const decoded = decodeLink(cookie.value);
+      expect(decoded.ok).toBe(true);
+      if (decoded.ok) {
+        expect(decoded.scope).toBe("keep");
+        expect(decoded.request_id).toBe("rq_1");
+      }
+      // Nothing from the packet rides in it: no JSON keys at all.
+      expect(cookie.value).not.toMatch(/[{}":]/);
+      expect(decodeJourneyCookie(cookie.value, "rq_1")).toBeNull();
+    } finally {
+      if (prior === undefined) delete process.env.LINK_SIGNING_SECRET;
+      else process.env.LINK_SIGNING_SECRET = prior;
+      const { __resetLinkSecretForTests } = await import("@/platform/links/tokens");
+      __resetLinkSecretForTests();
+    }
   });
 
   it("no second cookie exists anywhere in src/ — no regenerate or share variant", () => {
     const files = [
+      "src/platform/intake/start.ts",
       "src/app/api/intake/route.ts",
+      "src/app/api/intake/start/route.ts",
       "src/app/api/intake/answer/route.ts",
       "src/app/api/intake/media/route.ts",
       "src/app/api/packet-activity/route.ts",
@@ -198,8 +256,12 @@ describe("A02 — the mitigations are not relaxed, and there is only ONE cookie"
       setters += (src.match(/cookies\.set\(/g) ?? []).length;
       // A non-httpOnly variant is the one thing condition 6 forbids outright.
       expect(src, file).not.toMatch(/httpOnly:\s*false/);
+      // No transport may name a cookie of its own: both setters pass through
+      // the ONE payload `startIntake` built, or they set nothing.
+      expect(src, file).not.toMatch(/cookies\.set\(\s*["'`]/);
     }
-    expect(setters).toBe(1);
+    // Two transports, one cookie: the JSON route and the door adapter.
+    expect(setters).toBe(2);
     expect(JOURNEY_COOKIE_NAME).toBe("prn_last_journey");
   });
 

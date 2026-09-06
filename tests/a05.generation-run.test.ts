@@ -24,6 +24,9 @@ import {
   runPageFactory,
 } from "@/platform/search/page-factory-run";
 import { pageRegistryStore } from "@/platform/search/page-registry-store";
+import { AiPolicy, DEFAULT_AI_POLICY } from "@/platform/ai/policy";
+import { MemorySpendLedger } from "@/platform/ai/spend";
+import type { ModelProvider } from "@/platform/ai/provider";
 
 /**
  * A05 step 6 — THE GENERATION RUN. Admin-triggered and A04-triggered, both
@@ -40,7 +43,7 @@ function opp(overrides: Partial<SearchOpportunity> = {}): SearchOpportunity {
   return {
     search_opportunity_id: "so_run_1",
     schema_version: "1.0.0",
-    keyword: "ac blowing warm air",
+    keyword: "ac airflow feels weak",
     intent_cluster_id: null,
     cluster_label: null,
     problem_family_hint: "hvac",
@@ -74,6 +77,7 @@ function baseInput(overrides: Record<string, unknown> = {}) {
     maxPages: 10,
     now: NOW,
     trigger: "admin_action" as const,
+    aiDeps: { policy: DEFAULT_AI_POLICY },
     ...overrides,
   };
 }
@@ -83,6 +87,64 @@ beforeEach(() => {
   process.env.PRN_DEV_DB_PATH = join(tmp, "dev-db.json");
   resetAgentRunLedgerForTests();
   resetKillSwitchForTests();
+});
+
+describe("governed model writer in the real factory", () => {
+  function writer(malicious = false) {
+    let calls = 0;
+    const base = compilePageSpec(opp(), { now: NOW });
+    const policy = AiPolicy.parse({ ...DEFAULT_AI_POLICY, enabled: true, capabilities: {
+      ...DEFAULT_AI_POLICY.capabilities, generate_page_copy: { ...DEFAULT_AI_POLICY.capabilities.generate_page_copy, enabled: true },
+    } });
+    const provider: ModelProvider = { id: "fake", async complete(request) {
+      calls++;
+      const wire = JSON.stringify(request.jsonSchema);
+      expect(wire).not.toContain("blk_safe_checks");
+      expect(wire).not.toContain("blk_urgency");
+      return { ok: true, provider: "fake", attempts: 1, generationId: "gen_factory_fixture",
+        usage: { prompt_tokens: 900, completion_tokens: 400, total_tokens: 1300, reported_cost_usd: 0.001 },
+        raw: JSON.stringify({ blocks: [{ block_id: malicious ? "blk_urgency" : "blk_intent_answer",
+          body_md: "A running cooling system can have a power, controls, airflow or equipment problem. The actual thermostat setting and filter condition help narrow those branches. An on-site technician can measure what remains; these observations are preparation for that visit, not a confirmed cause.",
+          source_fact_bundle_ids: base.source_fact_bundle_ids }] }),
+      };
+    } };
+    return { deps: { policy, provider: () => provider, spend: new MemorySpendLedger() }, get calls() { return calls; } };
+  }
+
+  it("persists model copy, keeps safety bytes and records the real inner run and cost", async () => {
+    const w = writer();
+    const result = await runPageFactory(baseInput({ aiDeps: w.deps }), () => null);
+    expect(w.calls).toBe(1);
+    expect(result.copy_runs?.[0]).toMatchObject({ engine: "model", cost_usd: 0.001 });
+    expect(result.copy_runs?.[0].run_id).toBeTruthy();
+    const [saved] = await pageRegistryStore(() => null).listSpecs();
+    expect(saved.generation.model).toBe("deepseek/deepseek-v4-flash-0731");
+    const baseline = compilePageSpec(opp(), { now: NOW });
+    for (const id of ["blk_safe_checks", "blk_do_not", "blk_urgency"]) {
+      expect(saved.content_blocks.find(b => b.block_id === id)).toEqual(baseline.content_blocks.find(b => b.block_id === id));
+    }
+    expect(saved.status).toBe("STAGED");
+    expect(saved.qa.state).toBe("PENDING");
+    const outer = recentAgentRuns().find(r => r.capabilities_used.includes("seo.build_candidate_pages"));
+    expect(outer?.cost_usd).toBe(0.001);
+    const again = await runPageFactory(baseInput({ aiDeps: w.deps, existingSpecs: [saved], existingPages: result.staged.map(s => s.page) }), () => null);
+    expect(again.staged).toEqual([]);
+    expect(w.calls).toBe(1);
+  });
+
+  it("cannot overwrite a protected safety block even when the provider returns it", async () => {
+    const w = writer(true);
+    const result = await runPageFactory(baseInput({ aiDeps: w.deps }), () => null);
+    expect(result.copy_runs?.[0].engine).toBe("content_bank");
+    expect(result.staged[0].spec).toEqual(compilePageSpec(opp(), { now: NOW }));
+  });
+
+  it("does not call the writer for rejected or duplicate opportunities", async () => {
+    const w = writer();
+    await runPageFactory(baseInput({ aiDeps: w.deps, opportunities: [opp({ status: "candidate" })] }), () => null);
+    await runPageFactory(baseInput({ aiDeps: w.deps, existingSpecs: [compilePageSpec(opp(), { now: NOW })] }), () => null);
+    expect(w.calls).toBe(0);
+  });
 });
 
 afterEach(() => {
@@ -140,7 +202,7 @@ describe("IDEMPOTENT ON opportunity_id", () => {
       baseInput({
         opportunities: [
           opp(),
-          opp({ search_opportunity_id: "so_dup", keyword: "why is my ac blowing warm air" }),
+          opp({ search_opportunity_id: "so_dup", keyword: "why is my ac airflow feels weak" }),
         ],
       }),
       () => null
@@ -320,7 +382,7 @@ describe("the cannibalization pre-gate REUSES A04's helper, and A06 does not", (
     const page = IntentPage.parse({
       page_id: "page_x",
       schema_version: "1.0.0",
-      canonical_path: "/problems/ac-blowing-warm-air",
+      canonical_path: "/problems/ac-airflow-feels-weak",
       current_page_spec_id: "ps_x",
       lifecycle_status: "STAGED",
       published_at: null,
@@ -329,11 +391,11 @@ describe("the cannibalization pre-gate REUSES A04's helper, and A06 does not", (
       created_at: "2026-08-24T00:00:00Z",
     });
     expect(
-      cannibalizationConflict("anything", "/problems/ac-blowing-warm-air", [], [page])
+      cannibalizationConflict("anything", "/problems/ac-airflow-feels-weak", [], [page])
     ).toMatch(/already occupies/);
 
     const spec = compilePageSpec(opp(), { now: NOW });
-    expect(cannibalizationConflict("why is my ac blowing warm air", "/problems/other", [spec], []))
+    expect(cannibalizationConflict("why is my ac airflow feels weak", "/problems/other", [spec], []))
       .toMatch(/intent overlaps/);
   });
 

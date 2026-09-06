@@ -1,0 +1,74 @@
+{
+  "_what": "The COMMON POSSIBILITIES shortlist table (design doc §4.2 row 23, catalogue §2 COMMON POSSIBILITIES). heading_html carries the frozen count-in-words phrasing for this problem and must read the same number as orn_numeral (the giant watermark digit) and as rows.length — the validator checks heading-vs-count agreement, it is not derived automatically. columns are the four <th> labels with their .mw width class, in table order. rows are the shortlist causes in v41's own order: cause (bold), notice (what the reader would see/hear), fix_class (one of yes/care/never — the closed chip-class enum), fix_label (the chip text shown for that class — 'Yes' / a caution phrase / 'Never'), and range_html (the published cost range, verbatim including any <sup class=\"fn\"><a href=\"#src-N\">N</a></sup> footnote to the citation ledger; a range with no citation, like row 1's 'Free' and row 2's part cost, carries no <sup> — the omission is explained in sources.note_lead, never invented).",
+  "heading_html": "7 common possibilities when YOUR AC runs but the air is warm",
+  "orn_numeral": "7",
+  "columns": [
+    {
+      "label": "Cause",
+      "mw_class": "mw165"
+    },
+    {
+      "label": "What you would notice",
+      "mw_class": "mw250"
+    },
+    {
+      "label": "Yours to fix?",
+      "mw_class": "mw125"
+    },
+    {
+      "label": "Typical range",
+      "mw_class": "mw145"
+    }
+  ],
+  "rows": [
+    {
+      "cause": "Fan set to ON, not AUTO",
+      "notice": "Air always moving, cold only sometimes. Between cycles it pushes room-temperature air.",
+      "fix_class": "yes",
+      "fix_label": "Yes",
+      "range_html": "Free"
+    },
+    {
+      "cause": "Clogged air filter",
+      "notice": "Weak airflow, runs constantly, sometimes ice on the copper line.",
+      "fix_class": "yes",
+      "fix_label": "Yes",
+      "range_html": "$15 to $40"
+    },
+    {
+      "cause": "Outdoor unit has no power",
+      "notice": "Indoor fan runs, outdoor unit silent. Often a tripped breaker or pulled disconnect.",
+      "fix_class": "care",
+      "fix_label": "Reset once only",
+      "range_html": "Free, or a service call"
+    },
+    {
+      "cause": "Frozen evaporator coil",
+      "notice": "Visible ice. Usually a symptom of airflow or refrigerant, not the cause itself, so the cost follows the cause.",
+      "fix_class": "care",
+      "fix_label": "Thaw, then call",
+      "range_html": "$150 to $2,500<sup class=\"fn\"><a href=\"#src-11\">11</a></sup>"
+    },
+    {
+      "cause": "Failed capacitor",
+      "notice": "A hum outdoors with the fan not turning, or an outdoor unit that starts inconsistently.",
+      "fix_class": "never",
+      "fix_label": "Never",
+      "range_html": "$150 to $400<sup class=\"fn\"><a href=\"#src-8\">8</a></sup>"
+    },
+    {
+      "cause": "Dirty condenser coil",
+      "notice": "Outdoor unit packed with clippings or cottonwood. Struggles on the hottest days.",
+      "fix_class": "care",
+      "fix_label": "Clear loose exterior debris only; deeper cleaning may need service.",
+      "range_html": "$75 to $350<sup class=\"fn\"><a href=\"#src-10\">10</a></sup>"
+    },
+    {
+      "cause": "Low refrigerant or a leak",
+      "notice": "Cooling fading over weeks, ice, sometimes a hiss. Refrigerant does not get used up.",
+      "fix_class": "never",
+      "fix_label": "Never",
+      "range_html": "$250 to $1,600+<sup class=\"fn\"><a href=\"#src-9\">9</a></sup>"
+    }
+  ]
+}

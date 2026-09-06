@@ -121,9 +121,16 @@ export const PLATFORM_POLICY_SETTINGS: readonly PolicySetting[] = [
      * TODO-ASK-OWNER (Melissa): maximum video length, maximum AI calls per
      * request, and whether the photo cap counts videos too (it does not today —
      * this cap is about pictures, which is what was decided).
+     *
+     * RAISED 4 -> 6 ON 2026-09-05. // DEFAULT pending Melissa: decision 2
+     * (recommendation B, "six"). The approved packet renders five evidence
+     * items and could not be built to its own mockup under a cap of four; the
+     * brief's amendment moved this from her decision list to a built default
+     * she judges live in the walkthrough (test C-series). Video still does not
+     * count against it (decision 3, recommendation B: one video, separate).
      */
-    value: 4,
-    version: 1,
+    value: 6,
+    version: 2,
   },
   /**
    * A08 dictionary tunables (A08 §10 requires these be configuration, not

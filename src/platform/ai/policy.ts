@@ -50,10 +50,16 @@ import { Id, IsoDateTime, SchemaVersion, UsdAmount } from "@/domain/shared/primi
  * nothing about the port or the wirings forks.
  */
 
-/** The four capability keys this build wires. Policy is keyed by capability, not by agent. */
+/**
+ * The capability keys this build wires. Policy is keyed by capability, not by
+ * agent. `read_equipment_label` joined on 2026-09-05 (campaign routine decision
+ * 2 — DECISIONS FOR MELISSA decision 1, recommendation B): one narrow
+ * vision capability that reads a photographed rating plate.
+ */
 export const AI_CAPABILITY_KEYS = [
   "classify_home_problem",
   "select_next_clarifier",
+  "read_equipment_label",
   "generate_page_copy",
   "seo.critique_page",
 ] as const;
@@ -164,15 +170,22 @@ export const AiPolicy = z
 export type AiPolicy = z.infer<typeof AiPolicy>;
 
 /**
- * THE SHIPPED DEFAULTS. Everything off; every model the free one; every cap
- * small enough that a mistake is cheap.
+ * THE SHIPPED DEFAULTS. Everything off; every model the owner-chosen one; every
+ * cap small enough that a mistake is cheap.
  *
- * WHY ox-alpha IS THE DEFAULT MODEL ON ALL FOUR even though two of them can
- * never run on it: the owner picked it, it costs $0, and naming it here is what
- * makes the eventual swap a one-line edit. `classify_home_problem` and
- * `select_next_clarifier` will refuse it on the privacy rule (models.ts seeds
- * `allows_customer_data: false`) and fall back deterministically, saying exactly
- * why — which is a better state than a placeholder model id nobody chose.
+ * MODEL HISTORY, so nobody has to re-derive it: the owner started on
+ * `stealth/ox-alpha` (2026-08-25, $0/free-pool). On 2026-08-27 he switched the
+ * default to `deepseek/deepseek-v4-flash-0731` — his words: "fast and cheap for
+ * large workloads." It is NOT free ($0.14/$0.28 per Mtok, vendor-sourced in
+ * models.ts), which makes the caps below real money rather than decoration, and
+ * it runs strict `json_schema` mode rather than ox-alpha's json_object+repair.
+ *
+ * WHY THE SAME MODEL IS NAMED ON ALL FOUR even though two of them can never run
+ * on it: the owner picked it, and naming it here is what makes the next swap a
+ * one-line edit. `classify_home_problem` and `select_next_clarifier` will refuse
+ * it on the privacy rule (models.ts seeds `allows_customer_data: false`) and
+ * fall back deterministically, saying exactly why — which is a better state than
+ * a placeholder model id nobody chose.
  */
 export const DEFAULT_AI_POLICY: AiPolicy = AiPolicy.parse({
   policy_id: "ai_policy_default",
@@ -184,7 +197,8 @@ export const DEFAULT_AI_POLICY: AiPolicy = AiPolicy.parse({
   max_repair_retries: 1,
   // TEST. One dollar a day across everything — the same order of magnitude as the
   // shipped max_external_seo_spend_usd_month, and for the same reason: a cap you
-  // can blow through by accident is not a cap.
+  // can blow through by accident is not a cap. At deepseek-flash prices $1 buys
+  // roughly 3-7M tokens/day depending on mix — a real workload, still bounded.
   global_daily_budget_usd: 1,
   capabilities: {
     /**
@@ -195,30 +209,47 @@ export const DEFAULT_AI_POLICY: AiPolicy = AiPolicy.parse({
      */
     classify_home_problem: {
       enabled: false,
-      model_id: "stealth/ox-alpha",
+      model_id: "deepseek/deepseek-v4-flash-0731",
       max_cost_per_call_usd: 0.02,
       daily_cap_usd: 0.25,
       max_output_tokens: 1_600,
     },
     select_next_clarifier: {
       enabled: false,
-      model_id: "stealth/ox-alpha",
+      model_id: "deepseek/deepseek-v4-flash-0731",
       max_cost_per_call_usd: 0.01,
       daily_cap_usd: 0.25,
       // Was 400 — under the measured floor. A cheap-looking ceiling that
       // guarantees `finish_reason: length` is not a saving.
       max_output_tokens: 1_200,
     },
+    /**
+     * THE RATING-PLATE READER, 2026-09-05. Off here like everything else; the
+     * owner's test-environment document (data/ai-policy.json) turns it on.
+     * Named on the vision model added in models.ts because a photo cannot go to
+     * the text default — callModel refuses images to a model not configured
+     * `accepts_images`. Caps per the campaign brief: $0.02/call, $0.50/day,
+     * TEST figures. The reply is six short fields, so 600 output tokens is
+     * generous against the size of the answer; the ceiling is sized against the
+     * 2026-08-25 measurement that a two-field reply can spend 449.
+     */
+    read_equipment_label: {
+      enabled: false,
+      model_id: "google/gemini-2.5-flash-lite",
+      max_cost_per_call_usd: 0.02,
+      daily_cap_usd: 0.5,
+      max_output_tokens: 600,
+    },
     generate_page_copy: {
       enabled: false,
-      model_id: "stealth/ox-alpha",
+      model_id: "deepseek/deepseek-v4-flash-0731",
       max_cost_per_call_usd: 0.05,
       daily_cap_usd: 0.5,
       max_output_tokens: 3_000,
     },
     "seo.critique_page": {
       enabled: false,
-      model_id: "stealth/ox-alpha",
+      model_id: "deepseek/deepseek-v4-flash-0731",
       max_cost_per_call_usd: 0.03,
       daily_cap_usd: 0.5,
       max_output_tokens: 2_000,

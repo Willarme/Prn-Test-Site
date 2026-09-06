@@ -28,7 +28,7 @@ const NOW = () => "2026-08-14T12:00:00Z";
 const OPP = {
   search_opportunity_id: "so_prov",
   schema_version: "1.0.0",
-  keyword: "ac blowing warm air",
+  keyword: "ac airflow feels weak",
   intent_cluster_id: null,
   cluster_label: null,
   problem_family_hint: "hvac",

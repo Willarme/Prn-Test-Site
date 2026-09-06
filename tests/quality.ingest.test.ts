@@ -30,14 +30,15 @@ import {
   type RuntimeStore,
 } from "@/platform/stores/runtime";
 import { getPolicySetting } from "@/platform/policy/store";
+import { readDevDb } from "@/platform/stores/dev-db";
 
 /**
  * A09 §9 step 3 failable check, first half: "injecting a known-bad write
  * triggers an ingest-time issue within the same request cycle (no polling
  * delay)."
  *
- * And the constraint that makes it safe to run inline: the guard must be
- * incapable of changing what the customer sees or of breaking their journey.
+ * The quality guard never rewrites or rejects a journey. Independent safety
+ * checks can still refuse customer reads when referenced evidence is missing.
  */
 
 const noDb = () => null;
@@ -87,10 +88,9 @@ function guarded(): RuntimeStore {
 }
 
 /**
- * A defect that leaves the journey's own joins intact — a blank id inside the
- * evidence list. Chosen deliberately for the "the write still happens" cases:
- * a record whose intake_session_id is null is unreadable through getJourney by
- * construction, which would prove nothing about whether A09 dropped it.
+ * A blank evidence id proves the write is retained verbatim. Customer safety
+ * cannot be established for that damaged reference, so persistence is checked
+ * through the raw stored row rather than bypassing the customer-read guard.
  */
 function badProblem(): ProblemRecord {
   return cleanProblemRecord({ evidence_ids: ["ev_clean_0001", ""] });
@@ -197,7 +197,7 @@ describe("a known-bad write is caught in the SAME request cycle", () => {
 
   it("catches a bad packet on savePacket too", async () => {
     const store = guarded();
-    await store.savePacket(cleanJobPacket({ packet_version: 0 }));
+    await store.savePacket(cleanJobPacket({ packet_version: 0 }), "req_ingest_test");
     const findings = await currentFindings({ clientProvider: noDb });
     expect(findings.map((f) => f.rule_id)).toContain("job_packet.version_positive");
   });
@@ -208,24 +208,25 @@ describe("the write still happens — A09 contains, it never rejects", () => {
     const store = guarded();
     const bad = badProblem();
     await store.recordJourney(journey(bad));
-    const stored = await store.getJourney("rq_clean_0001");
-    expect(stored).not.toBeNull();
-    expect(stored!.problem.problem_id).toBe(bad.problem_id);
+    const stored = readDevDb().problems.find(p => p.problem_id === bad.problem_id);
+    expect(stored).toBeDefined();
     // The damage is still there, verbatim — quarantine, never repair-on-write.
-    expect(stored!.problem.evidence_ids).toEqual(["ev_clean_0001", ""]);
+    expect(stored!.evidence_ids).toEqual(["ev_clean_0001", ""]);
+    await expect(store.getJourney("rq_clean_0001")).rejects.toThrow("Journey evidence is unavailable");
   });
 
-  it("serves a quarantined record UNCHANGED on the customer read path", async () => {
+  it("serves a quarantined record with complete safety evidence UNCHANGED", async () => {
     const store = guarded();
-    await store.recordJourney(journey(badProblem()));
+    // A blank claim reference is a quality defect without missing safety text.
+    await store.recordJourney(journey(cleanProblemRecord({ claim_ids: [""] })));
     expect(await activeQuarantine({ clientProvider: noDb })).toHaveLength(1);
 
-    // /results and /complete read through getJourney. Wave 0 must not break a
-    // live homeowner journey — pre-answer 10 is parked with Melissa, not
-    // decided here.
+    // Quarantine itself does not block the read. This is independent of the
+    // fail-closed check for unavailable evidence exercised above.
     const journeyRow = await store.getJourney("rq_clean_0001");
     expect(journeyRow).not.toBeNull();
     expect(journeyRow!.packet.job_packet_id).toBe("jp_clean_0001");
+    expect(journeyRow!.problem.claim_ids).toEqual([""]);
     expect(getPolicySetting<boolean>("quality.quarantine_customer_reads")!.value).toBe(false);
   });
 
@@ -271,8 +272,9 @@ describe("the guard can never break a request", () => {
     await store.recordJourney(journey(badProblem()));
     expect(await currentFindings({ clientProvider: noDb })).toEqual([]);
     expect(recentAgentRuns().filter((r) => r.agent_id === "A09")).toHaveLength(0);
-    // ...and the customer write still landed.
-    expect(await store.getJourney("rq_clean_0001")).not.toBeNull();
+    // The write still landed, and disabling A09 cannot disable safety checks.
+    expect(readDevDb().problems[0].evidence_ids).toEqual(["ev_clean_0001", ""]);
+    await expect(store.getJourney("rq_clean_0001")).rejects.toThrow("Journey evidence is unavailable");
   });
 
   it("names the switch as configuration, not a constant", () => {

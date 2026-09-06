@@ -1,0 +1,26 @@
+{
+  "_what": "Per-page content for the FAQ section (catalogue §2 FAQ; design-doc §4.2 row 28): the frozen-heading text for this page and the 4-6 question/answer pairs. The eyebrow, sheet wrapper and faq-a-outer/faq-a markup stay in the partial as template-constant.",
+  "heading_html": "What are people asking us <span class=\"accent\">at 9pm with a warm house</span>",
+  "questions": [
+    {
+      "q": "Why is my AC running but not cooling?",
+      "a_html": "It is moving air but not moving heat. That happens when airflow is choked, when the fan is set to ON so it blows between cycles, when the outdoor unit has lost power, or when the refrigerant circuit cannot do its job. The first 3 you can check yourself in 10 minutes, and we will walk you through them."
+    },
+    {
+      "q": "Should I turn my AC off while it is blowing warm?",
+      "a_html": "If there is ice on the lines, yes. Shut cooling off and leave the fan running. Running a frozen system can flood the compressor and turn a few-hundred-dollar repair into a few-thousand-dollar one. No ice and nothing smelling wrong, running it while you arrange a visit is usually fine."
+    },
+    {
+      "q": "Can I change my AC capacitor myself?",
+      "a_html": "No. A run capacitor holds a charge after the power is off, and discharging one safely takes the right tool and the knowledge to use it. The part is cheap, which is exactly why this gets recommended online and why people get hurt. Identify the symptom, then hand it to somebody licensed."
+    },
+    {
+      "q": "How much should a repair on my AC cost?",
+      "a_html": "Repair cost depends on the actual failure, equipment, market, access and the diagnostic work required. As verified quote and outcome records mature, the Repair Record is designed to publish comparable ranges with geography and sample size attached."
+    },
+    {
+      "q": "Is five companies about to call me?",
+      "a_html": "No. Your request is never sold as a lead. If you choose to involve a provider it goes to one at a time, and nobody sees your details until you send them."
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+<!-- ================= SAFE OBSERVATIONS ================= -->
+<section class="sec chapter" id="what-to-check">
+  <div class="wrap">
+    <p class="eyebrow"><i class="pennant" aria-hidden="true"></i>Ten minutes, no tools</p>
+    <h2 class="display h2">{%safe_observations.heading_html%}</h2>
+    <p class="lede muted">{%safe_observations.lede%}</p>
+    <ol class="checks">
+{%each safe_observations.checks%}      <li class="check"><h3 class="bold check-h">{%.h%}</h3><p class="check-p muted">{%.p%}</p></li>
+{%/each%}    </ol>
+
+    <div class="safety">
+      <div class="sheet safe safe-never" tabindex="0"><h3 class="bold safe-h">What we will never ask you to do</h3><div class="safe-list muted">{%each safe_observations.never_items%}<span>{%.%}</span>{%/each%}</div><p class="safe-foot"><strong>We would rather you finish this evening with the same number of eyebrows you started with.</strong></p></div>
+      <div class="sheet safe safe-stop" tabindex="0">
+      <h3 class="bold safe-h">Stop and call someone now if</h3>
+      <div class="safe-list muted">{%each safe_observations.stop_items%}<span>{%.%}</span>{%/each%}</div><p class="safe-foot"><strong>If anyone is in immediate danger, call 911 or your utility first.</strong></p>
+    </div>
+    </div>
+    <div class="center-cta">
+      <a href="#intake" class="cta">{%safe_observations.cta%}</a>
+    </div>
+  </div>
+</section>
+

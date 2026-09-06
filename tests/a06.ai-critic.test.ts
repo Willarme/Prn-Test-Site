@@ -233,9 +233,9 @@ describe("C4 Definition of Done â€” four patterns, four voice_claim_policy 
     });
   }
 
-  it("critic findings at MAJOR do not block release â€” findings are not verdicts", async () => {
+  it("advisory MAJOR findings alongside explicit PASS do not block release", async () => {
     const result = await runPageQa(withCopy("All of our providers are verified and insured."), {
-      critic: stubVoiceCritic({ severity: "major" }),
+      critic: stubVoiceCritic({ severity: "major", forceStatus: "PASS" }),
     });
     expect(result.ai_critic.findings.length).toBeGreaterThan(0);
     expect(result.blockers).toEqual([]);

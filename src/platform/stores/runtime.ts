@@ -1,4 +1,4 @@
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import type { IntakeSession } from "@/domain/intake/contracts";
 import type { DiagnosisAnswer, IntakeAnswer } from "@/domain/intake/playbook";
 import type { ConsentEvent, DisclosureVersion } from "@/domain/privacy/contracts";
@@ -14,14 +14,48 @@ import type { PageSpec } from "@/domain/search/pages";
 import type { EventEnvelope } from "@/platform/events/envelope";
 import { applyQualityGuard } from "@/platform/quality/ingest";
 import { readDevDb, updateDevDb } from "@/platform/stores/dev-db";
+import type {
+  AskAnswer,
+  Email,
+  Feedback,
+  JobAddress,
+  JobAddressRow,
+  KeepClaim,
+  LinkRevocation,
+  MagicLink,
+  Signup,
+} from "@/platform/stores/interfaces";
+import { requestScopedClient, requireServiceClient, serviceConfigured } from "@/platform/db/client";
+import { projectJourneySafety } from "@/domain/problem/journey-safety";
+
+export type {
+  AskAnswer,
+  Email,
+  Feedback,
+  JobAddress,
+  JobAddressRow,
+  KeepClaim,
+  LinkRevocation,
+  MagicLink,
+  Signup,
+} from "@/platform/stores/interfaces";
 
 /**
  * Runtime store — the one place customer journeys, events, publish state and
  * the owner audit trail are read/written. Two interchangeable backends:
  *
  *  - SupabaseRuntimeStore: used whenever SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY
- *    are configured. Server-side only, service role, over HTTP (serverless-safe).
- *    Row-level security is deny-all, so nothing else can read these rows.
+ *    are configured. Server-side only, over HTTP (serverless-safe).
+ *    Customer-facing reads AND writes — recordJourney, attachEvidence,
+ *    saveIntakeAnswers, saveDiagnosisAnswer, savePacket, getJourney,
+ *    listEvidence, listIntakeAnswers, listDiagnosisAnswers, all keyed by
+ *    request_id — go through the request-scoped client by DEFAULT (T1-33 /
+ *    A00 condition d). Postgres RLS, not application code, is what stops
+ *    one request from reading OR forging a row under another's request_id.
+ *    Everything else (admin reads/writes, telemetry, publish state, shared
+ *    disclosure content) stays on the service role; see
+ *    docs/security/SERVICE-KEY-AUDIT.md for the one-line justification
+ *    behind every remaining service-key call site.
  *  - FileRuntimeStore: local JSON fallback for development without a database.
  *
  * Callers never know which backend they got (#22A: one capability, many adapters).
@@ -103,15 +137,19 @@ export interface RuntimeStore {
   listAudit(limit?: number): Promise<AuditEntry[]>;
 
   // --- post-description intake (details + guided diagnosis) ---
-  /** Attach new evidence (photo/video) to the journey ProblemRecord. */
-  attachEvidence(problemId: string, evidence: EvidenceObject): Promise<void>;
+  /**
+   * Attach new evidence (photo/video) to the journey ProblemRecord. requestId
+   * scopes the write to the request-scoped seam (migration 00006).
+   */
+  attachEvidence(problemId: string, requestId: string, evidence: EvidenceObject): Promise<void>;
   saveIntakeAnswers(answers: IntakeAnswer[]): Promise<void>;
   listIntakeAnswers(requestId: string): Promise<IntakeAnswer[]>;
   saveDiagnosisAnswer(answer: DiagnosisAnswer): Promise<void>;
   listDiagnosisAnswers(requestId: string): Promise<DiagnosisAnswer[]>;
-  listEvidence(problemId: string): Promise<EvidenceObject[]>;
+  /** requestId (when known) routes the read through the request-scoped client. */
+  listEvidence(problemId: string, requestId?: string): Promise<EvidenceObject[]>;
   /** Store a regenerated packet version (newest version wins on read). */
-  savePacket(packet: JobPacket): Promise<void>;
+  savePacket(packet: JobPacket, requestId: string): Promise<void>;
 
   // --- A01 provenance (finding 1) ------------------------------------------
   /** A01's FactClaims for one problem, in the order they were established. */
@@ -126,6 +164,39 @@ export interface RuntimeStore {
    * implies N-1) was always there.
    */
   supersedePacket(previousPacketId: string, supersededBy: string): Promise<void>;
+
+  // --- loop surfaces (campaign track F2b, 2026-09-05) ----------------------
+  // The rows behind the scoped links (src/platform/links/tokens.ts), the Home
+  // Memory claim, the Trust Network ask, the feedback popup, the mail outbox,
+  // the job address and the product-page vote. File store: dev-db collections
+  // of the same names. Supabase: migration 00020_loop_surfaces.sql, tables of
+  // the same names. Every method is implemented on BOTH backends; nothing
+  // no-ops.
+
+  /** Revocation ledger: the link stops opening, the record stays (decision 8, A). */
+  revokeLink(link_id: string, request_id: string, at: string): Promise<void>;
+  isLinkRevoked(link_id: string): Promise<boolean>;
+  /** "Keep this": one contact field attached to a record that already exists (§16.1). */
+  saveKeepClaim(claim: KeepClaim): Promise<void>;
+  getKeepClaim(request_id: string): Promise<KeepClaim | null>;
+  saveMagicLink(link: MagicLink): Promise<void>;
+  /**
+   * Single use: returns the link and stamps consumed_at the FIRST time; null
+   * on every later call and for an unknown id (the caller cannot tell the two
+   * apart, by design).
+   */
+  consumeMagicLink(magic_id: string, at: string, request_id?: string): Promise<MagicLink | null>;
+  saveAskAnswer(answer: AskAnswer): Promise<void>;
+  listAskAnswers(request_id: string): Promise<AskAnswer[]>;
+  saveFeedback(feedback: Feedback): Promise<void>;
+  enqueueEmail(email: Email): Promise<void>;
+  getEmail(email_id: string): Promise<Email | null>;
+  markEmailSent(email_id: string, at: string, provider_id: string | null): Promise<void>;
+  /** Append-only: a corrected address is a new row; getJobAddress returns the newest. */
+  saveJobAddress(request_id: string, address: JobAddress): Promise<void>;
+  getJobAddress(request_id: string): Promise<JobAddress | null>;
+  /** A vote with the same vote_id CORRECTS the earlier one (never duplicates). */
+  saveSignup(signup: Signup): Promise<void>;
 }
 
 /**
@@ -150,12 +221,6 @@ function withTenant<T extends { tenant_id?: string }>(record: T): T {
 // ---------------------------------------------------------------------------
 // Supabase backend
 // ---------------------------------------------------------------------------
-
-function client(): SupabaseClient {
-  return createClient(process.env.SUPABASE_URL as string, process.env.SUPABASE_SERVICE_ROLE_KEY as string, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  });
-}
 
 function throwOn(error: { message: string } | null, what: string): void {
   if (error) throw new Error(`${what}: ${error.message}`);
@@ -195,7 +260,22 @@ function warnPending(what: string, migration: string): void {
 
 class SupabaseRuntimeStore implements RuntimeStore {
   readonly kind = "supabase" as const;
-  private db = client();
+  /** Elevated client — internal operations only (writes, admin reads, telemetry). */
+  private db = requireServiceClient();
+
+  /**
+   * The DEFAULT path for customer-facing reads AND writes: a client scoped
+   * to this one request_id (migration 00006's RLS policies — USING for
+   * reads/updates, WITH CHECK for inserts/updates — enforce the boundary in
+   * Postgres, both that a caller can only see their own rows and that they
+   * can only ever write a row stamped with their own request_id). Falls
+   * back to the service client only when SUPABASE_ANON_KEY /
+   * SUPABASE_JWT_SECRET are not yet configured, so a deploy that hasn't
+   * added the new env vars keeps serving customers exactly as it does today.
+   */
+  private scopedClient(requestId: string): SupabaseClient {
+    return requestScopedClient(requestId) ?? this.db;
+  }
 
   /**
    * Insert a row that carries `tenant_id`, on a database that may not have the
@@ -204,25 +284,33 @@ class SupabaseRuntimeStore implements RuntimeStore {
    * failed evidence write is a lost homeowner record and must not be swallowed.
    */
   private async insertWithOptionalTenant(
+    db: SupabaseClient,
     table: "evidence_object" | "problem_record",
     row: Record<string, unknown>,
     what: string
   ): Promise<void> {
-    const first = (await this.db.from(table).insert(row)).error;
+    const first = (await db.from(table).insert(row)).error;
     if (!first) return;
     if (!missingSchema(first)) throwOn(first, what);
     warnPending(`${table}.tenant_id is not present`, "00015_core_record_tenancy.sql");
     const { tenant_id: _dropped, ...withoutTenant } = row;
-    throwOn((await this.db.from(table).insert(withoutTenant)).error, what);
+    throwOn((await db.from(table).insert(withoutTenant)).error, what);
   }
 
   async recordJourney(input: RecordJourneyInput): Promise<void> {
     const { session, consent, packet, events } = input;
     const problem = withTenant(input.problem);
     const evidence = withTenant(input.evidence);
+    // Every insert below carries the SAME request_id the caller's JWT claim
+    // (migration 00019's WITH CHECK policies) will match — a request-scoped
+    // client cannot forge a row under someone else's request_id even at
+    // creation time, before any of these rows exist yet. The chain's tenant
+    // defaulting and optional-tenant fallback ride along unchanged.
+    const db = this.scopedClient(session.request_id);
     // Raw evidence first, then the record that references it, then the packet
     // derived from it: the provenance chain is never written out of order.
     await this.insertWithOptionalTenant(
+      db,
       "evidence_object",
       {
         evidence_id: evidence.evidence_id,
@@ -231,10 +319,12 @@ class SupabaseRuntimeStore implements RuntimeStore {
         content: evidence.content,
         privacy: evidence.privacy,
         captured_at: evidence.captured_at,
+        request_id: session.request_id,
       },
       "insert evidence"
     );
     await this.insertWithOptionalTenant(
+      db,
       "problem_record",
       {
         problem_id: problem.problem_id,
@@ -253,12 +343,13 @@ class SupabaseRuntimeStore implements RuntimeStore {
         clarifiers_asked: problem.clarifiers_asked,
         created_at: problem.created_at,
         updated_at: problem.updated_at,
+        request_id: session.request_id,
       },
       "insert problem"
     );
     throwOn(
       (
-        await this.db.from("job_packet").insert({
+        await db.from("job_packet").insert({
           job_packet_id: packet.job_packet_id,
           packet_version: packet.packet_version,
           schema_version: packet.schema_version,
@@ -266,13 +357,14 @@ class SupabaseRuntimeStore implements RuntimeStore {
           packet,
           generated_at: packet.generated_at,
           engine: packet.engine,
+          request_id: session.request_id,
         })
       ).error,
       "insert packet"
     );
     throwOn(
       (
-        await this.db.from("consent_event").insert({
+        await db.from("consent_event").insert({
           consent_event_id: consent.consent_event_id,
           person_id: consent.person_id,
           guest_session_id: consent.guest_session_id,
@@ -283,13 +375,14 @@ class SupabaseRuntimeStore implements RuntimeStore {
           surface: consent.surface,
           trace_id: consent.trace_id,
           occurred_at: consent.occurred_at,
+          request_id: session.request_id,
         })
       ).error,
       "insert consent"
     );
     throwOn(
       (
-        await this.db.from("intake_session").insert({
+        await db.from("intake_session").insert({
           intake_session_id: session.intake_session_id,
           schema_version: session.schema_version,
           guest_session_id: session.guest_session_id,
@@ -381,14 +474,15 @@ class SupabaseRuntimeStore implements RuntimeStore {
   }
 
   async getJourney(requestId: string): Promise<Journey | null> {
-    const { data: session, error } = await this.db
+    const db = this.scopedClient(requestId);
+    const { data: session, error } = await db
       .from("intake_session")
       .select("*")
       .eq("request_id", requestId)
       .maybeSingle();
     if (error) throw new Error(`load session: ${error.message}`);
     if (!session) return null;
-    const { data: problem, error: problemError } = await this.db
+    const { data: problem, error: problemError } = await db
       .from("problem_record")
       .select("*")
       .eq("intake_session_id", session.intake_session_id)
@@ -397,7 +491,7 @@ class SupabaseRuntimeStore implements RuntimeStore {
       .maybeSingle();
     if (problemError) throw new Error(`load problem: ${problemError.message}`);
     if (!problem) return null;
-    const { data: packetRow, error: packetError } = await this.db
+    const { data: packetRow, error: packetError } = await db
       .from("job_packet")
       .select("packet")
       .eq("problem_id", problem.problem_id)
@@ -406,11 +500,11 @@ class SupabaseRuntimeStore implements RuntimeStore {
       .maybeSingle();
     if (packetError) throw new Error(`load packet: ${packetError.message}`);
     if (!packetRow) return null;
-    return {
+    return projectJourneySafety({
       session: session as SessionRow,
       problem: problem as ProblemRecord,
       packet: packetRow.packet as JobPacket,
-    };
+    }, await this.listEvidence(problem.problem_id, requestId));
   }
 
   async listJourneys(limit = 100): Promise<Journey[]> {
@@ -544,9 +638,11 @@ class SupabaseRuntimeStore implements RuntimeStore {
     return (data ?? []) as AuditEntry[];
   }
 
-  async attachEvidence(problemId: string, raw: EvidenceObject): Promise<void> {
+  async attachEvidence(problemId: string, requestId: string, raw: EvidenceObject): Promise<void> {
     const evidence = withTenant(raw);
+    const db = this.scopedClient(requestId);
     await this.insertWithOptionalTenant(
+      db,
       "evidence_object",
       {
         evidence_id: evidence.evidence_id,
@@ -558,10 +654,11 @@ class SupabaseRuntimeStore implements RuntimeStore {
         mime: evidence.mime ?? null,
         bytes: evidence.bytes ?? null,
         field_key: evidence.field_key ?? null,
+        request_id: requestId,
       },
       "insert evidence"
     );
-    const { data: problem, error } = await this.db
+    const { data: problem, error } = await db
       .from("problem_record")
       .select("evidence_ids")
       .eq("problem_id", problemId)
@@ -570,7 +667,7 @@ class SupabaseRuntimeStore implements RuntimeStore {
     const ids = Array.from(new Set([...(problem?.evidence_ids ?? []), evidence.evidence_id]));
     throwOn(
       (
-        await this.db
+        await db
           .from("problem_record")
           .update({ evidence_ids: ids, updated_at: evidence.captured_at })
           .eq("problem_id", problemId)
@@ -581,11 +678,15 @@ class SupabaseRuntimeStore implements RuntimeStore {
 
   async saveIntakeAnswers(answers: IntakeAnswer[]): Promise<void> {
     if (answers.length === 0) return;
-    throwOn((await this.db.from("intake_answer").insert(answers)).error, "insert answers");
+    // Every answer in one call always belongs to the same request (both
+    // callers — intake create, /api/intake/answer — pass a single-request
+    // batch); scope the write to it.
+    const db = this.scopedClient(answers[0].request_id);
+    throwOn((await db.from("intake_answer").insert(answers)).error, "insert answers");
   }
 
   async listIntakeAnswers(requestId: string): Promise<IntakeAnswer[]> {
-    const { data, error } = await this.db
+    const { data, error } = await this.scopedClient(requestId)
       .from("intake_answer")
       .select("request_id, field_key, value_text, evidence_id, source, answered_at")
       .eq("request_id", requestId)
@@ -595,11 +696,14 @@ class SupabaseRuntimeStore implements RuntimeStore {
   }
 
   async saveDiagnosisAnswer(answer: DiagnosisAnswer): Promise<void> {
-    throwOn((await this.db.from("diagnosis_answer").insert(answer)).error, "insert diagnosis answer");
+    throwOn(
+      (await this.scopedClient(answer.request_id).from("diagnosis_answer").insert(answer)).error,
+      "insert diagnosis answer"
+    );
   }
 
   async listDiagnosisAnswers(requestId: string): Promise<DiagnosisAnswer[]> {
-    const { data, error } = await this.db
+    const { data, error } = await this.scopedClient(requestId)
       .from("diagnosis_answer")
       .select("request_id, step_id, answer, evidence_id, answered_at")
       .eq("request_id", requestId)
@@ -608,23 +712,48 @@ class SupabaseRuntimeStore implements RuntimeStore {
     return (data ?? []) as DiagnosisAnswer[];
   }
 
-  async listEvidence(problemId: string): Promise<EvidenceObject[]> {
-    const { data: problem } = await this.db
+  async listEvidence(problemId: string, requestId?: string): Promise<EvidenceObject[]> {
+    const db = requestId ? this.scopedClient(requestId) : this.db;
+    const { data: problem, error: problemError } = await db
       .from("problem_record")
-      .select("evidence_ids")
+      .select("evidence_ids, request_id")
       .eq("problem_id", problemId)
       .maybeSingle();
-    const ids: string[] = problem?.evidence_ids ?? [];
-    if (ids.length === 0) return [];
-    const { data, error } = await this.db.from("evidence_object").select("*").in("evidence_id", ids);
-    if (error) throw new Error(`list evidence: ${error.message}`);
-    return (data ?? []) as EvidenceObject[];
+    if (problemError) throw new Error(`list evidence owner: ${problemError.message}`);
+    // Validate the problem's owner even when the deployment falls back to its
+    // service client. A request id alone must not make a foreign problem valid.
+    if (!problem || (requestId && problem.request_id !== requestId)) return [];
+    const ids: string[] = problem.evidence_ids ?? [];
+    const ownerId: string | null = requestId ?? problem.request_id ?? null;
+    const evidence = new Map<string, EvidenceObject>();
+    if (ids.length > 0) {
+      const { data, error } = await db.from("evidence_object").select("*").in("evidence_id", ids);
+      if (error) throw new Error(`list evidence: ${error.message}`);
+      for (const row of data ?? []) {
+        // Linked legacy rows may predate request_id. A row explicitly owned by
+        // another request is never usable evidence for this problem.
+        if (row.request_id && row.request_id !== ownerId) throw new Error("Journey evidence ownership does not match.");
+        evidence.set(row.evidence_id, row as EvidenceObject);
+      }
+    }
+    if (ownerId) {
+      // attachEvidence writes the owned row before updating the denormalized
+      // id array. Concurrent attachments can overwrite that array; every owned
+      // observation must still participate in safety on the next read.
+      const { data, error } = await db.from("evidence_object").select("*").eq("request_id", ownerId);
+      if (error) throw new Error(`list owned evidence: ${error.message}`);
+      for (const row of data ?? []) {
+        if (row.request_id !== ownerId) throw new Error("Journey evidence ownership does not match.");
+        evidence.set(row.evidence_id, row as EvidenceObject);
+      }
+    }
+    return [...evidence.values()].sort((a, b) => Date.parse(a.captured_at) - Date.parse(b.captured_at));
   }
 
-  async savePacket(packet: JobPacket): Promise<void> {
+  async savePacket(packet: JobPacket, requestId: string): Promise<void> {
     throwOn(
       (
-        await this.db.from("job_packet").insert({
+        await this.scopedClient(requestId).from("job_packet").insert({
           job_packet_id: packet.job_packet_id,
           packet_version: packet.packet_version,
           schema_version: packet.schema_version,
@@ -632,6 +761,7 @@ class SupabaseRuntimeStore implements RuntimeStore {
           packet,
           generated_at: packet.generated_at,
           engine: packet.engine,
+          request_id: requestId,
         })
       ).error,
       "insert packet version"
@@ -702,6 +832,243 @@ class SupabaseRuntimeStore implements RuntimeStore {
       "supersede packet"
     );
   }
+
+  // --- loop surfaces (migration 00020_loop_surfaces.sql) -------------------
+  //
+  // Request-keyed rows go through the request-scoped client exactly as the
+  // journey tables do (00020 carries the same request-scoped policies as
+  // 00019). The lookups that arrive WITHOUT a request_id — a link id, a magic
+  // id, an email id, a vote — are server-side capability lookups and use the
+  // service client, with a written reason on each.
+  //
+  // THE MIGRATION WINDOW. 00020 is applied as a separate, human-coordinated
+  // step (Melissa, before the next deploy). Until then every WRITE below
+  // throws, loudly, naming the migration — a claim, an answer or a revocation
+  // that did not land must never be reported as done. READS on a missing table
+  // return the truthful empty answer with the same one-per-process warning the
+  // fact_claim reads carry: nothing was stored there, because nothing could be.
+
+  async revokeLink(link_id: string, request_id: string, at: string): Promise<void> {
+    const row: LinkRevocation = { link_id, request_id, revoked_at: at };
+    const error = (await this.scopedClient(request_id).from("link_revocations").insert(row)).error;
+    if (error && missingSchema(error)) {
+      throw new Error(
+        "revoke link: link_revocations does not exist — apply supabase/migrations/00020_loop_surfaces.sql"
+      );
+    }
+    throwOn(error, "revoke link");
+  }
+
+  /**
+   * Service client: the verifier holds a link id and nothing else yet. A
+   * missing table cannot establish revocation state, so authorization fails
+   * closed until the ledger is available.
+   */
+  async isLinkRevoked(link_id: string): Promise<boolean> {
+    const { data, error } = await this.db
+      .from("link_revocations")
+      .select("link_id")
+      .eq("link_id", link_id)
+      .limit(1);
+    if (error && missingSchema(error)) {
+      throw new Error("Revocation ledger is unavailable; apply migration 00020 before opening shared links.");
+    }
+    if (error) throw new Error(`check link revocation: ${error.message}`);
+    if (!Array.isArray(data)) throw new Error("Revocation ledger returned an invalid response.");
+    return data.length > 0;
+  }
+
+  async saveKeepClaim(claim: KeepClaim): Promise<void> {
+    const error = (await this.scopedClient(claim.request_id).from("keep_claims").insert(claim)).error;
+    if (error && missingSchema(error)) {
+      throw new Error(
+        "save keep claim: keep_claims does not exist — apply supabase/migrations/00020_loop_surfaces.sql"
+      );
+    }
+    throwOn(error, "save keep claim");
+  }
+
+  async getKeepClaim(request_id: string): Promise<KeepClaim | null> {
+    const { data, error } = await this.scopedClient(request_id)
+      .from("keep_claims")
+      .select("request_id, contact, contact_kind, claimed_at, magic_link_id")
+      .eq("request_id", request_id)
+      .order("claimed_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (error && missingSchema(error)) {
+      warnPending("keep_claims does not exist", "00020_loop_surfaces.sql");
+      return null;
+    }
+    if (error) throw new Error(`load keep claim: ${error.message}`);
+    return (data as KeepClaim | null) ?? null;
+  }
+
+  async saveMagicLink(link: MagicLink): Promise<void> {
+    const error = (await this.scopedClient(link.request_id).from("magic_links").insert(link)).error;
+    if (error && missingSchema(error)) {
+      throw new Error(
+        "save magic link: magic_links does not exist — apply supabase/migrations/00020_loop_surfaces.sql"
+      );
+    }
+    throwOn(error, "save magic link");
+  }
+
+  /**
+   * Service client: the only thing the caller holds is the magic id from the
+   * URL. Single use is enforced by the database, not by a read-then-write:
+   * the UPDATE matches only a row whose consumed_at is still null, so two
+   * concurrent clicks cannot both succeed.
+   */
+  async consumeMagicLink(magic_id: string, at: string, request_id?: string): Promise<MagicLink | null> {
+    let query = this.db
+      .from("magic_links")
+      .update({ consumed_at: at })
+      .eq("magic_id", magic_id)
+      .is("consumed_at", null);
+    if (request_id) query = query.eq("request_id", request_id);
+    const { data, error } = await query
+      .select("magic_id, request_id, contact, created_at, consumed_at")
+      .maybeSingle();
+    if (error && missingSchema(error)) {
+      warnPending("magic_links does not exist", "00020_loop_surfaces.sql");
+      return null;
+    }
+    if (error) throw new Error(`consume magic link: ${error.message}`);
+    return (data as MagicLink | null) ?? null;
+  }
+
+  async saveAskAnswer(answer: AskAnswer): Promise<void> {
+    const error = (await this.scopedClient(answer.request_id).from("ask_answers").insert(answer)).error;
+    if (error && missingSchema(error)) {
+      throw new Error(
+        "save ask answer: ask_answers does not exist — apply supabase/migrations/00020_loop_surfaces.sql"
+      );
+    }
+    throwOn(error, "save ask answer");
+  }
+
+  async listAskAnswers(request_id: string): Promise<AskAnswer[]> {
+    const { data, error } = await this.scopedClient(request_id)
+      .from("ask_answers")
+      .select(
+        "ask_id, request_id, friend_name, friend_contact, provider_name, provider_contact, reason, created_at"
+      )
+      .eq("request_id", request_id)
+      .order("created_at", { ascending: true });
+    if (error && missingSchema(error)) {
+      warnPending("ask_answers does not exist", "00020_loop_surfaces.sql");
+      return [];
+    }
+    if (error) throw new Error(`list ask answers: ${error.message}`);
+    return (data ?? []) as AskAnswer[];
+  }
+
+  async saveFeedback(feedback: Feedback): Promise<void> {
+    const error = (await this.scopedClient(feedback.request_id).from("feedback").insert(feedback))
+      .error;
+    if (error && missingSchema(error)) {
+      throw new Error(
+        "save feedback: feedback does not exist — apply supabase/migrations/00020_loop_surfaces.sql"
+      );
+    }
+    throwOn(error, "save feedback");
+  }
+
+  /** Service client: the outbox is the server's own, read back by email id at /mail/<id>. */
+  async enqueueEmail(email: Email): Promise<void> {
+    const row = { ...email, request_id: email.request_id ?? null };
+    const error = (await this.db.from("email_outbox").insert(row)).error;
+    if (error && missingSchema(error)) {
+      throw new Error(
+        "enqueue email: email_outbox does not exist — apply supabase/migrations/00020_loop_surfaces.sql"
+      );
+    }
+    throwOn(error, "enqueue email");
+  }
+
+  async getEmail(email_id: string): Promise<Email | null> {
+    const { data, error } = await this.db
+      .from("email_outbox")
+      .select("email_id, request_id, to, subject, text, html, mode, created_at, sent_at, provider_id")
+      .eq("email_id", email_id)
+      .maybeSingle();
+    if (error && missingSchema(error)) {
+      warnPending("email_outbox does not exist", "00020_loop_surfaces.sql");
+      return null;
+    }
+    if (error) throw new Error(`load email: ${error.message}`);
+    return (data as Email | null) ?? null;
+  }
+
+  async markEmailSent(email_id: string, at: string, provider_id: string | null): Promise<void> {
+    const error = (
+      await this.db.from("email_outbox").update({ sent_at: at, provider_id }).eq("email_id", email_id)
+    ).error;
+    if (error && missingSchema(error)) {
+      throw new Error(
+        "mark email sent: email_outbox does not exist — apply supabase/migrations/00020_loop_surfaces.sql"
+      );
+    }
+    throwOn(error, "mark email sent");
+  }
+
+  async saveJobAddress(request_id: string, address: JobAddress): Promise<void> {
+    const row: JobAddressRow = { ...address, request_id, saved_at: new Date().toISOString() };
+    const error = (await this.scopedClient(request_id).from("job_addresses").insert(row)).error;
+    if (error && missingSchema(error)) {
+      throw new Error(
+        "save job address: job_addresses does not exist — apply supabase/migrations/00020_loop_surfaces.sql"
+      );
+    }
+    throwOn(error, "save job address");
+  }
+
+  async getJobAddress(request_id: string): Promise<JobAddress | null> {
+    const { data, error } = await this.scopedClient(request_id)
+      .from("job_addresses")
+      .select("street, city_state_zip, property_type, storeys")
+      .eq("request_id", request_id)
+      .order("saved_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (error && missingSchema(error)) {
+      warnPending("job_addresses does not exist", "00020_loop_surfaces.sql");
+      return null;
+    }
+    if (error) throw new Error(`load job address: ${error.message}`);
+    return (data as JobAddress | null) ?? null;
+  }
+
+  /**
+   * Service client: a vote belongs to no journey. A vote_id that arrives twice
+   * corrects the earlier row (upsert on the browser's key); without one it is
+   * a plain insert.
+   */
+  async saveSignup(signup: Signup): Promise<void> {
+    const row = {
+      signup_id: signup.signup_id,
+      page: signup.page,
+      vote: signup.vote,
+      name: signup.name ?? null,
+      email: signup.email ?? null,
+      phone: signup.phone ?? null,
+      zip: signup.zip ?? null,
+      reasons: signup.reasons ?? [],
+      vote_id: signup.vote_id ?? null,
+      browser_at: signup.browser_at ?? null,
+      created_at: signup.created_at,
+    };
+    const error = signup.vote_id
+      ? (await this.db.from("signups").upsert(row, { onConflict: "vote_id" })).error
+      : (await this.db.from("signups").insert(row)).error;
+    if (error && missingSchema(error)) {
+      throw new Error(
+        "save signup: signups does not exist — apply supabase/migrations/00020_loop_surfaces.sql"
+      );
+    }
+    throwOn(error, "save signup");
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -744,7 +1111,7 @@ class FileRuntimeStore implements RuntimeStore {
       .filter((k) => k.problem_id === problem.problem_id)
       .sort((a, b) => b.packet_version - a.packet_version)[0];
     if (!packet) return null;
-    return { session, problem, packet };
+    return projectJourneySafety({ session, problem, packet }, db.evidence.filter(e => problem.evidence_ids.includes(e.evidence_id)));
   }
 
   async listJourneys(limit = 100): Promise<Journey[]> {
@@ -802,7 +1169,7 @@ class FileRuntimeStore implements RuntimeStore {
     return [...readDevDb().admin_audit].reverse().slice(0, limit);
   }
 
-  async attachEvidence(problemId: string, raw: EvidenceObject): Promise<void> {
+  async attachEvidence(problemId: string, _requestId: string, raw: EvidenceObject): Promise<void> {
     const evidence = withTenant(raw);
     updateDevDb((db) => {
       db.evidence.push(evidence);
@@ -834,14 +1201,14 @@ class FileRuntimeStore implements RuntimeStore {
     return readDevDb().diagnosis_answers.filter((a) => a.request_id === requestId) as DiagnosisAnswer[];
   }
 
-  async listEvidence(problemId: string): Promise<EvidenceObject[]> {
+  async listEvidence(problemId: string, _requestId?: string): Promise<EvidenceObject[]> {
     const db = readDevDb();
     const p = db.problems.find((x) => x.problem_id === problemId);
     if (!p) return [];
     return db.evidence.filter((e) => p.evidence_ids.includes(e.evidence_id));
   }
 
-  async savePacket(packet: JobPacket): Promise<void> {
+  async savePacket(packet: JobPacket, _requestId: string): Promise<void> {
     updateDevDb((db) => {
       db.packets.push(packet);
     });
@@ -865,10 +1232,120 @@ class FileRuntimeStore implements RuntimeStore {
       previous.superseded_by = supersededBy;
     });
   }
+
+  // --- loop surfaces (dev-db collections of the same names) ----------------
+
+  async revokeLink(link_id: string, request_id: string, at: string): Promise<void> {
+    updateDevDb((db) => {
+      if (!db.link_revocations.some(row => row.link_id === link_id)) db.link_revocations.push({ link_id, request_id, revoked_at: at });
+    });
+  }
+
+  async isLinkRevoked(link_id: string): Promise<boolean> {
+    return readDevDb({ strictRevocationLedger: true }).link_revocations.some((r) => r.link_id === link_id);
+  }
+
+  async saveKeepClaim(claim: KeepClaim): Promise<void> {
+    updateDevDb((db) => {
+      db.keep_claims.push(claim);
+    });
+  }
+
+  async getKeepClaim(request_id: string): Promise<KeepClaim | null> {
+    const mine = readDevDb().keep_claims.filter((c) => c.request_id === request_id);
+    return mine.length > 0 ? mine[mine.length - 1] : null;
+  }
+
+  async saveMagicLink(link: MagicLink): Promise<void> {
+    updateDevDb((db) => {
+      db.magic_links.push(link);
+    });
+  }
+
+  async consumeMagicLink(magic_id: string, at: string, request_id?: string): Promise<MagicLink | null> {
+    let consumed: MagicLink | null = null;
+    updateDevDb((db) => {
+      const link = db.magic_links.find((l) => l.magic_id === magic_id);
+      // Already consumed and unknown look the same to the caller, by design.
+      if (!link || link.consumed_at !== null || (request_id && link.request_id !== request_id)) return;
+      link.consumed_at = at;
+      consumed = { ...link };
+    });
+    return consumed;
+  }
+
+  async saveAskAnswer(answer: AskAnswer): Promise<void> {
+    updateDevDb((db) => {
+      db.ask_answers.push(answer);
+    });
+  }
+
+  async listAskAnswers(request_id: string): Promise<AskAnswer[]> {
+    return readDevDb().ask_answers.filter((a) => a.request_id === request_id);
+  }
+
+  async saveFeedback(feedback: Feedback): Promise<void> {
+    updateDevDb((db) => {
+      db.feedback.push(feedback);
+    });
+  }
+
+  async enqueueEmail(email: Email): Promise<void> {
+    updateDevDb((db) => {
+      db.email_outbox.push({ ...email, request_id: email.request_id ?? null });
+    });
+  }
+
+  async getEmail(email_id: string): Promise<Email | null> {
+    return readDevDb().email_outbox.find((e) => e.email_id === email_id) ?? null;
+  }
+
+  async markEmailSent(email_id: string, at: string, provider_id: string | null): Promise<void> {
+    updateDevDb((db) => {
+      const email = db.email_outbox.find((e) => e.email_id === email_id);
+      if (!email) return;
+      email.sent_at = at;
+      email.provider_id = provider_id;
+    });
+  }
+
+  async saveJobAddress(request_id: string, address: JobAddress): Promise<void> {
+    updateDevDb((db) => {
+      db.job_addresses.push({ ...address, request_id, saved_at: new Date().toISOString() });
+    });
+  }
+
+  async getJobAddress(request_id: string): Promise<JobAddress | null> {
+    const mine = readDevDb().job_addresses.filter((a) => a.request_id === request_id);
+    if (mine.length === 0) return null;
+    const { street, city_state_zip, property_type, storeys } = mine[mine.length - 1];
+    return { street, city_state_zip, property_type, storeys };
+  }
+
+  async saveSignup(signup: Signup): Promise<void> {
+    updateDevDb((db) => {
+      // The browser's vote_id corrects an earlier row from the same browser;
+      // a replaced row is a corrected row, and the file is the ledger.
+      if (signup.vote_id) {
+        const i = db.signups.findIndex((s) => s.vote_id === signup.vote_id);
+        if (i >= 0) {
+          db.signups[i] = signup;
+          return;
+        }
+      }
+      db.signups.push(signup);
+    });
+  }
 }
 
+/**
+ * Which backend. Honours PRN_RUNTIME_STORE=file through serviceConfigured()
+ * (src/platform/db/client.ts): with it set, this is false even when the
+ * Supabase env is present, so a local demo or a test run never writes a
+ * customer-like row into the trial project.
+ */
 export function supabaseConfigured(): boolean {
-  return Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
+  return serviceConfigured();
 }
 
 let cached: RuntimeStore | null = null;

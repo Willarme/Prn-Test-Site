@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { IntentPageView } from "@/components/door/IntentPageView";
 import { findStagedByPath } from "@/domain/search/page-store";
@@ -26,5 +26,6 @@ export default async function StagedDoorPage({
   const { slug } = await params;
   const spec = await findStagedByPath(`/problems/${slug}`);
   if (!spec) notFound();
+  if (spec.door_template) redirect(`/staged-template/${encodeURIComponent(spec.page_spec_id)}`);
   return <IntentPageView spec={spec} staged />;
 }

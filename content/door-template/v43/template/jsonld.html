@@ -1,0 +1,40 @@
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebPage",
+      "image": [{%each visuals.plates%}{"@type":"ImageObject","contentUrl":"{%.png.path%}","encodingFormat":"image/png","width":{%.png.width%},"height":{%.png.height%},"name":"{%extract .file title%}","caption":"{%extract .file title%}","description":"{%extract .file desc%}","representativeOfPage":false}{%@sep ,%}{%/each%}],
+      "citation": {%pluck sources.list url cite%},
+      "@id": "{%site.origin%}/{%page.slug%}#webpage",
+      "url": "{%site.origin%}/{%page.slug%}",
+      "name": "{%page.title%}",
+      "dateModified": "{%page.date_modified%}",
+      "inLanguage": "en-US"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "{%site.origin%}/" },
+        { "@type": "ListItem", "position": 2, "name": "{%crumb.family_label%}", "item": "{%site.origin%}{%crumb.family_href%}" },
+        { "@type": "ListItem", "position": 3, "name": "{%crumb.problem_label%}" }
+      ]
+    },
+    {
+      "@type": "WebApplication",
+      "name": "Guided home problem walkthrough",
+      "applicationCategory": "UtilitiesApplication",
+      "operatingSystem": "Any modern web browser",
+      "description": "A guided walkthrough for a specific home repair problem. It accepts a written or spoken description, photos or video, and the equipment label, reads the model from a label photo, adapts each next question to what has already been provided, and produces a provider-ready Job Packet listing what happened, what has been ruled out and what still needs professional testing.",
+      "featureList": [
+        "Describe the problem in writing, by voice, or with photos and video",
+        "Reads the model number from a photo of the equipment label",
+        "Adapts each next question to the evidence already given",
+        "Separates safe homeowner checks from licensed work",
+        "Produces a provider-ready Job Packet"
+      ],
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+    }
+  ]
+}
+</script>

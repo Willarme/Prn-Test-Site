@@ -1,0 +1,33 @@
+{
+  "_what": "WHAT_CHANGES_THE_ANSWER (design doc §4.2 row 21): the heading, its giant watermark numeral, the two ledger column headers, and the observation rows themselves. Heading numeral and orn must both equal the row count, but the build does not derive either automatically — see notes.",
+  "heading_html": "4 things you can see that <span class=\"accent\">can narrow the list fast</span>",
+  "columns": [
+    {
+      "label": "What you look at",
+      "mw_class": "mw210"
+    },
+    {
+      "label": "What it rules out for you",
+      "mw_class": "mw340"
+    }
+  ],
+  "rows": [
+    {
+      "look": "Your thermostat, as it reads",
+      "rules_out": "Fan on ON instead of AUTO can explain air that is warm between cooling cycles. One photo settles mode, set point, room temperature and fan."
+    },
+    {
+      "look": "Ice on the larger copper line",
+      "rules_out": "Changes what you should do in the next 5 minutes, and moves airflow and refrigerant to the front."
+    },
+    {
+      "look": "Whether the outdoor fan turns",
+      "rules_out": "A still fan with a hum points somewhere very different from a fan spinning normally."
+    },
+    {
+      "look": "Every room, or one end of the house",
+      "rules_out": "Whole-house and one-room problems have almost no causes in common."
+    }
+  ],
+  "orn_numeral": "4"
+}

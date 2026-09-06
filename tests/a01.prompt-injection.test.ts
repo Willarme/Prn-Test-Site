@@ -1,3 +1,4 @@
+import { ownerTokenFrom } from "./helpers/journey-auth";
 import { mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -128,17 +129,16 @@ describe("A01 — injection changes nothing about SAFETY", () => {
 
 describe("A01 — injection changes nothing about the CAPS", () => {
   it("the photo cap is counted from stored evidence, never from the text", () => {
+    // The cap is read from policy (6 since 2026-09-05), never from a literal here.
+    const max = requirePolicyNumber("intake.max_photos_per_request");
     const stored = [
-      { kind: "photo" },
-      { kind: "photo" },
-      { kind: "photo" },
-      { kind: "photo" },
+      ...Array.from({ length: max }, () => ({ kind: "photo" })),
       // Text that begs for a bigger cap is still just text.
       { kind: "customer_text", content: ATTACKS.inline_bracket(PLAIN_LEAK) },
     ] as EvidenceObject[];
     const decision = photoCapDecisionFor(stored);
     expect(decision.allowed).toBe(false);
-    expect(decision.max).toBe(4);
+    expect(decision.max).toBe(max);
   });
 
   it("a fifth photo is refused on a journey whose description is an attack", async () => {
@@ -163,17 +163,20 @@ describe("A01 — injection changes nothing about the CAPS", () => {
       })
     );
     const requestId = (await res.json()).request_id as string;
+    const ownerKey = ownerTokenFrom(res);
     const upload = async (i: number) => {
       const form = new FormData();
       form.set("request_id", requestId);
+      form.set("k", ownerKey);
       form.set("target", "unit_photo");
       form.set("file", new File([new Uint8Array(PNG)], `p${i}.png`, { type: "image/png" }));
       return mediaPost(
         new Request("http://localhost/api/intake/media", { method: "POST", body: form })
       );
     };
-    for (let i = 1; i <= 4; i += 1) expect((await upload(i)).status).toBe(200);
-    expect((await upload(5)).status).toBe(409);
+    const max = requirePolicyNumber("intake.max_photos_per_request");
+    for (let i = 1; i <= max; i += 1) expect((await upload(i)).status).toBe(200);
+    expect((await upload(max + 1)).status).toBe(409);
   });
 
   it("the question ceiling is counted, not argued with", async () => {

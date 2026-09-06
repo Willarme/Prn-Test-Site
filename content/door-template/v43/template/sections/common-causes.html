@@ -1,0 +1,19 @@
+<!-- ================= COMMON POSSIBILITIES ================= -->
+<section class="sec tint tint-cool chapter dark" id="common-causes">
+  <div class="wrap">
+    <p class="eyebrow"><i class="pennant" aria-hidden="true"></i>The shortlist</p>
+    <h2 class="display h2">{%common_causes.heading_html%}</h2>
+    <p class="note dim">Typical published ranges, not a quote and not a local frequency ranking.</p><span class="orn-giant" aria-hidden="true" data-orn>{%common_causes.orn_numeral%}</span>
+    <div class="ledger"><div class="scroll" tabindex="0" role="group" aria-label="Table, scrolls sideways on small screens">
+      <table>
+        <thead><tr>
+{%each common_causes.columns%}          <th scope="col" class="{%.mw_class%}">{%.label%}</th>
+{%/each%}        </tr></thead>
+        <tbody>
+{%each common_causes.rows%}          <tr><td><b class="bold td-b">{%.cause%}</b></td><td class="muted">{%.notice%}</td><td class="{%.fix_class%}">{%.fix_label%}</td><td class="muted">{%.range_html%}</td></tr>
+{%/each%}        </tbody>
+      </table>
+    </div><span class="scroll-hint" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none"><path d="M4 12h15M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+  </div>
+</section>
+

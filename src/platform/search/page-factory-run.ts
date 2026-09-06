@@ -1,6 +1,6 @@
 import type { SearchOpportunity } from "@/domain/search/contracts";
 import { isOwnerApproved, type OpportunityDecision } from "@/domain/search/decision";
-import { newPageEligibility, pageEligibleIntent } from "@/domain/search/factory";
+import { listContentBankBundles, newPageEligibility, pageEligibleIntent } from "@/domain/search/factory";
 import { sameIntentFamily } from "@/domain/search/intent-family";
 import {
   DEFAULT_PAGE_FACTORY_POLICY,
@@ -26,6 +26,10 @@ import {
   emitPageStaged,
 } from "@/platform/search/page-events";
 import { pageRegistryStore } from "@/platform/search/page-registry-store";
+import { generatePageCopy, type PageCopyOutcome } from "@/platform/search/ai-page-copy";
+import type { CallModelDeps } from "@/platform/ai/callModel";
+import { aiPolicyStore } from "@/platform/ai/policy-store";
+import { capabilityPolicy } from "@/platform/ai/policy";
 
 /**
  * THE A05 GENERATION RUN — condition C9 / pre-answer 6.
@@ -52,11 +56,10 @@ import { pageRegistryStore } from "@/platform/search/page-registry-store";
  * NOT as a database read — the ref `agent:A05` has been registered in
  * agents/registry.ts since A00 and A05 never called it until now.
  *
- * NO BUDGET BRAKE HERE, AND THAT IS NOT AN OMISSION. A05 makes NO model call
- * and no vendor call: generation is 100% content-bank (pre-answer 3, "ship 100%
- * static"), so there is no spend to brake. `cost_usd: 0` on every ledger row is
- * a measurement, not a placeholder. A04 owns the vendor budget brake because
- * A04 is the one that spends.
+ * New-page copy uses the existing governed writer only when its AI policy is
+ * enabled. The content bank remains the fallback. Admission, privacy and spend
+ * checks run inside callModel; inner receipts retain model identity and cost.
+ * Existing pages and owner edits are never rewritten by a generation run.
  */
 
 const A05 = "A05";
@@ -100,6 +103,8 @@ export interface GenerationRunInput {
   now?: () => string;
   tenant_id?: string;
   trigger: "admin_action" | "request";
+  /** Explicit dependencies for offline verification; routes never accept these from JSON. */
+  aiDeps?: CallModelDeps;
 }
 
 export interface GenerationRunResult {
@@ -109,6 +114,7 @@ export interface GenerationRunResult {
   staged: Array<{ spec: PageSpec; page: IntentPage; regenerated: boolean }>;
   skipped: SkippedOpportunity[];
   events: string[];
+  copy_runs?: Array<{ page_spec_id: string } & Omit<PageCopyOutcome, "spec">>;
 }
 
 function nowIso(): string {
@@ -190,6 +196,7 @@ export async function runPageFactory(
   const staged: GenerationRunResult["staged"] = [];
   const skipped: SkippedOpportunity[] = [];
   const events: string[] = [];
+  const copyRuns: NonNullable<GenerationRunResult["copy_runs"]> = [];
 
   // The corpus grows as the run proceeds, so two candidates in the SAME batch
   // cannot both claim one intent family.
@@ -294,6 +301,33 @@ export async function runPageFactory(
       continue;
     }
 
+    const baselineLint = lintPageBeforeQa(built.spec, policy);
+    if (!baselineLint.passed) {
+      skipped.push({ search_opportunity_id: opportunity.search_opportunity_id, keyword: opportunity.keyword,
+        reason: "lint_blocked", detail: baselineLint.findings.map(f => `${f.check}@${f.where}`).join("; "), findings: baselineLint.findings });
+      continue;
+    }
+
+    // A rejected/idempotent/duplicate opportunity never spends. Only a new
+    // candidate reaches the writer; downstream A06 and publish gates still apply.
+    let writerEnabled = false;
+    try {
+      const aiPolicy = input.aiDeps?.policy ?? await (input.aiDeps?.policyStore ?? aiPolicyStore()).getActive();
+      writerEnabled = aiPolicy.enabled && capabilityPolicy(aiPolicy, "generate_page_copy")?.enabled === true;
+    } catch { /* Unreadable policy is not permission to call a provider. */ }
+    if (writerEnabled && !built.spec.door_template) {
+      const bundles = listContentBankBundles(policy, now()).filter(b => built.spec.source_fact_bundle_ids.includes(b.fact_bundle_id));
+      const outcome = await generatePageCopy(built.spec, bundles, {
+        policy,
+        qaContext: { existing: specs },
+        writableBlockIds: built.spec.content_blocks.filter(b => b.kind === "intent_answer" || b.kind === "who_handles_it").map(b => b.block_id),
+        deps: input.aiDeps,
+      });
+      const { spec, ...receipt } = outcome;
+      built = { ...built, spec };
+      copyRuns.push({ page_spec_id: spec.page_spec_id, ...receipt });
+    }
+
     // 6. LINT PRE-FILTER — manufactured urgency / directory framing / markup.
     const lint = lintPageBeforeQa(built.spec, policy);
     if (!lint.passed) {
@@ -348,23 +382,24 @@ export async function runPageFactory(
         tenant_id: input.tenant_id ?? "prn",
         trigger: input.trigger,
         input_ids: input.opportunities.map((o) => o.search_opportunity_id),
-        capabilities_used: ["seo.build_candidate_pages"],
-        tool_provider: "deterministic-stand-in",
-        tool_model_version: "content-bank-v1",
+        capabilities_used: ["seo.build_candidate_pages", ...(copyRuns.length ? ["generate_page_copy"] : [])],
+        tool_provider: copyRuns.length ? (copyRuns.some(r => r.engine === "model") ? "governed-model-writer" : "governed-writer-with-fallback") : staged.some(s => s.spec.door_template) ? "reviewed-template-compiler" : "deterministic-stand-in",
+        tool_model_version: copyRuns.length ? "see-copy-run-receipts" : staged.some(s => s.spec.door_template) ? "frozen-template-v43" : "content-bank-v1",
         outputs_summary: {
           template_id: policy.template_id,
           template_version: policy.template_version,
           pages_staged: staged.length,
           page_ids: staged.map((s) => s.spec.page_id),
           skipped: skipped.length,
+          copy_runs: copyRuns,
+          frozen_template_pages: staged.filter(s => s.spec.door_template).map(s => s.spec.page_id),
           skipped_by_reason: skipped.reduce<Record<string, number>>((acc, s) => {
             acc[s.reason] = (acc[s.reason] ?? 0) + 1;
             return acc;
           }, {}),
         },
         decisions: staged.map((s) => `stage:${s.spec.page_id}`),
-        // A05 makes no model call and no vendor call. Zero is measured.
-        cost_usd: 0,
+        ...(copyRuns.every(r => r.cost_usd !== null) ? { cost_usd: copyRuns.reduce((sum, r) => sum + (r.cost_usd ?? 0), 0) } : {}),
         actions_taken: staged.map((s) => `page.staged:${s.spec.page_id}`),
       },
       clientProvider
@@ -374,7 +409,7 @@ export async function runPageFactory(
     /* ledger is provenance, never the gate */
   }
 
-  return { run_id: runId, halted: null, staged, skipped, events };
+  return { run_id: runId, halted: null, staged, skipped, events, copy_runs: copyRuns };
 }
 
 export interface OwnerEditInput {

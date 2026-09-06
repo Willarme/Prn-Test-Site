@@ -1,0 +1,6 @@
+{
+  "_what": "The closer section (design doc §4.2 row 30, catalogue §2 CLOSER). Heading names the reader's equipment, body names the four things the walkthrough does for this trade, CTA text matches the intake's submit button. The free line is template-constant and stays in the partial.",
+  "heading_html": "Start with what happened to <span class=\"accent\">your AC.</span>",
+  "body": "We walk you through your own equipment step by step, help you narrow it down, let you fix the easy things yourself, and write the rest into a packet that may reduce the time a provider spends catching up on what you already checked.",
+  "cta": "Start with MY AC, right now"
+}

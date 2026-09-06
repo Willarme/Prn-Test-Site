@@ -492,7 +492,10 @@ export async function selectClarifier(
    * THE INSTRUMENT. `intake.clarifier_asked` fires when a question is actually
    * selected to be asked — never on a refusal, never at the cap. The field key
    * travels; the question text does not need to, because the playbook is the
-   * record of what that key's words are.
+   * record of what that key's words are. The `value_reason` tag travels too —
+   * the canon licence under which this question was asked (one of the six, A01
+   * spec §4), so the event stream can answer "why was this asked" without
+   * reopening the playbook.
    */
   if (selection.ask) {
     await emitPlatformEvent({
@@ -502,6 +505,7 @@ export async function selectClarifier(
       context: {
         playbook_id: input.playbook.playbook_id,
         field_key: selection.ask.field_key,
+        value_reason: selection.ask.value_reason,
         priority: selection.ask.priority,
         asked_count: String(selection.asked_count),
         max_questions: String(selection.max_questions),

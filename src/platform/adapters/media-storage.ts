@@ -1,13 +1,21 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { createClient } from "@supabase/supabase-js";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { requirePolicyNumber } from "@/platform/policy/store";
+import { fileStoreForced, requireServiceClient, serviceConfigured } from "@/platform/db/client";
 
 /**
  * Private media storage for customer photos/video (#14A §19: private
  * attachments only; short-lived signed URLs or server-mediated access).
  * Originals stay private forever; any public derivative (later) is a separate
  * object with EXIF stripped.
+ *
+ * INTERNAL (service-role) by design — see docs/security/SERVICE-KEY-AUDIT.md:
+ * Supabase Storage bucket access is a distinct RLS surface (storage.objects
+ * policies, not this repo's public-schema tables) from the request-scoped
+ * read seam this item builds; `signedUrl()` below is not called from any
+ * live route yet (grepped — no caller), so there is no customer-facing read
+ * path here today to move.
  */
 export const MEDIA_ALLOWLIST: Record<string, string> = {
   "image/jpeg": "jpg",
@@ -40,11 +48,7 @@ const BUCKET = "private-evidence";
 
 class SupabaseMediaStore implements MediaStore {
   readonly kind = "supabase" as const;
-  private db = createClient(
-    process.env.SUPABASE_URL as string,
-    process.env.SUPABASE_SERVICE_ROLE_KEY as string,
-    { auth: { persistSession: false, autoRefreshToken: false } }
-  );
+  private db: SupabaseClient = requireServiceClient();
   private ensured = false;
 
   private async ensureBucket(): Promise<void> {
@@ -83,9 +87,16 @@ class SupabaseMediaStore implements MediaStore {
 
 class FileMediaStore implements MediaStore {
   readonly kind = "file" as const;
-  private root = join(process.cwd(), "data", "runtime", "media");
+  private root = join(process.env.PRN_DEV_DB_PATH ? dirname(process.env.PRN_DEV_DB_PATH) : join(process.cwd(), "data", "runtime"), "media");
+
+  private validKey(key: string): boolean {
+    // Exactly the shape issued by attachMedia: never normalize user-supplied
+    // separators, encoded segments, dot segments or Windows drive syntax.
+    return /^[a-zA-Z0-9_-]+\/[a-zA-Z0-9_-]+\/[a-zA-Z0-9_-]+\.[a-zA-Z0-9]+$/.test(key);
+  }
 
   async put(key: string, data: Buffer, mime: string): Promise<StoredMedia> {
+    if (!this.validKey(key)) throw new Error("Invalid private media key");
     const path = join(this.root, key);
     mkdirSync(dirname(path), { recursive: true });
     writeFileSync(path, data);
@@ -98,7 +109,9 @@ class FileMediaStore implements MediaStore {
   }
 
   read(storageRef: string): Buffer | null {
+    if (!storageRef.startsWith("local/")) return null;
     const key = storageRef.replace(/^local\//, "");
+    if (!this.validKey(key)) return null;
     try {
       return readFileSync(join(this.root, key));
     } catch {
@@ -111,10 +124,13 @@ let cached: MediaStore | null = null;
 
 export function mediaStore(): MediaStore {
   if (!cached) {
+    // PRN_RUNTIME_STORE=file (track F2b): a local demo or a test run must never
+    // upload a customer-like photo into the trial project's private bucket,
+    // even though .env.local on this machine carries the service key. The
+    // explicit check here is deliberate belt-and-braces on top of
+    // serviceConfigured() honouring the same override.
     cached =
-      process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY
-        ? new SupabaseMediaStore()
-        : new FileMediaStore();
+      !fileStoreForced() && serviceConfigured() ? new SupabaseMediaStore() : new FileMediaStore();
   }
   return cached;
 }

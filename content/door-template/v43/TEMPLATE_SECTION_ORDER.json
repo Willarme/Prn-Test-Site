@@ -1,0 +1,35 @@
+{
+  "_what": "THE ONE swappable list. The order of the 15 door-page sections, by name. build.js renders in this order and hardcodes no position. Melissa's ruling lands here as a one-line edit and nothing else in the kit changes.",
+  "_status": "RULED by Melissa 2026-09-05: Order B. Her words: 'the order b is fine.' Give-before-you-ask - the page is useful even if she never starts the tool.",
+  "ruled_by": "melissa",
+  "ruled_on": "2026-09-05",
+  "pinned": [
+    "HERO",
+    "INTAKE",
+    "CLOSER"
+  ],
+  "_constraints": [
+    "HERO first, INTAKE second: INTAKE is a child of HERO's grid in the template \u2014 moving it out of HERO is a build change, not a reorder.",
+    "CLOSER last: it is the return to the intake; anything after it competes with the CTA.",
+    "RELATED (if present) directly before CLOSER: the two share one dark chapter (#related-closer).",
+    "A band (#band-1/2/3) belongs to the section it closes and travels with it.",
+    "VISUALS plate 2 names 'your 4 safe checks' \u2014 if VISUALS lands before SAFE_OBSERVATIONS the drawing forward-references a list the reader has not met yet (survivable, worth knowing)."
+  ],
+  "order": [
+    "HERO",
+    "INTAKE",
+    "STAT_CARDS",
+    "WHAT_CHANGES_THE_ANSWER",
+    "COMMON_POSSIBILITIES",
+    "SAFE_OBSERVATIONS",
+    "VISUALS",
+    "THE_FLIP",
+    "GENERAL_VS_YOURS",
+    "CAPABILITY_QUESTIONS",
+    "JOB_PACKET",
+    "REPAIR_RECORD",
+    "FAQ",
+    "RELATED",
+    "CLOSER"
+  ]
+}

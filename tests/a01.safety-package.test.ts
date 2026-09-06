@@ -92,13 +92,13 @@ describe("A01 — the safety package", () => {
     expect(checkSafety("my kitchen tap drips")).toBeNull();
   });
 
-  it("gas remains the only hard stop", () => {
+  it("gas, burning and water at electricity halt normal intake (Melissa checklist F1)", () => {
     const halting = SAFETY_RULES.filter((r) => !r.intake_may_continue).map((r) => r.safety_rule_id);
-    expect(halting).toEqual(["safety_gas"]);
+    expect(halting).toEqual(["safety_gas", "safety_fire", "safety_flood_electric"]);
   });
 
   it("is versioned, and records the jurisdiction its copy assumes", () => {
-    expect(SAFETY_PACKAGE_VERSION).toBe("prn_trial_us_v1@1");
+    expect(SAFETY_PACKAGE_VERSION).toBe("prn_trial_us_v1@2");
     expect(ACTIVE_SAFETY_PACKAGE.jurisdiction).toBe("US");
     expect(ACTIVE_SAFETY_PACKAGE.locale).toBe("en-US");
     // Honest about review status rather than aspirational.

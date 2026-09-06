@@ -71,7 +71,23 @@ export const EvidenceObject = z.object({
   evidence_id: Id,
   /** Reserved — white-label condition C7. Default "prn"; NO tenant logic exists. */
   tenant_id: z.string().min(1).optional(),
-  kind: z.enum(["customer_text", "photo", "video", "voice_transcript"]),
+  /**
+   * "voice_note" ADDED 2026-09-05 (campaign track F1, routine decision 12).
+   *
+   * The door page's "Talk through it" button is frozen approved copy on a real
+   * file input, and nothing in the repo accepted audio (CONNECTION MAP §3 gap
+   * B). A voice note is now STORED and LISTED as evidence and nothing more —
+   * it is deliberately NOT `voice_transcript`, because no transcription runs
+   * and calling an untranscribed recording a transcript would put a claim on
+   * the record that no capability made. T1-17 (voice capture in Phase 1 scope)
+   * is still open; when transcription ships it produces a SECOND, separate
+   * `voice_transcript` object rather than mutating this one.
+   *
+   * SUPABASE: migration 00005_intake_details.sql's check constraint does not
+   * yet list 'voice_note'. The file store (no keys configured) accepts it
+   * today; a migration is owed before the Supabase path sees audio.
+   */
+  kind: z.enum(["customer_text", "photo", "video", "voice_transcript", "voice_note"]),
   /** Text content, or the PRIVATE storage reference for media. Never a public URL. */
   content: z.string(),
   privacy: z.literal("private"),

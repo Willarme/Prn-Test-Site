@@ -31,7 +31,7 @@ function opp(overrides: Partial<SearchOpportunity> = {}): SearchOpportunity {
   return {
     search_opportunity_id: "so_tpl_1",
     schema_version: "1.0.0",
-    keyword: "ac blowing warm air",
+    keyword: "ac airflow feels weak",
     intent_cluster_id: null,
     cluster_label: null,
     problem_family_hint: "hvac",

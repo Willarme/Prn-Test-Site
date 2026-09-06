@@ -1,0 +1,747 @@
+<title>Job Packet PDF — Mockup v3</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Public+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0F1114; --text:#12161A; --ink2:#3E474D; --muted:#5A6462; --ink3:#6B7472; --dim:#6B7472;
+    --paper:#F7F7F5; --paper2:#EFF0EC; --white:#FFFFFF; --line2:#EDF0F2; --bg:#EFF0EC; --grey:#5A6570; --greybg:#F1F3F4;
+    --pink:#FF2E7E; --pinkd:#C1004F; --pinkl:#FF6FA6; --pink100:#FFC2DA; --pink50:#FDE8F0; --pinkbg:#FDE8F0;
+    --green:#1F6B47; --greenbg:#E8F2EC; --amber:#9A6A1F; --amberbg:#F7EFE1; --blue:#2D5C68; --bluebg:#E9F0F1;
+    --on-ink:#F2F3F5; --on-ink-2:#C9CFD4;
+    /* baked into the two approved illustrations lifted from Home Memory v2 / Trust Network v2 -- declared, not re-coloured */
+    --fig-warm:#2A2622; --fig-warm-2:#8C8073; --fig-grey:#98A4A3; --fig-grey-2:#8A9290; --fig-ground:#F4F5F2;
+    /* evidence-thumbnail placeholders on the provider pages */
+    --ph-1:#E3E8EA; --ph-2:#CFD6DA;
+    --line:rgba(18,22,26,.13); --line-s:rgba(18,22,26,.22);
+    --r:4px; --r6:6px;
+    --plane:0 3px 0 rgba(18,22,26,.09);
+    --bevel:inset 0 1px 0 rgba(255,255,255,.75), inset 0 -1px 0 rgba(18,22,26,.06);
+    --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+    --disp:'Archivo',system-ui,sans-serif;
+    --body:'Public Sans',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{background:var(--bg);font-family:var(--body);color:var(--text);margin:0;padding:26px 16px 60px;line-height:1.5}
+  .wrap{max-width:880px;margin:0 auto}
+  .note{background:var(--ink);color:var(--on-ink);border-radius:var(--r6);padding:16px 20px;margin-bottom:26px;font-size:.86rem;line-height:1.62}
+  .note b{color:var(--pinkl)}
+  .page{background:var(--paper);color:var(--text);border:1px solid var(--line);border-radius:var(--r6);margin-bottom:26px;overflow:hidden;box-shadow:var(--plane)}
+  .pglabel{font:500 .67rem/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--dim);padding:11px 30px;background:var(--paper2);border-bottom:1px solid var(--line)}
+  .pglabel.ho{background:var(--pink50);color:var(--pinkd)}
+  .pad{padding:30px}
+  .micro{font:500 .65rem/1.5 var(--mono);color:var(--dim);text-align:center;padding:10px 30px;border-top:1px solid var(--line);background:var(--white)}
+
+  /* ============ FLYER : shared icon system ============ */
+  .ic{border-radius:var(--r6);display:grid;place-items:center;box-shadow:var(--bevel);flex:none}
+  .ic svg{display:block}
+  .ic-ink{background:rgba(18,22,26,.07);color:var(--text)}
+  .ic-pink{background:rgba(255,46,126,.14);color:var(--pinkd)}
+  .s72{width:72px;height:72px} .s72 svg{width:38px;height:38px}
+  .s58{width:58px;height:58px} .s58 svg{width:30px;height:30px}
+  .s52{width:52px;height:52px} .s52 svg{width:27px;height:27px}
+  .ic52{width:56px;height:56px;flex:none} .ic52 svg{width:56px;height:56px;display:block}
+
+  /* ---------- flyer cover ---------- */
+  .cover{padding:44px 40px 36px;text-align:center;background:var(--white);border-bottom:1px solid var(--line)}
+  .brandrow{font:500 .68rem/1 var(--mono);letter-spacing:.2em;text-transform:uppercase;color:var(--dim);margin-bottom:26px}
+  .seal{width:66px;height:66px;border-radius:50%;background:var(--greenbg);border:1.5px solid var(--green);color:var(--green);display:grid;place-items:center;margin:0 auto 20px;box-shadow:var(--bevel)}
+  .seal svg{width:34px;height:34px}
+  .fkick{font:500 .69rem/1 var(--mono);letter-spacing:.18em;text-transform:uppercase;color:var(--green);margin-bottom:14px}
+  .fh1{font-family:var(--disp);font-size:2.7rem;line-height:1.02;letter-spacing:-.04em;font-weight:800;margin:0 auto 16px;max-width:13ch}
+  .flede{font-size:1.02rem;color:var(--muted);line-height:1.58;margin:0 auto;max-width:46ch}
+
+  /* ---------- four parts ---------- */
+  .parts{padding:32px 40px;background:var(--paper);border-bottom:1px solid var(--line)}
+  .parts h2{font-family:var(--disp);font-size:1.28rem;font-weight:800;letter-spacing:-.028em;margin:0 0 20px;text-align:center}
+  .pgrid4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+  .part{background:var(--white);border:1px solid var(--line);border-radius:var(--r6);padding:26px 16px;text-align:center;
+        box-shadow:var(--plane);position:relative;overflow:hidden}
+  .part::before{content:"";position:absolute;inset:0 0 auto 0;height:3px}
+  .pt-blue::before{background:var(--blue)}  .pt-amber::before{background:var(--amber)}
+  .pt-green::before{background:var(--green)} .pt-pink::before{background:var(--pinkd)}
+  .pt-blue b{color:var(--blue)}  .pt-amber b{color:var(--amber)}
+  .pt-green b{color:var(--green)} .pt-pink b{color:var(--pinkd)}
+  .ic-blue{background:var(--bluebg);color:var(--blue)}   .ic-amber{background:var(--amberbg);color:var(--amber)}
+  .ic-green{background:var(--greenbg);color:var(--green)}
+  .part .ic{margin:0 auto 14px}
+  .part b{display:block;font-size:.92rem;font-weight:700;letter-spacing:-.015em;margin-bottom:6px;line-height:1.28}
+  .part span{font-size:.79rem;color:var(--muted);line-height:1.48;display:block}
+
+  /* ---------- links + script, redesigned ---------- */
+/* ============================================================
+   ACTION SECTION — scan cards + call script   (all classes x-)
+   ============================================================ */
+
+.x-act{
+  font-family:var(--body);
+  color:var(--text);
+  background:var(--paper);
+  padding:32px 40px 36px;
+}
+.x-act *,
+.x-act *::before,
+.x-act *::after{box-sizing:border-box;}
+.x-act p,
+.x-act h3,
+.x-act blockquote{margin:0;}
+
+/* ---------- 2-up grid ---------- */
+.x-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:18px;
+  align-items:start;
+}
+
+/* ---------- the scan card ---------- */
+.x-card{
+  position:relative;
+  background:var(--white);
+  border:1px solid var(--line);
+  border-radius:var(--r6);
+  box-shadow:var(--plane);
+  padding:22px 22px 20px;
+  overflow:hidden;
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr);
+  grid-template-areas:
+    "scan meta"
+    "head head"
+    "body body"
+    "link link";
+  column-gap:18px;
+  row-gap:14px;
+}
+.x-card::before{
+  content:"";
+  position:absolute;
+  top:0;left:0;right:0;
+  height:3px;
+  background:var(--x-acc);
+}
+
+/* colour codes: A = pink (your own record), B = blue (other people) */
+.x-a{--x-acc:var(--pink);  --x-accd:var(--pinkd); --x-tint:var(--pink50);}
+.x-b{--x-acc:var(--blue);  --x-accd:var(--blue);  --x-tint:var(--bluebg);}
+
+/* ---------- QR: the hero ---------- */
+.x-scan{grid-area:scan;}
+.x-qr{
+  position:relative;
+  width:128px;
+  height:128px;
+  padding:9px;
+  background:var(--white);
+  border:1.5px solid var(--ink);
+  border-radius:var(--r);
+  -webkit-print-color-adjust:exact;
+  print-color-adjust:exact;
+}
+.x-qr-code{
+  display:block;
+  width:100%;
+  height:100%;
+  background-color:var(--white);
+  background-image:repeating-conic-gradient(var(--ink) 0% 25%, var(--white) 0% 50%);
+  background-size:10px 10px;
+  -webkit-print-color-adjust:exact;
+  print-color-adjust:exact;
+}
+/* three finder eyes so a 128px block reads as a code, not a swatch */
+.x-qr-eye{
+  position:absolute;
+  width:26px;
+  height:26px;
+  background:var(--white);
+  box-shadow:
+    inset 0 0 0 4px var(--ink),
+    inset 0 0 0 8px var(--white),
+    inset 0 0 0 13px var(--ink);
+  -webkit-print-color-adjust:exact;
+  print-color-adjust:exact;
+}
+.x-qr .x-qr-eye:nth-of-type(1){top:9px;left:9px;}
+.x-qr .x-qr-eye:nth-of-type(2){top:9px;right:9px;}
+.x-qr .x-qr-eye:nth-of-type(3){bottom:9px;left:9px;}
+
+/* ---------- meta column beside the code ---------- */
+.x-meta{
+  grid-area:meta;
+  min-width:0;
+  min-height:128px;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  gap:12px;
+}
+.x-eyebrow{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-family:var(--mono);
+  font-size:10.5px;
+  font-weight:600;
+  line-height:1.2;
+  letter-spacing:.16em;
+  text-transform:uppercase;
+  color:var(--x-accd,var(--dim));
+}
+.x-mark{
+  flex:0 0 auto;
+  display:block;
+  color:var(--x-acc,var(--ink));
+}
+.x-mark svg{display:block;width:19px;height:19px;}
+.x-cap{
+  font-size:11.5px;
+  line-height:1.35;
+  color:var(--muted);
+}
+
+/* ---------- card text ---------- */
+.x-h{
+  grid-area:head;
+  font-family:var(--disp);
+  font-weight:800;
+  font-size:20px;
+  line-height:1.12;
+  letter-spacing:-.025em;
+  color:var(--ink);
+  text-wrap:balance;
+}
+.x-p{
+  grid-area:body;
+  font-size:13.5px;
+  line-height:1.58;
+  color:var(--muted);
+}
+
+/* ---------- URL chip ---------- */
+.x-link{
+  grid-area:link;
+  display:flex;
+  align-items:center;
+  gap:9px;
+  min-width:0;
+  text-decoration:none;
+  font-family:var(--mono);
+  font-size:12px;
+  font-weight:600;
+  line-height:1.2;
+  color:var(--x-accd);
+  background:var(--x-tint);
+  border:1px solid var(--line-s);
+  border-radius:var(--r);
+  box-shadow:var(--bevel);
+  padding:10px 12px;
+}
+.x-link svg{flex:0 0 auto;width:16px;height:16px;}
+.x-url{
+  min-width:0;
+  overflow-wrap:anywhere;
+  word-break:break-word;
+}
+
+/* ---------- the script: full width, heaviest thing here ---------- */
+.x-script{
+  position:relative;
+  margin-top:18px;
+  background:var(--white);
+  border:1px solid var(--line);
+  border-radius:var(--r6);
+  box-shadow:var(--plane);
+  padding:24px 26px 26px;
+  overflow:hidden;
+}
+.x-script::before{
+  content:"";
+  position:absolute;
+  top:0;left:0;right:0;
+  height:3px;
+  background:var(--ink);
+}
+.x-script .x-eyebrow{color:var(--dim);}
+.x-script .x-mark{color:var(--ink);}
+.x-sh{
+  margin-top:8px;
+  font-family:var(--disp);
+  font-weight:800;
+  font-size:clamp(24px,3.4vw,32px);
+  line-height:1.08;
+  letter-spacing:-.03em;
+  color:var(--ink);
+  text-wrap:balance;
+}
+.x-quote{
+  margin-top:18px;
+  background:var(--ink);
+  border-radius:var(--r6);
+  padding:24px 28px 26px;
+  -webkit-print-color-adjust:exact;
+  print-color-adjust:exact;
+}
+.x-quote::before{
+  content:"";
+  display:block;
+  width:38px;
+  height:3px;
+  background:var(--pink);
+  margin-bottom:16px;
+}
+.x-quote p{
+  color:var(--white);
+  font-size:clamp(15.5px,1.9vw,19px);
+  line-height:1.7;
+  font-weight:400;
+  overflow-wrap:break-word;
+  hyphens:none;
+}
+.x-mono{
+  font-family:var(--mono);
+  font-size:.94em;
+  letter-spacing:.02em;
+  white-space:nowrap;
+}
+
+/* ---------- responsive ---------- */
+@media (max-width:760px){
+  .x-act{padding:24px 20px 26px;}
+  .x-grid{grid-template-columns:minmax(0,1fr);}
+  .x-script{padding:22px 20px 24px;}
+  .x-quote{padding:20px 20px 22px;}
+}
+@media (max-width:430px){
+  .x-card{
+    grid-template-columns:minmax(0,1fr);
+    grid-template-areas:"scan" "meta" "head" "body" "link";
+  }
+  .x-meta{min-height:0;gap:8px;}
+  .x-h{font-size:19px;}
+  .x-mono{white-space:normal;}
+}
+
+/* ---------- print ---------- */
+@media print{
+  .x-act{background:var(--white);padding:0;}
+  .x-act,
+  .x-card,.x-card::before,
+  .x-qr,.x-qr-code,.x-qr-eye,
+  .x-link,
+  .x-script,.x-script::before,
+  .x-quote,.x-quote::before{
+    -webkit-print-color-adjust:exact;
+    print-color-adjust:exact;
+  }
+  .x-card,.x-script{break-inside:avoid;page-break-inside:avoid;}
+  .x-link{color:var(--ink);}
+}
+
+  /* ---------- closing tagline band ---------- */
+  .closer{padding:46px 40px 40px;background:var(--ink);color:var(--on-ink);text-align:center}
+  .tagline{font-family:var(--disp);font-size:clamp(1.6rem,3.6vw,2.4rem);font-weight:800;letter-spacing:-.038em;
+           line-height:1.1;margin:0 auto;max-width:22ch;color:var(--on-ink)}
+  .tl-accent{color:var(--pink)}
+  .closer-rule{width:52px;height:3px;background:var(--pink);margin:24px auto 20px}
+  .closer-sub{margin:0 auto;font-size:.88rem;color:var(--on-ink-2);max-width:56ch;line-height:1.6}
+  .closer-sub b{color:var(--on-ink)}
+
+  /* ============ PROVIDER PAGES (unchanged) ============ */
+  .band{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;border-bottom:2px solid var(--text);padding-bottom:16px;margin-bottom:22px}
+  .ttl{font-family:var(--disp);font-size:1.6rem;font-weight:800;letter-spacing:-.03em;line-height:1.13;margin:0 0 6px}
+  .sub{font-size:.86rem;color:var(--ink3);margin:0}
+  .badge{flex:none;text-align:right}
+  .urg{display:inline-block;background:var(--amberbg);color:var(--amber);border:1px solid rgba(154,106,31,.3);border-radius:999px;padding:5px 13px;font-size:.72rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+  .meta{font:500 .69rem/1.6 var(--mono);color:var(--ink3);margin-top:8px}
+  .grid2{display:grid;grid-template-columns:1.35fr 1fr;gap:24px;margin-bottom:22px}
+  h3.sec{font:700 .7rem/1 var(--mono);letter-spacing:.13em;text-transform:uppercase;color:var(--ink3);margin:0 0 10px;padding-bottom:6px;border-bottom:1px solid var(--line2)}
+  .summary{font-size:.94rem;line-height:1.62;margin:0 0 14px}
+  .eq{background:var(--greybg);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px}
+  .eqrow{display:flex;justify-content:space-between;gap:12px;font-size:.82rem;padding:4px 0;border-bottom:1px dotted var(--line)}
+  .eqrow:last-child{border-bottom:0}
+  .eqrow span:first-child{color:var(--ink3)}
+  .eqrow span:last-child{font-weight:600;text-align:right}
+  ul.facts{list-style:none;margin:0;padding:0}
+  ul.facts li{position:relative;padding:7px 0 7px 26px;font-size:.87rem;border-bottom:1px solid var(--line2)}
+  ul.facts li:last-child{border-bottom:0}
+  ul.facts li::before{content:"";position:absolute;left:6px;top:14px;width:7px;height:7px;border-radius:50%;background:var(--text)}
+  .tag{display:inline-block;font:500 .62rem/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;padding:3px 7px;border-radius:3px;margin-left:7px;vertical-align:1px;white-space:nowrap}
+  .t-rep{background:var(--bluebg);color:var(--blue)}
+  .t-photo,.t-label,.t-conf{background:var(--greenbg);color:var(--green)}
+  .t-inf{background:var(--amberbg);color:var(--amber)}
+  .t-unk{background:var(--greybg);color:var(--grey)}
+  .t-tech{background:var(--pinkbg);color:var(--pinkd)}
+  .split{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:4px}
+  .box{border:1px solid var(--line);border-radius:var(--r);padding:15px 17px}
+  .box.unk{background:var(--greybg)}
+  .box.tech{background:var(--pinkbg);border-color:var(--pink100)}
+  .box h4{margin:0 0 9px;font-size:.79rem;font-weight:700}
+  .box.tech h4{color:var(--pinkd)}
+  .box ul{margin:0;padding-left:17px;font-size:.82rem;line-height:1.65}
+  .strip{display:flex;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;margin-top:24px}
+  .strip div{flex:1;padding:12px 8px;text-align:center;border-right:1px solid var(--line)}
+  .strip div:last-child{border-right:0}
+  .strip .n{font-family:var(--disp);font-size:1.3rem;font-weight:800;line-height:1.1}
+  .strip .l{font:500 .6rem/1.3 var(--mono);color:var(--ink3);text-transform:uppercase;letter-spacing:.07em;margin-top:4px}
+  table{width:100%;border-collapse:collapse;font-size:.82rem;margin-bottom:6px}
+  th{text-align:left;font:700 .66rem/1 var(--mono);letter-spacing:.09em;text-transform:uppercase;color:var(--ink3);border-bottom:1px solid var(--line);padding:0 8px 6px 0}
+  td{padding:7px 8px 7px 0;border-bottom:1px solid var(--line2);vertical-align:top}
+  tr:last-child td{border-bottom:0}
+  .tl{position:relative;padding-left:20px;margin:0}
+  .tl li{list-style:none;position:relative;padding:0 0 13px 0;font-size:.84rem;border-left:2px solid var(--line);padding-left:17px;margin-left:3px}
+  .tl li:last-child{border-left-color:transparent;padding-bottom:0}
+  .tl li::before{content:"";position:absolute;left:-6px;top:5px;width:9px;height:9px;border-radius:50%;background:var(--paper);border:2px solid var(--ink3)}
+  .tl b{display:block;font:500 .68rem/1.6 var(--mono);color:var(--ink3);letter-spacing:.05em;text-transform:uppercase}
+  .evid{display:grid;grid-template-columns:repeat(5,1fr);gap:9px}
+  .ph{aspect-ratio:4/3;background:linear-gradient(135deg,var(--ph-1),var(--ph-2));border:1px solid var(--line);border-radius:var(--r);display:flex;align-items:flex-end;padding:6px;font:600 .59rem/1.25 var(--body);color:var(--ink2)}
+  .branch{border:1px solid var(--line);border-radius:var(--r);padding:13px 15px;margin-bottom:9px}
+  .branch .bh{display:flex;justify-content:space-between;gap:12px;align-items:baseline;margin-bottom:7px}
+  .branch .bn{font-weight:700;font-size:.89rem}
+  .conf{font:500 .64rem/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--ink3)}
+  .fa{font-size:.79rem;line-height:1.6;margin:2px 0}
+  .fa .for{color:var(--green);font-weight:700}
+  .fa .agn{color:var(--pinkd);font-weight:700}
+  .sechead{font-family:var(--disp);font-size:1rem;font-weight:800;letter-spacing:-.025em;margin:26px 0 11px;padding-bottom:6px;border-bottom:2px solid var(--text)}
+  .sechead:first-child{margin-top:0}
+  .optnote{font:500 .7rem/1 var(--mono);color:var(--ink3);letter-spacing:0;text-transform:none;float:right;padding-top:5px}
+  .legend{display:flex;flex-wrap:wrap;gap:7px;margin-top:9px}
+  @media (max-width:760px){.grid2,.split,.pgrid,.bar{grid-template-columns:1fr}.pgrid4,.keyrow{grid-template-columns:1fr 1fr}.evid{grid-template-columns:repeat(3,1fr)}}
+</style>
+
+<div class="wrap">
+
+<div class="note">
+<b>MOCKUP 1 v6 — Job Packet PDF.</b> The closing tagline band had lost its CSS in the last pass — <b>restored</b>, on ink at 38px with the pink accent. The urgency tag is rewritten from our scheduling language to the homeowner's: <b>&quot;As soon as possible · not a safety hazard&quot;</b>. No tag may imply a wait; the full tag ladder lives in <code>PDF Job Packet Template Directions</code>. Cover, four coloured cards, redesigned QR + script section and the untouched provider pages 2–3 are as before. <b>Design is open for Joshua — wording is frozen.</b>
+</div>
+
+<!-- ============ FLYER PAGE 1 ============ -->
+<div class="page">
+<div class="pglabel ho">Page 1 — for the homeowner</div>
+
+  <div class="cover">
+    <div class="brandrow">Go Live &nbsp;·&nbsp; Property Response Network</div>
+    <div class="seal"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 12.5l5.2 5.2L20 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <h1 class="fh1">Your Job Packet</h1>
+  </div>
+
+  <div class="parts">
+    <h2>What is in here</h2>
+    <div class="pgrid4">
+
+      <div class="part pt-blue">
+        <div class="ic ic-blue s72">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="5" y="4.5" width="14" height="17" rx="1.8" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"/><rect x="9" y="2.6" width="6" height="3.4" rx="1.2" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"/><path d="M8.5 11h7M8.5 14.5h5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></svg>
+        </div>
+        <b>What you saw</b>
+        <span>In your own words, kept exactly as you said it.</span>
+      </div>
+
+      <div class="part pt-amber">
+        <div class="ic ic-amber s72">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 8.5a2 2 0 012-2h2.2l1.3-2.1h6.9l1.3 2.1H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2z" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"/><circle cx="12" cy="12.8" r="3.5" stroke="currentColor" stroke-width="1.75"/></svg>
+        </div>
+        <b>Your photos</b>
+        <span>Dated, labelled, pointed at the right part.</span>
+      </div>
+
+      <div class="part pt-green">
+        <div class="ic ic-green s72">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3.5 6.6l1.7 1.7 3-3.2M3.5 12.4l1.7 1.7 3-3.2M3.5 18.2l1.7 1.7 3-3.2" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.5 6.4h8M12.5 12.2h8M12.5 18h5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></svg>
+        </div>
+        <b>The checks you did</b>
+        <span>Each one with what it ruled out.</span>
+      </div>
+
+      <div class="part pt-pink">
+        <div class="ic ic-pink s72">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="13.5" r="7.8" stroke="currentColor" stroke-width="1.75"/><path d="M12 9.6v4.2l2.7 1.6" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/><path d="M9.3 2.6h5.4M12 2.6v3.1" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/></svg>
+        </div>
+        <b>A head start on the clock</b>
+        <span>Less time diagnosing can mean fewer hours on the bill.</span>
+      </div>
+
+    </div>
+  </div>
+
+  <section class="x-act">
+    <div class="x-grid">
+  
+      <article class="x-card x-a">
+        <div class="x-scan">
+          <div class="x-qr" aria-hidden="true">
+            <span class="x-qr-code"></span>
+            <i class="x-qr-eye"></i><i class="x-qr-eye"></i><i class="x-qr-eye"></i>
+          </div>
+        </div>
+        <div class="x-meta">
+          <p class="x-eyebrow">
+            <span class="x-mark">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                <path d="M3.6 10.6 12 3.9l8.4 6.7"/>
+                <path d="M5.7 9.1v10.9h12.6V9.1"/>
+                <path d="M9.1 13.4h5.8"/>
+                <path d="M9.1 16.5h3.5"/>
+              </svg>
+            </span>Home Memory
+          </p>
+          <p class="x-cap">Opens already filled in</p>
+        </div>
+        <h3 class="x-h">Your house is an asset with amnesia.</h3>
+        <p class="x-p">Scan this and everything in this packet is already saved — the model number, the photos, what was wrong and what fixed it.</p>
+        <a class="x-link" href="https://golive.com/keep/4821-A">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+            <path d="M10.6 5.2H5.2v13.6h13.6v-5.4"/>
+            <path d="M13.4 10.6 19.6 4.4"/>
+            <path d="M14.6 4.4h5v5"/>
+          </svg><span class="x-url">golive.com/keep/4821-A</span></a>
+      </article>
+  
+      <article class="x-card x-b">
+        <div class="x-scan">
+          <div class="x-qr" aria-hidden="true">
+            <span class="x-qr-code"></span>
+            <i class="x-qr-eye"></i><i class="x-qr-eye"></i><i class="x-qr-eye"></i>
+          </div>
+        </div>
+        <div class="x-meta">
+          <p class="x-eyebrow">
+            <span class="x-mark">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                <circle cx="12" cy="5.2" r="2.2"/>
+                <circle cx="5.3" cy="17.6" r="2.2"/>
+                <circle cx="18.7" cy="17.6" r="2.2"/>
+                <path d="M10.4 6.9 6.9 15.6"/>
+                <path d="M13.6 6.9l3.5 8.7"/>
+                <path d="M7.5 17.6h9"/>
+              </svg>
+            </span>Trust Network
+          </p>
+          <p class="x-cap">They answer in a tap</p>
+        </div>
+        <h3 class="x-h">You already know someone who knows someone.</h3>
+        <p class="x-p">Ask your own people who they would send to their sister's house, or send this packet straight to the guy you already trust.</p>
+        <a class="x-link" href="https://golive.com/ask/4821-A">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+            <path d="M10.6 5.2H5.2v13.6h13.6v-5.4"/>
+            <path d="M13.4 10.6 19.6 4.4"/>
+            <path d="M14.6 4.4h5v5"/>
+          </svg><span class="x-url">golive.com/ask/4821-A</span></a>
+      </article>
+  
+    </div>
+  
+    <article class="x-script">
+      <p class="x-eyebrow">
+        <span class="x-mark">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+            <path d="M4.6 6.2h14.8v10.3h-7.2l-4.5 3.4v-3.4H4.6z"/>
+            <path d="M8.2 10h7.6"/>
+            <path d="M8.2 13.1h4.7"/>
+          </svg>
+        </span>If you would rather call someone
+      </p>
+      <h3 class="x-sh">Read this out when they pick up.</h3>
+      <blockquote class="x-quote">
+        <p>"Hi — my AC is running but blowing warm air. It's a Carrier split system, about eight years old, model <span class="x-mono">24ABC636A003</span>. Started gradually on Tuesday. The thermostat's set to 70 and the room's at 78, the outdoor unit is running and the fan's turning, the filter's clean and three weeks old, and there's no ice I can see. I've got photos and a Job Packet I can send you before you come out."</p>
+      </blockquote>
+    </article>
+  </section>
+
+  <div class="closer">
+    <p class="tagline">You stop carrying your home in your head.<br><span class="tl-accent">You get your life back.</span></p>
+    <div class="closer-rule"></div>
+    <p class="closer-sub"><b>The rest of this packet</b> is written for whoever fixes it. Hand over the whole thing — you don't have to explain it again.</p>
+  </div>
+
+<div class="micro">A preparation record · the technician does their own testing on site · the price stays theirs to set</div>
+</div>
+
+<!-- ============ PROVIDER PAGE 1 ============ -->
+<div class="page">
+<div class="pglabel">Page 2 — for the provider · head start · executive summary</div>
+<div class="pad">
+
+  <div class="band">
+    <div>
+      <h1 class="ttl">AC running but blowing warm air</h1>
+      <p class="sub">1114 Oakhurst Dr · Fort Wayne, IN 46815 · single-family, 2 storey</p>
+    </div>
+    <div class="badge">
+      <span class="urg">As soon as possible · not a safety hazard</span>
+      <div class="meta">PACKET #4821-A · v3<br>3 Sep 2026, 11:42</div>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div>
+      <h3 class="sec">What the homeowner is dealing with</h3>
+      <p class="summary">Indoor fan runs and air moves from the vents, but the air is not cold. Started Tuesday, gradually rather than suddenly. Thermostat is calling for cool at 70°F with the room sitting at 78°F. The outdoor unit is running and the fan is turning. No ice visible on the accessible line. Filter was replaced 3 weeks ago and photographs as clean.</p>
+
+      <h3 class="sec">The seven facts worth reading first</h3>
+      <ul class="facts">
+        <li>Outdoor fan <b>is</b> turning, unit is audibly running <span class="tag t-photo">seen in video</span></li>
+        <li>Thermostat: cool, set 70°F, room 78°F <span class="tag t-photo">seen in photo</span></li>
+        <li>Air from vents is moving at normal strength <span class="tag t-rep">reported</span></li>
+        <li>No visible ice on accessible refrigerant line <span class="tag t-conf">confirmed</span></li>
+        <li>Filter clean, replaced ~3 weeks ago <span class="tag t-photo">seen in photo</span></li>
+        <li>Onset gradual over ~2 days, not sudden <span class="tag t-rep">reported</span></li>
+        <li>No breaker trips, no burning smell, no water <span class="tag t-conf">confirmed</span></li>
+      </ul>
+    </div>
+
+    <div>
+      <h3 class="sec">Equipment</h3>
+      <div class="eq">
+        <div class="eqrow"><span>Type</span><span>Split system A/C</span></div>
+        <div class="eqrow"><span>Brand</span><span>Carrier</span></div>
+        <div class="eqrow"><span>Model</span><span>24ABC636A003</span></div>
+        <div class="eqrow"><span>Serial</span><span>4021E19845</span></div>
+        <div class="eqrow"><span>Age</span><span>~8 yrs (2018)</span></div>
+        <div class="eqrow"><span>Outdoor unit</span><span>North side, ground</span></div>
+        <div class="eqrow"><span>Air handler</span><span>Basement, NE corner</span></div>
+        <div class="eqrow"><span>Thermostat</span><span>Honeywell T6 Pro</span></div>
+      </div>
+      <p style="font-size:.74rem;color:var(--ink3);margin:9px 0 0;line-height:1.5">Model and serial read from a label photograph and confirmed by the homeowner. <span class="tag t-label" style="margin:0">read from label</span></p>
+    </div>
+  </div>
+
+  <div class="split">
+    <div class="box unk">
+      <h4>Still unknown — and why</h4>
+      <ul>
+        <li>Refrigerant charge — <em>requires gauges</em></li>
+        <li>Capacitor condition — <em>requires meter, not homeowner-safe</em></li>
+        <li>Coil condition inside air handler — <em>requires panel removal</em></li>
+        <li>Line-set temperature split — <em>requires instrument</em></li>
+      </ul>
+    </div>
+    <div class="box tech">
+      <h4>Technician-only, on arrival</h4>
+      <ul>
+        <li>Capacitor test under load</li>
+        <li>Refrigerant pressures, both sides</li>
+        <li>Supply/return temperature split</li>
+        <li>Contactor and condenser fan draw</li>
+        <li>Evaporator coil inspection</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="strip">
+    <div><div class="n">18</div><div class="l">Facts captured</div></div>
+    <div><div class="n">5</div><div class="l">Photos</div></div>
+    <div><div class="n">4</div><div class="l">Checks done</div></div>
+    <div><div class="n">3</div><div class="l">Made less likely</div></div>
+    <div><div class="n">5</div><div class="l">Tech-only left</div></div>
+  </div>
+
+</div>
+<div class="micro">Specific to this home and request · facts separated from inference · packet v3 · 3 Sep 2026 · not a remote diagnosis</div>
+</div>
+
+<!-- ============ PROVIDER PAGE 2 ============ -->
+<div class="page">
+<div class="pglabel">Page 3 — for the provider · detail</div>
+<div class="pad">
+
+  <div class="sechead">Timeline</div>
+  <ul class="tl">
+    <li><b>Sun 31 Aug</b>Homeowner notes the house feeling warmer in the afternoon. Assumed it was the weather.</li>
+    <li><b>Tue 2 Sep</b>Clearly not cooling. Thermostat lowered to 68°F, no change after two hours.</li>
+    <li><b>Tue 2 Sep, evening</b>Checked filter — replaced 3 weeks ago, looks clean. Photographed.</li>
+    <li><b>Wed 3 Sep, 11:20</b>Walked outside. Outdoor unit running, fan turning. Video taken.</li>
+    <li><b>Wed 3 Sep, 11:42</b>Packet generated.</li>
+  </ul>
+
+  <div class="sechead">Evidence</div>
+  <div class="evid">
+    <div class="ph">Equipment label — outdoor</div>
+    <div class="ph">Thermostat display</div>
+    <div class="ph">Filter, in situ</div>
+    <div class="ph">Outdoor unit, wide</div>
+    <div class="ph">Video — 12s, unit running</div>
+  </div>
+  <p style="font-size:.76rem;color:var(--ink3);margin:9px 0 0">All five items captured by the homeowner between 2–3 Sep. Full-resolution originals available via the provider link on page 2.</p>
+
+  <div class="sechead">Checks completed, and what each one changed</div>
+  <table>
+    <thead><tr><th style="width:34%">Check</th><th style="width:26%">Result</th><th>What it changed</th></tr></thead>
+    <tbody>
+      <tr><td>Thermostat mode and setpoint</td><td>Cool, 70°F, room 78°F</td><td>Confirms a real call for cooling — rules out a control-setting cause</td></tr>
+      <tr><td>Filter condition</td><td>Clean, ~3 weeks old</td><td>Makes airflow restriction at the filter unlikely</td></tr>
+      <tr><td>Outdoor unit running?</td><td>Yes — fan turning, compressor audible</td><td>Rules out a dead contactor or total power loss to the condenser</td></tr>
+      <tr><td>Ice on accessible line?</td><td>None visible</td><td>Makes a severe freeze-up less likely, though not excluded at the coil</td></tr>
+    </tbody>
+  </table>
+
+  <div class="sechead">Service history, as the homeowner knows it</div>
+  <table>
+    <tbody>
+      <tr><td style="width:44%;color:var(--ink3)">Ever low on refrigerant or topped up?</td><td>Not that the owner is aware of <span class="tag t-rep" style="margin:0">reported</span></td></tr>
+      <tr><td style="color:var(--ink3)">Service in the last two years, and by whom?</td><td>None — no maintenance since purchase in 2021 <span class="tag t-rep" style="margin:0">reported</span></td></tr>
+      <tr><td style="color:var(--ink3)">Outdoor unit ever hit, flooded, or worked near?</td><td>No <span class="tag t-conf" style="margin:0">confirmed</span></td></tr>
+      <tr><td style="color:var(--ink3)">Same temperature difference in every room?</td><td>Worse upstairs, but that was true before the fault <span class="tag t-rep" style="margin:0">reported</span></td></tr>
+    </tbody>
+  </table>
+  <p style="font-size:.76rem;color:var(--ink3);margin:8px 0 0">Asked at intake so you don't have to. Anything the homeowner didn't know is shown as a recorded gap, never guessed.</p>
+
+  <div class="sechead">Where the evidence points</div>
+
+  <div class="branch">
+    <div class="bh"><span class="bn">Low refrigerant charge / leak</span><span class="conf">Most consistent</span></div>
+    <p class="fa"><span class="for">For</span> — gradual onset over days, unit running normally, airflow normal, no ice at the accessible section.</p>
+    <p class="fa"><span class="agn">Against</span> — no oil staining reported at the accessible line-set.</p>
+  </div>
+
+  <div class="branch">
+    <div class="bh"><span class="bn">Failing capacitor / compressor not staging</span><span class="conf">Possible</span></div>
+    <p class="fa"><span class="for">For</span> — fan turning does not confirm the compressor is doing work.</p>
+    <p class="fa"><span class="agn">Against</span> — homeowner reports compressor audible, though untrained assessment.</p>
+  </div>
+
+  <div class="branch">
+    <div class="bh"><span class="bn">Airflow restriction downstream of the filter</span><span class="conf">Less likely</span></div>
+    <p class="fa"><span class="for">For</span> — cannot be excluded without inspecting the coil.</p>
+    <p class="fa"><span class="agn">Against</span> — filter clean and vent airflow reported normal.</p>
+  </div>
+
+  <p style="font-size:.78rem;color:var(--ink3);margin:12px 0 0"><span class="tag t-inf" style="margin:0">inference</span> &nbsp;These are reasoning from the evidence above, offered to save discovery time. <b>They are not a diagnosis</b> and the technician's own tests decide.</p>
+
+  <div class="sechead">Access and job readiness <span class="optnote">optional at intake · blanks are honest, not missing</span></div>
+  <table>
+    <tbody>
+      <tr><td style="width:34%;color:var(--ink3)">Occupancy</td><td>Owner works 8–5; prefers not to take time off</td></tr>
+      <tr><td style="color:var(--ink3)">Owner present needed?</td><td>No — happy for work to proceed while out</td></tr>
+      <tr><td style="color:var(--ink3)">Parking</td><td>Driveway, two spaces, no permit needed</td></tr>
+      <tr><td style="color:var(--ink3)">Pets</td><td>One dog, crated during visits</td></tr>
+      <tr><td style="color:var(--ink3)">Equipment route</td><td>Basement via internal stairs; outdoor unit accessible from side gate</td></tr>
+      <tr><td style="color:var(--ink3)">Preferred window</td><td>Any weekday; Thursday preferred</td></tr>
+      <tr><td style="color:var(--ink3)">Gate or entry code</td><td style="color:var(--ink3)">Not asked <span class="tag t-unk" style="margin:0">unknown</span></td></tr>
+      <tr><td style="color:var(--ink3)">Contact</td><td>Text preferred over phone</td></tr>
+    </tbody>
+  </table>
+
+  <div class="sechead">Scope factors to evaluate</div>
+  <ul class="facts">
+    <li>Unit is ~8 years old — repair-vs-replace conversation may be in scope</li>
+    <li>If a leak is confirmed, locating it may need a separate diagnostic step</li>
+    <li>Basement air handler — access is straightforward, no attic or roof work</li>
+    <li>No permit or utility involvement indicated</li>
+  </ul>
+  <p style="font-size:.76rem;color:var(--ink3);margin:8px 0 0">No prices are stated in this packet. These are factors for the provider to price.</p>
+
+  <div class="sechead">How to read the labels in this packet</div>
+  <div class="legend">
+    <span class="tag t-rep">reported</span>
+    <span class="tag t-photo">seen in photo / video</span>
+    <span class="tag t-label">read from label</span>
+    <span class="tag t-conf">confirmed by homeowner</span>
+    <span class="tag t-inf">inference — verify</span>
+    <span class="tag t-unk">unknown</span>
+    <span class="tag t-tech">technician-only test</span>
+  </div>
+
+</div>
+<div class="micro">Packet v3 · generated 3 Sep 2026 · prepared from the homeowner's own evidence · a preparation record, not an inspection or a guarantee</div>
+</div>
+
+</div>

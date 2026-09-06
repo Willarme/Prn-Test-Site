@@ -1,0 +1,38 @@
+{
+  "_what": "REPAIR_RECORD section, per-page content: the accent-span heading and the four record cards (color class, icon, scope chip, kicker, value line, copy) — design-doc §4.2 row 27, catalogue §2 REPAIR RECORD TRIMMED.",
+  "heading_html": "Every walkthrough makes <span class=\"accent\">the next one sharper</span>",
+  "cards": [
+    {
+      "color_class": "pink",
+      "icon_svg": "<svg width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M3 3v18h18\"/><path d=\"M18 17V9\"/><path d=\"M13 17V5\"/><path d=\"M8 17v-3\"/></svg>",
+      "scope_chip": "National first",
+      "kicker": "Matching reports",
+      "value": "Building the repair record",
+      "copy": "As records accumulate, this card becomes a real count for the most specific geography with a trustworthy sample."
+    },
+    {
+      "color_class": "green",
+      "icon_svg": "<svg width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><circle cx=\"18\" cy=\"5\" r=\"3\"/><circle cx=\"6\" cy=\"12\" r=\"3\"/><circle cx=\"18\" cy=\"19\" r=\"3\"/><line x1=\"8.59\" x2=\"15.42\" y1=\"13.51\" y2=\"17.49\"/><line x1=\"15.41\" x2=\"8.59\" y1=\"6.51\" y2=\"10.49\"/></svg>",
+      "scope_chip": "Best available scope",
+      "kicker": "Companion pattern",
+      "value": "Building the repair record",
+      "copy": "This becomes the most useful symptom or observation that repeatedly appears with this problem, always with its sample size."
+    },
+    {
+      "color_class": "blue",
+      "icon_svg": "<svg width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z\"/><circle cx=\"7.5\" cy=\"7.5\" r=\".6\" fill=\"currentColor\"/></svg>",
+      "scope_chip": "Where labels are available",
+      "kicker": "Equipment context",
+      "value": "Building the repair record",
+      "copy": "When enough readable equipment labels exist, this can show age, capacity or another equipment pattern that actually changes the decision."
+    },
+    {
+      "color_class": "amber",
+      "icon_svg": "<svg width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0\"/><circle cx=\"12\" cy=\"10\" r=\"3\"/></svg>",
+      "scope_chip": "Local as density grows",
+      "kicker": "Near-you signal",
+      "value": "Building the repair record",
+      "copy": "National evidence can appear first. State, metro or county evidence automatically replaces or joins it when the local sample is large enough to be more useful."
+    }
+  ]
+}

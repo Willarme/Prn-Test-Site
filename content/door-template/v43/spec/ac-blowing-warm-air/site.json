@@ -1,0 +1,4 @@
+{
+  "_what": "SITE-LEVEL values. The brand NAME is not here on purpose: {{site.name}} stays in the page as a token and is substituted by the site at render time (validator gate: the literal brand never appears in source).",
+  "origin": "https://propertyresponsenetwork.com"
+}

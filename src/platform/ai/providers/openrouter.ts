@@ -4,6 +4,7 @@ import type {
   ModelProvider,
   ModelUsage,
 } from "@/platform/ai/provider";
+import { MAX_MODEL_HTTP_ATTEMPTS } from "@/platform/ai/provider";
 
 /**
  * THE ONE VENDOR-SPECIFIC FILE IN THIS BUILD.
@@ -62,7 +63,7 @@ const BASE_URL = "https://openrouter.ai/api/v1";
 export const OPENROUTER_PROVIDER_ID = "openrouter";
 
 /** Attempts on a retryable status (429 / 5xx / network). One initial + this many retries. */
-const MAX_RETRIES = 2;
+const MAX_RETRIES = MAX_MODEL_HTTP_ATTEMPTS - 1;
 /** Backoff base in ms; doubled per retry. Kept short — the caller has a timeout budget. */
 const BACKOFF_BASE_MS = 400;
 
@@ -111,7 +112,29 @@ function safeDetail(text: string, limit = 300): string {
   return flat.length > limit ? `${flat.slice(0, limit)}…` : flat;
 }
 
-function buildBody(input: ModelCallInput): Record<string, unknown> {
+/**
+ * THE USER TURN, in the two shapes the chat-completions API accepts.
+ *
+ * Text-only calls send `content` as a plain string — the exact body every
+ * existing test pins. A call carrying images sends the OpenAI-style parts
+ * array instead: the text first, then one `image_url` part per image as a data
+ * URL. Nothing else in the body changes, and the branch is taken ONLY when at
+ * least one image is present, so a text call is byte-identical to before this
+ * field existed.
+ */
+function userContent(input: ModelCallInput): string | Array<Record<string, unknown>> {
+  const images = input.images ?? [];
+  if (images.length === 0) return input.user;
+  return [
+    { type: "text", text: input.user },
+    ...images.map((image) => ({
+      type: "image_url",
+      image_url: { url: `data:${image.mime};base64,${image.base64}` },
+    })),
+  ];
+}
+
+export function buildBody(input: ModelCallInput): Record<string, unknown> {
   const response_format =
     input.mode === "json_schema"
       ? {
@@ -128,34 +151,78 @@ function buildBody(input: ModelCallInput): Record<string, unknown> {
     model: input.modelId,
     messages: [
       { role: "system", content: input.system },
-      { role: "user", content: input.user },
+      { role: "user", content: userContent(input) },
     ],
     response_format,
     max_tokens: input.maxTokens,
+    // Schema extraction needs a short answer. Keep reasoning explicit for the
+    // owner's DeepSeek model; its default thinking exhausted the 30s intake
+    // budget in two live checks. OpenRouter reasoning docs, 2026-09-05.
+    ...(input.reasoningEnabled !== undefined ? { reasoning: { enabled: input.reasoningEnabled } } : {}),
     // Deterministic-as-possible: PRN wants a schema-shaped answer, not variety.
     temperature: 0,
     // Ask the API to report usage/cost on the response so the ledger records what
     // the vendor says it charged rather than only what we estimated.
     usage: { include: true },
-    provider: { data_collection: input.dataCollection },
+    provider: { data_collection: input.dataCollection, sort: "latency", require_parameters: true },
   };
 }
 
-export function createOpenRouterProvider(apiKey: string): ModelProvider {
+/**
+ * THE TEST-RUN GUARD (campaign routine decision, raised by track F1 and the
+ * companion review's R7, 2026-09-05).
+ *
+ * Once a model is cleared for customer data, every intake the test suite
+ * starts would reach this file with a real key from `.env.local` and make a
+ * real, billed call — 1,700 tests' worth, on every run, from every track. So
+ * under vitest this provider refuses to touch the network unless the run says
+ * in so many words that it wants live calls (`PRN_AI_LIVE_TESTS=1`).
+ *
+ * The refusal is a typed `not_permitted` result, which `callModel` records
+ * and every caller turns into its deterministic fallback — the same path a
+ * disabled flag takes, so a test that exercises intake sees exactly what a
+ * keyless deployment sees.
+ *
+ * Wire tests inject their fake transport explicitly. A changed global fetch
+ * is never evidence of isolation: instrumentation may forward to the network.
+ */
+export const LIVE_CALLS_DISABLED_DETAIL = "live model calls disabled under vitest";
+
+function liveCallsDisabledUnderTest(): boolean {
+  return (
+    Boolean(process.env.VITEST) &&
+    process.env.PRN_AI_LIVE_TESTS !== "1"
+  );
+}
+
+export function createOpenRouterProvider(apiKey: string, testTransport?: typeof fetch): ModelProvider {
   return {
     id: OPENROUTER_PROVIDER_ID,
 
     async complete(input: ModelCallInput): Promise<ModelCallResult> {
+      if (liveCallsDisabledUnderTest() && !testTransport) {
+        return {
+          ok: false,
+          reason: "not_permitted",
+          detail: `${LIVE_CALLS_DISABLED_DETAIL} (set PRN_AI_LIVE_TESTS=1 for a deliberate live run)`,
+          provider: OPENROUTER_PROVIDER_ID,
+          attempts: 0,
+        };
+      }
       const body = JSON.stringify(buildBody(input));
+      const maxRetries = input.maxAttempts === undefined ? MAX_RETRIES : Math.max(0, Math.min(MAX_RETRIES, Math.floor(input.maxAttempts) - 1));
+      if (!Number.isFinite(maxRetries) || (input.maxAttempts !== undefined && (!Number.isInteger(input.maxAttempts) || input.maxAttempts < 1))) {
+        return { ok: false, reason: "not_permitted", detail: "invalid HTTP attempt ceiling", provider: OPENROUTER_PROVIDER_ID, attempts: 0 };
+      }
       let attempts = 0;
       let lastRetryable = { reason: "http_error" as const, detail: "no attempt completed" };
 
-      for (let tryIndex = 0; tryIndex <= MAX_RETRIES; tryIndex += 1) {
+      for (let tryIndex = 0; tryIndex <= maxRetries; tryIndex += 1) {
         attempts += 1;
         const controller = new AbortController();
         const timer = setTimeout(() => controller.abort(), input.timeoutMs);
         try {
-          const response = await fetch(`${BASE_URL}/chat/completions`, {
+          const response = await (testTransport ?? fetch)(`${BASE_URL}/chat/completions`, {
             method: "POST",
             headers: {
               Authorization: `Bearer ${apiKey}`,
@@ -172,7 +239,7 @@ export function createOpenRouterProvider(apiKey: string): ModelProvider {
               reason: "http_error",
               detail: `429 rate limited: ${safeDetail(text)}`,
             };
-            if (tryIndex < MAX_RETRIES) {
+            if (tryIndex < maxRetries) {
               await sleep(BACKOFF_BASE_MS * 2 ** tryIndex);
               continue;
             }
@@ -191,7 +258,7 @@ export function createOpenRouterProvider(apiKey: string): ModelProvider {
               reason: "http_error",
               detail: `${response.status}: ${safeDetail(text)}`,
             };
-            if (tryIndex < MAX_RETRIES) {
+            if (tryIndex < maxRetries) {
               await sleep(BACKOFF_BASE_MS * 2 ** tryIndex);
               continue;
             }
@@ -263,9 +330,9 @@ export function createOpenRouterProvider(apiKey: string): ModelProvider {
           }
 
           const usage: ModelUsage = {
-            prompt_tokens: payload.usage?.prompt_tokens ?? 0,
-            completion_tokens: payload.usage?.completion_tokens ?? 0,
-            total_tokens: payload.usage?.total_tokens ?? 0,
+            prompt_tokens: tokenCounter(payload.usage?.prompt_tokens),
+            completion_tokens: tokenCounter(payload.usage?.completion_tokens),
+            total_tokens: tokenCounter(payload.usage?.total_tokens),
             reported_cost_usd:
               typeof payload.usage?.cost === "number" ? payload.usage.cost : null,
           };
@@ -295,7 +362,7 @@ export function createOpenRouterProvider(apiKey: string): ModelProvider {
             reason: "http_error",
             detail: `network: ${safeDetail(err instanceof Error ? err.message : String(err))}`,
           };
-          if (tryIndex < MAX_RETRIES) {
+          if (tryIndex < maxRetries) {
             await sleep(BACKOFF_BASE_MS * 2 ** tryIndex);
             continue;
           }
@@ -313,6 +380,10 @@ export function createOpenRouterProvider(apiKey: string): ModelProvider {
       };
     },
   };
+}
+
+function tokenCounter(value: unknown): number | null {
+  return typeof value === "number" && Number.isSafeInteger(value) && value >= 0 ? value : null;
 }
 
 /**

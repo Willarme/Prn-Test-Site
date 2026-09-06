@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { Archivo, JetBrains_Mono, Public_Sans } from "next/font/google";
 import Link from "next/link";
 import "./globals.css";
+import "./ecosystem.css";
 
 // Fonts are self-hosted at build time (next/font) — no runtime CDN dependency.
 const display = Archivo({
@@ -28,7 +29,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className={`${display.variable} ${body.variable} ${mono.variable}`}>
       <body>
-        <header className="site-header no-print">
+        <header className="site-header ecosystem-header no-print">
           <div className="bar">
             <Link href="/" className="brand">
               <span className="brand-mark" aria-hidden />
@@ -37,17 +38,24 @@ export default function RootLayout({ children }: { children: ReactNode }) {
                 <small>Network · Trial</small>
               </span>
             </Link>
-            <nav>
-              <Link className="btn btn-pink btn-sm" href="/start">
+            <nav className="ecosystem-navigation" aria-label="Preview navigation">
+              <Link className="ecosystem-nav-link" href="/demo">
+                Explore the demo
+              </Link>
+              <Link className="ecosystem-header-cta" href="/start">
                 Start with what happened
               </Link>
             </nav>
           </div>
         </header>
         {children}
-        <footer className="site-footer no-print">
-          <div className="wrap mono">
-            Property Response Network — trial build. Nothing on this preview is public or indexed.
+        <footer className="site-footer ecosystem-footer no-print">
+          <div className="wrap ecosystem-footer-inner">
+            <div>
+              <p className="ecosystem-footer-brand">Property Response Network</p>
+              <p>Demonstration · use example details. This preview is not indexed.</p>
+            </div>
+            <Link className="ecosystem-nav-link" href="/demo">Explore the demo</Link>
           </div>
         </footer>
       </body>

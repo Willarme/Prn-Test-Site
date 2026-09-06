@@ -5,6 +5,10 @@ import { IntakePlaybook } from "@/domain/intake/playbook";
  * not blowing cold). The owner's worked example, made canon-safe: no invented
  * prices (OD-13), no dangerous instructions, one thing per step, photos that
  * knock out two questions at once where possible.
+ *
+ * `satisfies IntakePlaybook` on the parse input makes the contract a COMPILE
+ * error as well as a runtime one — a question missing its `value_reason` tag
+ * (or carrying an invented one) fails `npm run typecheck` before zod ever runs.
  */
 export const HVAC_COOLING_PLAYBOOK: IntakePlaybook = IntakePlaybook.parse({
   playbook_id: "pb_hvac_cooling_v1",
@@ -25,6 +29,8 @@ export const HVAC_COOLING_PLAYBOOK: IntakePlaybook = IntakePlaybook.parse({
       label: "Model & serial number",
       why_it_matters:
         "Tells a technician the exact system, its age, and which parts fit — before they arrive.",
+      // "which parts fit" — the answer changes what a technician brings.
+      value_reason: "tools_parts",
       how_to_find:
         "On the OUTDOOR unit, look for a metal or silver sticker on the side, usually near where the pipes go in. Indoors, the air handler/furnace has a similar label inside or beside the access panel.",
       photo_prompt: "Snap the label — make sure the MODEL and SERIAL lines are readable.",
@@ -37,6 +43,8 @@ export const HVAC_COOLING_PLAYBOOK: IntakePlaybook = IntakePlaybook.parse({
       field_key: "brand",
       label: "Brand",
       why_it_matters: "Narrows parts and known patterns for that brand.",
+      // "Narrows parts" — same licence as the model/serial label.
+      value_reason: "tools_parts",
       how_to_find: "It's on the same label, or printed on the outdoor unit's grille.",
       photo_prompt: null,
       accepts: ["text"],
@@ -50,6 +58,8 @@ export const HVAC_COOLING_PLAYBOOK: IntakePlaybook = IntakePlaybook.parse({
       field_key: "system_age",
       label: "Roughly how old is the system?",
       why_it_matters: "Age shapes repair-vs-replace advice and likely failure points.",
+      // Repair-vs-replace is the next-step decision the answer moves.
+      value_reason: "next_step",
       how_to_find:
         "If you don't know, the serial number usually encodes the year — just send the label photo and we'll note it for the provider.",
       photo_prompt: null,
@@ -62,17 +72,27 @@ export const HVAC_COOLING_PLAYBOOK: IntakePlaybook = IntakePlaybook.parse({
       field_key: "symptom_timing",
       label: "When did it start, and is it constant or on-and-off?",
       why_it_matters: "Constant vs. intermittent points at very different causes.",
+      // Narrows the cause hypothesis the packet hands the provider.
+      value_reason: "packet",
       how_to_find: "Just your best memory is fine.",
       photo_prompt: null,
       accepts: ["text"],
       priority: "core",
       harvest_to_property_memory: false,
-      auto_detect_patterns: ["\\b(since|started|began)\\b.{0,40}\\b(yesterday|today|last (night|week)|this (morning|week)|\\d+ days?)\\b"],
+      auto_detect_patterns: [
+        "\\b(since|started|began)\\b.{0,40}\\b(yesterday|today|last (night|week)|this (morning|week)|\\d+ days?)\\b",
+        // "since Tuesday" — checklist C1. domain/intake/extract.ts reads the
+        // same shape by field key; this keeps the playbook honest on its own.
+        "\\b(since|started|began)\\s+(last\\s+)?(monday|tuesday|wednesday|thursday|friday|saturday|sunday)\\b",
+      ],
     },
     {
       field_key: "thermostat_photo",
       label: "Thermostat",
       why_it_matters: "Shows the set mode/temperature and whether the display is responding.",
+      // A blank/unresponsive display is the battery-swap fix — the answer
+      // decides whether this is DIY at all (see thermostat_power outcome).
+      value_reason: "diy_viability",
       how_to_find: "Your wall thermostat, as it is right now.",
       photo_prompt: "Snap the thermostat screen as-is (don't change anything first).",
       accepts: ["photo", "text"],
@@ -93,8 +113,12 @@ export const HVAC_COOLING_PLAYBOOK: IntakePlaybook = IntakePlaybook.parse({
       safety_note: null,
       input: { kind: "rating", min_label: "0 — pristine white", max_label: "10 — you could grow a plant on it" },
       branches: [
+        { when: "reported_clean", next_step_id: "outdoor_unit", outcome_id: null },
         { when: "rating:>=6", next_step_id: null, outcome_id: "dirty_filter" },
         { when: "rating:<6", next_step_id: "outdoor_unit", outcome_id: null },
+        // The escape hatch (merged spec §8.3, Coverage Standard §7.4): "I can't
+        // get to this" records the gap and moves on. Never a loop.
+        { when: "cannot_reach", next_step_id: "outdoor_unit", outcome_id: null },
       ],
       satisfies_fields: [],
     },
@@ -108,7 +132,7 @@ export const HVAC_COOLING_PLAYBOOK: IntakePlaybook = IntakePlaybook.parse({
       safety_note: "Look, don't touch — keep fingers and tools out of the fan grille.",
       input: { kind: "photo" },
       branches: [{ when: "any", next_step_id: "fan_moving", outcome_id: null }],
-      satisfies_fields: ["unit_model_serial"],
+      satisfies_fields: [],
     },
     {
       step_id: "fan_moving",
@@ -121,6 +145,7 @@ export const HVAC_COOLING_PLAYBOOK: IntakePlaybook = IntakePlaybook.parse({
       branches: [
         { when: "no", next_step_id: "power_check", outcome_id: null },
         { when: "yes", next_step_id: "fins_blocked", outcome_id: null },
+        { when: "cannot_reach", next_step_id: "fins_blocked", outcome_id: null },
       ],
       satisfies_fields: [],
     },
@@ -128,13 +153,14 @@ export const HVAC_COOLING_PLAYBOOK: IntakePlaybook = IntakePlaybook.parse({
       step_id: "fins_blocked",
       title: "Are the outdoor fins clogged?",
       instruction:
-        "Looking at your side photo: are the thin metal fins caked with debris, or mostly clear?",
+        "If you can see them safely, are the thin metal fins caked with debris, or mostly clear? You can also use a photo you took.",
       look_for: "Fins should look like clean, even metal lines. Packed grass or fluff blocks airflow.",
       safety_note: null,
       input: { kind: "choice", options: ["Mostly clear", "Pretty clogged"] },
       branches: [
         { when: "pretty clogged", next_step_id: null, outcome_id: "clogged_condenser" },
         { when: "mostly clear", next_step_id: null, outcome_id: "needs_technician_cooling" },
+        { when: "cannot_reach", next_step_id: null, outcome_id: "needs_technician_cooling" },
       ],
       satisfies_fields: [],
     },
@@ -142,11 +168,11 @@ export const HVAC_COOLING_PLAYBOOK: IntakePlaybook = IntakePlaybook.parse({
       step_id: "power_check",
       title: "Check power to the outdoor unit",
       instruction:
-        "Near the outdoor unit there's usually a small gray box on the wall — the disconnect. Snap a photo of it with the cover open so we can see whether it has fuses and what type.",
+        "Near the outdoor unit there is usually a small gray box on the wall, the disconnect. Photograph its closed exterior from a safe distance if you can reach it.",
       look_for:
-        "A gray metal box with a pull-out block or switch, sometimes with two cartridge fuses inside.",
+        "A closed gray metal box on the wall near the outdoor unit. Only its exterior belongs in this check.",
       safety_note:
-        "Opening the cover to look is fine. Do NOT touch wires or pull components. If anything looks burnt, melted or wet, stop and call a professional.",
+        "Keep the cover closed. Leave wires, switches and components alone. If anything looks burnt, melted or wet, stop and call a professional.",
       input: { kind: "photo" },
       branches: [{ when: "any", next_step_id: null, outcome_id: "fan_not_running" }],
       satisfies_fields: [],
@@ -170,7 +196,7 @@ export const HVAC_COOLING_PLAYBOOK: IntakePlaybook = IntakePlaybook.parse({
         "A replacement filter is a standard hardware-store item — [local price] (OD-13: sourced pricing arrives later; no invented figures).",
       ],
       provider_note:
-        "Filter was rated very dirty and replaced on [date]; symptoms [resolved / persisted]. Please verify the indoor coil for ice or residual restriction.",
+        "Filter rated very dirty. Please verify the recorded filter condition, indoor coil and airflow; any repair and its result need separate confirmation.",
     },
     {
       outcome_id: "clogged_condenser",
@@ -179,17 +205,17 @@ export const HVAC_COOLING_PLAYBOOK: IntakePlaybook = IntakePlaybook.parse({
         "Debris packed into the outdoor fins stops the unit from dumping heat outside, so the air indoors never gets cold.",
       diy_possible: true,
       diy_steps: [
-        "Turn the system OFF at the thermostat AND at the outdoor disconnect.",
-        "Gently rinse the fins from the inside out with a garden hose — light pressure only, never a pressure washer (it bends the fins).",
+        "Turn cooling OFF at the thermostat.",
+        "Keep the cabinet closed. Photograph the debris for a technician; leave coil cleaning and electrical isolation to them.",
         "Clear leaves and plants at least two feet around the unit.",
         "Restore power and test. If still warm after an hour, a technician should check refrigerant and the coil.",
       ],
       decision_frame: [
-        "Cleaning costs nothing but an hour; many 'warm air' calls end right here.",
-        "If cleaning doesn't fix it, that's the moment a diagnostic visit earns its fee — and your packet already tells the technician what's been ruled out.",
+        "A technician can check the debris and explain whether cleaning is appropriate before further diagnosis.",
+        "Your packet shows the debris you reported and which checks remain for the technician.",
       ],
       provider_note:
-        "Outdoor fan runs; condenser fins were found clogged and rinsed on [date]. Symptoms [resolved / persisted]. Please check refrigerant charge and coil condition.",
+        "Condenser fins reported clogged. Review the packet for fan observations and any checks not completed. Cleaning and its effect on cooling need separate confirmation.",
     },
     {
       outcome_id: "fan_not_running",
@@ -201,28 +227,83 @@ export const HVAC_COOLING_PLAYBOOK: IntakePlaybook = IntakePlaybook.parse({
         "Check your main breaker panel for a tripped AC breaker. You may reset it ONCE. If it trips again, stop — that needs a professional.",
       ],
       decision_frame: [
-        "Two very different price tags hide behind the same symptom: a fuse or capacitor (small part, quick swap) versus a fan motor (a bigger repair).",
-        "Telling them apart safely takes a meter. Your options: (a) a technician's diagnostic visit — you'll likely want them for a motor anyway; (b) if you're comfortable with electrical work AND own or can rent a multimeter, fuses and capacitors are testable; (c) some people replace the cheap fuses on a gamble because the downside is small — but capacitors store a dangerous charge, so that one is NOT a DIY gamble.",
-        "Sourced local prices for these options arrive with the pricing registry (OD-13) — until then, ask the provider to quote the diagnostic visit up front.",
+        "Power and fan faults can look the same from outside. A licensed technician can identify which component needs attention.",
+        "Keep electrical covers closed. Leave fuse, capacitor and wiring tests or replacement to a licensed technician; owning a meter does not make these homeowner checks.",
+        "Ask the provider to quote the diagnostic visit before work begins. Your packet carries the external observations and any checks not completed.",
       ],
       provider_note:
-        "Outdoor fan not running while calling for cool; disconnect photographed [fuses: type/rating from photo]. Suspect power/fuse, capacitor, or fan motor. Customer has NOT opened electrical compartments.",
+        "Outdoor fan reported not running. Review any available exterior photos and checks marked not checked. A technician should verify operation while cooling is requested, power and fan components.",
     },
     {
       outcome_id: "needs_technician_cooling",
-      title: "Airflow and power look fine — this needs a technician",
+      title: "The next step is a technician's check",
       likely_cause:
-        "With a clean filter, a running fan and clear fins, the likely suspects are refrigerant charge, a frozen/dirty indoor coil, or a compressor issue — all of which need gauges and training.",
+        "The checks available here haven't identified a safe fix. A technician can verify airflow, power, refrigerant charge, the indoor coil and the compressor.",
       diy_possible: false,
       diy_steps: [],
       decision_frame: [
-        "You've already ruled out the cheap causes — that's exactly what makes the service visit efficient.",
-        "Your packet tells the technician what's been checked, so they can start where you left off.",
+        "Your packet separates what you reported or checked from what remains unknown.",
+        "Anything you couldn't reach stays marked as not checked, so the technician knows where to pick up.",
       ],
       provider_note:
-        "Customer verified: filter clean, outdoor fan running, condenser fins clear. Warm air persists. Please check refrigerant, indoor coil, and compressor.",
+        "Warm air persists. Review the packet's recorded observations and checks marked not checked before verifying airflow, power, refrigerant, the indoor coil and the compressor.",
     },
   ],
   generated_by: "content-bank-v1",
   created_at: "2026-08-19T00:00:00Z",
-});
+} satisfies IntakePlaybook);
+
+/**
+ * "WHAT THAT CHANGED" — one line per branch (checklist C6, Coverage Standard
+ * §3.7: one authored payload, three surfaces). Rendered under the next step
+ * the moment an answer lands, and the same words the packet's completed-checks
+ * table can print.
+ *
+ * Keyed by step_id, then by the branch's `when` (lower-case, exactly as the
+ * playbook spells it), so the `Branch` contract in domain/intake/playbook.ts
+ * stays as it is. Honest and small: a tap earns a tap's worth of credit. "Can"
+ * and "points at", never "is" (WORDING 25); no praise (WORDING 50).
+ */
+export const HVAC_COOLING_CHANGED: Readonly<Record<string, Readonly<Record<string, string>>>> = {
+  filter: {
+    reported_clean: "You reported a clean filter.",
+    "rating:>=6": "A filter that dirty can starve your AC of air, so it moves to the top of the list.",
+    "rating:<6": "You rated the filter as mostly clean.",
+    cannot_reach: "The filter goes in the packet as not checked.",
+  },
+  outdoor_unit: {
+    // This receipt is used by the text-answer route. An answer cannot prove an
+    // upload; the media route acknowledges a photo only after storing it.
+    any: "The outdoor photo check goes in the packet as not checked.",
+  },
+  fan_moving: {
+    yes: "You reported that the outdoor fan is turning.",
+    no: "A still fan points at power or the fan motor.",
+    cannot_reach: "Whether the fan turns goes in the packet as not checked.",
+  },
+  fins_blocked: {
+    "pretty clogged": "Packed fins can stop your outdoor unit shedding heat. That becomes the most likely cause.",
+    "mostly clear": "You reported mostly clear outdoor fins.",
+    cannot_reach: "The fins go in the packet as not checked.",
+  },
+  power_check: {
+    any: "The disconnect photo check goes in the packet as not checked.",
+  },
+};
+
+const NEXT_CHECK_LABELS: Readonly<Record<string, string>> = {
+  filter: "the filter",
+  outdoor_unit: "the outdoor unit",
+  fan_moving: "whether the fan is turning",
+  fins_blocked: "the fins",
+  power_check: "the disconnect box",
+};
+
+/** A branch receipt plus the actual next check after replaying held answers. */
+export function changedLineFor(playbookId: string, stepId: string, when: string, nextStepId?: string | null): string | null {
+  if (playbookId !== HVAC_COOLING_PLAYBOOK.playbook_id) return null;
+  const line = HVAC_COOLING_CHANGED[stepId]?.[when.toLowerCase()] ?? null;
+  if (!line) return null;
+  const next = nextStepId ? NEXT_CHECK_LABELS[nextStepId] : null;
+  return next ? `${line} Next: ${next}.` : line;
+}

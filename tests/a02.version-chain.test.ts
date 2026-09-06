@@ -1,10 +1,12 @@
 import { mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { ACTIVE_DISCLOSURE } from "@/domain/privacy/disclosures";
 import { readDevDb } from "@/platform/stores/dev-db";
 import { runtimeStore } from "@/platform/stores/runtime";
+import { decodeLink } from "@/platform/links/tokens";
+const ownerProofs = new Map<string, string>();
 
 /**
  * EXACTLY ONE PACKET VERSION IS CURRENT.
@@ -25,11 +27,25 @@ let answerPost: (req: Request) => Promise<Response>;
 beforeAll(async () => {
   const dir = await mkdtemp(join(tmpdir(), "prn-chain-"));
   process.env.PRN_DEV_DB_PATH = join(dir, "dev-db.json");
+  vi.stubEnv("PRN_RUNTIME_STORE", "file");
+  vi.stubGlobal("fetch", () => { throw new Error("No network in A02 route fixtures"); });
   ({ POST: intakePost } = await import("@/app/api/intake/route"));
+  const realIntake = intakePost;
+  intakePost = async request => {
+    const response = await realIntake(request);
+    const pair = response.headers.get("set-cookie")?.split(";")[0];
+    if (pair) {
+      const token = decodeURIComponent(pair.slice(pair.indexOf("=") + 1));
+      const owner = decodeLink(token);
+      if (owner.ok) ownerProofs.set(owner.request_id, token);
+    }
+    return response;
+  };
   ({ POST: answerPost } = await import("@/app/api/intake/answer/route"));
 });
 
 afterAll(() => {
+  vi.unstubAllEnvs(); vi.unstubAllGlobals();
   delete process.env.PRN_DEV_DB_PATH;
 });
 
@@ -58,7 +74,7 @@ function answerRequest(requestId: string, fieldKey: string, value: string) {
   return new Request("http://localhost/api/intake/answer", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ request_id: requestId, fields: [{ field_key: fieldKey, value }] }),
+    body: JSON.stringify({ request_id: requestId, k: ownerProofs.get(requestId), fields: [{ field_key: fieldKey, value }] }),
   });
 }
 

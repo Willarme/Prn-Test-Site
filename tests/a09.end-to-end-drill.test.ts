@@ -30,6 +30,7 @@ import {
   runtimeStore,
   unguardedRuntimeStore,
   type RecordJourneyInput,
+  type RuntimeStore,
 } from "@/platform/stores/runtime";
 
 /**
@@ -107,6 +108,13 @@ function badProblem(): ProblemRecord {
   });
 }
 
+async function recordBadJourney(store: RuntimeStore): Promise<void> {
+  await store.recordJourney(badJourney(badProblem()));
+  // The sole intentional defect is the blank reference. Every nonblank id
+  // must have real fixture evidence so the approved repair restores safety.
+  await store.attachEvidence("pr_drill", "rq_drill", { ...evidence(), evidence_id: "ev_second" });
+}
+
 function resolveRequest(body: unknown): Request {
   return new Request("http://localhost/api/admin/approvals/resolve", {
     method: "POST",
@@ -146,7 +154,7 @@ describe("THE DRILL — approve path", () => {
   it("injects a bad record and walks it all the way to a verified repair", async () => {
     // ---- 1. INJECT: a bad record goes in through the real write path -------
     const store = runtimeStore();
-    await store.recordJourney(badJourney(badProblem()));
+    await recordBadJourney(store);
 
     // ---- 2. INGEST CATCH: same request cycle, no polling -------------------
     const findings = await currentFindings();
@@ -177,8 +185,8 @@ describe("THE DRILL — approve path", () => {
     expect(totals.journeys).toBe(0);
     // ...while the RAW store still counts it — excluded, not deleted.
     expect((await unguardedRuntimeStore().totals()).journeys).toBe(1);
-    // ...and the customer read path is unchanged.
-    expect(await store.getJourney("rq_drill")).not.toBeNull();
+    // Safety cannot be established while a referenced evidence id is absent.
+    await expect(store.getJourney("rq_drill")).rejects.toThrow("Journey evidence is unavailable");
 
     // ---- 5. PRESENT IN THE EXCEPTION QUEUE ---------------------------------
     const queue = await exceptionQueue();
@@ -220,6 +228,7 @@ describe("THE DRILL — approve path", () => {
 
     // ---- 9. THE RECORD IS ACTUALLY FIXED, and the finding is closed -------
     expect(readDevDb().problems[0].evidence_ids).toEqual(["ev_drill", "ev_second"]);
+    expect(await store.getJourney("rq_drill")).not.toBeNull();
     const closed = (await currentFindings())[0];
     expect(closed.status).toBe("repair_verified");
     expect(closed.resolved_at).not.toBeNull();
@@ -246,7 +255,7 @@ describe("THE DRILL — approve path", () => {
 describe("THE DRILL — reject path", () => {
   it("records the rejection, changes no data, and fires no repair event", async () => {
     const store = runtimeStore();
-    await store.recordJourney(badJourney(badProblem()));
+    await recordBadJourney(store);
     const finding = (await currentFindings())[0];
     const runId = recentAgentRuns().filter((r) => r.agent_id === "A09")[0].run_id;
     const proposed = await proposeRepair(finding, { run_id: runId });
@@ -278,30 +287,31 @@ describe("THE DRILL — reject path", () => {
     // good, and it must not silently rejoin the KPI numbers.
     expect(await activeQuarantine()).toHaveLength(1);
     expect((await qualityFilteredJourneyTotals()).journeys).toBe(0);
+    await expect(store.getJourney("rq_drill")).rejects.toThrow("Journey evidence is unavailable");
   });
 });
 
-describe("THE DRILL — nothing customer-facing moved", () => {
-  it("serves the homeowner's journey identically at every stage of the drill", async () => {
+describe("THE DRILL — safety remains independent of repair", () => {
+  it("restores the unchanged packet only after the missing reference is repaired", async () => {
     const store = runtimeStore();
-    await store.recordJourney(badJourney(badProblem()));
-    const before = await store.getJourney("rq_drill");
-    expect(before).not.toBeNull();
+    await recordBadJourney(store);
+    const beforePacket = readDevDb().packets[0];
+    await expect(store.getJourney("rq_drill")).rejects.toThrow("Journey evidence is unavailable");
 
     const finding = (await currentFindings())[0];
     const runId = recentAgentRuns().filter((r) => r.agent_id === "A09")[0].run_id;
     const proposed = await proposeRepair(finding, { run_id: runId });
 
-    // Quarantined, proposed, and still served.
-    expect(await store.getJourney("rq_drill")).not.toBeNull();
+    // Proposing a repair is not evidence that the missing reference is fixed.
+    await expect(store.getJourney("rq_drill")).rejects.toThrow("Journey evidence is unavailable");
 
     await POST(resolveRequest({ approval_id: proposed.approval_id, decision: "approve" }));
 
     const after = await store.getJourney("rq_drill");
     expect(after).not.toBeNull();
-    expect(after!.packet.job_packet_id).toBe(before!.packet.job_packet_id);
-    expect(after!.problem.problem_id).toBe(before!.problem.problem_id);
+    expect(after!.packet.job_packet_id).toBe(beforePacket.job_packet_id);
+    expect(after!.problem.problem_id).toBe("pr_drill");
     // The packet the homeowner sees was never rewritten by A09.
-    expect(after!.packet).toEqual(before!.packet);
+    expect(after!.packet).toEqual(beforePacket);
   });
 });

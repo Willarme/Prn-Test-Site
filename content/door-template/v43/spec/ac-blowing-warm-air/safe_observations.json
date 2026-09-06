@@ -1,0 +1,25 @@
+{
+  "_what": "SAFE OBSERVATIONS section (#what-to-check): the heading numeral + lede, the 5 tool-free checks, the two safety sheets' items (never / stop-and-call), and the section's own centre CTA text. Design doc §4.2 rows 24-26.",
+  "heading_html": "5 things to check now that could <span class=\"accent\">save you a service call</span>",
+  "lede": "On their own, a thermostat reading and a photo of your filter are just notes. The <strong>LIVE walkthrough</strong> asks the follow-ups, structures what you saw, and hands you a packet you can send to whoever comes next.",
+  "checks": [
+    { "h": "Your thermostat, exactly as it reads", "p": "Mode, set point, room temperature, any code. Check the fan is on AUTO, not ON. A photo answers all of it." },
+    { "h": "Your air filter", "p": "If it looks dirty, show us the filter and its label. We read the size off it and name the replacement." },
+    { "h": "Your outdoor unit, from a distance", "p": "Is the top fan spinning? Is it buried in clippings? One wide photo from a few feet back. Do not open it." },
+    { "h": "Your refrigerant lines", "p": "Ice on the larger insulated pipe means switch cooling off, leave the fan running, let it thaw before anyone tests anything." },
+    { "h": "Your vents, room by room", "p": "Whole house or one end? Any registers closed or blocked? The answer splits the causes in two." }
+  ],
+  "never_items": [
+    "Open an electrical compartment or test a live circuit",
+    "Touch a capacitor. They hold a charge with the power off",
+    "Add refrigerant or open any sealed part",
+    "Take a panel off the indoor or outdoor unit"
+  ],
+  "stop_items": [
+    "You smell burning, see smoke or see sparking. Cut power at the breaker first",
+    "The breaker trips again after you reset it once",
+    "Water is pooling near anything electrical",
+    "The heat is dangerous for an infant, an older adult, or someone unwell"
+  ],
+  "cta": "Walk me through MY AC instead"
+}

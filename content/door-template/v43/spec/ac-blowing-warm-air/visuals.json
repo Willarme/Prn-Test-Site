@@ -1,0 +1,35 @@
+{
+  "_what": "The 2–4 authored SVG plates (design doc §4.2 row 22), plus the section heading (row 6/§2 VISUALS). Each plate's <title> and <desc> live INSIDE its svg file and are mirrored into the JSON-LD by {%extract%}, so the drawing's own words are the single source. png = the rendered raster the JSON-LD and og:image point at (plate index 1 is the og:image, the anatomy plate). caption_html is the frozen caption under the plate (the visuals owner slots it). plate_class and post are layout-fidelity fields (never copy): plate_class puts the extra 'plate-1' class on the first plate only (omit on the others); post is the exact whitespace after a plate's closing tag — every plate but the last defaults to the normal inter-plate indent, so only the LAST plate in the array needs an explicit post (it closes the wrapping .plates div instead, at a shallower indent). New page: keep plate 0's plate_class and the LAST plate's post; everything else uses the defaults.",
+  "heading_html": "Where to look, and <span class=\"accent\">what never to open</span>",
+  "plates": [
+    {
+      "file": "plates/ice-or-clear.svg",
+      "png": {
+        "path": "/images/how-to-tell-an-iced-refrigerant-line-from-a-normal-one-and-wha.png",
+        "width": 1200,
+        "height": 409
+      },
+      "caption_html": "<strong>Ice or clear.</strong> The one observation that changes what you should do right now.",
+      "plate_class": " plate-1"
+    },
+    {
+      "file": "plates/where-to-look.svg",
+      "png": {
+        "path": "/images/where-to-look-on-a-central-air-conditioning-system-and-what-is.png",
+        "width": 1200,
+        "height": 627
+      },
+      "caption_html": "<strong>Your 4 safe checks, and the 2 red zones.</strong> Green is yours. Red is licensed work."
+    },
+    {
+      "file": "plates/behind-the-panel.svg",
+      "png": {
+        "path": "/images/inside-a-condenser-unit-the-parts-that-fail-and-why-the-panel-.png",
+        "width": 1200,
+        "height": 518
+      },
+      "caption_html": "<strong>Behind the panel.</strong> Why \"just swap the capacitor\" is bad advice even when the part is cheap.",
+      "post": "\n    "
+    }
+  ]
+}

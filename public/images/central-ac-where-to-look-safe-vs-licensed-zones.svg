@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="470" font-family="'Public Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" viewBox="0 0 900 470" role="img" aria-labelledby="anch-t anch-d">
+  <title id="anch-t">Where to look on a central air conditioning system, and what is safe to touch</title>
+  <desc id="anch-d">A house cross-section. Inside: a thermostat on the wall at check one, a return grille and filter at check two, and the indoor air handler cabinet with its coil and blower. Outside: the condenser unit with its top fan at check three. Two insulated refrigerant lines run between them, with the larger line marked as the one to inspect for ice at check four. Green markers show what a homeowner can safely look at and photograph. Red markers show the sealed electrical and refrigerant areas that only a licensed technician may open.</desc>
+  <g font-family="inherit">
+  <rect x="20" y="66" width="518" height="10" rx="3" fill="#F2F3F0" style="stroke:#12161A" stroke-width="2"/>
+  <rect x="26" y="76" width="506" height="340" rx="10" fill="#FFFFFF" style="stroke:#C8CCC4" stroke-width="2"/>
+  <rect x="26" y="416" width="506" height="14" rx="3" fill="#F2F3F0" style="stroke:#C8CCC4" stroke-width="1.6"/>
+  <g style="stroke:#C8CCC4" stroke-width="1" opacity=".45">
+    <line x1="205" y1="150" x2="205" y2="392"/><line x1="223" y1="150" x2="223" y2="392"/>
+  </g>
+  <line x1="572" y1="66" x2="572" y2="430" style="stroke:#C8CCC4" stroke-width="2" stroke-dasharray="7 7"/>
+  <text x="46" y="54" font-size="16" font-weight="600" style="fill:#5A6462">Inside</text>
+  <text x="612" y="54" font-size="16" font-weight="600" style="fill:#5A6462">Outside</text>
+
+  <rect x="64" y="140" width="76" height="54" rx="8" fill="#FFFFFF" style="stroke:#12161A" stroke-width="2"/>
+  <rect x="74" y="150" width="56" height="26" rx="3" fill="#12161A"/>
+  <text x="102" y="169" text-anchor="middle" font-size="13" font-weight="700" style="fill:#FFFFFF">78&#176;</text>
+  <circle cx="84" cy="184" r="3" style="fill:#2D5C68"/><circle cx="102" cy="184" r="3" fill="#C8CCC4"/><circle cx="120" cy="184" r="3" fill="#C8CCC4"/>
+  <circle cx="70" cy="146" r="2.2" fill="#C8CCC4" style="stroke:#12161A" stroke-width="1"/><circle cx="134" cy="146" r="2.2" fill="#C8CCC4" style="stroke:#12161A" stroke-width="1"/>
+
+  <rect x="64" y="252" width="112" height="108" rx="8" fill="#F2F3F0" style="stroke:#12161A" stroke-width="2"/>
+  <g style="stroke:#C8CCC4" stroke-width="2.2">
+    <line x1="76" y1="264" x2="164" y2="264"/><line x1="76" y1="276" x2="164" y2="276"/><line x1="76" y1="288" x2="164" y2="288"/>
+    <line x1="76" y1="300" x2="164" y2="300"/><line x1="76" y1="312" x2="164" y2="312"/><line x1="76" y1="324" x2="164" y2="324"/>
+    <line x1="76" y1="336" x2="164" y2="336"/><line x1="76" y1="348" x2="164" y2="348"/>
+  </g>
+  <rect x="150" y="270" width="16" height="76" rx="3" style="fill:#E6EBED;stroke:#2D5C68" stroke-width="2"/>
+  <circle cx="70" cy="258" r="2.2" fill="#C8CCC4" style="stroke:#12161A" stroke-width="1"/><circle cx="170" cy="258" r="2.2" fill="#C8CCC4" style="stroke:#12161A" stroke-width="1"/>
+  <circle cx="70" cy="354" r="2.2" fill="#C8CCC4" style="stroke:#12161A" stroke-width="1"/><circle cx="170" cy="354" r="2.2" fill="#C8CCC4" style="stroke:#12161A" stroke-width="1"/>
+
+  <rect x="254" y="142" width="170" height="248" rx="10" fill="#F2F3F0" style="stroke:#12161A" stroke-width="2.4"/>
+  <line x1="254" y1="212" x2="424" y2="212" style="stroke:#12161A" stroke-width="1.4" opacity=".4"/>
+  <path d="M270 180 l17 -21 17 21 17 -21 17 21 17 -21 17 21" fill="none" style="stroke:#2D5C68" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="339" y="198" text-anchor="middle" font-size="14" style="fill:#5A6462">coil</text>
+  <circle cx="318" cy="296" r="40" fill="#FFFFFF" style="stroke:#12161A" stroke-width="2"/>
+  <circle cx="318" cy="296" r="30" fill="none" style="stroke:#C8CCC4" stroke-width="1.4"/>
+  <g style="stroke:#5A6462" stroke-width="3.6" stroke-linecap="round">
+    <path d="M318 268 V288"/><path d="M346 296 H326"/><path d="M318 324 V304"/><path d="M290 296 H310"/>
+    <path d="M297 275 L311 289"/><path d="M339 275 L325 289"/><path d="M297 317 L311 303"/><path d="M339 317 L325 303"/>
+  </g>
+  <circle cx="318" cy="296" r="6.5" fill="#12161A"/>
+  <text x="318" y="362" text-anchor="middle" font-size="14" style="fill:#5A6462">blower</text>
+  <circle cx="262" cy="150" r="2.4" fill="#C8CCC4" style="stroke:#12161A" stroke-width="1"/><circle cx="416" cy="150" r="2.4" fill="#C8CCC4" style="stroke:#12161A" stroke-width="1"/>
+  <circle cx="262" cy="382" r="2.4" fill="#C8CCC4" style="stroke:#12161A" stroke-width="1"/><circle cx="416" cy="382" r="2.4" fill="#C8CCC4" style="stroke:#12161A" stroke-width="1"/>
+
+  <path d="M338 140 V120 H208" fill="none" style="stroke:#2D5C68" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  <polygon points="208,120 222,112 222,128" style="fill:#2D5C68"/>
+  <rect x="170" y="112" width="38" height="10" rx="3" fill="#F2F3F0" style="stroke:#12161A" stroke-width="1.6"/>
+  <text x="170" y="102" font-size="14" style="fill:#2D5C68">cold air to the rooms</text>
+
+  <rect x="380" y="336" width="40" height="48" rx="5" style="fill:#FFE6F0;stroke:#921645" stroke-width="2"/>
+  <g style="stroke:#921645" stroke-width="2.2"><line x1="388" y1="350" x2="412" y2="350"/><line x1="388" y1="360" x2="412" y2="360"/><line x1="388" y1="370" x2="412" y2="370"/></g>
+  <path d="M424 246 H612" style="stroke:#E6EBED" stroke-width="17" stroke-linecap="round"/>
+  <path d="M424 246 H612" style="stroke:#2D5C68" stroke-width="8" stroke-linecap="round"/>
+  <g style="stroke:#FFFFFF" stroke-width="1.6" opacity=".8">
+    <line x1="446" y1="239" x2="446" y2="253"/><line x1="474" y1="239" x2="474" y2="253"/><line x1="502" y1="239" x2="502" y2="253"/>
+    <line x1="530" y1="239" x2="530" y2="253"/><line x1="558" y1="239" x2="558" y2="253"/><line x1="586" y1="239" x2="586" y2="253"/>
+  </g>
+  <path d="M424 284 H612" style="stroke:#8C928E" stroke-width="5" stroke-linecap="round"/>
+
+  <rect x="606" y="404" width="212" height="14" rx="3" fill="#F2F3F0" style="stroke:#C8CCC4" stroke-width="1.6"/>
+  <rect x="612" y="196" width="196" height="208" rx="12" fill="#F2F3F0" style="stroke:#12161A" stroke-width="2.4"/>
+  <g style="stroke:#C8CCC4" stroke-width="1.6">
+    <line x1="618" y1="210" x2="618" y2="396"/><line x1="626" y1="210" x2="626" y2="396"/><line x1="632" y1="210" x2="632" y2="396"/>
+    <line x1="788" y1="210" x2="788" y2="396"/><line x1="794" y1="210" x2="794" y2="396"/><line x1="802" y1="210" x2="802" y2="396"/>
+  </g>
+  <g style="stroke:#C8CCC4" stroke-width="1.8">
+    <line x1="636" y1="330" x2="784" y2="330"/><line x1="636" y1="342" x2="784" y2="342"/><line x1="636" y1="354" x2="784" y2="354"/>
+    <line x1="636" y1="366" x2="784" y2="366"/><line x1="636" y1="378" x2="784" y2="378"/>
+  </g>
+  <circle cx="710" cy="196" r="58" fill="#FFFFFF" style="stroke:#12161A" stroke-width="2.4"/>
+  <circle cx="710" cy="196" r="46" fill="none" style="stroke:#C8CCC4" stroke-width="1.6"/>
+  <g style="stroke:#5A6462" stroke-width="4" stroke-linecap="round">
+    <path d="M710 152 V182"/><path d="M754 196 H724"/><path d="M710 240 V210"/><path d="M666 196 H696"/>
+    <path d="M678 164 L698 184"/><path d="M742 164 L722 184"/><path d="M678 228 L698 208"/><path d="M742 228 L722 208"/>
+  </g>
+  <circle cx="710" cy="196" r="8" fill="#12161A"/>
+  <line x1="710" y1="122" x2="710" y2="140" style="stroke:#5A6462" stroke-width="1.5"/>
+  <circle cx="618" cy="204" r="2.6" fill="#C8CCC4" style="stroke:#12161A" stroke-width="1"/><circle cx="802" cy="204" r="2.6" fill="#C8CCC4" style="stroke:#12161A" stroke-width="1"/>
+  <circle cx="618" cy="396" r="2.6" fill="#C8CCC4" style="stroke:#12161A" stroke-width="1"/><circle cx="802" cy="396" r="2.6" fill="#C8CCC4" style="stroke:#12161A" stroke-width="1"/>
+
+  <rect x="800" y="246" width="50" height="64" rx="6" style="fill:#FFE6F0;stroke:#921645" stroke-width="2"/>
+  <g style="stroke:#921645" stroke-width="2.2"><line x1="810" y1="264" x2="840" y2="264"/><line x1="810" y1="278" x2="840" y2="278"/><line x1="810" y1="292" x2="840" y2="292"/></g>
+  <text x="825" y="330" text-anchor="middle" font-size="13.5" style="fill:#921645">sealed</text>
+
+  <g font-weight="700">
+    <circle cx="134" cy="132" r="13" style="fill:#2D5C68"/><text x="134" y="137" text-anchor="middle" font-size="14" fill="#fff">1</text>
+    <circle cx="178" cy="268" r="13" style="fill:#2D5C68"/><text x="178" y="273" text-anchor="middle" font-size="14" fill="#fff">2</text>
+    <circle cx="710" cy="110" r="13" style="fill:#2D5C68"/><text x="710" y="115" text-anchor="middle" font-size="14" fill="#fff">3</text>
+    <circle cx="440" cy="222" r="13" style="fill:#2D5C68"/><text x="440" y="227" text-anchor="middle" font-size="14" fill="#fff">4</text>
+    <circle cx="401" cy="332" r="13" style="fill:#921645"/><text x="401" y="337" text-anchor="middle" font-size="14" fill="#fff">&#215;</text>
+    <circle cx="822" cy="240" r="13" style="fill:#921645"/><text x="822" y="245" text-anchor="middle" font-size="14" fill="#fff">&#215;</text>
+  </g>
+
+  <g font-size="14.5" fill="#12161A">
+    <circle cx="40" cy="444" r="9" style="fill:#2D5C68"/><text x="58" y="449">Safe to look at and photograph</text>
+    <circle cx="352" cy="444" r="9" style="fill:#921645"/><text x="370" y="449">Sealed. Licensed technician only</text>
+    <rect x="648" y="438" width="30" height="8" rx="4" style="fill:#2D5C68"/><text x="690" y="449">Check this line for ice</text>
+  </g>
+  </g>
+</svg>

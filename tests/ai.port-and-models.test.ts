@@ -116,9 +116,13 @@ describe("the model port keeps vendors on one side of a line", () => {
 describe("the model catalogue is data, sourced and dated", () => {
   it("every seeded model carries its probe as its price source", () => {
     for (const model of MODEL_CATALOGUE) {
-      expect(model.price_source, model.id).toContain(MODEL_CATALOGUE_PROBED_AT);
+      // Each entry names the date ITS figures were read; the catalogue-wide
+      // date is what the original four carry, a later addition carries its own.
+      expect(model.probed_at, model.id).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+      expect(model.price_source, model.id).toContain(model.probed_at);
       expect(model.price_source, model.id).toMatch(/openrouter\.ai\/api\/v1\/models/);
     }
+    expect(MODEL_CATALOGUE.filter((m) => m.probed_at === MODEL_CATALOGUE_PROBED_AT).length).toBeGreaterThanOrEqual(3);
   });
 
   it("the free starting model is json_object mode — it has no strict-schema support", () => {
@@ -135,9 +139,34 @@ describe("the model catalogue is data, sourced and dated", () => {
     expect(modes.has("json_schema")).toBe(true);
   });
 
-  it("NO seeded model is cleared for customer data — the fail-closed default", () => {
+  /**
+   * TEST ENVIRONMENT clearance, 2026-09-05 (campaign routine decision 1 and 2;
+   * Josh: "lets use them now"; Melissa's countersign T0-03 still open). Exactly
+   * two models are cleared — the owner's text default and the one vision model
+   * for the rating-plate reader — and the assertion names them so a third
+   * clearance cannot slip in as a data edit nobody reads. Every other model,
+   * including every free/stealth model, stays fail-closed.
+   */
+  it("only the two TEST-cleared models are cleared for customer data; every other model is fail-closed", () => {
+    const cleared = MODEL_CATALOGUE.filter((m) => m.allows_customer_data).map((m) => m.id).sort();
+    expect(cleared).toEqual(["deepseek/deepseek-v4-flash-0731", "google/gemini-2.5-flash-lite"]);
     for (const model of MODEL_CATALOGUE) {
-      expect(model.allows_customer_data, model.id).toBe(false);
+      if (model.free) expect(model.allows_customer_data, `${model.id} is free — prompts may be retained`).toBe(false);
+    }
+    // The clearance is recorded as a test-environment ruling, in the source, with its countersign open.
+    const source = readFileSync(join(process.cwd(), "src/platform/ai/models.ts"), "utf-8");
+    expect(source).toMatch(/TEST ENVIRONMENT clearance — Josh, 2026-09-05: "lets use them now"/);
+    expect(source).toMatch(/T0-03/);
+  });
+
+  it("only image-capable models say so, and the vision model is one of them", () => {
+    const vision = findModel("google/gemini-2.5-flash-lite")!;
+    expect(vision.accepts_images).toBe(true);
+    expect(vision.mode).toBe("json_schema");
+    expect(vision.price_in_per_mtok).toBe(0.1);
+    expect(vision.price_out_per_mtok).toBe(0.4);
+    for (const model of MODEL_CATALOGUE) {
+      if (model.id !== vision.id) expect(model.accepts_images, model.id).toBe(false);
     }
   });
 
@@ -182,7 +211,7 @@ describe("the provider never throws, and never leaks the key", () => {
       });
     }) as unknown as typeof fetch;
 
-    const provider = createOpenRouterProvider(SECRET);
+    const provider = createOpenRouterProvider(SECRET, globalThis.fetch);
     const result = await provider.complete(input({ mode: "json_schema" }));
 
     expect(result.ok).toBe(true);
@@ -202,7 +231,7 @@ describe("the provider never throws, and never leaks the key", () => {
       });
     }) as unknown as typeof fetch;
 
-    const provider = createOpenRouterProvider(SECRET);
+    const provider = createOpenRouterProvider(SECRET, globalThis.fetch);
     const result = await provider.complete(input({ mode: "json_object" }));
 
     expect(result.ok).toBe(true);
@@ -218,8 +247,8 @@ describe("the provider never throws, and never leaks the key", () => {
       });
     }) as unknown as typeof fetch;
 
-    await createOpenRouterProvider(SECRET).complete(input({ dataCollection: "deny" }));
-    expect(captured.provider).toEqual({ data_collection: "deny" });
+    await createOpenRouterProvider(SECRET, globalThis.fetch).complete(input({ dataCollection: "deny" }));
+    expect(captured.provider).toEqual({ data_collection: "deny", sort: "latency", require_parameters: true });
   });
 
   it("retries a 429 and reports rate_limited when the pool stays saturated", async () => {
@@ -228,13 +257,35 @@ describe("the provider never throws, and never leaks the key", () => {
     );
     globalThis.fetch = fetchMock as unknown as typeof fetch;
 
-    const result = await createOpenRouterProvider(SECRET).complete(input());
+    const result = await createOpenRouterProvider(SECRET, globalThis.fetch).complete(input());
 
     expect(result.ok).toBe(false);
     if (result.ok) throw new Error("unreachable");
     expect(result.reason).toBe("rate_limited");
     expect(result.attempts).toBeGreaterThan(1);
     expect(fetchMock.mock.calls.length).toBe(result.attempts);
+  });
+
+  it("keeps absent token counters unknown instead of synthesizing zeros", async () => {
+    const transport = vi.fn(async () => jsonResponse({
+      choices: [{ message: { content: '{"ok":true}' } }], usage: { total_tokens: 150 },
+    }));
+    const result = await createOpenRouterProvider(SECRET, transport as typeof fetch).complete(input());
+    expect(result).toMatchObject({ ok: true, usage: { prompt_tokens: null, completion_tokens: null, total_tokens: 150, reported_cost_usd: null } });
+  });
+
+  it("honors the explicit single-attempt allowance instead of retrying a billed-uncertain request", async () => {
+    const transport = vi.fn(async () => new Response("upstream unavailable", { status: 503 }));
+    const result = await createOpenRouterProvider(SECRET, transport as typeof fetch).complete(input({ maxAttempts: 1 }));
+    expect(result).toMatchObject({ ok: false, attempts: 1 });
+    expect(transport).toHaveBeenCalledTimes(1);
+  });
+
+  it.each([0, -1, NaN, 1.5])("refuses an invalid HTTP-attempt allowance %s before network", async maxAttempts => {
+    const transport = vi.fn(async () => new Response("unexpected", { status: 503 }));
+    const result = await createOpenRouterProvider(SECRET, transport as typeof fetch).complete(input({ maxAttempts }));
+    expect(result).toMatchObject({ ok: false, reason: "not_permitted", attempts: 0 });
+    expect(transport).not.toHaveBeenCalled();
   });
 
   it("a 429 that clears on retry succeeds — the customer never sees the blip", async () => {
@@ -248,7 +299,7 @@ describe("the provider never throws, and never leaks the key", () => {
       });
     }) as unknown as typeof fetch;
 
-    const result = await createOpenRouterProvider(SECRET).complete(input());
+    const result = await createOpenRouterProvider(SECRET, globalThis.fetch).complete(input());
     expect(result.ok).toBe(true);
     if (!result.ok) throw new Error("unreachable");
     expect(result.attempts).toBe(2);
@@ -259,7 +310,7 @@ describe("the provider never throws, and never leaks the key", () => {
       new Response(JSON.stringify({ error: "invalid api key" }), { status: 401 })
     ) as unknown as typeof fetch;
 
-    const result = await createOpenRouterProvider(SECRET).complete(input());
+    const result = await createOpenRouterProvider(SECRET, globalThis.fetch).complete(input());
     expect(result.ok).toBe(false);
     if (result.ok) throw new Error("unreachable");
     expect(result.reason).toBe("no_key");
@@ -276,7 +327,7 @@ describe("the provider never throws, and never leaks the key", () => {
     });
     globalThis.fetch = fetchMock as unknown as typeof fetch;
 
-    const result = await createOpenRouterProvider(SECRET).complete(input({ timeoutMs: 10 }));
+    const result = await createOpenRouterProvider(SECRET, globalThis.fetch).complete(input({ timeoutMs: 10 }));
     expect(result.ok).toBe(false);
     if (result.ok) throw new Error("unreachable");
     expect(result.reason).toBe("timeout");
@@ -295,7 +346,7 @@ describe("the provider never throws, and never leaks the key", () => {
       jsonResponse({ choices: [{ message: { content: "" }, finish_reason: "length" }] })
     ) as unknown as typeof fetch;
 
-    const result = await createOpenRouterProvider(SECRET).complete(input());
+    const result = await createOpenRouterProvider(SECRET, globalThis.fetch).complete(input());
     expect(result.ok).toBe(false);
     if (result.ok) throw new Error("unreachable");
     expect(result.reason).toBe("invalid_json");
@@ -308,7 +359,7 @@ describe("the provider never throws, and never leaks the key", () => {
       jsonResponse({ choices: [{ message: { content: null }, finish_reason: "content_filter" }] })
     ) as unknown as typeof fetch;
 
-    const result = await createOpenRouterProvider(SECRET).complete(input());
+    const result = await createOpenRouterProvider(SECRET, globalThis.fetch).complete(input());
     expect(result.ok).toBe(false);
     if (result.ok) throw new Error("unreachable");
     expect(result.reason).toBe("refused");
@@ -319,7 +370,7 @@ describe("the provider never throws, and never leaks the key", () => {
       throw new Error("ECONNRESET");
     }) as unknown as typeof fetch;
 
-    const result = await createOpenRouterProvider(SECRET).complete(input());
+    const result = await createOpenRouterProvider(SECRET, globalThis.fetch).complete(input());
     expect(result.ok).toBe(false);
     if (result.ok) throw new Error("unreachable");
     expect(result.reason).toBe("http_error");
@@ -333,7 +384,7 @@ describe("the provider never throws, and never leaks the key", () => {
       return jsonResponse({ choices: [{ message: { content: "{}" } }] });
     }) as unknown as typeof fetch;
 
-    await createOpenRouterProvider(SECRET).complete(input());
+    await createOpenRouterProvider(SECRET, globalThis.fetch).complete(input());
     const headers = seen.headers as Record<string, string>;
     expect(headers.Authorization).toBe(`Bearer ${SECRET}`);
     expect(String(seen.body)).not.toContain(SECRET);

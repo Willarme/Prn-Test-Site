@@ -11,6 +11,7 @@ import { PageSpec } from "@/domain/search/pages";
 import { slugify } from "@/domain/search/importer";
 import { shortHash } from "@/domain/shared/hash";
 import type { GeographyScope } from "@/domain/shared/primitives";
+import { getV43DoorBinding, isV43Opportunity, v43SpecFields, V43_NOINDEX_REASON } from "@/domain/search/door-template";
 
 /**
  * A05 Intent-Door Page Factory (Door Wave 3): compiles an OWNER-APPROVED
@@ -214,6 +215,27 @@ function buildTitle(kw: string): string {
 }
 
 export function compilePageSpec(opportunity: SearchOpportunity, deps: FactoryDeps): PageSpec {
+  if (isV43Opportunity(opportunity, deps.tenant_id)) {
+    const binding = getV43DoorBinding();
+    const canonicalKeyword = "ac blowing warm air";
+    const pageId = `page_${slugify(canonicalKeyword)}_${shortHash(canonicalKeyword)}`;
+    const intentClusterId = opportunity.intent_cluster_id ?? `ic_${slugify(canonicalKeyword)}`;
+    return PageSpec.parse({
+      ...v43SpecFields(binding), door_template: binding,
+      // A reviewed template begins a distinct spec lineage; keep the canonical
+      // page identity while leaving legacy generated/rejected version IDs intact.
+      page_spec_id: `ps_${slugify(canonicalKeyword)}_tpl43_v1`, schema_version: "1.0.0",
+      ...(deps.tenant_id ? { tenant_id: deps.tenant_id } : {}), page_id: pageId, version: 1, status: "STAGED",
+      intent_id: `intent_${slugify(canonicalKeyword)}`, intent_cluster_id: intentClusterId,
+      search_opportunity_id: opportunity.search_opportunity_id, primary_query: opportunity.keyword, supporting_queries: [],
+      intake_context: { page_id: pageId, intent_cluster_id: intentClusterId,
+        search_opportunity_id: opportunity.search_opportunity_id, problem_family_hint: "hvac" },
+      monetization_eligible: false, monetization_policy_id: null, user_value_score: null,
+      indexed: false, noindex_reason: V43_NOINDEX_REASON,
+      experiment: { experiment_id: null, variant: null }, qa: { state: "PENDING", reasons: [] },
+      created_at: deps.now(), updated_at: null,
+    });
+  }
   const kw = opportunity.keyword;
   const family = opportunity.problem_family_hint;
   const policy = deps.policy ?? DEFAULT_PAGE_FACTORY_POLICY;

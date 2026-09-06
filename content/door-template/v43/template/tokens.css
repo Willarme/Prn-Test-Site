@@ -1,0 +1,25 @@
+  /* =====================================================================================================
+     TEMPLATE COLOURS - the only two values to change per customer. Every accent, icon, chip, status word,
+     rule, focus ring and drawing colour on the page derives from these two. Backgrounds do not.
+     ===================================================================================================== */
+  :root{
+    --brand-a:{%brand.a%};   /* the warm blue: italics in headings, numerals, buttons, "yes", safe */
+    --brand-b:{%brand.b%};   /* the pink: pennants, possessives, marks, "never", sealed */
+    --brand-warn:{%brand.warn%}; /* the one exception: the amber of the "Stop and call someone now if" safety sheet */
+    --a:var(--brand-a);
+    --a-deep:color-mix(in oklab,var(--brand-a),black 24%);
+    --a-fill:color-mix(in oklab,var(--brand-a),black 16%);
+    --a-active:color-mix(in oklab,var(--brand-a),black 38%);
+    --a-ink:color-mix(in oklab,var(--brand-a),black 66%);
+    --a-light:color-mix(in oklab,var(--brand-a),white 50%);
+    --a-tint:color-mix(in srgb,var(--brand-a) 12%,white);
+    --a-dark-surface:color-mix(in srgb,var(--brand-a) 22%,#1A1D22);
+    --a-dark-chip:color-mix(in srgb,var(--brand-a) 26%,#1A1D22);
+    --b:var(--brand-b);
+    --b-deep:color-mix(in oklab,var(--brand-b),black 34%);
+    --b-light:color-mix(in oklab,var(--brand-b),white 38%);
+    --b-tint:color-mix(in srgb,var(--brand-b) 11%,white);
+    --b-tint2:color-mix(in srgb,var(--brand-b) 28%,white);
+    --b-dark-chip:color-mix(in srgb,var(--brand-b) 22%,#1A1D22);
+  }
+

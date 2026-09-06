@@ -21,10 +21,45 @@ import { Id, IsoDateTime, SchemaVersion } from "@/domain/shared/primitives";
  */
 export const FieldAccepts = z.enum(["photo", "text"]);
 
+/**
+ * THE SIX CANON `value_reason` TAGS — the A01 canon extract's Build sequence
+ * step 4 as a closed enum (A01 spec §4 `ClarifyingQuestion.value_reason`):
+ * ask only if the answer can change safety, the packet, DIY viability,
+ * provider type, tools/parts needed, or the next step.
+ *
+ * RULED, twice, so this does not get re-litigated:
+ *   - Josh, 2026-08-28 (A01/A02 approval record, condition 3): canon's six
+ *     stand; 08_INTAKE_PACKET.md's eight-category clarifier rule is superseded
+ *     on this point. *Urgency* was considered and deliberately NOT added — it
+ *     is covered by "safety" and "next_step".
+ *   - crew, 2026-08-30: the canon extract's six-category enum IS the contract;
+ *     08_INTAKE_PACKET.md's differently-worded rule becomes guidance prose
+ *     mapped onto these six tags.
+ *
+ * The enum is the machine-checkable half; `why_it_matters` below stays as the
+ * human-readable half — the tag never replaces the prose the homeowner reads.
+ */
+export const ValueReason = z.enum([
+  "safety",
+  "packet",
+  "diy_viability",
+  "provider_type",
+  "tools_parts",
+  "next_step",
+]);
+export type ValueReason = z.infer<typeof ValueReason>;
+
 export const FieldRequirement = z.object({
   field_key: z.string().regex(/^[a-z0-9_]+$/),
   label: z.string().min(1),
   why_it_matters: z.string().min(1),
+  /**
+   * WHY THIS QUESTION MAY BE ASKED AT ALL — one of the six canon categories.
+   * A question that cannot honestly claim one of these has no business being
+   * asked (canon clarifier rule), and a question without a valid tag is
+   * rejected right here when the playbook is parsed.
+   */
+  value_reason: ValueReason,
   /** Plain-language instructions for finding it. */
   how_to_find: z.string().min(1),
   /** What to photograph, when a photo satisfies the field. */
@@ -117,7 +152,15 @@ export const IntakeAnswer = z.object({
   field_key: z.string().min(1),
   value_text: z.string().nullable(),
   evidence_id: Id.nullable(),
-  source: z.enum(["auto_detected", "typed", "photo"]),
+  /**
+   * "confirmed" (campaign track P4, 2026-09-05): a photo-read value the
+   * homeowner tapped Yes on. Coverage Standard §4.3 — a confirm UPGRADES the
+   * claim ("read from label · confirmed by homeowner"), so it is its own
+   * provenance and never collapses into "typed". Supabase's intake_details
+   * CHECK (migration 00005) still lists three values; a migration is owed
+   * before that path stores a confirmation.
+   */
+  source: z.enum(["auto_detected", "typed", "photo", "confirmed"]),
   answered_at: IsoDateTime,
 });
 export type IntakeAnswer = z.infer<typeof IntakeAnswer>;
@@ -178,4 +221,122 @@ export function nextFor(step: DiagnosticStep, answer: string): Branch | null {
     }
   }
   return step.branches.find((b) => b.when.toLowerCase() === "any") ?? null;
+}
+
+/**
+ * T1-15 — the browser/server boundary for the guided-diagnosis walkthrough.
+ *
+ * The full playbook graph (`diagnostic_steps`, `outcomes`, and every
+ * `branches` array) stays server-side, always. `StepView` is exactly what a
+ * browser needs to RENDER the current step — never `branches`, never
+ * `satisfies_fields`, never another step's text. `WalkthroughView` is either
+ * the current step or the reached outcome, never both, and never anything
+ * from a step/outcome the customer has not reached.
+ */
+export const StepView = z.object({
+  step_id: z.string(),
+  title: z.string(),
+  instruction: z.string(),
+  look_for: z.string(),
+  safety_note: z.string().nullable(),
+  input: StepInput,
+  /** 1-based position, e.g. "Step 2 of 5" — a count, not graph content. */
+  step_number: z.number().int().positive(),
+  total_steps: z.number().int().positive(),
+});
+export type StepView = z.infer<typeof StepView>;
+
+export const WalkthroughView = z.object({
+  step: StepView.nullable(),
+  outcome: Outcome.nullable(),
+});
+export type WalkthroughView = z.infer<typeof WalkthroughView>;
+
+/**
+ * Project the ONE thing the browser needs right now out of a resolved
+ * position in the graph (a step id, an outcome id, or neither for a playbook
+ * with no walkthrough at all — e.g. GENERIC, whose `first_step_id` is null).
+ * Every caller — the page's first render, the answer route, the media
+ * route, and the "start over" reset — goes through this single projection,
+ * so the boundary this item exists to enforce cannot drift between them.
+ */
+export function projectWalkthroughView(
+  pb: IntakePlaybook,
+  currentStepId: string | null,
+  outcomeId: string | null
+): WalkthroughView {
+  if (outcomeId) {
+    const outcome = pb.outcomes.find((o) => o.outcome_id === outcomeId) ?? null;
+    return { step: null, outcome };
+  }
+  if (currentStepId) {
+    const idx = pb.diagnostic_steps.findIndex((s) => s.step_id === currentStepId);
+    if (idx < 0) return { step: null, outcome: null };
+    const step = pb.diagnostic_steps[idx];
+    return {
+      step: {
+        step_id: step.step_id,
+        title: step.title,
+        instruction: step.instruction,
+        look_for: step.look_for,
+        safety_note: step.safety_note,
+        input: step.input,
+        step_number: idx + 1,
+        total_steps: pb.diagnostic_steps.length,
+      },
+      outcome: null,
+    };
+  }
+  return { step: null, outcome: null };
+}
+
+/**
+ * Resolve one customer answer to a step and project the resulting view, in
+ * one call — the server-side counterpart of what the browser used to do
+ * itself with its own (drifted) copy of the branch rules. Returns null only
+ * when `stepId` does not name a real step in this playbook.
+ */
+export function advanceWalkthrough(pb: IntakePlaybook, stepId: string, answer: string): WalkthroughView | null {
+  const step = pb.diagnostic_steps.find((s) => s.step_id === stepId);
+  if (!step) return null;
+  const branch = nextFor(step, answer);
+  if (!branch) return { step: null, outcome: null };
+  return projectWalkthroughView(pb, branch.next_step_id, branch.outcome_id);
+}
+
+/**
+ * Replay a customer's SAVED diagnosis answers from `first_step_id` through
+ * `nextFor` to find where they legitimately stand right now. This is the
+ * one authority for "what step is this customer actually on" — the page's
+ * first render uses it to pick what to show, and every mutating route
+ * (answer, media) uses it to REJECT a step_id that isn't the customer's
+ * current position, so a client can no longer request an arbitrary step or
+ * outcome by guessing/enumerating ids (T1-15 follow-up: the passive
+ * whole-graph leak was closed, but an early version of this fix left an
+ * active one — any step_id named in the schema resolved and returned its
+ * view, regardless of whether the customer had actually reached it).
+ */
+export function resolveWalkthroughPosition(
+  pb: IntakePlaybook,
+  diagnosisAnswers: readonly DiagnosisAnswer[]
+): { currentStepId: string | null; outcomeId: string | null } {
+  let currentStepId: string | null = pb.first_step_id;
+  let outcomeId: string | null = null;
+  const byStep = new Map(diagnosisAnswers.map((d) => [d.step_id, d]));
+  const seen = new Set<string>();
+  while (currentStepId && !seen.has(currentStepId)) {
+    seen.add(currentStepId);
+    const step = pb.diagnostic_steps.find((s) => s.step_id === currentStepId);
+    const ans = step ? byStep.get(step.step_id) : undefined;
+    if (!step || !ans) break;
+    const b = nextFor(step, ans.answer ?? "any");
+    if (!b) break;
+    if (b.outcome_id) {
+      outcomeId = b.outcome_id;
+      currentStepId = null;
+    } else {
+      currentStepId = b.next_step_id;
+    }
+  }
+  return { currentStepId, outcomeId };
 }

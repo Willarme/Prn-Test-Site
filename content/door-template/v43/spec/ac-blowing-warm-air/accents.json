@@ -1,0 +1,7 @@
+{
+  "_what": "The v39b runtime accent map: words in two headings that are wrapped in the italic brand-blue accent at runtime so the static text (and the text gate) stays untouched. Per page because the words are this page's words. Selector → phrases.",
+  "map": [
+    ["#stats .stats-h2", ["numbers", "warm air"]],
+    ["#common-causes .h2", ["runs", "warm"]]
+  ]
+}

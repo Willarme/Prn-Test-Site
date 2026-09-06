@@ -63,7 +63,9 @@ export function photoCapDecision(current: number, max: number): PhotoCapDecision
       allowed: false,
       current,
       max,
-      message: `You've added ${current} photos, which is the most we ask for (${max}). Remove one if you'd like to swap it for a better shot — a provider gets more from four clear pictures than from twenty.`,
+      // The closing number tracks the configured cap (raised to 6 on 2026-09-05,
+      // policy store) so the copy can never contradict the limit it explains.
+      message: `You've added ${current} photos, which is the most we ask for (${max}). Remove one if you'd like to swap it for a better shot — a provider gets more from ${max} clear pictures than from twenty.`,
     };
   }
   return { allowed: true, current, max, message: null };

@@ -1,0 +1,6 @@
+{
+  "_what": "The breadcrumb (design doc §4.2 row 5): Home / family / problem. Rendered visibly in the hero AND mirrored into the BreadcrumbList JSON-LD from this one place.",
+  "family_href": "/cooling/",
+  "family_label": "Cooling",
+  "problem_label": "AC blowing warm air"
+}

@@ -1,0 +1,48 @@
+{
+  "policy_id": "ai_policy_owner_test_env",
+  "schema_version": "1.0.0",
+  "version": 4,
+  "tenant_id": "prn",
+  "enabled": true,
+  "request_timeout_ms": 30000,
+  "max_repair_retries": 1,
+  "global_daily_budget_usd": 1,
+  "capabilities": {
+    "classify_home_problem": {
+      "enabled": true,
+      "model_id": "deepseek/deepseek-v4-flash-0731",
+      "max_cost_per_call_usd": 0.02,
+      "daily_cap_usd": 0.25,
+      "max_output_tokens": 1600
+    },
+    "select_next_clarifier": {
+      "enabled": true,
+      "model_id": "deepseek/deepseek-v4-flash-0731",
+      "max_cost_per_call_usd": 0.01,
+      "daily_cap_usd": 0.25,
+      "max_output_tokens": 1200
+    },
+    "read_equipment_label": {
+      "enabled": true,
+      "model_id": "google/gemini-2.5-flash-lite",
+      "max_cost_per_call_usd": 0.02,
+      "daily_cap_usd": 0.5,
+      "max_output_tokens": 600
+    },
+    "generate_page_copy": {
+      "enabled": true,
+      "model_id": "deepseek/deepseek-v4-flash-0731",
+      "max_cost_per_call_usd": 0.05,
+      "daily_cap_usd": 0.5,
+      "max_output_tokens": 3000
+    },
+    "seo.critique_page": {
+      "enabled": true,
+      "model_id": "deepseek/deepseek-v4-flash-0731",
+      "max_cost_per_call_usd": 0.03,
+      "daily_cap_usd": 0.5,
+      "max_output_tokens": 2000
+    }
+  },
+  "effective_from": "2026-08-27T00:00:00Z"
+}

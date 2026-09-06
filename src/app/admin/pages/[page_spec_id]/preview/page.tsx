@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { adminGate } from "@/components/admin/AdminGate";
 import { IntentPageView } from "@/components/door/IntentPageView";
 import { PageSpec } from "@/domain/search/pages";
@@ -69,6 +69,10 @@ export default async function AdminPagePreview({
         ? err.message.slice(0, 300)
         : "the draft values are not a valid page";
   }
+
+  // Valid frozen specs use the complete raw HTML template. Unsaved edits that
+  // violate the reviewed binding retain the explicit validation error below.
+  if (draftSpec?.door_template) redirect(`/staged-template/${encodeURIComponent(draftSpec.page_spec_id)}`);
 
   return (
     <div style={{ background: "var(--bg-dark, #17171c)", minHeight: "100vh" }}>

@@ -6,6 +6,9 @@ export default tseslint.config(
   {
     ignores: [
       ".next/**",
+      // Per-track build directories (NEXT_DIST_DIR=.next-<track>, next.config.mjs):
+      // the same generated output as .next, and it lints the same 1,400 findings.
+      ".next-*/**",
       "node_modules/**",
       "out/**",
       "coverage/**",
@@ -15,6 +18,13 @@ export default tseslint.config(
       // a whole checked-out worktree, which lints the entire repo a second time
       // and reports every finding twice.
       ".claude/**",
+      // Static assets, including Melissa's feature pages and their vendored
+      // react/react-dom/babel bundles (4,176 findings of third-party minified
+      // code). Not lintable source; never was.
+      "public/**",
+      // Reviewed source kit is vendored byte-for-byte; its own fidelity gate
+      // verifies it. Keep lint on our exporter, schema, adapters and tests.
+      "content/door-template/v43/**",
     ],
   },
   js.configs.recommended,

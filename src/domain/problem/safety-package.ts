@@ -85,7 +85,9 @@ export type SafetyPackage = z.infer<typeof SafetyPackage>;
  */
 export const PRN_TRIAL_SAFETY_PACKAGE: SafetyPackage = SafetyPackage.parse({
   safety_package_id: "prn_trial_us_v1",
-  version: 1,
+  // 2026-09-05: checklist F1 requires gas, burning and water at electricity
+  // to stop normal intake. Approved response words and patterns are unchanged.
+  version: 2,
   jurisdiction: "US",
   locale: "en-US",
   // OWNER_TODO above: not yet reviewed. Recorded honestly rather than aspirationally.
@@ -124,7 +126,7 @@ export const PRN_TRIAL_SAFETY_PACKAGE: SafetyPackage = SafetyPackage.parse({
       ],
       approved_response:
         "If anything is actively smoking, sparking or burning: switch off power at the breaker only if it is safe to reach, get everyone out, and call 911. If it's a faint burning smell with no visible smoke, stop using the fixture and keep this area supervised.",
-      intake_may_continue: true,
+      intake_may_continue: false,
     },
     {
       safety_rule_id: "safety_flood_electric",
@@ -136,7 +138,7 @@ export const PRN_TRIAL_SAFETY_PACKAGE: SafetyPackage = SafetyPackage.parse({
       ],
       approved_response:
         "If water is spreading fast or is anywhere near outlets, cords, or your electrical panel: don't step in it, shut off the water main if you can reach it safely, and call a professional or your utility. If the panel itself is wet, stay clear and call 911 or your utility.",
-      intake_may_continue: true,
+      intake_may_continue: false,
     },
     {
       safety_rule_id: "safety_structural",

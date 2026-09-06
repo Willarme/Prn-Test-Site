@@ -95,7 +95,7 @@ describe("the reserved tenant is populated on the real write path", () => {
     const problem = db.problems.find((p) => p.intake_session_id === session.intake_session_id)!;
 
     const store = runtimeStore();
-    await store.attachEvidence(problem.problem_id, {
+    await store.attachEvidence(problem.problem_id, body.request_id, {
       evidence_id: "ev_attached_later",
       kind: "photo",
       content: "private://media/ev_attached_later.jpg",
@@ -113,7 +113,7 @@ describe("the reserved tenant is populated on the real write path", () => {
 
   it("a record that already names a tenant keeps it — the default fills a blank, it never overwrites", async () => {
     const store = runtimeStore();
-    await store.attachEvidence("pr_nonexistent_for_this_check", {
+    await store.attachEvidence("pr_nonexistent_for_this_check", "req_nonexistent_for_this_check", {
       evidence_id: "ev_other_tenant",
       tenant_id: "other_client",
       kind: "customer_text",
@@ -125,9 +125,11 @@ describe("the reserved tenant is populated on the real write path", () => {
     expect(stored.tenant_id).toBe("other_client");
   });
 
-  it("AND THERE IS STILL NO TENANT LOGIC — nothing branches on the value", () => {
+  it("runtime tenancy remains reserved; exact reviewed-template scope cannot cross tenants", () => {
     /**
-     * The condition is "reserved, default prn, NO tenant logic anywhere".
+     * Runtime tenancy remains reserved. The reviewed PRN-only v43 template
+     * has two narrowly allowed scope validations; this does not grant tenant
+     * authorization, record filtering or generic runtime routing.
      * Populating the field would violate the second half if anything started
      * routing, filtering or authorising on it, so the scan looks for the three
      * shapes that would mean exactly that: a comparison against a NAMED tenant,
@@ -148,7 +150,11 @@ describe("the reserved tenant is populated on the real write path", () => {
         const namedTenant = /tenant_id\s*(===|!==|==|!=)\s*["'`]/.test(line);
         const crossRecord = /tenant_id\s*(===|!==|==|!=)\s*[\w.]*\btenant_id\b/.test(line);
         const filtered = /\.eq\(\s*["']tenant_id["']/.test(line) || /where.*\btenant_id\b\s*=/.test(line);
-        if (namedTenant || crossRecord || filtered) {
+        const reviewedScope = file.path === "src/domain/search/door-template.ts" && [
+          '&& (opportunity.tenant_id === undefined || opportunity.tenant_id === "prn")',
+          'if (spec.tenant_id !== undefined && spec.tenant_id !== "prn") issues.push("tenant_id");',
+        ].includes(line.trim());
+        if ((namedTenant && !reviewedScope) || crossRecord || filtered) {
           offenders.push(`${file.path}:${i + 1}  ${line.trim()}`);
         }
       }

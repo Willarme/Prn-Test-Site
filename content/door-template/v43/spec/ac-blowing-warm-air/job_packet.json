@@ -1,0 +1,13 @@
+{
+  "_what": "Job Packet section per-page values (design doc §4.2 row 18, catalogue 'JOB PACKET HIGH UP'): the heading's accent clause, the intake CTA link text, the 5 example ledger rows (this trade's field names, from the packet authority), and the band-2 hook line this section closes with. The eyebrow, the four benefit titles/blurbs/icons, and the 'Job Packet'/'example' head are template-constant and stay in the partial.",
+  "heading_html": "A packet that can help the provider <span class=\"accent\">start further ahead.</span>",
+  "cta": "Build the packet for MY AC",
+  "example_rows": [
+    { "key": "Problem", "value": "Runs constantly, air not cold. Began 8/18." },
+    { "key": "Thermostat", "value": "78&deg;F, set 70&deg;F, cool, fan AUTO" },
+    { "key": "Equipment", "value": "Read from your label photo" },
+    { "key": "Ruled out", "value": "Thermostat setting, power at the disconnect" },
+    { "key": "Still to test", "value": "Capacitor, contactor, charge, airflow" }
+  ],
+  "band_2_hook": "The internet can explain an AC. <span class=\"accent\">We walk you through <strong>yours</strong>, LIVE.</span>"
+}

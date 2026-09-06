@@ -1,6 +1,13 @@
 import type { PageLifecycleStatus } from "@/domain/search/lifecycle";
 import type { IntentPage, PageSpec } from "@/domain/search/pages";
 import {
+  DOOR_TEMPLATE_CHECK_IDS,
+  requiresV43DoorChecks,
+  isReviewedV43Spec,
+  runV43DoorChecks,
+  type DoorTemplateEvidence,
+} from "@/domain/search/door-template-qa";
+import {
   NOT_MEASURABLE_CHECKS,
   runAccessibilityChecks,
   type QaRenderSurface,
@@ -78,7 +85,7 @@ import { resolveTemplate, templateMatchesBlocks } from "@/domain/search/template
  */
 
 /** Bumped whenever a check is added, removed or re-severitied. Travels on every result. */
-export const A06_RULE_SET_VERSION = "1.0.0";
+export const A06_RULE_SET_VERSION = "1.1.0";
 
 export * from "@/domain/search/qa-types";
 export {
@@ -128,11 +135,10 @@ const DIRECTORY_FRAMING =
   /\b(compare (providers|contractors|quotes|pros|prices)|browse (all|our|hundreds)|hundreds of (trusted )?(providers|contractors|pros)|choose from (our|hundreds|dozens)|provider directory|directory of (providers|contractors)|shop around|find the best (provider|contractor|pro)|top \d+ (providers|contractors)|our network of|list of (providers|contractors)|rated \d(\.\d)? (stars?|out of))\b/i;
 
 /**
- * PRICES. PRN quotes no prices on a door page: every PRN dollar is a TEST figure
- * (hard canon rule 4) and consumer-facing pricing is Melissa's call, undecided.
- * A currency amount or a cost claim in public copy is therefore unsourced by
- * construction — the content bank is first-party authored text, not a priced
- * quote — so the check is on the CLAIM, not on the citation.
+ * Generic bank copy carries no external price evidence. The reviewed v43 door
+ * uses independent exact claim/source checks below: WORDING rule 51 permits a
+ * sourced price and forbids an invented one. A currency symbol alone is never
+ * evidence that a reviewed, attributed price is forbidden.
  */
 const UNSOURCED_PRICE =
   /(\$\s?\d|\b\d+\s?(dollars|usd)\b|\bcosts? (about|around|roughly|typically|usually|between)\b|\btypical(ly)? costs?\b|\baverage (cost|price)\b|\bper hour\b.*\b\d|\bflat (rate|fee)\b)/i;
@@ -246,6 +252,8 @@ export interface PageQaContext {
   tenant_id?: string;
   /** Defaults to NO_MODEL_CRITIC. The async entry point is the only one that awaits it. */
   critic?: AICritic;
+  /** Live, server-collected evidence, separate from PageSpec-authored claims. */
+  door_template_evidence?: Readonly<Record<string, DoorTemplateEvidence>>;
 }
 
 const INTACT_HUMAN_GATE: PageQaHumanGate = {
@@ -578,6 +586,9 @@ function structuredDataFindings(spec: PageSpec, policy: PageQaPolicy): RawFindin
 }
 
 function templateFindings(spec: PageSpec): { findings: RawFinding[]; owner_approved: boolean } {
+  // The frozen 15-section door has its own independent exact conformance check.
+  // Do not compare it with the legacy five-block template shape.
+  if (requiresV43DoorChecks(spec)) return { findings: [], owner_approved: true };
   const template = resolveTemplate(spec.template_id, spec.template_version);
   if (!template) {
     return {
@@ -661,19 +672,19 @@ function voiceFindings(spec: PageSpec): RawFinding[] {
       );
     }
     const price = surface.text.match(UNSOURCED_PRICE);
-    if (price) {
+    if (price && !requiresV43DoorChecks(spec)) {
       findings.push(
         raw(
           "voice.no_unsourced_price",
           "blocker",
           surface.where,
-          `unsourced price or cost claim: "${price[0].trim()}" — every PRN dollar is a TEST figure and no consumer pricing is decided`,
-          "Remove the figure. Pricing is an owner decision and a door page is not where it lands."
+          `unsourced price or cost claim: "${price[0].trim()}" — this page carries no reviewed claim/source binding`,
+          "Supply exact source-backed claim evidence through a reviewed template; never invent a price."
         )
       );
     }
     const statistic = surface.text.match(FABRICATED_STATISTIC);
-    if (statistic) {
+    if (statistic && !requiresV43DoorChecks(spec)) {
       findings.push(
         raw(
           "claims.no_fabricated_statistic",
@@ -769,6 +780,7 @@ function contentFindings(spec: PageSpec, policy: PageQaPolicy): RawFinding[] {
 
   if (
     spec.safety_note_required &&
+    !requiresV43DoorChecks(spec) &&
     !spec.content_blocks.some((b) => b.kind === "when_urgency_changes" || b.kind === "do_not_do")
   ) {
     findings.push(
@@ -827,11 +839,14 @@ export function runDeterministicStage(
   const rawFindings: RawFinding[] = [
     ...duplicationFindings(spec, others, policy),
     ...contentFindings(spec, policy),
-    ...linkFindings(spec, context.registry),
+    ...linkFindings(spec, context.registry).filter((finding) =>
+      !(isReviewedV43Spec(spec) && finding.check === "links.internal_resolvable")),
     ...provenanceFindings(spec),
     ...template.findings,
     ...structuredDataFindings(spec, policy),
     ...voiceFindings(spec),
+    ...runV43DoorChecks(spec, context.door_template_evidence?.[spec.page_spec_id])
+      .map((f) => raw(f.check, f.severity, f.where, f.message, f.repair_instructions)),
     ...runAccessibilityChecks({
       surfaces: renderSurfaces(spec),
       h1: spec.h1,
@@ -872,6 +887,8 @@ export function runDeterministicStage(
    */
   const blockerSet = new Set<string>(policy.blocker_checks);
   if (template.owner_approved) blockerSet.add("template.conformance");
+  // A configurable severity list cannot waive frozen copy or missing evidence.
+  if (requiresV43DoorChecks(spec)) for (const check of DOOR_TEMPLATE_CHECK_IDS) blockerSet.add(check);
 
   const findings: QaFinding[] = rawFindings.map((f) => ({
     check: f.check,
@@ -886,9 +903,9 @@ export function runDeterministicStage(
 
   return {
     state: findings.some((f) => f.severity === "blocker") ? "FAIL" : "PASS",
-    checks_run: policy.required_checks.filter(
+    checks_run: [...new Set([...policy.required_checks.filter(
       (c) => implemented.has(c) && !NOT_MEASURABLE_CHECKS.some((s) => s.check === c)
-    ),
+    ), ...(requiresV43DoorChecks(spec) ? DOOR_TEMPLATE_CHECK_IDS : [])])],
     checks_skipped: NOT_MEASURABLE_CHECKS.filter((s) => policy.required_checks.includes(s.check)).map(
       (s) => ({ ...s })
     ),
@@ -934,7 +951,8 @@ function compose(
 ): PageQAResult {
   const findings = [...deterministic.findings, ...critic.findings];
   const blockers = findings.filter((f) => f.severity === "blocker");
-  const state: QaVerdict = deterministic.state === "PASS" && blockers.length === 0 ? "PASS" : "FAIL";
+  const criticFailed = critic.status === "FAIL";
+  const state: QaVerdict = deterministic.state === "PASS" && blockers.length === 0 && !criticFailed ? "PASS" : "FAIL";
 
   /**
    * `overall` vs `state` — pre-answer 1 point (3). A deterministic PASS with no
@@ -952,11 +970,12 @@ function compose(
   const gateIntact = humanGateIntact(gate);
 
   const releaseReasons: string[] = [];
-  if (state === "FAIL") {
+  if (blockers.length > 0) {
     releaseReasons.push(
       `${blockers.length} blocker${blockers.length === 1 ? "" : "s"}: ${blockers.map((b) => b.check).join(", ")}`
     );
   }
+  if (criticFailed) releaseReasons.push(`AI critic FAIL: ${critic.reason}`);
   if (!gateIntact) {
     releaseReasons.push(
       `the human publish gate is not intact (publish_mode=${gate.publish_mode}, human_approval_required=${gate.human_approval_required}) — release_eligible fails closed, because a deterministic-only PASS is bounded ONLY by the human still being there`
@@ -983,7 +1002,10 @@ function compose(
     release_eligible: state === "PASS" && blockers.length === 0 && gateIntact,
     release_reasons: releaseReasons,
     state,
-    reasons: blockers.map((b) => b.message),
+    reasons: [...new Set([
+      ...blockers.map((b) => b.message),
+      ...(criticFailed ? [`AI critic FAIL: ${critic.reason}`, ...critic.findings.map(f => f.message)] : []),
+    ])],
     user_value_score: state === "PASS" ? score : null,
     heuristic_score: score,
   };
@@ -1002,9 +1024,20 @@ function assemble(
       heuristic_score: deterministicHeuristicScore(spec),
     },
     deterministic,
-    critic,
+    preserveUnresolvedCriticFailure(spec.qa.ai_critic, critic),
     context.human_gate ?? INTACT_HUMAN_GATE
   );
+}
+
+/** A missing model or failed attempt does not overturn an actual prior FAIL.
+ * A new completed PASS/FAIL may replace it; A05 regeneration resets QA to
+ * PENDING explicitly. Fresh pages keep their existing skipped/not-run policy. */
+function preserveUnresolvedCriticFailure(
+  recorded: AiCriticStageResult | undefined,
+  current: AiCriticStageResult,
+): AiCriticStageResult {
+  return recorded?.status === "FAIL" && (current.status === "SKIPPED_NO_MODEL" || current.status === "NOT_RUN")
+    ? recorded : current;
 }
 
 /**
@@ -1019,8 +1052,8 @@ function assemble(
  * blocker must be able to fail a page that passed deterministically, and a
  * partial update would silently leave `release_eligible` reading the wrong half.
  *
- * Today nothing calls it with a real verdict, because no critic capability is
- * registered. It exists tested so the day one is, the fold is not improvised.
+ * Explicit critic FAIL stops release even when its findings are major/minor;
+ * severity does not turn a completed failure into a skipped review.
  */
 export function withCriticStage(
   result: PageQAResult,
@@ -1034,7 +1067,7 @@ export function withCriticStage(
       heuristic_score: result.heuristic_score ?? 0,
     },
     result.deterministic,
-    critic,
+    preserveUnresolvedCriticFailure(result.ai_critic, critic),
     gate
   );
 }
@@ -1141,7 +1174,7 @@ export async function qaCandidatePagesWithCritic(
 export function applyQaVerdict(spec: PageSpec, result: PageQAResult): PageSpec {
   return {
     ...spec,
-    qa: { state: result.state, reasons: result.reasons },
+    qa: { state: result.state, reasons: result.reasons, ai_critic: result.ai_critic },
     user_value_score: result.user_value_score,
   };
 }

@@ -1,0 +1,978 @@
+{
+  "template_id": "door-v43",
+  "template_version": "43.0.0",
+  "spec_id": "ac-blowing-warm-air",
+  "spec_version": "43.0.0",
+  "reference_sha256": "756fb95907fd3fb21f7bc9a86e854d0e90f8ef35455776b83a17b4935f8d8843",
+  "source_tree_sha256": "07d511adf4828ed43739c91616fca29005b06e71d7ad13ff37a31d5f310df0ca",
+  "rendered_sha256": "4eb1823eff991067a4922d3e068f57e71356073546e65eaa2e9143b057663cb5",
+  "content_date": "2026-09-05",
+  "canonical_path": "/problems/ac-blowing-warm-air",
+  "title": "AC running but blowing warm air? Get a LIVE walkthrough for YOUR system",
+  "meta_description": "AC running but blowing warm air? Start with the thermostat, filter, outdoor unit and ice. Then get a LIVE walkthrough of YOUR actual AC and a provider-ready Job Packet. Free.",
+  "h1": "AC running but blowing warm air?",
+  "section_order": [
+    "HERO",
+    "INTAKE",
+    "STAT_CARDS",
+    "WHAT_CHANGES_THE_ANSWER",
+    "COMMON_POSSIBILITIES",
+    "SAFE_OBSERVATIONS",
+    "VISUALS",
+    "THE_FLIP",
+    "GENERAL_VS_YOURS",
+    "CAPABILITY_QUESTIONS",
+    "JOB_PACKET",
+    "REPAIR_RECORD",
+    "FAQ",
+    "RELATED",
+    "CLOSER"
+  ],
+  "sections": [
+    {
+      "section_id": "HERO",
+      "heading": "AC running but blowing warm air?",
+      "text": "Home / Cooling / AC blowing warm air AC problem guide · Free LIVE walkthrough · Written by people who have been in a hot house AC running but blowing warm air? The short answer Check 4 things: thermostat mode and fan setting , the filter , whether the outdoor unit is running, and ice on the copper line . Ice means switch cooling off and leave the fan on first. If those look normal, it is something you cannot confirm by eye: an outdoor electrical or start issue , a coil or airflow problem , or refrigerant . Those need measurements at the equipment. Start with what your AC is actually doing. Why this is different This is not another AC troubleshooting article. Articles list every possible cause. We use our tool to walk your actual system LIVE. An article lists eight causes for no particular house. → We rule causes out using your thermostat reading and your filter. A video is somebody else's unit, filmed once, in good light. → We look at yours , in whatever state it is in at 9pm tonight. A forum reply says just swap the capacitor. → We tell you which parts hold a charge after the power is off, so you don't fry yourself. An AI summary cannot see your equipment. → We read your model from a photo and narrow it from there. Calling around means explaining it four times. → You leave with a packet that arrives before the technician does. Two houses with the same symptom often need different next steps. We build from your equipment, your observations and what you have already ruled out, not from an average of everyone else's AC. Start here Takes 1 to 5 minutes Tell us what your AC is doing. LIVE Walkthrough Tool Not a generic checklist. We work from your actual thermostat, your filter, your outdoor unit, so you can go live your life. What is your AC doing right now? What you see, hear and smell, when it started, and anything that changes it. Talk through it Show us your unit Add a short video Optional ? Know your thermostat reading? Say it. ? Can you photograph the label on the unit? We read the model for you, no typing. ? Only know \"it stopped being cold\"? Start there. We will take it from the top. What you have given us about your AC so far The problem, in your words Photos or video of your unit Your equipment label, read for you Start with MY AC, right now Free. No email to start. We ask for one only if you want the packet emailed to you."
+    },
+    {
+      "section_id": "INTAKE",
+      "heading": "INTAKE",
+      "text": "What is your AC doing right now? What you see, hear and smell, when it started, and anything that changes it. Talk through it Show us your unit Add a short video Optional ? Know your thermostat reading? Say it. ? Can you photograph the label on the unit? We read the model for you, no typing. ? Only know \"it stopped being cold\"? Start there. We will take it from the top. What you have given us about your AC so far The problem, in your words Photos or video of your unit Your equipment label, read for you Start with MY AC, right now Free. No email to start. We ask for one only if you want the packet emailed to you."
+    },
+    {
+      "section_id": "STAT_CARDS",
+      "heading": "3 numbers worth knowing about warm air",
+      "text": "Before you call anyone 3 numbers worth knowing about warm air ≈ 1 in 2 1–4 warm-air calls may trace to something simple you can check first. HVAC companies in four U.S. markets report 40 to 50% of warm-air calls resolving on simple checks. Practitioner field reports · 4 U.S. markets $200–$1,500 5 is Carrier’s published repair range for an AC blowing hot or warm air, depending on the cause. Carrier puts thermostat replacements at the low end, compressor and leak repairs at the high end. Manufacturer guidance · Carrier 0 min 6 of extra cooling run time after you confirm the coil is frozen. Carrier and Trane both say switch cooling to OFF and leave the fan running. Running a frozen coil can lead to severe compressor damage. Manufacturer guidance · Carrier, Trane Sources: multi-market HVAC field reports · Carrier and Trane expert-reviewed guidance. See all sources and review notes Forty articles were written for somebody else's house. Yours has a model number, a filter, and a thing it is doing right now."
+    },
+    {
+      "section_id": "WHAT_CHANGES_THE_ANSWER",
+      "heading": "4 things you can see that can narrow the list fast",
+      "text": "The fastest way through 4 things you can see that can narrow the list fast 4 What you look at What it rules out for you Your thermostat, as it reads Fan on ON instead of AUTO can explain air that is warm between cooling cycles. One photo settles mode, set point, room temperature and fan. Ice on the larger copper line Changes what you should do in the next 5 minutes, and moves airflow and refrigerant to the front. Whether the outdoor fan turns A still fan with a hum points somewhere very different from a fan spinning normally. Every room, or one end of the house Whole-house and one-room problems have almost no causes in common."
+    },
+    {
+      "section_id": "COMMON_POSSIBILITIES",
+      "heading": "7 common possibilities when YOUR AC runs but the air is warm",
+      "text": "The shortlist 7 common possibilities when YOUR AC runs but the air is warm Typical published ranges, not a quote and not a local frequency ranking. 7 Cause What you would notice Yours to fix? Typical range Fan set to ON, not AUTO Air always moving, cold only sometimes. Between cycles it pushes room-temperature air. Yes Free Clogged air filter Weak airflow, runs constantly, sometimes ice on the copper line. Yes $15 to $40 Outdoor unit has no power Indoor fan runs, outdoor unit silent. Often a tripped breaker or pulled disconnect. Reset once only Free, or a service call Frozen evaporator coil Visible ice. Usually a symptom of airflow or refrigerant, not the cause itself, so the cost follows the cause. Thaw, then call $150 to $2,500 11 Failed capacitor A hum outdoors with the fan not turning, or an outdoor unit that starts inconsistently. Never $150 to $400 8 Dirty condenser coil Outdoor unit packed with clippings or cottonwood. Struggles on the hottest days. Clear loose exterior debris only; deeper cleaning may need service. $75 to $350 10 Low refrigerant or a leak Cooling fading over weeks, ice, sometimes a hiss. Refrigerant does not get used up. Never $250 to $1,600+ 9"
+    },
+    {
+      "section_id": "SAFE_OBSERVATIONS",
+      "heading": "5 things to check now that could save you a service call",
+      "text": "Ten minutes, no tools 5 things to check now that could save you a service call On their own, a thermostat reading and a photo of your filter are just notes. The LIVE walkthrough asks the follow-ups, structures what you saw, and hands you a packet you can send to whoever comes next. Your thermostat, exactly as it reads Mode, set point, room temperature, any code. Check the fan is on AUTO, not ON. A photo answers all of it. Your air filter If it looks dirty, show us the filter and its label. We read the size off it and name the replacement. Your outdoor unit, from a distance Is the top fan spinning? Is it buried in clippings? One wide photo from a few feet back. Do not open it. Your refrigerant lines Ice on the larger insulated pipe means switch cooling off, leave the fan running, let it thaw before anyone tests anything. Your vents, room by room Whole house or one end? Any registers closed or blocked? The answer splits the causes in two. What we will never ask you to do Open an electrical compartment or test a live circuit Touch a capacitor. They hold a charge with the power off Add refrigerant or open any sealed part Take a panel off the indoor or outdoor unit We would rather you finish this evening with the same number of eyebrows you started with. Stop and call someone now if You smell burning, see smoke or see sparking. Cut power at the breaker first The breaker trips again after you reset it once Water is pooling near anything electrical The heat is dangerous for an infant, an older adult, or someone unwell If anyone is in immediate danger, call 911 or your utility first. Walk me through MY AC instead"
+    },
+    {
+      "section_id": "VISUALS",
+      "heading": "Where to look, and what never to open",
+      "text": "Drawn for your walkthrough Where to look, and what never to open How to tell an iced refrigerant line from a normal one, and what to do about each Two side by side views of the copper refrigerant lines where they enter the house. On the left, the larger insulated suction line is coated in white frost and ice, with droplets forming below it, and the label says to switch cooling off at the thermostat while leaving the fan running so the coil can thaw. On the right, the same line is clean and dry with intact black foam insulation, and the label says cooling may keep running while a visit is arranged. Both views show the smaller uninsulated liquid line beneath, which stays clear in each case. Iced Clear large insulated line, white and furred small copper line stays clear foam insulation intact and dry small copper line stays clear 4 4 Cooling off, fan on, let it thaw Safe to keep running for now Ice or clear. The one observation that changes what you should do right now. Where to look on a central air conditioning system, and what is safe to touch A house cross-section. Inside: a thermostat on the wall at check one, a return grille and filter at check two, and the indoor air handler cabinet with its coil and blower. Outside: the condenser unit with its top fan at check three. Two insulated refrigerant lines run between them, with the larger line marked as the one to inspect for ice at check four. Green markers show what a homeowner can safely look at and photograph. Red markers show the sealed electrical and refrigerant areas that only a licensed technician may open. Inside Outside 78° coil blower cold air to the rooms sealed 1 2 3 4 × × Safe to look at and photograph Sealed. Licensed technician only Check this line for ice Your 4 safe checks, and the 2 red zones. Green is yours. Red is licensed work. Inside a condenser unit: the parts that fail, and why the panel stays closed A technical cutaway line drawing of an outdoor air conditioning condenser. The top fan draws air upward through the cabinet. Around the inside walls sits the condenser coil with its fins. In the electrical compartment on the right are the run capacitor, drawn as a cylinder, and the contactor beside it. The compressor sits in the base of the cabinet as a heavy cylindrical shape. Numbered leader lines identify the fan, the coil and fins, the service disconnect on the wall, the capacitor and the contactor, and the compressor. The electrical compartment is marked as sealed and licensed work only. 1 2 3 4 5 fan, is it turning? coil and fins compressor sealed system capacitor + contactor holds a charge with power off disconnect CONDENSER · CUTAWAY · RED AREA IS LICENSED WORK ONLY Behind the panel. Why \"just swap the capacitor\" is bad advice even when the part is cheap."
+    },
+    {
+      "section_id": "THE_FLIP",
+      "heading": "Why should fixing your AC start with a search?",
+      "text": "The flip Why should fixing your AC start with a search? Every walkthrough builds the record. We turn what people show us into evidence that gets more specific as more of it comes in. National patterns first, then your state, your metro, your street, as soon as there is enough to be worth publishing. 01 The usual way Read nine tabs, guess which one is your AC. A blog for a different unit. A Reddit thread from 2019. A video of somebody else's basement. None of them can see what yours is doing. 02 The shift Start with your thermostat, your filter, your unit. The evidence you already have narrows it faster than any general list can, because it rules things out instead of adding to them. 03 With us A LIVE walkthrough of your actual system. We ask the next question based on what you just showed us, and end with a packet you can hand to any company."
+    },
+    {
+      "section_id": "GENERAL_VS_YOURS",
+      "heading": "A search result cannot see your AC. We can.",
+      "text": "What you are actually choosing between A search result cannot see your AC. We can. Where people go What it gives you What a LIVE walkthrough of your AC gives you A blog article Eight causes, no particular house, and a gazillion ads The causes that survive after your thermostat reading, your filter and your outdoor unit are accounted for A Reddit thread One stranger's fix for a unit that is not yours Questions that change based on what you just showed us, not what worked in someone else's basement A YouTube video A confident stranger opening a panel you should not, in a basement that is not yours We tell you which parts still hold a charge with the power off, so you finish the evening with all ten fingers Guessing and buying a part A capacitor that was never the problem, and the house is still warm What is actually still open on your system, and what has to be measured before anyone spends money An AI summary A fluent answer with no access to your equipment Your model read from a photo, and which causes are still possible on a unit like yours Calling around Explaining it four times, then paying for the hour it takes them to catch up One packet that arrives before they do, so the billable hour starts further along"
+    },
+    {
+      "section_id": "CAPABILITY_QUESTIONS",
+      "heading": "What we can settle about your AC right now",
+      "text": "LIVE, on your system What we can settle about your AC right now You ask What your system tells us How far we get Why is my AC running but still blowing warm? Your thermostat, airflow, outdoor unit, ice and timing rule branches out one by one. CAN NARROW Is it just my thermostat or fan setting? One photo of your display settles mode, set point, room temperature and fan. CAN OFTEN ANSWER Does my filter actually matter here? Weighed against your airflow and ice, instead of blamed by default. CAN NARROW There is ice on my line. What now? Ice changes your immediate next step, and we tell you that step first. CAN ANSWER WHAT IT CHANGES Is my outdoor unit part of this? A safe photo or short video shows whether your fan is turning, and how it sounds. CAN NARROW Can you read my model from a photo? Yes. Your label fills in make, model and capacity without typing. CAN OFTEN ANSWER Is my capacitor definitely bad? Your evidence changes how likely it is. Confirming it needs an electrical measurement. STILL NEEDS TESTING Is my refrigerant charge right? We organise the clues. Pressures cannot be measured down a phone line. STILL NEEDS TESTING What do I send a provider before they come? Your packet: the problem, your equipment, your photos, what is ruled out, what is left. CAN ANSWER A few minutes on your actual system can be more useful than hours of generic troubleshooting."
+    },
+    {
+      "section_id": "JOB_PACKET",
+      "heading": "A packet that can help the provider start further ahead.",
+      "text": "What you walk away with A packet that can help the provider start further ahead. Shorter billable hour Less diagnostic time on the clock may mean less money out of your pocket. They arrive with more context Your photos, your readings and what you already ruled out, before they load the van. Quotes you can compare The same facts go to every company, so the numbers finally mean the same thing. Yours to keep Free, and yours to send anywhere. You never have to hire through us. Build the packet for MY AC ◆ Job Packet example Problem Runs constantly, air not cold. Began 8/18. Thermostat 78°F, set 70°F, cool, fan AUTO Equipment Read from your label photo Ruled out Thermostat setting, power at the disconnect Still to test Capacitor, contactor, charge, airflow The internet can explain an AC. We walk you through yours , LIVE."
+    },
+    {
+      "section_id": "REPAIR_RECORD",
+      "heading": "Every walkthrough makes the next one sharper",
+      "text": "LIVE repair record Every walkthrough makes the next one sharper National first Matching reports Building the repair record As records accumulate, this card becomes a real count for the most specific geography with a trustworthy sample. Best available scope Companion pattern Building the repair record This becomes the most useful symptom or observation that repeatedly appears with this problem, always with its sample size. Where labels are available Equipment context Building the repair record When enough readable equipment labels exist, this can show age, capacity or another equipment pattern that actually changes the decision. Local as density grows Near-you signal Building the repair record National evidence can appear first. State, metro or county evidence automatically replaces or joins it when the local sample is large enough to be more useful. How the numbers are calculated: every published metric carries its geography, time window, sample size, source class, calculation version and “reported” or “verified” status. Percentages never publish without a denominator. Small cells are suppressed. A provider-confirmed cause is never inferred from a homeowner guess. See the calculation rules and data definitions →"
+    },
+    {
+      "section_id": "FAQ",
+      "heading": "What are people asking us at 9pm with a warm house",
+      "text": "Before you start What are people asking us at 9pm with a warm house Why is my AC running but not cooling? It is moving air but not moving heat. That happens when airflow is choked, when the fan is set to ON so it blows between cycles, when the outdoor unit has lost power, or when the refrigerant circuit cannot do its job. The first 3 you can check yourself in 10 minutes, and we will walk you through them. Should I turn my AC off while it is blowing warm? If there is ice on the lines, yes. Shut cooling off and leave the fan running. Running a frozen system can flood the compressor and turn a few-hundred-dollar repair into a few-thousand-dollar one. No ice and nothing smelling wrong, running it while you arrange a visit is usually fine. Can I change my AC capacitor myself? No. A run capacitor holds a charge after the power is off, and discharging one safely takes the right tool and the knowledge to use it. The part is cheap, which is exactly why this gets recommended online and why people get hurt. Identify the symptom, then hand it to somebody licensed. How much should a repair on my AC cost? Repair cost depends on the actual failure, equipment, market, access and the diagnostic work required. As verified quote and outcome records mature, the Repair Record is designed to publish comparable ranges with geography and sample size attached. Is five companies about to call me? No. Your request is never sold as a lead. If you choose to involve a provider it goes to one at a time, and nobody sees your details until you send them."
+    },
+    {
+      "section_id": "RELATED",
+      "heading": "Other things people are fixing this week",
+      "text": "Not quite your problem? Other things people are fixing this week No hot water, or it runs out in one shower?"
+    },
+    {
+      "section_id": "CLOSER",
+      "heading": "Start with what happened to your AC.",
+      "text": "Start with what happened to your AC. We walk you through your own equipment step by step, help you narrow it down, let you fix the easy things yourself, and write the rest into a packet that may reduce the time a provider spends catching up on what you already checked. Start with MY AC, right now Free · No account · Your packet, to send anywhere"
+    }
+  ],
+  "document_text": "FREE for Founders Free LIVE walkthrough for your own system No account. No email to start. Home What this tool can do Cooling problems How our numbers work Start with MY AC Home / Cooling / AC blowing warm air AC problem guide · Free LIVE walkthrough · Written by people who have been in a hot house AC running but blowing warm air? The short answer Check 4 things: thermostat mode and fan setting , the filter , whether the outdoor unit is running, and ice on the copper line . Ice means switch cooling off and leave the fan on first. If those look normal, it is something you cannot confirm by eye: an outdoor electrical or start issue , a coil or airflow problem , or refrigerant . Those need measurements at the equipment. Start with what your AC is actually doing. Why this is different This is not another AC troubleshooting article. Articles list every possible cause. We use our tool to walk your actual system LIVE. An article lists eight causes for no particular house. → We rule causes out using your thermostat reading and your filter. A video is somebody else's unit, filmed once, in good light. → We look at yours , in whatever state it is in at 9pm tonight. A forum reply says just swap the capacitor. → We tell you which parts hold a charge after the power is off, so you don't fry yourself. An AI summary cannot see your equipment. → We read your model from a photo and narrow it from there. Calling around means explaining it four times. → You leave with a packet that arrives before the technician does. Two houses with the same symptom often need different next steps. We build from your equipment, your observations and what you have already ruled out, not from an average of everyone else's AC. Start here Takes 1 to 5 minutes Tell us what your AC is doing. LIVE Walkthrough Tool Not a generic checklist. We work from your actual thermostat, your filter, your outdoor unit, so you can go live your life. What is your AC doing right now? What you see, hear and smell, when it started, and anything that changes it. Talk through it Show us your unit Add a short video Optional ? Know your thermostat reading? Say it. ? Can you photograph the label on the unit? We read the model for you, no typing. ? Only know \"it stopped being cold\"? Start there. We will take it from the top. What you have given us about your AC so far The problem, in your words Photos or video of your unit Your equipment label, read for you Start with MY AC, right now Free. No email to start. We ask for one only if you want the packet emailed to you. Before you call anyone 3 numbers worth knowing about warm air ≈ 1 in 2 1–4 warm-air calls may trace to something simple you can check first. HVAC companies in four U.S. markets report 40 to 50% of warm-air calls resolving on simple checks. Practitioner field reports · 4 U.S. markets $200–$1,500 5 is Carrier’s published repair range for an AC blowing hot or warm air, depending on the cause. Carrier puts thermostat replacements at the low end, compressor and leak repairs at the high end. Manufacturer guidance · Carrier 0 min 6 of extra cooling run time after you confirm the coil is frozen. Carrier and Trane both say switch cooling to OFF and leave the fan running. Running a frozen coil can lead to severe compressor damage. Manufacturer guidance · Carrier, Trane Sources: multi-market HVAC field reports · Carrier and Trane expert-reviewed guidance. See all sources and review notes Forty articles were written for somebody else's house. Yours has a model number, a filter, and a thing it is doing right now. The fastest way through 4 things you can see that can narrow the list fast 4 What you look at What it rules out for you Your thermostat, as it reads Fan on ON instead of AUTO can explain air that is warm between cooling cycles. One photo settles mode, set point, room temperature and fan. Ice on the larger copper line Changes what you should do in the next 5 minutes, and moves airflow and refrigerant to the front. Whether the outdoor fan turns A still fan with a hum points somewhere very different from a fan spinning normally. Every room, or one end of the house Whole-house and one-room problems have almost no causes in common. The shortlist 7 common possibilities when YOUR AC runs but the air is warm Typical published ranges, not a quote and not a local frequency ranking. 7 Cause What you would notice Yours to fix? Typical range Fan set to ON, not AUTO Air always moving, cold only sometimes. Between cycles it pushes room-temperature air. Yes Free Clogged air filter Weak airflow, runs constantly, sometimes ice on the copper line. Yes $15 to $40 Outdoor unit has no power Indoor fan runs, outdoor unit silent. Often a tripped breaker or pulled disconnect. Reset once only Free, or a service call Frozen evaporator coil Visible ice. Usually a symptom of airflow or refrigerant, not the cause itself, so the cost follows the cause. Thaw, then call $150 to $2,500 11 Failed capacitor A hum outdoors with the fan not turning, or an outdoor unit that starts inconsistently. Never $150 to $400 8 Dirty condenser coil Outdoor unit packed with clippings or cottonwood. Struggles on the hottest days. Clear loose exterior debris only; deeper cleaning may need service. $75 to $350 10 Low refrigerant or a leak Cooling fading over weeks, ice, sometimes a hiss. Refrigerant does not get used up. Never $250 to $1,600+ 9 Ten minutes, no tools 5 things to check now that could save you a service call On their own, a thermostat reading and a photo of your filter are just notes. The LIVE walkthrough asks the follow-ups, structures what you saw, and hands you a packet you can send to whoever comes next. Your thermostat, exactly as it reads Mode, set point, room temperature, any code. Check the fan is on AUTO, not ON. A photo answers all of it. Your air filter If it looks dirty, show us the filter and its label. We read the size off it and name the replacement. Your outdoor unit, from a distance Is the top fan spinning? Is it buried in clippings? One wide photo from a few feet back. Do not open it. Your refrigerant lines Ice on the larger insulated pipe means switch cooling off, leave the fan running, let it thaw before anyone tests anything. Your vents, room by room Whole house or one end? Any registers closed or blocked? The answer splits the causes in two. What we will never ask you to do Open an electrical compartment or test a live circuit Touch a capacitor. They hold a charge with the power off Add refrigerant or open any sealed part Take a panel off the indoor or outdoor unit We would rather you finish this evening with the same number of eyebrows you started with. Stop and call someone now if You smell burning, see smoke or see sparking. Cut power at the breaker first The breaker trips again after you reset it once Water is pooling near anything electrical The heat is dangerous for an infant, an older adult, or someone unwell If anyone is in immediate danger, call 911 or your utility first. Walk me through MY AC instead Drawn for your walkthrough Where to look, and what never to open How to tell an iced refrigerant line from a normal one, and what to do about each Two side by side views of the copper refrigerant lines where they enter the house. On the left, the larger insulated suction line is coated in white frost and ice, with droplets forming below it, and the label says to switch cooling off at the thermostat while leaving the fan running so the coil can thaw. On the right, the same line is clean and dry with intact black foam insulation, and the label says cooling may keep running while a visit is arranged. Both views show the smaller uninsulated liquid line beneath, which stays clear in each case. Iced Clear large insulated line, white and furred small copper line stays clear foam insulation intact and dry small copper line stays clear 4 4 Cooling off, fan on, let it thaw Safe to keep running for now Ice or clear. The one observation that changes what you should do right now. Where to look on a central air conditioning system, and what is safe to touch A house cross-section. Inside: a thermostat on the wall at check one, a return grille and filter at check two, and the indoor air handler cabinet with its coil and blower. Outside: the condenser unit with its top fan at check three. Two insulated refrigerant lines run between them, with the larger line marked as the one to inspect for ice at check four. Green markers show what a homeowner can safely look at and photograph. Red markers show the sealed electrical and refrigerant areas that only a licensed technician may open. Inside Outside 78° coil blower cold air to the rooms sealed 1 2 3 4 × × Safe to look at and photograph Sealed. Licensed technician only Check this line for ice Your 4 safe checks, and the 2 red zones. Green is yours. Red is licensed work. Inside a condenser unit: the parts that fail, and why the panel stays closed A technical cutaway line drawing of an outdoor air conditioning condenser. The top fan draws air upward through the cabinet. Around the inside walls sits the condenser coil with its fins. In the electrical compartment on the right are the run capacitor, drawn as a cylinder, and the contactor beside it. The compressor sits in the base of the cabinet as a heavy cylindrical shape. Numbered leader lines identify the fan, the coil and fins, the service disconnect on the wall, the capacitor and the contactor, and the compressor. The electrical compartment is marked as sealed and licensed work only. 1 2 3 4 5 fan, is it turning? coil and fins compressor sealed system capacitor + contactor holds a charge with power off disconnect CONDENSER · CUTAWAY · RED AREA IS LICENSED WORK ONLY Behind the panel. Why \"just swap the capacitor\" is bad advice even when the part is cheap. The flip Why should fixing your AC start with a search? Every walkthrough builds the record. We turn what people show us into evidence that gets more specific as more of it comes in. National patterns first, then your state, your metro, your street, as soon as there is enough to be worth publishing. 01 The usual way Read nine tabs, guess which one is your AC. A blog for a different unit. A Reddit thread from 2019. A video of somebody else's basement. None of them can see what yours is doing. 02 The shift Start with your thermostat, your filter, your unit. The evidence you already have narrows it faster than any general list can, because it rules things out instead of adding to them. 03 With us A LIVE walkthrough of your actual system. We ask the next question based on what you just showed us, and end with a packet you can hand to any company. What you are actually choosing between A search result cannot see your AC. We can. Where people go What it gives you What a LIVE walkthrough of your AC gives you A blog article Eight causes, no particular house, and a gazillion ads The causes that survive after your thermostat reading, your filter and your outdoor unit are accounted for A Reddit thread One stranger's fix for a unit that is not yours Questions that change based on what you just showed us, not what worked in someone else's basement A YouTube video A confident stranger opening a panel you should not, in a basement that is not yours We tell you which parts still hold a charge with the power off, so you finish the evening with all ten fingers Guessing and buying a part A capacitor that was never the problem, and the house is still warm What is actually still open on your system, and what has to be measured before anyone spends money An AI summary A fluent answer with no access to your equipment Your model read from a photo, and which causes are still possible on a unit like yours Calling around Explaining it four times, then paying for the hour it takes them to catch up One packet that arrives before they do, so the billable hour starts further along LIVE, on your system What we can settle about your AC right now You ask What your system tells us How far we get Why is my AC running but still blowing warm? Your thermostat, airflow, outdoor unit, ice and timing rule branches out one by one. CAN NARROW Is it just my thermostat or fan setting? One photo of your display settles mode, set point, room temperature and fan. CAN OFTEN ANSWER Does my filter actually matter here? Weighed against your airflow and ice, instead of blamed by default. CAN NARROW There is ice on my line. What now? Ice changes your immediate next step, and we tell you that step first. CAN ANSWER WHAT IT CHANGES Is my outdoor unit part of this? A safe photo or short video shows whether your fan is turning, and how it sounds. CAN NARROW Can you read my model from a photo? Yes. Your label fills in make, model and capacity without typing. CAN OFTEN ANSWER Is my capacitor definitely bad? Your evidence changes how likely it is. Confirming it needs an electrical measurement. STILL NEEDS TESTING Is my refrigerant charge right? We organise the clues. Pressures cannot be measured down a phone line. STILL NEEDS TESTING What do I send a provider before they come? Your packet: the problem, your equipment, your photos, what is ruled out, what is left. CAN ANSWER A few minutes on your actual system can be more useful than hours of generic troubleshooting. What you walk away with A packet that can help the provider start further ahead. Shorter billable hour Less diagnostic time on the clock may mean less money out of your pocket. They arrive with more context Your photos, your readings and what you already ruled out, before they load the van. Quotes you can compare The same facts go to every company, so the numbers finally mean the same thing. Yours to keep Free, and yours to send anywhere. You never have to hire through us. Build the packet for MY AC ◆ Job Packet example Problem Runs constantly, air not cold. Began 8/18. Thermostat 78°F, set 70°F, cool, fan AUTO Equipment Read from your label photo Ruled out Thermostat setting, power at the disconnect Still to test Capacitor, contactor, charge, airflow The internet can explain an AC. We walk you through yours , LIVE. LIVE repair record Every walkthrough makes the next one sharper National first Matching reports Building the repair record As records accumulate, this card becomes a real count for the most specific geography with a trustworthy sample. Best available scope Companion pattern Building the repair record This becomes the most useful symptom or observation that repeatedly appears with this problem, always with its sample size. Where labels are available Equipment context Building the repair record When enough readable equipment labels exist, this can show age, capacity or another equipment pattern that actually changes the decision. Local as density grows Near-you signal Building the repair record National evidence can appear first. State, metro or county evidence automatically replaces or joins it when the local sample is large enough to be more useful. How the numbers are calculated: every published metric carries its geography, time window, sample size, source class, calculation version and “reported” or “verified” status. Percentages never publish without a denominator. Small cells are suppressed. A provider-confirmed cause is never inferred from a homeowner guess. See the calculation rules and data definitions → Before you start What are people asking us at 9pm with a warm house Why is my AC running but not cooling? It is moving air but not moving heat. That happens when airflow is choked, when the fan is set to ON so it blows between cycles, when the outdoor unit has lost power, or when the refrigerant circuit cannot do its job. The first 3 you can check yourself in 10 minutes, and we will walk you through them. Should I turn my AC off while it is blowing warm? If there is ice on the lines, yes. Shut cooling off and leave the fan running. Running a frozen system can flood the compressor and turn a few-hundred-dollar repair into a few-thousand-dollar one. No ice and nothing smelling wrong, running it while you arrange a visit is usually fine. Can I change my AC capacitor myself? No. A run capacitor holds a charge after the power is off, and discharging one safely takes the right tool and the knowledge to use it. The part is cheap, which is exactly why this gets recommended online and why people get hurt. Identify the symptom, then hand it to somebody licensed. How much should a repair on my AC cost? Repair cost depends on the actual failure, equipment, market, access and the diagnostic work required. As verified quote and outcome records mature, the Repair Record is designed to publish comparable ranges with geography and sample size attached. Is five companies about to call me? No. Your request is never sold as a lead. If you choose to involve a provider it goes to one at a time, and nobody sees your details until you send them. Not quite your problem? Other things people are fixing this week No hot water, or it runs out in one shower? Start with what happened to your AC. We walk you through your own equipment step by step, help you narrow it down, let you fix the easy things yourself, and write the rest into a packet that may reduce the time a provider spends catching up on what you already checked. Start with MY AC, right now Free · No account · Your packet, to send anywhere Sources & review notes Technical, cost and reference claims on this page are checked against the sources below. First-party Repair Record statistics use a separate methodology. Sources 1 to 4 are individual HVAC companies describing their own service calls in their own markets, not national research. [1] SC HVAC Service: “Why Is My AC Blowing Warm Air? (Santa Clarita Quick-Diagnosis Guide)” Company byline, no named author. Published May 22, 2026. Verified Sept. 1, 2026. Supports the field-report range, scoped by the company to its own calls in Santa Clarita, California. View source [2] Integrity Refrigeration & AC: “Why Is My AC Blowing Warm Air? Troubleshooting Steps” Company byline, no named author. Published June 30, 2026. The page cites unattributed industry data for its 40 to 50% figure rather than its own records. Verified Sept. 1, 2026. Supports the field-report range, Central Florida. View source [3] At Your Service Pros: “AC Blowing Warm Air, Utah Diagnostic Guide” No byline and no publication date shown on the page. Verified Sept. 1, 2026. Supports the field-report range, scoped by the company to its own calls in Utah. View source [4] On Point Air Conditioning & Refrigeration: “Why Is My AC Blowing Warm Air? 8 Causes and What to Do” No named author and no publication date shown on the page. Verified Sept. 1, 2026. Supports the field-report range, South Florida. View source [5] Carrier: “Why Is My AC Blowing Hot Air? Tips to Troubleshoot and Fix” Travis Baugh; expert review by Michelle Notaro, Product Manager for Residential Air Conditioners at Carrier Corporation. The figure appears in the page’s FAQ. No publication or update date is displayed. Verified Sept. 1, 2026. Supports the $200 to $1,500 published repair range. View source [6] Carrier: “Will Frozen AC Fix Itself? A Guide to Frozen AC Coils” Ryan Mayes; expert review by Michelle Notaro, Product Manager, Air Conditioners. No publication or review date is displayed; the site carries a general copyright line only. Verified Sept. 1, 2026. Supports switching cooling off immediately with the fan left running, and the compressor damage warning. View source [7] Trane: “Help! My AC Evaporator Coil Is Frozen” No publication date is displayed. Trane also warns not to chip away at the ice, which can damage the coil. Verified Sept. 1, 2026. Supports switching the thermostat from COOL to OFF, and the major-damage warning. View source [8] Carrier: “Understanding AC Capacitors: A Comprehensive Guide” Travis Baugh; expert review by Michelle Notaro. No publication date displayed. Carrier gives $100 to $400 covering part and professional installation; we publish the narrower $150 to $400 because Carrier’s own figure of $75 to $150 per hour for technician time makes the $100 floor an edge case. Verified Sept. 1, 2026. Supports the $150 to $400 capacitor replacement range. View source [9] Carrier: “How to Fix a Refrigerant Leak in Your AC Unit” Travis Baugh; no expert reviewer listed. The figure appears in the page FAQ and Carrier footnotes it to Angi. No publication date displayed. The range stays open ended because a leak in the evaporator coil can cost more than the top of it. Verified Sept. 1, 2026. Supports the $250 to $1,600+ leak repair range. View source [10] HomeAdvisor: “How Much Does It Cost to Clean AC Coils?” Staff writer, reviewed by HomeAdvisor editor Ryan Noonan. Page displays Updated Jun 20, 2026. A cost aggregator that also sells contractor leads, so treated as a market reference rather than an authority. The low end is a cleaning bundled into an annual tune up; the high end is an acid wash deep clean. Verified Sept. 1, 2026. Supports the $75 to $350 condenser coil cleaning range. View source [11] This Old House: “Air Conditioner Repair Cost” Alexis Carthan; expert review by Richard Trethewey. Updated 03/16/2026. A cost guide carrying an advertiser disclosure, with figures compiled from Angi and Home Depot estimates rather than first party data. A frozen coil caused by a dirty filter resolves at service call money; one caused by a damaged coil runs to the top of the range. Verified Sept. 1, 2026. Supports the $150 to $2,500 spread for a frozen evaporator coil, which depends entirely on the underlying cause. View source The air filter price is a retail part cost, not a repair, and carries no citation because no source we would stand behind publishes a national figure for it. Pages without a displayed publication date are recorded as date not shown rather than given an assumed date. Cost guidance is re-checked every 90 days, manufacturer safety guidance every 180 days. Informational and safety notice: This site provides educational guidance and a structured way to collect information about your home problem. It is not a professional diagnosis, engineering opinion, warranty, emergency service, or substitute for an appropriately licensed or qualified technician when one is needed. Do not perform electrical, refrigerant, gas, combustion, structural, or other hazardous work unless you are properly qualified and authorized to do so. Stop and seek appropriate professional, utility, or emergency help for immediate hazards. Costs, causes, outcomes, codes, licensing requirements, equipment configurations, and safe procedures can vary by property, equipment, jurisdiction, and circumstance. See our Terms and Privacy Notice . © 2026 {{site.name}} What this tool can do Cooling problems How our numbers work United States",
+  "supporting_text": "FREE for Founders Free LIVE walkthrough for your own system No account. No email to start. Home What this tool can do Cooling problems How our numbers work Start with MY AC Sources & review notes Technical, cost and reference claims on this page are checked against the sources below. First-party Repair Record statistics use a separate methodology. Sources 1 to 4 are individual HVAC companies describing their own service calls in their own markets, not national research. [1] SC HVAC Service: “Why Is My AC Blowing Warm Air? (Santa Clarita Quick-Diagnosis Guide)” Company byline, no named author. Published May 22, 2026. Verified Sept. 1, 2026. Supports the field-report range, scoped by the company to its own calls in Santa Clarita, California. View source [2] Integrity Refrigeration & AC: “Why Is My AC Blowing Warm Air? Troubleshooting Steps” Company byline, no named author. Published June 30, 2026. The page cites unattributed industry data for its 40 to 50% figure rather than its own records. Verified Sept. 1, 2026. Supports the field-report range, Central Florida. View source [3] At Your Service Pros: “AC Blowing Warm Air, Utah Diagnostic Guide” No byline and no publication date shown on the page. Verified Sept. 1, 2026. Supports the field-report range, scoped by the company to its own calls in Utah. View source [4] On Point Air Conditioning & Refrigeration: “Why Is My AC Blowing Warm Air? 8 Causes and What to Do” No named author and no publication date shown on the page. Verified Sept. 1, 2026. Supports the field-report range, South Florida. View source [5] Carrier: “Why Is My AC Blowing Hot Air? Tips to Troubleshoot and Fix” Travis Baugh; expert review by Michelle Notaro, Product Manager for Residential Air Conditioners at Carrier Corporation. The figure appears in the page’s FAQ. No publication or update date is displayed. Verified Sept. 1, 2026. Supports the $200 to $1,500 published repair range. View source [6] Carrier: “Will Frozen AC Fix Itself? A Guide to Frozen AC Coils” Ryan Mayes; expert review by Michelle Notaro, Product Manager, Air Conditioners. No publication or review date is displayed; the site carries a general copyright line only. Verified Sept. 1, 2026. Supports switching cooling off immediately with the fan left running, and the compressor damage warning. View source [7] Trane: “Help! My AC Evaporator Coil Is Frozen” No publication date is displayed. Trane also warns not to chip away at the ice, which can damage the coil. Verified Sept. 1, 2026. Supports switching the thermostat from COOL to OFF, and the major-damage warning. View source [8] Carrier: “Understanding AC Capacitors: A Comprehensive Guide” Travis Baugh; expert review by Michelle Notaro. No publication date displayed. Carrier gives $100 to $400 covering part and professional installation; we publish the narrower $150 to $400 because Carrier’s own figure of $75 to $150 per hour for technician time makes the $100 floor an edge case. Verified Sept. 1, 2026. Supports the $150 to $400 capacitor replacement range. View source [9] Carrier: “How to Fix a Refrigerant Leak in Your AC Unit” Travis Baugh; no expert reviewer listed. The figure appears in the page FAQ and Carrier footnotes it to Angi. No publication date displayed. The range stays open ended because a leak in the evaporator coil can cost more than the top of it. Verified Sept. 1, 2026. Supports the $250 to $1,600+ leak repair range. View source [10] HomeAdvisor: “How Much Does It Cost to Clean AC Coils?” Staff writer, reviewed by HomeAdvisor editor Ryan Noonan. Page displays Updated Jun 20, 2026. A cost aggregator that also sells contractor leads, so treated as a market reference rather than an authority. The low end is a cleaning bundled into an annual tune up; the high end is an acid wash deep clean. Verified Sept. 1, 2026. Supports the $75 to $350 condenser coil cleaning range. View source [11] This Old House: “Air Conditioner Repair Cost” Alexis Carthan; expert review by Richard Trethewey. Updated 03/16/2026. A cost guide carrying an advertiser disclosure, with figures compiled from Angi and Home Depot estimates rather than first party data. A frozen coil caused by a dirty filter resolves at service call money; one caused by a damaged coil runs to the top of the range. Verified Sept. 1, 2026. Supports the $150 to $2,500 spread for a frozen evaporator coil, which depends entirely on the underlying cause. View source The air filter price is a retail part cost, not a repair, and carries no citation because no source we would stand behind publishes a national figure for it. Pages without a displayed publication date are recorded as date not shown rather than given an assumed date. Cost guidance is re-checked every 90 days, manufacturer safety guidance every 180 days. Informational and safety notice: This site provides educational guidance and a structured way to collect information about your home problem. It is not a professional diagnosis, engineering opinion, warranty, emergency service, or substitute for an appropriately licensed or qualified technician when one is needed. Do not perform electrical, refrigerant, gas, combustion, structural, or other hazardous work unless you are properly qualified and authorized to do so. Stop and seek appropriate professional, utility, or emergency help for immediate hazards. Costs, causes, outcomes, codes, licensing requirements, equipment configurations, and safe procedures can vary by property, equipment, jurisdiction, and circumstance. See our Terms and Privacy Notice . © 2026 {{site.name}} What this tool can do Cooling problems How our numbers work United States",
+  "page_fields": {
+    "canonical_path": "/problems/ac-blowing-warm-air",
+    "title": "AC running but blowing warm air? Get a LIVE walkthrough for YOUR system",
+    "meta_description": "AC running but blowing warm air? Start with the thermostat, filter, outdoor unit and ice. Then get a LIVE walkthrough of YOUR actual AC and a provider-ready Job Packet. Free.",
+    "h1": "AC running but blowing warm air?",
+    "hero": {
+      "headline": "AC running but blowing warm air?",
+      "subheadline": "Check 4 things: thermostat mode and fan setting , the filter , whether the outdoor unit is running, and ice on the copper line . Ice means switch cooling off and leave the fan on first. If those look normal, it is something you cannot confirm by eye: an outdoor electrical or start issue , a coil or airflow problem , or refrigerant . Those need measurements at the equipment."
+    },
+    "content_blocks": [
+      {
+        "block_id": "v43_hero",
+        "kind": "intent_answer",
+        "heading": "AC running but blowing warm air?",
+        "body_md": "Home / Cooling / AC blowing warm air AC problem guide · Free LIVE walkthrough · Written by people who have been in a hot house AC running but blowing warm air? The short answer Check 4 things: thermostat mode and fan setting , the filter , whether the outdoor unit is running, and ice on the copper line . Ice means switch cooling off and leave the fan on first. If those look normal, it is something you cannot confirm by eye: an outdoor electrical or start issue , a coil or airflow problem , or refrigerant . Those need measurements at the equipment. Start with what your AC is actually doing. Why this is different This is not another AC troubleshooting article. Articles list every possible cause. We use our tool to walk your actual system LIVE. An article lists eight causes for no particular house. → We rule causes out using your thermostat reading and your filter. A video is somebody else's unit, filmed once, in good light. → We look at yours , in whatever state it is in at 9pm tonight. A forum reply says just swap the capacitor. → We tell you which parts hold a charge after the power is off, so you don't fry yourself. An AI summary cannot see your equipment. → We read your model from a photo and narrow it from there. Calling around means explaining it four times. → You leave with a packet that arrives before the technician does. Two houses with the same symptom often need different next steps. We build from your equipment, your observations and what you have already ruled out, not from an average of everyone else's AC. Start here Takes 1 to 5 minutes Tell us what your AC is doing. LIVE Walkthrough Tool Not a generic checklist. We work from your actual thermostat, your filter, your outdoor unit, so you can go live your life. What is your AC doing right now? What you see, hear and smell, when it started, and anything that changes it. Talk through it Show us your unit Add a short video Optional ? Know your thermostat reading? Say it. ? Can you photograph the label on the unit? We read the model for you, no typing. ? Only know \"it stopped being cold\"? Start there. We will take it from the top. What you have given us about your AC so far The problem, in your words Photos or video of your unit Your equipment label, read for you Start with MY AC, right now Free. No email to start. We ask for one only if you want the packet emailed to you.",
+        "source_fact_bundle_ids": [
+          "fb_door_v43_ac_warm_air"
+        ]
+      },
+      {
+        "block_id": "v43_intake",
+        "kind": "custom",
+        "heading": "INTAKE",
+        "body_md": "What is your AC doing right now? What you see, hear and smell, when it started, and anything that changes it. Talk through it Show us your unit Add a short video Optional ? Know your thermostat reading? Say it. ? Can you photograph the label on the unit? We read the model for you, no typing. ? Only know \"it stopped being cold\"? Start there. We will take it from the top. What you have given us about your AC so far The problem, in your words Photos or video of your unit Your equipment label, read for you Start with MY AC, right now Free. No email to start. We ask for one only if you want the packet emailed to you.",
+        "source_fact_bundle_ids": [
+          "fb_door_v43_ac_warm_air"
+        ]
+      },
+      {
+        "block_id": "v43_stat_cards",
+        "kind": "custom",
+        "heading": "3 numbers worth knowing about warm air",
+        "body_md": "Before you call anyone 3 numbers worth knowing about warm air ≈ 1 in 2 1–4 warm-air calls may trace to something simple you can check first. HVAC companies in four U.S. markets report 40 to 50% of warm-air calls resolving on simple checks. Practitioner field reports · 4 U.S. markets $200–$1,500 5 is Carrier’s published repair range for an AC blowing hot or warm air, depending on the cause. Carrier puts thermostat replacements at the low end, compressor and leak repairs at the high end. Manufacturer guidance · Carrier 0 min 6 of extra cooling run time after you confirm the coil is frozen. Carrier and Trane both say switch cooling to OFF and leave the fan running. Running a frozen coil can lead to severe compressor damage. Manufacturer guidance · Carrier, Trane Sources: multi-market HVAC field reports · Carrier and Trane expert-reviewed guidance. See all sources and review notes Forty articles were written for somebody else's house. Yours has a model number, a filter, and a thing it is doing right now.",
+        "source_fact_bundle_ids": [
+          "fb_door_v43_ac_warm_air"
+        ]
+      },
+      {
+        "block_id": "v43_what_changes_the_answer",
+        "kind": "custom",
+        "heading": "4 things you can see that can narrow the list fast",
+        "body_md": "The fastest way through 4 things you can see that can narrow the list fast 4 What you look at What it rules out for you Your thermostat, as it reads Fan on ON instead of AUTO can explain air that is warm between cooling cycles. One photo settles mode, set point, room temperature and fan. Ice on the larger copper line Changes what you should do in the next 5 minutes, and moves airflow and refrigerant to the front. Whether the outdoor fan turns A still fan with a hum points somewhere very different from a fan spinning normally. Every room, or one end of the house Whole-house and one-room problems have almost no causes in common.",
+        "source_fact_bundle_ids": [
+          "fb_door_v43_ac_warm_air"
+        ]
+      },
+      {
+        "block_id": "v43_common_possibilities",
+        "kind": "custom",
+        "heading": "7 common possibilities when YOUR AC runs but the air is warm",
+        "body_md": "The shortlist 7 common possibilities when YOUR AC runs but the air is warm Typical published ranges, not a quote and not a local frequency ranking. 7 Cause What you would notice Yours to fix? Typical range Fan set to ON, not AUTO Air always moving, cold only sometimes. Between cycles it pushes room-temperature air. Yes Free Clogged air filter Weak airflow, runs constantly, sometimes ice on the copper line. Yes $15 to $40 Outdoor unit has no power Indoor fan runs, outdoor unit silent. Often a tripped breaker or pulled disconnect. Reset once only Free, or a service call Frozen evaporator coil Visible ice. Usually a symptom of airflow or refrigerant, not the cause itself, so the cost follows the cause. Thaw, then call $150 to $2,500 11 Failed capacitor A hum outdoors with the fan not turning, or an outdoor unit that starts inconsistently. Never $150 to $400 8 Dirty condenser coil Outdoor unit packed with clippings or cottonwood. Struggles on the hottest days. Clear loose exterior debris only; deeper cleaning may need service. $75 to $350 10 Low refrigerant or a leak Cooling fading over weeks, ice, sometimes a hiss. Refrigerant does not get used up. Never $250 to $1,600+ 9",
+        "source_fact_bundle_ids": [
+          "fb_door_v43_ac_warm_air"
+        ]
+      },
+      {
+        "block_id": "v43_safe_observations",
+        "kind": "safe_checks",
+        "heading": "5 things to check now that could save you a service call",
+        "body_md": "Ten minutes, no tools 5 things to check now that could save you a service call On their own, a thermostat reading and a photo of your filter are just notes. The LIVE walkthrough asks the follow-ups, structures what you saw, and hands you a packet you can send to whoever comes next. Your thermostat, exactly as it reads Mode, set point, room temperature, any code. Check the fan is on AUTO, not ON. A photo answers all of it. Your air filter If it looks dirty, show us the filter and its label. We read the size off it and name the replacement. Your outdoor unit, from a distance Is the top fan spinning? Is it buried in clippings? One wide photo from a few feet back. Do not open it. Your refrigerant lines Ice on the larger insulated pipe means switch cooling off, leave the fan running, let it thaw before anyone tests anything. Your vents, room by room Whole house or one end? Any registers closed or blocked? The answer splits the causes in two. What we will never ask you to do Open an electrical compartment or test a live circuit Touch a capacitor. They hold a charge with the power off Add refrigerant or open any sealed part Take a panel off the indoor or outdoor unit We would rather you finish this evening with the same number of eyebrows you started with. Stop and call someone now if You smell burning, see smoke or see sparking. Cut power at the breaker first The breaker trips again after you reset it once Water is pooling near anything electrical The heat is dangerous for an infant, an older adult, or someone unwell If anyone is in immediate danger, call 911 or your utility first. Walk me through MY AC instead",
+        "source_fact_bundle_ids": [
+          "fb_door_v43_ac_warm_air"
+        ]
+      },
+      {
+        "block_id": "v43_visuals",
+        "kind": "custom",
+        "heading": "Where to look, and what never to open",
+        "body_md": "Drawn for your walkthrough Where to look, and what never to open How to tell an iced refrigerant line from a normal one, and what to do about each Two side by side views of the copper refrigerant lines where they enter the house. On the left, the larger insulated suction line is coated in white frost and ice, with droplets forming below it, and the label says to switch cooling off at the thermostat while leaving the fan running so the coil can thaw. On the right, the same line is clean and dry with intact black foam insulation, and the label says cooling may keep running while a visit is arranged. Both views show the smaller uninsulated liquid line beneath, which stays clear in each case. Iced Clear large insulated line, white and furred small copper line stays clear foam insulation intact and dry small copper line stays clear 4 4 Cooling off, fan on, let it thaw Safe to keep running for now Ice or clear. The one observation that changes what you should do right now. Where to look on a central air conditioning system, and what is safe to touch A house cross-section. Inside: a thermostat on the wall at check one, a return grille and filter at check two, and the indoor air handler cabinet with its coil and blower. Outside: the condenser unit with its top fan at check three. Two insulated refrigerant lines run between them, with the larger line marked as the one to inspect for ice at check four. Green markers show what a homeowner can safely look at and photograph. Red markers show the sealed electrical and refrigerant areas that only a licensed technician may open. Inside Outside 78° coil blower cold air to the rooms sealed 1 2 3 4 × × Safe to look at and photograph Sealed. Licensed technician only Check this line for ice Your 4 safe checks, and the 2 red zones. Green is yours. Red is licensed work. Inside a condenser unit: the parts that fail, and why the panel stays closed A technical cutaway line drawing of an outdoor air conditioning condenser. The top fan draws air upward through the cabinet. Around the inside walls sits the condenser coil with its fins. In the electrical compartment on the right are the run capacitor, drawn as a cylinder, and the contactor beside it. The compressor sits in the base of the cabinet as a heavy cylindrical shape. Numbered leader lines identify the fan, the coil and fins, the service disconnect on the wall, the capacitor and the contactor, and the compressor. The electrical compartment is marked as sealed and licensed work only. 1 2 3 4 5 fan, is it turning? coil and fins compressor sealed system capacitor + contactor holds a charge with power off disconnect CONDENSER · CUTAWAY · RED AREA IS LICENSED WORK ONLY Behind the panel. Why \"just swap the capacitor\" is bad advice even when the part is cheap.",
+        "source_fact_bundle_ids": [
+          "fb_door_v43_ac_warm_air"
+        ]
+      },
+      {
+        "block_id": "v43_the_flip",
+        "kind": "custom",
+        "heading": "Why should fixing your AC start with a search?",
+        "body_md": "The flip Why should fixing your AC start with a search? Every walkthrough builds the record. We turn what people show us into evidence that gets more specific as more of it comes in. National patterns first, then your state, your metro, your street, as soon as there is enough to be worth publishing. 01 The usual way Read nine tabs, guess which one is your AC. A blog for a different unit. A Reddit thread from 2019. A video of somebody else's basement. None of them can see what yours is doing. 02 The shift Start with your thermostat, your filter, your unit. The evidence you already have narrows it faster than any general list can, because it rules things out instead of adding to them. 03 With us A LIVE walkthrough of your actual system. We ask the next question based on what you just showed us, and end with a packet you can hand to any company.",
+        "source_fact_bundle_ids": [
+          "fb_door_v43_ac_warm_air"
+        ]
+      },
+      {
+        "block_id": "v43_general_vs_yours",
+        "kind": "custom",
+        "heading": "A search result cannot see your AC. We can.",
+        "body_md": "What you are actually choosing between A search result cannot see your AC. We can. Where people go What it gives you What a LIVE walkthrough of your AC gives you A blog article Eight causes, no particular house, and a gazillion ads The causes that survive after your thermostat reading, your filter and your outdoor unit are accounted for A Reddit thread One stranger's fix for a unit that is not yours Questions that change based on what you just showed us, not what worked in someone else's basement A YouTube video A confident stranger opening a panel you should not, in a basement that is not yours We tell you which parts still hold a charge with the power off, so you finish the evening with all ten fingers Guessing and buying a part A capacitor that was never the problem, and the house is still warm What is actually still open on your system, and what has to be measured before anyone spends money An AI summary A fluent answer with no access to your equipment Your model read from a photo, and which causes are still possible on a unit like yours Calling around Explaining it four times, then paying for the hour it takes them to catch up One packet that arrives before they do, so the billable hour starts further along",
+        "source_fact_bundle_ids": [
+          "fb_door_v43_ac_warm_air"
+        ]
+      },
+      {
+        "block_id": "v43_capability_questions",
+        "kind": "custom",
+        "heading": "What we can settle about your AC right now",
+        "body_md": "LIVE, on your system What we can settle about your AC right now You ask What your system tells us How far we get Why is my AC running but still blowing warm? Your thermostat, airflow, outdoor unit, ice and timing rule branches out one by one. CAN NARROW Is it just my thermostat or fan setting? One photo of your display settles mode, set point, room temperature and fan. CAN OFTEN ANSWER Does my filter actually matter here? Weighed against your airflow and ice, instead of blamed by default. CAN NARROW There is ice on my line. What now? Ice changes your immediate next step, and we tell you that step first. CAN ANSWER WHAT IT CHANGES Is my outdoor unit part of this? A safe photo or short video shows whether your fan is turning, and how it sounds. CAN NARROW Can you read my model from a photo? Yes. Your label fills in make, model and capacity without typing. CAN OFTEN ANSWER Is my capacitor definitely bad? Your evidence changes how likely it is. Confirming it needs an electrical measurement. STILL NEEDS TESTING Is my refrigerant charge right? We organise the clues. Pressures cannot be measured down a phone line. STILL NEEDS TESTING What do I send a provider before they come? Your packet: the problem, your equipment, your photos, what is ruled out, what is left. CAN ANSWER A few minutes on your actual system can be more useful than hours of generic troubleshooting.",
+        "source_fact_bundle_ids": [
+          "fb_door_v43_ac_warm_air"
+        ]
+      },
+      {
+        "block_id": "v43_job_packet",
+        "kind": "custom",
+        "heading": "A packet that can help the provider start further ahead.",
+        "body_md": "What you walk away with A packet that can help the provider start further ahead. Shorter billable hour Less diagnostic time on the clock may mean less money out of your pocket. They arrive with more context Your photos, your readings and what you already ruled out, before they load the van. Quotes you can compare The same facts go to every company, so the numbers finally mean the same thing. Yours to keep Free, and yours to send anywhere. You never have to hire through us. Build the packet for MY AC ◆ Job Packet example Problem Runs constantly, air not cold. Began 8/18. Thermostat 78°F, set 70°F, cool, fan AUTO Equipment Read from your label photo Ruled out Thermostat setting, power at the disconnect Still to test Capacitor, contactor, charge, airflow The internet can explain an AC. We walk you through yours , LIVE.",
+        "source_fact_bundle_ids": [
+          "fb_door_v43_ac_warm_air"
+        ]
+      },
+      {
+        "block_id": "v43_repair_record",
+        "kind": "custom",
+        "heading": "Every walkthrough makes the next one sharper",
+        "body_md": "LIVE repair record Every walkthrough makes the next one sharper National first Matching reports Building the repair record As records accumulate, this card becomes a real count for the most specific geography with a trustworthy sample. Best available scope Companion pattern Building the repair record This becomes the most useful symptom or observation that repeatedly appears with this problem, always with its sample size. Where labels are available Equipment context Building the repair record When enough readable equipment labels exist, this can show age, capacity or another equipment pattern that actually changes the decision. Local as density grows Near-you signal Building the repair record National evidence can appear first. State, metro or county evidence automatically replaces or joins it when the local sample is large enough to be more useful. How the numbers are calculated: every published metric carries its geography, time window, sample size, source class, calculation version and “reported” or “verified” status. Percentages never publish without a denominator. Small cells are suppressed. A provider-confirmed cause is never inferred from a homeowner guess. See the calculation rules and data definitions →",
+        "source_fact_bundle_ids": [
+          "fb_door_v43_ac_warm_air"
+        ]
+      },
+      {
+        "block_id": "v43_faq",
+        "kind": "custom",
+        "heading": "What are people asking us at 9pm with a warm house",
+        "body_md": "Before you start What are people asking us at 9pm with a warm house Why is my AC running but not cooling? It is moving air but not moving heat. That happens when airflow is choked, when the fan is set to ON so it blows between cycles, when the outdoor unit has lost power, or when the refrigerant circuit cannot do its job. The first 3 you can check yourself in 10 minutes, and we will walk you through them. Should I turn my AC off while it is blowing warm? If there is ice on the lines, yes. Shut cooling off and leave the fan running. Running a frozen system can flood the compressor and turn a few-hundred-dollar repair into a few-thousand-dollar one. No ice and nothing smelling wrong, running it while you arrange a visit is usually fine. Can I change my AC capacitor myself? No. A run capacitor holds a charge after the power is off, and discharging one safely takes the right tool and the knowledge to use it. The part is cheap, which is exactly why this gets recommended online and why people get hurt. Identify the symptom, then hand it to somebody licensed. How much should a repair on my AC cost? Repair cost depends on the actual failure, equipment, market, access and the diagnostic work required. As verified quote and outcome records mature, the Repair Record is designed to publish comparable ranges with geography and sample size attached. Is five companies about to call me? No. Your request is never sold as a lead. If you choose to involve a provider it goes to one at a time, and nobody sees your details until you send them.",
+        "source_fact_bundle_ids": [
+          "fb_door_v43_ac_warm_air"
+        ]
+      },
+      {
+        "block_id": "v43_related",
+        "kind": "custom",
+        "heading": "Other things people are fixing this week",
+        "body_md": "Not quite your problem? Other things people are fixing this week No hot water, or it runs out in one shower?",
+        "source_fact_bundle_ids": [
+          "fb_door_v43_ac_warm_air"
+        ]
+      },
+      {
+        "block_id": "v43_closer",
+        "kind": "custom",
+        "heading": "Start with what happened to your AC.",
+        "body_md": "Start with what happened to your AC. We walk you through your own equipment step by step, help you narrow it down, let you fix the easy things yourself, and write the rest into a packet that may reduce the time a provider spends catching up on what you already checked. Start with MY AC, right now Free · No account · Your packet, to send anywhere",
+        "source_fact_bundle_ids": [
+          "fb_door_v43_ac_warm_air"
+        ]
+      },
+      {
+        "block_id": "v43_sources_and_notice",
+        "kind": "custom",
+        "heading": "Sources and review notes; informational and safety notice",
+        "body_md": "FREE for Founders Free LIVE walkthrough for your own system No account. No email to start. Home What this tool can do Cooling problems How our numbers work Start with MY AC Sources & review notes Technical, cost and reference claims on this page are checked against the sources below. First-party Repair Record statistics use a separate methodology. Sources 1 to 4 are individual HVAC companies describing their own service calls in their own markets, not national research. [1] SC HVAC Service: “Why Is My AC Blowing Warm Air? (Santa Clarita Quick-Diagnosis Guide)” Company byline, no named author. Published May 22, 2026. Verified Sept. 1, 2026. Supports the field-report range, scoped by the company to its own calls in Santa Clarita, California. View source [2] Integrity Refrigeration & AC: “Why Is My AC Blowing Warm Air? Troubleshooting Steps” Company byline, no named author. Published June 30, 2026. The page cites unattributed industry data for its 40 to 50% figure rather than its own records. Verified Sept. 1, 2026. Supports the field-report range, Central Florida. View source [3] At Your Service Pros: “AC Blowing Warm Air, Utah Diagnostic Guide” No byline and no publication date shown on the page. Verified Sept. 1, 2026. Supports the field-report range, scoped by the company to its own calls in Utah. View source [4] On Point Air Conditioning & Refrigeration: “Why Is My AC Blowing Warm Air? 8 Causes and What to Do” No named author and no publication date shown on the page. Verified Sept. 1, 2026. Supports the field-report range, South Florida. View source [5] Carrier: “Why Is My AC Blowing Hot Air? Tips to Troubleshoot and Fix” Travis Baugh; expert review by Michelle Notaro, Product Manager for Residential Air Conditioners at Carrier Corporation. The figure appears in the page’s FAQ. No publication or update date is displayed. Verified Sept. 1, 2026. Supports the $200 to $1,500 published repair range. View source [6] Carrier: “Will Frozen AC Fix Itself? A Guide to Frozen AC Coils” Ryan Mayes; expert review by Michelle Notaro, Product Manager, Air Conditioners. No publication or review date is displayed; the site carries a general copyright line only. Verified Sept. 1, 2026. Supports switching cooling off immediately with the fan left running, and the compressor damage warning. View source [7] Trane: “Help! My AC Evaporator Coil Is Frozen” No publication date is displayed. Trane also warns not to chip away at the ice, which can damage the coil. Verified Sept. 1, 2026. Supports switching the thermostat from COOL to OFF, and the major-damage warning. View source [8] Carrier: “Understanding AC Capacitors: A Comprehensive Guide” Travis Baugh; expert review by Michelle Notaro. No publication date displayed. Carrier gives $100 to $400 covering part and professional installation; we publish the narrower $150 to $400 because Carrier’s own figure of $75 to $150 per hour for technician time makes the $100 floor an edge case. Verified Sept. 1, 2026. Supports the $150 to $400 capacitor replacement range. View source [9] Carrier: “How to Fix a Refrigerant Leak in Your AC Unit” Travis Baugh; no expert reviewer listed. The figure appears in the page FAQ and Carrier footnotes it to Angi. No publication date displayed. The range stays open ended because a leak in the evaporator coil can cost more than the top of it. Verified Sept. 1, 2026. Supports the $250 to $1,600+ leak repair range. View source [10] HomeAdvisor: “How Much Does It Cost to Clean AC Coils?” Staff writer, reviewed by HomeAdvisor editor Ryan Noonan. Page displays Updated Jun 20, 2026. A cost aggregator that also sells contractor leads, so treated as a market reference rather than an authority. The low end is a cleaning bundled into an annual tune up; the high end is an acid wash deep clean. Verified Sept. 1, 2026. Supports the $75 to $350 condenser coil cleaning range. View source [11] This Old House: “Air Conditioner Repair Cost” Alexis Carthan; expert review by Richard Trethewey. Updated 03/16/2026. A cost guide carrying an advertiser disclosure, with figures compiled from Angi and Home Depot estimates rather than first party data. A frozen coil caused by a dirty filter resolves at service call money; one caused by a damaged coil runs to the top of the range. Verified Sept. 1, 2026. Supports the $150 to $2,500 spread for a frozen evaporator coil, which depends entirely on the underlying cause. View source The air filter price is a retail part cost, not a repair, and carries no citation because no source we would stand behind publishes a national figure for it. Pages without a displayed publication date are recorded as date not shown rather than given an assumed date. Cost guidance is re-checked every 90 days, manufacturer safety guidance every 180 days. Informational and safety notice: This site provides educational guidance and a structured way to collect information about your home problem. It is not a professional diagnosis, engineering opinion, warranty, emergency service, or substitute for an appropriately licensed or qualified technician when one is needed. Do not perform electrical, refrigerant, gas, combustion, structural, or other hazardous work unless you are properly qualified and authorized to do so. Stop and seek appropriate professional, utility, or emergency help for immediate hazards. Costs, causes, outcomes, codes, licensing requirements, equipment configurations, and safe procedures can vary by property, equipment, jurisdiction, and circumstance. See our Terms and Privacy Notice . © 2026 {{site.name}} What this tool can do Cooling problems How our numbers work United States",
+        "source_fact_bundle_ids": [
+          "fb_door_v43_ac_warm_air"
+        ]
+      }
+    ],
+    "internal_links": [
+      {
+        "label": "Home",
+        "path": "/"
+      },
+      {
+        "label": "What this tool can do",
+        "path": "/what-this-tool-can-help-with/"
+      },
+      {
+        "label": "Cooling problems",
+        "path": "/cooling/"
+      },
+      {
+        "label": "How our numbers work",
+        "path": "/local-records/methodology"
+      },
+      {
+        "label": "Home",
+        "path": "/"
+      },
+      {
+        "label": "Cooling",
+        "path": "/cooling/"
+      },
+      {
+        "label": "See the calculation rules and data definitions →",
+        "path": "/local-records/methodology"
+      },
+      {
+        "label": "No hot water, or it runs out in one shower?",
+        "path": "/no-hot-water"
+      },
+      {
+        "label": "Terms",
+        "path": "/terms"
+      },
+      {
+        "label": "Privacy Notice",
+        "path": "/privacy"
+      },
+      {
+        "label": "What this tool can do",
+        "path": "/what-this-tool-can-help-with/"
+      },
+      {
+        "label": "Cooling problems",
+        "path": "/cooling/"
+      },
+      {
+        "label": "How our numbers work",
+        "path": "/local-records/methodology"
+      }
+    ],
+    "template_id": "door-v43",
+    "template_version": "43.0.0",
+    "structured_data_plan": null,
+    "safety_note_required": true,
+    "problem_family": "hvac",
+    "source_fact_bundle_ids": [
+      "fb_door_v43_ac_warm_air"
+    ],
+    "geography": {
+      "mode": "national",
+      "country": "US"
+    },
+    "generation": {
+      "model": "frozen-template-v43",
+      "prompt_id": null,
+      "prompt_version": null
+    }
+  },
+  "direct_answer": {
+    "text": "Check 4 things: thermostat mode and fan setting , the filter , whether the outdoor unit is running, and ice on the copper line . Ice means switch cooling off and leave the fan on first. If those look normal, it is something you cannot confirm by eye: an outdoor electrical or start issue , a coil or airflow problem , or refrigerant . Those need measurements at the equipment.",
+    "source_ids": [],
+    "evidence_status": "PENDING_SOURCE_VERIFICATION"
+  },
+  "tool_value": {
+    "heading": "This is not another AC troubleshooting article.",
+    "claim": "Articles list every possible cause. We use our tool to walk your actual system LIVE.",
+    "rows": [
+      {
+        "generic": "An article lists eight causes for no particular house.",
+        "ours": "We rule causes out using your thermostat reading and your filter."
+      },
+      {
+        "generic": "A video is somebody else's unit, filmed once, in good light.",
+        "ours": "We look at yours , in whatever state it is in at 9pm tonight."
+      },
+      {
+        "generic": "A forum reply says just swap the capacitor.",
+        "ours": "We tell you which parts hold a charge after the power is off, so you don't fry yourself."
+      },
+      {
+        "generic": "An AI summary cannot see your equipment.",
+        "ours": "We read your model from a photo and narrow it from there."
+      },
+      {
+        "generic": "Calling around means explaining it four times.",
+        "ours": "You leave with a packet that arrives before the technician does."
+      }
+    ],
+    "footnote": "Two houses with the same symptom often need different next steps. We build from your equipment, your observations and what you have already ruled out, not from an average of everyone else's AC.",
+    "runtime_status": "CLAIMED_ON_PAGE_PENDING_RUNTIME_VERIFICATION"
+  },
+  "capability_questions": [
+    {
+      "capability_id": "cap.ac_warm_air.narrow_why_still_warm",
+      "question": "Why is my AC running but still blowing warm?",
+      "answer": "Your thermostat, airflow, outdoor unit, ice and timing rule branches out one by one.",
+      "claimed_status": "CAN NARROW",
+      "required_inputs": [
+        "problem_description"
+      ],
+      "optional_inputs": [
+        "thermostat_photo",
+        "outdoor_unit_photo",
+        "outdoor_unit_video",
+        "refrigerant_line_photo",
+        "filter_photo",
+        "onset_timing",
+        "room_by_room_observation"
+      ],
+      "possible_outputs": [
+        "branches_ruled_out",
+        "branches_moved_up",
+        "next_question"
+      ],
+      "safety_class": "observation_only",
+      "runtime_status": "CLAIMED_ON_PAGE_PENDING_RUNTIME_VERIFICATION"
+    },
+    {
+      "capability_id": "cap.ac_warm_air.thermostat_or_fan_setting",
+      "question": "Is it just my thermostat or fan setting?",
+      "answer": "One photo of your display settles mode, set point, room temperature and fan.",
+      "claimed_status": "CAN OFTEN ANSWER",
+      "required_inputs": [
+        "thermostat_photo"
+      ],
+      "optional_inputs": [
+        "thermostat_reading_stated"
+      ],
+      "possible_outputs": [
+        "mode_read",
+        "set_point_read",
+        "room_temperature_read",
+        "fan_setting_read",
+        "branches_ruled_out"
+      ],
+      "safety_class": "observation_only",
+      "runtime_status": "CLAIMED_ON_PAGE_PENDING_RUNTIME_VERIFICATION"
+    },
+    {
+      "capability_id": "cap.ac_warm_air.filter_relevance",
+      "question": "Does my filter actually matter here?",
+      "answer": "Weighed against your airflow and ice, instead of blamed by default.",
+      "claimed_status": "CAN NARROW",
+      "required_inputs": [
+        "filter_photo"
+      ],
+      "optional_inputs": [
+        "filter_label_photo",
+        "airflow_description",
+        "refrigerant_line_observation"
+      ],
+      "possible_outputs": [
+        "filter_weighted_against_airflow_and_ice",
+        "filter_size_read_from_label",
+        "branches_ruled_out"
+      ],
+      "safety_class": "observation_only",
+      "runtime_status": "CLAIMED_ON_PAGE_PENDING_RUNTIME_VERIFICATION"
+    },
+    {
+      "capability_id": "cap.ac_warm_air.ice_on_line_next_step",
+      "question": "There is ice on my line. What now?",
+      "answer": "Ice changes your immediate next step, and we tell you that step first.",
+      "claimed_status": "CAN ANSWER WHAT IT CHANGES",
+      "required_inputs": [
+        "refrigerant_line_observation"
+      ],
+      "optional_inputs": [
+        "refrigerant_line_photo"
+      ],
+      "possible_outputs": [
+        "immediate_next_step",
+        "branches_moved_up",
+        "provider_urgency_note"
+      ],
+      "safety_class": "safe_homeowner_action",
+      "runtime_status": "CLAIMED_ON_PAGE_PENDING_RUNTIME_VERIFICATION"
+    },
+    {
+      "capability_id": "cap.ac_warm_air.outdoor_unit_involved",
+      "question": "Is my outdoor unit part of this?",
+      "answer": "A safe photo or short video shows whether your fan is turning, and how it sounds.",
+      "claimed_status": "CAN NARROW",
+      "required_inputs": [
+        "outdoor_unit_photo"
+      ],
+      "optional_inputs": [
+        "outdoor_unit_video",
+        "outdoor_unit_sound_description"
+      ],
+      "possible_outputs": [
+        "fan_turning_observed",
+        "sound_characterised",
+        "branches_ruled_out",
+        "branches_moved_up"
+      ],
+      "safety_class": "observation_only",
+      "runtime_status": "CLAIMED_ON_PAGE_PENDING_RUNTIME_VERIFICATION"
+    },
+    {
+      "capability_id": "cap.ac_warm_air.read_model_from_label_photo",
+      "question": "Can you read my model from a photo?",
+      "answer": "Yes. Your label fills in make, model and capacity without typing.",
+      "claimed_status": "CAN OFTEN ANSWER",
+      "required_inputs": [
+        "equipment_label_photo"
+      ],
+      "optional_inputs": [],
+      "possible_outputs": [
+        "make_read",
+        "model_read",
+        "capacity_read",
+        "unreadable_label_reported"
+      ],
+      "safety_class": "observation_only",
+      "runtime_status": "CLAIMED_ON_PAGE_PENDING_RUNTIME_VERIFICATION"
+    },
+    {
+      "capability_id": "cap.ac_warm_air.capacitor_confirmation",
+      "question": "Is my capacitor definitely bad?",
+      "answer": "Your evidence changes how likely it is. Confirming it needs an electrical measurement.",
+      "claimed_status": "STILL NEEDS TESTING",
+      "required_inputs": [
+        "problem_description"
+      ],
+      "optional_inputs": [
+        "outdoor_unit_photo",
+        "outdoor_unit_video",
+        "outdoor_unit_sound_description"
+      ],
+      "possible_outputs": [
+        "likelihood_shifted",
+        "added_to_still_to_test",
+        "licensed_measurement_required"
+      ],
+      "safety_class": "licensed_electrical",
+      "runtime_status": "CLAIMED_ON_PAGE_PENDING_RUNTIME_VERIFICATION"
+    },
+    {
+      "capability_id": "cap.ac_warm_air.refrigerant_charge_confirmation",
+      "question": "Is my refrigerant charge right?",
+      "answer": "We organise the clues. Pressures cannot be measured down a phone line.",
+      "claimed_status": "STILL NEEDS TESTING",
+      "required_inputs": [
+        "problem_description"
+      ],
+      "optional_inputs": [
+        "refrigerant_line_observation",
+        "refrigerant_line_photo",
+        "airflow_description"
+      ],
+      "possible_outputs": [
+        "clues_organised",
+        "added_to_still_to_test",
+        "licensed_measurement_required"
+      ],
+      "safety_class": "licensed_refrigerant",
+      "runtime_status": "CLAIMED_ON_PAGE_PENDING_RUNTIME_VERIFICATION"
+    },
+    {
+      "capability_id": "cap.ac_warm_air.job_packet_for_provider",
+      "question": "What do I send a provider before they come?",
+      "answer": "Your packet: the problem, your equipment, your photos, what is ruled out, what is left.",
+      "claimed_status": "CAN ANSWER",
+      "required_inputs": [
+        "problem_description"
+      ],
+      "optional_inputs": [
+        "thermostat_photo",
+        "equipment_label_photo",
+        "photos",
+        "video",
+        "voice_note"
+      ],
+      "possible_outputs": [
+        "job_packet"
+      ],
+      "safety_class": "documentation",
+      "runtime_status": "CLAIMED_ON_PAGE_PENDING_RUNTIME_VERIFICATION"
+    }
+  ],
+  "metric_cards": [
+    {
+      "metric_id": "stat-1",
+      "value": "≈ 1 in 2",
+      "statement": "warm-air calls may trace to something simple you can check first.",
+      "qualifier": "HVAC companies in four U.S. markets report 40 to 50% of warm-air calls resolving on simple checks.",
+      "source_class": "Practitioner field reports · 4 U.S. markets",
+      "source_ids": [
+        "src-1",
+        "src-2",
+        "src-3",
+        "src-4"
+      ]
+    },
+    {
+      "metric_id": "stat-2",
+      "value": "$200–$1,500",
+      "statement": "is Carrier’s published repair range for an AC blowing hot or warm air, depending on the cause.",
+      "qualifier": "Carrier puts thermostat replacements at the low end, compressor and leak repairs at the high end.",
+      "source_class": "Manufacturer guidance · Carrier",
+      "source_ids": [
+        "src-5"
+      ]
+    },
+    {
+      "metric_id": "stat-3",
+      "value": "0 min",
+      "statement": "of extra cooling run time after you confirm the coil is frozen.",
+      "qualifier": "Carrier and Trane both say switch cooling to OFF and leave the fan running. Running a frozen coil can lead to severe compressor damage.",
+      "source_class": "Manufacturer guidance · Carrier, Trane",
+      "source_ids": [
+        "src-6"
+      ]
+    }
+  ],
+  "visual_assets": [
+    {
+      "asset_id": "plate-1",
+      "source_path": "spec/ac-blowing-warm-air/plates/ice-or-clear.svg",
+      "source_sha256": "d1150ca96b6927bf2d83a216cb5fb1d2b97a8917e4826c4fd2da1d9eaf5c650c",
+      "public_svg_path": "/images/ac-refrigerant-line-iced-vs-normal.svg",
+      "raster_path": "/images/how-to-tell-an-iced-refrigerant-line-from-a-normal-one-and-wha.png",
+      "width": 1200,
+      "height": 409,
+      "title": "How to tell an iced refrigerant line from a normal one, and what to do about each",
+      "description": "Two side by side views of the copper refrigerant lines where they enter the house. On the left, the larger insulated suction line is coated in white frost and ice, with droplets forming below it, and the label says to switch cooling off at the thermostat while leaving the fan running so the coil can thaw. On the right, the same line is clean and dry with intact black foam insulation, and the label says cooling may keep running while a visit is arranged. Both views show the smaller uninsulated liquid line beneath, which stays clear in each case.",
+      "caption": "Ice or clear. The one observation that changes what you should do right now.",
+      "raster_evidence_status": "REQUIRES_DEPLOYED_ASSET_CHECK",
+      "og_image": false
+    },
+    {
+      "asset_id": "plate-2",
+      "source_path": "spec/ac-blowing-warm-air/plates/where-to-look.svg",
+      "source_sha256": "8644db26f0b9018b3f4f1ea9fb583b2e96f14383c1a49b9e741848d4b75cd771",
+      "public_svg_path": "/images/central-ac-where-to-look-safe-vs-licensed-zones.svg",
+      "raster_path": "/images/where-to-look-on-a-central-air-conditioning-system-and-what-is.png",
+      "width": 1200,
+      "height": 627,
+      "title": "Where to look on a central air conditioning system, and what is safe to touch",
+      "description": "A house cross-section. Inside: a thermostat on the wall at check one, a return grille and filter at check two, and the indoor air handler cabinet with its coil and blower. Outside: the condenser unit with its top fan at check three. Two insulated refrigerant lines run between them, with the larger line marked as the one to inspect for ice at check four. Green markers show what a homeowner can safely look at and photograph. Red markers show the sealed electrical and refrigerant areas that only a licensed technician may open.",
+      "caption": "Your 4 safe checks, and the 2 red zones. Green is yours. Red is licensed work.",
+      "raster_evidence_status": "REQUIRES_DEPLOYED_ASSET_CHECK",
+      "og_image": true
+    },
+    {
+      "asset_id": "plate-3",
+      "source_path": "spec/ac-blowing-warm-air/plates/behind-the-panel.svg",
+      "source_sha256": "0bdf2e3d30045bd9c955a45f6ea8c87da4aeee6eaf41191b5d5e0955d40e0a4a",
+      "public_svg_path": "/images/ac-condenser-cutaway-sealed-electrical-panel.svg",
+      "raster_path": "/images/inside-a-condenser-unit-the-parts-that-fail-and-why-the-panel-.png",
+      "width": 1200,
+      "height": 518,
+      "title": "Inside a condenser unit: the parts that fail, and why the panel stays closed",
+      "description": "A technical cutaway line drawing of an outdoor air conditioning condenser. The top fan draws air upward through the cabinet. Around the inside walls sits the condenser coil with its fins. In the electrical compartment on the right are the run capacitor, drawn as a cylinder, and the contactor beside it. The compressor sits in the base of the cabinet as a heavy cylindrical shape. Numbered leader lines identify the fan, the coil and fins, the service disconnect on the wall, the capacitor and the contactor, and the compressor. The electrical compartment is marked as sealed and licensed work only.",
+      "caption": "Behind the panel. Why \"just swap the capacitor\" is bad advice even when the part is cheap.",
+      "raster_evidence_status": "REQUIRES_DEPLOYED_ASSET_CHECK",
+      "og_image": false
+    }
+  ],
+  "methodology": {
+    "path": "/local-records/methodology",
+    "record_status": "BUILDING_REPAIR_RECORD",
+    "text": "LIVE repair record Every walkthrough makes the next one sharper National first Matching reports Building the repair record As records accumulate, this card becomes a real count for the most specific geography with a trustworthy sample. Best available scope Companion pattern Building the repair record This becomes the most useful symptom or observation that repeatedly appears with this problem, always with its sample size. Where labels are available Equipment context Building the repair record When enough readable equipment labels exist, this can show age, capacity or another equipment pattern that actually changes the decision. Local as density grows Near-you signal Building the repair record National evidence can appear first. State, metro or county evidence automatically replaces or joins it when the local sample is large enough to be more useful. How the numbers are calculated: every published metric carries its geography, time window, sample size, source class, calculation version and “reported” or “verified” status. Percentages never publish without a denominator. Small cells are suppressed. A provider-confirmed cause is never inferred from a homeowner guess. See the calculation rules and data definitions →",
+    "sample_size": null,
+    "evidence_status": "NO_MEASURED_RECORD_EVIDENCE"
+  },
+  "source_bindings": [
+    {
+      "source_id": "src-1",
+      "publisher": "SC HVAC Service",
+      "title": "Why Is My AC Blowing Warm Air? (Santa Clarita Quick-Diagnosis Guide)",
+      "url": "https://schvacservice.com/blog/why-is-my-ac-blowing-warm-air",
+      "inherited_note": "Company byline, no named author. Published May 22, 2026. Verified Sept. 1, 2026. Supports the field-report range, scoped by the company to its own calls in Santa Clarita, California.",
+      "evidence_status": "INHERITED_UNVERIFIED",
+      "verified_at": null,
+      "source_path": "spec/ac-blowing-warm-air/sources.json",
+      "source_sha256": "7ac7621333095af3ee8f50074e610bf625d45c07a843db061c03add81e91d736"
+    },
+    {
+      "source_id": "src-2",
+      "publisher": "Integrity Refrigeration & AC",
+      "title": "Why Is My AC Blowing Warm Air? Troubleshooting Steps",
+      "url": "https://www.integrityrefrigerationandac.com/blog/why-is-my-ac-blowing-warm-air-troubleshooting-steps",
+      "inherited_note": "Company byline, no named author. Published June 30, 2026. The page cites unattributed industry data for its 40 to 50% figure rather than its own records. Verified Sept. 1, 2026. Supports the field-report range, Central Florida.",
+      "evidence_status": "INHERITED_UNVERIFIED",
+      "verified_at": null,
+      "source_path": "spec/ac-blowing-warm-air/sources.json",
+      "source_sha256": "7ac7621333095af3ee8f50074e610bf625d45c07a843db061c03add81e91d736"
+    },
+    {
+      "source_id": "src-3",
+      "publisher": "At Your Service Pros",
+      "title": "AC Blowing Warm Air, Utah Diagnostic Guide",
+      "url": "https://atyourservicepros.us/problems/ac-blowing-warm-air",
+      "inherited_note": "No byline and no publication date shown on the page. Verified Sept. 1, 2026. Supports the field-report range, scoped by the company to its own calls in Utah.",
+      "evidence_status": "INHERITED_UNVERIFIED",
+      "verified_at": null,
+      "source_path": "spec/ac-blowing-warm-air/sources.json",
+      "source_sha256": "7ac7621333095af3ee8f50074e610bf625d45c07a843db061c03add81e91d736"
+    },
+    {
+      "source_id": "src-4",
+      "publisher": "On Point Air Conditioning & Refrigeration",
+      "title": "Why Is My AC Blowing Warm Air? 8 Causes and What to Do",
+      "url": "https://onpointacservices.com/why-is-my-ac-blowing-warm-air/",
+      "inherited_note": "No named author and no publication date shown on the page. Verified Sept. 1, 2026. Supports the field-report range, South Florida.",
+      "evidence_status": "INHERITED_UNVERIFIED",
+      "verified_at": null,
+      "source_path": "spec/ac-blowing-warm-air/sources.json",
+      "source_sha256": "7ac7621333095af3ee8f50074e610bf625d45c07a843db061c03add81e91d736"
+    },
+    {
+      "source_id": "src-5",
+      "publisher": "Carrier",
+      "title": "Why Is My AC Blowing Hot Air? Tips to Troubleshoot and Fix",
+      "url": "https://www.carrier.com/us/en/residential/hvac-resources/air-conditioners/why-is-my-ac-blowing-hot-air/",
+      "inherited_note": "Travis Baugh; expert review by Michelle Notaro, Product Manager for Residential Air Conditioners at Carrier Corporation. The figure appears in the page’s FAQ. No publication or update date is displayed. Verified Sept. 1, 2026. Supports the $200 to $1,500 published repair range.",
+      "evidence_status": "INHERITED_UNVERIFIED",
+      "verified_at": null,
+      "source_path": "spec/ac-blowing-warm-air/sources.json",
+      "source_sha256": "7ac7621333095af3ee8f50074e610bf625d45c07a843db061c03add81e91d736"
+    },
+    {
+      "source_id": "src-6",
+      "publisher": "Carrier",
+      "title": "Will Frozen AC Fix Itself? A Guide to Frozen AC Coils",
+      "url": "https://www.carrier.com/us/en/residential/hvac-resources/air-conditioners/will-frozen-ac-fix-itself/",
+      "inherited_note": "Ryan Mayes; expert review by Michelle Notaro, Product Manager, Air Conditioners. No publication or review date is displayed; the site carries a general copyright line only. Verified Sept. 1, 2026. Supports switching cooling off immediately with the fan left running, and the compressor damage warning.",
+      "evidence_status": "INHERITED_UNVERIFIED",
+      "verified_at": null,
+      "source_path": "spec/ac-blowing-warm-air/sources.json",
+      "source_sha256": "7ac7621333095af3ee8f50074e610bf625d45c07a843db061c03add81e91d736"
+    },
+    {
+      "source_id": "src-7",
+      "publisher": "Trane",
+      "title": "Help! My AC Evaporator Coil Is Frozen",
+      "url": "https://www.trane.com/residential/en/resources/troubleshooting/air-conditioners/evaporator-coil-is-frozen/",
+      "inherited_note": "No publication date is displayed. Trane also warns not to chip away at the ice, which can damage the coil. Verified Sept. 1, 2026. Supports switching the thermostat from COOL to OFF, and the major-damage warning.",
+      "evidence_status": "INHERITED_UNVERIFIED",
+      "verified_at": null,
+      "source_path": "spec/ac-blowing-warm-air/sources.json",
+      "source_sha256": "7ac7621333095af3ee8f50074e610bf625d45c07a843db061c03add81e91d736"
+    },
+    {
+      "source_id": "src-8",
+      "publisher": "Carrier",
+      "title": "Understanding AC Capacitors: A Comprehensive Guide",
+      "url": "https://www.carrier.com/us/en/residential/hvac-resources/air-conditioners/ac-capacitor/",
+      "inherited_note": "Travis Baugh; expert review by Michelle Notaro. No publication date displayed. Carrier gives $100 to $400 covering part and professional installation; we publish the narrower $150 to $400 because Carrier’s own figure of $75 to $150 per hour for technician time makes the $100 floor an edge case. Verified Sept. 1, 2026. Supports the $150 to $400 capacitor replacement range.",
+      "evidence_status": "INHERITED_UNVERIFIED",
+      "verified_at": null,
+      "source_path": "spec/ac-blowing-warm-air/sources.json",
+      "source_sha256": "7ac7621333095af3ee8f50074e610bf625d45c07a843db061c03add81e91d736"
+    },
+    {
+      "source_id": "src-9",
+      "publisher": "Carrier",
+      "title": "How to Fix a Refrigerant Leak in Your AC Unit",
+      "url": "https://www.carrier.com/us/en/residential/hvac-resources/air-conditioners/fix-a-refrigerant-leak/",
+      "inherited_note": "Travis Baugh; no expert reviewer listed. The figure appears in the page FAQ and Carrier footnotes it to Angi. No publication date displayed. The range stays open ended because a leak in the evaporator coil can cost more than the top of it. Verified Sept. 1, 2026. Supports the $250 to $1,600+ leak repair range.",
+      "evidence_status": "INHERITED_UNVERIFIED",
+      "verified_at": null,
+      "source_path": "spec/ac-blowing-warm-air/sources.json",
+      "source_sha256": "7ac7621333095af3ee8f50074e610bf625d45c07a843db061c03add81e91d736"
+    },
+    {
+      "source_id": "src-10",
+      "publisher": "HomeAdvisor",
+      "title": "How Much Does It Cost to Clean AC Coils?",
+      "url": "https://www.homeadvisor.com/cost/heating-and-cooling/clean-ac-coils/",
+      "inherited_note": "Staff writer, reviewed by HomeAdvisor editor Ryan Noonan. Page displays Updated Jun 20, 2026. A cost aggregator that also sells contractor leads, so treated as a market reference rather than an authority. The low end is a cleaning bundled into an annual tune up; the high end is an acid wash deep clean. Verified Sept. 1, 2026. Supports the $75 to $350 condenser coil cleaning range.",
+      "evidence_status": "INHERITED_UNVERIFIED",
+      "verified_at": null,
+      "source_path": "spec/ac-blowing-warm-air/sources.json",
+      "source_sha256": "7ac7621333095af3ee8f50074e610bf625d45c07a843db061c03add81e91d736"
+    },
+    {
+      "source_id": "src-11",
+      "publisher": "This Old House",
+      "title": "Air Conditioner Repair Cost",
+      "url": "https://www.thisoldhouse.com/heating-cooling/air-conditioner-repair-cost",
+      "inherited_note": "Alexis Carthan; expert review by Richard Trethewey. Updated 03/16/2026. A cost guide carrying an advertiser disclosure, with figures compiled from Angi and Home Depot estimates rather than first party data. A frozen coil caused by a dirty filter resolves at service call money; one caused by a damaged coil runs to the top of the range. Verified Sept. 1, 2026. Supports the $150 to $2,500 spread for a frozen evaporator coil, which depends entirely on the underlying cause.",
+      "evidence_status": "INHERITED_UNVERIFIED",
+      "verified_at": null,
+      "source_path": "spec/ac-blowing-warm-air/sources.json",
+      "source_sha256": "7ac7621333095af3ee8f50074e610bf625d45c07a843db061c03add81e91d736"
+    }
+  ],
+  "claim_bindings": [
+    {
+      "claim_id": "stat-1",
+      "claim_type": "quantitative",
+      "section_id": "STAT_CARDS",
+      "text": "≈ 1 in 2 warm-air calls may trace to something simple you can check first. HVAC companies in four U.S. markets report 40 to 50% of warm-air calls resolving on simple checks.",
+      "source_ids": [
+        "src-1",
+        "src-2",
+        "src-3",
+        "src-4"
+      ],
+      "capability_ids": [],
+      "evidence_status": "PENDING_SOURCE_VERIFICATION"
+    },
+    {
+      "claim_id": "stat-2",
+      "claim_type": "quantitative",
+      "section_id": "STAT_CARDS",
+      "text": "$200–$1,500 is Carrier’s published repair range for an AC blowing hot or warm air, depending on the cause. Carrier puts thermostat replacements at the low end, compressor and leak repairs at the high end.",
+      "source_ids": [
+        "src-5"
+      ],
+      "capability_ids": [],
+      "evidence_status": "PENDING_SOURCE_VERIFICATION"
+    },
+    {
+      "claim_id": "stat-3",
+      "claim_type": "quantitative",
+      "section_id": "STAT_CARDS",
+      "text": "0 min of extra cooling run time after you confirm the coil is frozen. Carrier and Trane both say switch cooling to OFF and leave the fan running. Running a frozen coil can lead to severe compressor damage.",
+      "source_ids": [
+        "src-6"
+      ],
+      "capability_ids": [],
+      "evidence_status": "PENDING_SOURCE_VERIFICATION"
+    },
+    {
+      "claim_id": "cause-1",
+      "claim_type": "cost_and_guidance",
+      "section_id": "COMMON_POSSIBILITIES",
+      "text": "Fan set to ON, not AUTO. Air always moving, cold only sometimes. Between cycles it pushes room-temperature air. Yes. Free",
+      "source_ids": [],
+      "capability_ids": [],
+      "evidence_status": "PENDING_SOURCE_VERIFICATION"
+    },
+    {
+      "claim_id": "cause-2",
+      "claim_type": "cost_and_guidance",
+      "section_id": "COMMON_POSSIBILITIES",
+      "text": "Clogged air filter. Weak airflow, runs constantly, sometimes ice on the copper line. Yes. $15 to $40",
+      "source_ids": [],
+      "capability_ids": [],
+      "evidence_status": "PENDING_SOURCE_VERIFICATION"
+    },
+    {
+      "claim_id": "cause-3",
+      "claim_type": "cost_and_guidance",
+      "section_id": "COMMON_POSSIBILITIES",
+      "text": "Outdoor unit has no power. Indoor fan runs, outdoor unit silent. Often a tripped breaker or pulled disconnect. Reset once only. Free, or a service call",
+      "source_ids": [],
+      "capability_ids": [],
+      "evidence_status": "PENDING_SOURCE_VERIFICATION"
+    },
+    {
+      "claim_id": "cause-4",
+      "claim_type": "cost_and_guidance",
+      "section_id": "COMMON_POSSIBILITIES",
+      "text": "Frozen evaporator coil. Visible ice. Usually a symptom of airflow or refrigerant, not the cause itself, so the cost follows the cause. Thaw, then call. $150 to $2,500 11",
+      "source_ids": [
+        "src-11"
+      ],
+      "capability_ids": [],
+      "evidence_status": "PENDING_SOURCE_VERIFICATION"
+    },
+    {
+      "claim_id": "cause-5",
+      "claim_type": "cost_and_guidance",
+      "section_id": "COMMON_POSSIBILITIES",
+      "text": "Failed capacitor. A hum outdoors with the fan not turning, or an outdoor unit that starts inconsistently. Never. $150 to $400 8",
+      "source_ids": [
+        "src-8"
+      ],
+      "capability_ids": [],
+      "evidence_status": "PENDING_SOURCE_VERIFICATION"
+    },
+    {
+      "claim_id": "cause-6",
+      "claim_type": "cost_and_guidance",
+      "section_id": "COMMON_POSSIBILITIES",
+      "text": "Dirty condenser coil. Outdoor unit packed with clippings or cottonwood. Struggles on the hottest days. Clear loose exterior debris only; deeper cleaning may need service.. $75 to $350 10",
+      "source_ids": [
+        "src-10"
+      ],
+      "capability_ids": [],
+      "evidence_status": "PENDING_SOURCE_VERIFICATION"
+    },
+    {
+      "claim_id": "cause-7",
+      "claim_type": "cost_and_guidance",
+      "section_id": "COMMON_POSSIBILITIES",
+      "text": "Low refrigerant or a leak. Cooling fading over weeks, ice, sometimes a hiss. Refrigerant does not get used up. Never. $250 to $1,600+ 9",
+      "source_ids": [
+        "src-9"
+      ],
+      "capability_ids": [],
+      "evidence_status": "PENDING_SOURCE_VERIFICATION"
+    },
+    {
+      "claim_id": "cap.ac_warm_air.narrow_why_still_warm",
+      "claim_type": "capability",
+      "section_id": "CAPABILITY_QUESTIONS",
+      "text": "Why is my AC running but still blowing warm? Your thermostat, airflow, outdoor unit, ice and timing rule branches out one by one. CAN NARROW",
+      "source_ids": [],
+      "capability_ids": [
+        "cap.ac_warm_air.narrow_why_still_warm"
+      ],
+      "evidence_status": "PENDING_RUNTIME_VERIFICATION"
+    },
+    {
+      "claim_id": "cap.ac_warm_air.thermostat_or_fan_setting",
+      "claim_type": "capability",
+      "section_id": "CAPABILITY_QUESTIONS",
+      "text": "Is it just my thermostat or fan setting? One photo of your display settles mode, set point, room temperature and fan. CAN OFTEN ANSWER",
+      "source_ids": [],
+      "capability_ids": [
+        "cap.ac_warm_air.thermostat_or_fan_setting"
+      ],
+      "evidence_status": "PENDING_RUNTIME_VERIFICATION"
+    },
+    {
+      "claim_id": "cap.ac_warm_air.filter_relevance",
+      "claim_type": "capability",
+      "section_id": "CAPABILITY_QUESTIONS",
+      "text": "Does my filter actually matter here? Weighed against your airflow and ice, instead of blamed by default. CAN NARROW",
+      "source_ids": [],
+      "capability_ids": [
+        "cap.ac_warm_air.filter_relevance"
+      ],
+      "evidence_status": "PENDING_RUNTIME_VERIFICATION"
+    },
+    {
+      "claim_id": "cap.ac_warm_air.ice_on_line_next_step",
+      "claim_type": "capability",
+      "section_id": "CAPABILITY_QUESTIONS",
+      "text": "There is ice on my line. What now? Ice changes your immediate next step, and we tell you that step first. CAN ANSWER WHAT IT CHANGES",
+      "source_ids": [],
+      "capability_ids": [
+        "cap.ac_warm_air.ice_on_line_next_step"
+      ],
+      "evidence_status": "PENDING_RUNTIME_VERIFICATION"
+    },
+    {
+      "claim_id": "cap.ac_warm_air.outdoor_unit_involved",
+      "claim_type": "capability",
+      "section_id": "CAPABILITY_QUESTIONS",
+      "text": "Is my outdoor unit part of this? A safe photo or short video shows whether your fan is turning, and how it sounds. CAN NARROW",
+      "source_ids": [],
+      "capability_ids": [
+        "cap.ac_warm_air.outdoor_unit_involved"
+      ],
+      "evidence_status": "PENDING_RUNTIME_VERIFICATION"
+    },
+    {
+      "claim_id": "cap.ac_warm_air.read_model_from_label_photo",
+      "claim_type": "capability",
+      "section_id": "CAPABILITY_QUESTIONS",
+      "text": "Can you read my model from a photo? Yes. Your label fills in make, model and capacity without typing. CAN OFTEN ANSWER",
+      "source_ids": [],
+      "capability_ids": [
+        "cap.ac_warm_air.read_model_from_label_photo"
+      ],
+      "evidence_status": "PENDING_RUNTIME_VERIFICATION"
+    },
+    {
+      "claim_id": "cap.ac_warm_air.capacitor_confirmation",
+      "claim_type": "capability",
+      "section_id": "CAPABILITY_QUESTIONS",
+      "text": "Is my capacitor definitely bad? Your evidence changes how likely it is. Confirming it needs an electrical measurement. STILL NEEDS TESTING",
+      "source_ids": [],
+      "capability_ids": [
+        "cap.ac_warm_air.capacitor_confirmation"
+      ],
+      "evidence_status": "PENDING_RUNTIME_VERIFICATION"
+    },
+    {
+      "claim_id": "cap.ac_warm_air.refrigerant_charge_confirmation",
+      "claim_type": "capability",
+      "section_id": "CAPABILITY_QUESTIONS",
+      "text": "Is my refrigerant charge right? We organise the clues. Pressures cannot be measured down a phone line. STILL NEEDS TESTING",
+      "source_ids": [],
+      "capability_ids": [
+        "cap.ac_warm_air.refrigerant_charge_confirmation"
+      ],
+      "evidence_status": "PENDING_RUNTIME_VERIFICATION"
+    },
+    {
+      "claim_id": "cap.ac_warm_air.job_packet_for_provider",
+      "claim_type": "capability",
+      "section_id": "CAPABILITY_QUESTIONS",
+      "text": "What do I send a provider before they come? Your packet: the problem, your equipment, your photos, what is ruled out, what is left. CAN ANSWER",
+      "source_ids": [],
+      "capability_ids": [
+        "cap.ac_warm_air.job_packet_for_provider"
+      ],
+      "evidence_status": "PENDING_RUNTIME_VERIFICATION"
+    }
+  ],
+  "binding_sha256": "3f14222350a5ae401381ab37b31b7b66c83dd05416a4fd2631b533db417518ea"
+}

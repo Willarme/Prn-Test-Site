@@ -1,0 +1,92 @@
+{
+  "_what": "The citation ledger (design doc §4.2 row 32): every #src-N entry, in order. cite:true marks the entries the JSON-LD 'citation' array mirrors. intro_tail and note_lead are this page's own sentences inside the constant framing (the source-class sentence, the dating policy and the re-check cadence stay in the partial). pre/post are layout-fidelity fields that keep the rebuilt v41 byte-identical: v41 appended entries 8–11 on one line, so 8 carries pre 8 spaces + post empty and 9–11 carry both empty. A new page omits them (the defaults are one entry per line).",
+  "intro_tail": "Sources 1 to 4 are individual HVAC companies describing their own service calls in their own markets, not national research.",
+  "note_lead": "The air filter price is a retail part cost, not a repair, and carries no citation because no source we would stand behind publishes a national figure for it.",
+  "list": [
+    {
+      "publisher": "SC HVAC Service",
+      "title": "Why Is My AC Blowing Warm Air? (Santa Clarita Quick-Diagnosis Guide)",
+      "note": "Company byline, no named author. Published May&nbsp;22, 2026. Verified Sept.&nbsp;1, 2026. Supports the field-report range, scoped by the company to its own calls in Santa Clarita, California.",
+      "url": "https://schvacservice.com/blog/why-is-my-ac-blowing-warm-air",
+      "cite": true
+    },
+    {
+      "publisher": "Integrity Refrigeration &amp; AC",
+      "title": "Why Is My AC Blowing Warm Air? Troubleshooting Steps",
+      "note": "Company byline, no named author. Published June&nbsp;30, 2026. The page cites unattributed industry data for its 40 to 50% figure rather than its own records. Verified Sept.&nbsp;1, 2026. Supports the field-report range, Central Florida.",
+      "url": "https://www.integrityrefrigerationandac.com/blog/why-is-my-ac-blowing-warm-air-troubleshooting-steps",
+      "cite": true
+    },
+    {
+      "publisher": "At Your Service Pros",
+      "title": "AC Blowing Warm Air, Utah Diagnostic Guide",
+      "note": "No byline and no publication date shown on the page. Verified Sept.&nbsp;1, 2026. Supports the field-report range, scoped by the company to its own calls in Utah.",
+      "url": "https://atyourservicepros.us/problems/ac-blowing-warm-air",
+      "cite": true
+    },
+    {
+      "publisher": "On Point Air Conditioning &amp; Refrigeration",
+      "title": "Why Is My AC Blowing Warm Air? 8 Causes and What to Do",
+      "note": "No named author and no publication date shown on the page. Verified Sept.&nbsp;1, 2026. Supports the field-report range, South Florida.",
+      "url": "https://onpointacservices.com/why-is-my-ac-blowing-warm-air/",
+      "cite": true
+    },
+    {
+      "publisher": "Carrier",
+      "title": "Why Is My AC Blowing Hot Air? Tips to Troubleshoot and Fix",
+      "note": "Travis Baugh; expert review by Michelle Notaro, Product Manager for Residential Air Conditioners at Carrier Corporation. The figure appears in the page&rsquo;s FAQ. No publication or update date is displayed. Verified Sept.&nbsp;1, 2026. Supports the $200 to $1,500 published repair range.",
+      "url": "https://www.carrier.com/us/en/residential/hvac-resources/air-conditioners/why-is-my-ac-blowing-hot-air/",
+      "cite": true
+    },
+    {
+      "publisher": "Carrier",
+      "title": "Will Frozen AC Fix Itself? A Guide to Frozen AC Coils",
+      "note": "Ryan Mayes; expert review by Michelle Notaro, Product Manager, Air Conditioners. No publication or review date is displayed; the site carries a general copyright line only. Verified Sept.&nbsp;1, 2026. Supports switching cooling off immediately with the fan left running, and the compressor damage warning.",
+      "url": "https://www.carrier.com/us/en/residential/hvac-resources/air-conditioners/will-frozen-ac-fix-itself/",
+      "cite": true
+    },
+    {
+      "publisher": "Trane",
+      "title": "Help! My AC Evaporator Coil Is Frozen",
+      "note": "No publication date is displayed. Trane also warns not to chip away at the ice, which can damage the coil. Verified Sept.&nbsp;1, 2026. Supports switching the thermostat from COOL to OFF, and the major-damage warning.",
+      "url": "https://www.trane.com/residential/en/resources/troubleshooting/air-conditioners/evaporator-coil-is-frozen/",
+      "cite": true
+    },
+    {
+      "publisher": "Carrier",
+      "title": "Understanding AC Capacitors: A Comprehensive Guide",
+      "note": "Travis Baugh; expert review by Michelle Notaro. No publication date displayed. Carrier gives $100 to $400 covering part and professional installation; we publish the narrower $150 to $400 because Carrier&rsquo;s own figure of $75 to $150 per hour for technician time makes the $100 floor an edge case. Verified Sept.&nbsp;1, 2026. Supports the $150 to $400 capacitor replacement range.",
+      "url": "https://www.carrier.com/us/en/residential/hvac-resources/air-conditioners/ac-capacitor/",
+      "cite": false,
+      "pre": "        ",
+      "post": ""
+    },
+    {
+      "publisher": "Carrier",
+      "title": "How to Fix a Refrigerant Leak in Your AC Unit",
+      "note": "Travis Baugh; no expert reviewer listed. The figure appears in the page FAQ and Carrier footnotes it to Angi. No publication date displayed. The range stays open ended because a leak in the evaporator coil can cost more than the top of it. Verified Sept.&nbsp;1, 2026. Supports the $250 to $1,600+ leak repair range.",
+      "url": "https://www.carrier.com/us/en/residential/hvac-resources/air-conditioners/fix-a-refrigerant-leak/",
+      "cite": false,
+      "pre": "",
+      "post": ""
+    },
+    {
+      "publisher": "HomeAdvisor",
+      "title": "How Much Does It Cost to Clean AC Coils?",
+      "note": "Staff writer, reviewed by HomeAdvisor editor Ryan Noonan. Page displays Updated Jun&nbsp;20, 2026. A cost aggregator that also sells contractor leads, so treated as a market reference rather than an authority. The low end is a cleaning bundled into an annual tune up; the high end is an acid wash deep clean. Verified Sept.&nbsp;1, 2026. Supports the $75 to $350 condenser coil cleaning range.",
+      "url": "https://www.homeadvisor.com/cost/heating-and-cooling/clean-ac-coils/",
+      "cite": false,
+      "pre": "",
+      "post": ""
+    },
+    {
+      "publisher": "This Old House",
+      "title": "Air Conditioner Repair Cost",
+      "note": "Alexis Carthan; expert review by Richard Trethewey. Updated 03/16/2026. A cost guide carrying an advertiser disclosure, with figures compiled from Angi and Home Depot estimates rather than first party data. A frozen coil caused by a dirty filter resolves at service call money; one caused by a damaged coil runs to the top of the range. Verified Sept.&nbsp;1, 2026. Supports the $150 to $2,500 spread for a frozen evaporator coil, which depends entirely on the underlying cause.",
+      "url": "https://www.thisoldhouse.com/heating-cooling/air-conditioner-repair-cost",
+      "cite": false,
+      "pre": "",
+      "post": ""
+    }
+  ]
+}

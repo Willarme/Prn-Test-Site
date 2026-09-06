@@ -102,7 +102,12 @@ describe("migration 00012 — applied 2026-08-25, and structurally sound", () =>
     const migrations = readdirSync(join(process.cwd(), "supabase/migrations")).sort();
     expect(migrations).toContain("00012_page_registry.sql");
     const numbers = migrations.map((m) => Number(m.slice(0, 5)));
-    expect(numbers).toEqual(numbers.map((_, i) => i + 1));
+    // 00001-00015 gapless; 00019 = T1-33's seam, renumbered above the
+    // cross-branch high-water (00016-00018 live on unmerged branches —
+    // Merge Train 2026-08-30). Strict 1..N cannot survive multi-branch
+    // numbering; the gap closes as those branches land. 00020 = the loop
+    // surfaces (campaign track F2b, 2026-09-05), the next free number.
+    expect(numbers).toEqual([...numbers.slice(0, 15).map((_, i) => i + 1), 19, 20]);
     // Nothing renumbered or rewrote an already-committed migration.
     expect(migrations[10]).toBe("00011_opportunity_decision.sql");
   });

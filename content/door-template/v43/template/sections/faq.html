@@ -1,0 +1,11 @@
+<!-- ================= FAQ ================= -->
+<section class="sec chapter" id="faq">
+  <div class="wrap">
+    <div class="chapter-head"><p class="eyebrow"><i class="pennant" aria-hidden="true"></i>Before you start</p>
+    <h2 class="display h2">{%faq.heading_html%}</h2></div>
+    <div class="sheet faq">
+{%each faq.questions%}      <details><summary class="bold">{%.q%}</summary><div class="faq-a-outer"><div class="faq-a muted">{%.a_html%}</div></div></details>
+{%/each%}    </div>
+  </div>
+</section>
+

@@ -31,9 +31,9 @@ describe("deterministic safety gate (runs BEFORE analysis, #14A §14)", () => {
     expect(checkSafety("I need a spark plug for the mower")).toBeNull();
   });
 
-  it("burning smell warns but may continue", () => {
+  it("burning smell halts normal intake under Melissa checklist F1", () => {
     const rule = checkSafety("there is a burning smell from the outlet")!;
-    expect(rule.intake_may_continue).toBe(true);
+    expect(rule.intake_may_continue).toBe(false);
   });
 
   it("ordinary problems do not false-trigger", () => {

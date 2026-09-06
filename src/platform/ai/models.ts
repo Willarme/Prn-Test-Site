@@ -75,17 +75,38 @@ export interface ModelConfig {
    * customer text? Until one is, `classify_home_problem` and
    * `select_next_clarifier` cannot run on a model at all — they refuse BEFORE
    * any network I/O and fall back deterministically. See callModel.ts.
+   *
+   * 2026-09-05, TEST ENVIRONMENT ONLY: two entries below carry `true` under
+   * Josh's "lets use them now" ruling for the demo-full-loop trial build.
+   * Melissa's countersign (T0-03) is still open; both revert before production.
+   * The default stays false and the rule above is unchanged.
    */
   allows_customer_data: boolean;
   /** Where the numbers above came from, carried with them. */
   price_source: string;
+  /**
+   * The date THIS entry's figures were read from the live API. Most entries
+   * share the catalogue-wide MODEL_CATALOGUE_PROBED_AT; a model added later
+   * carries its own probe date rather than borrowing one it was not part of.
+   */
+  probed_at: string;
   /** Free-tier marker — a $0 model is still a model whose prompts may be retained. */
   free: boolean;
+  /**
+   * MAY THIS MODEL BE SENT AN IMAGE? False unless the live probe's
+   * `architecture.input_modalities` included "image". `callModel` refuses a call
+   * carrying images to a model without this flag, BEFORE the network — sending a
+   * photo to a text-only endpoint is a wasted billed call at best.
+   */
+  accepts_images: boolean;
+  /** Short schema extraction may opt out of a model's default reasoning. */
+  reasoning_enabled?: boolean;
 }
 
 /**
- * THE SEEDED CATALOGUE. Four models, chosen to cover both structured-output
- * modes and both price classes, every field from the 2026-08-25 probe.
+ * THE SEEDED CATALOGUE. Four text models, chosen to cover both structured-output
+ * modes and both price classes, every field from the 2026-08-25 probe — plus
+ * one vision model added 2026-09-05 from its own probe (see its entry).
  *
  * THREE MORE FREE MODELS DO SUPPORT STRUCTURED OUTPUTS and were seen in the same
  * probe, recorded here rather than seeded because only their context windows
@@ -117,7 +138,9 @@ export const MODEL_CATALOGUE: readonly ModelConfig[] = [
     context: 1_048_576,
     allows_customer_data: false,
     price_source: `${MODEL_CATALOGUE_SOURCE}, ${MODEL_CATALOGUE_PROBED_AT}: pricing $0/$0, supported_parameters includes response_format and tools, EXCLUDES structured_outputs`,
+    probed_at: MODEL_CATALOGUE_PROBED_AT,
     free: true,
+    accepts_images: false,
   },
   {
     id: "deepseek/deepseek-v4-flash",
@@ -136,18 +159,34 @@ export const MODEL_CATALOGUE: readonly ModelConfig[] = [
     context: 1_048_576,
     allows_customer_data: false,
     price_source: `${MODEL_CATALOGUE_SOURCE}, ${MODEL_CATALOGUE_PROBED_AT}: $0.088606/M in, $0.177212/M out, structured_outputs supported`,
+    probed_at: MODEL_CATALOGUE_PROBED_AT,
     free: false,
+    accepts_images: false,
   },
   {
     id: "deepseek/deepseek-v4-flash-0731",
+    reasoning_enabled: false,
     provider: "openrouter",
     mode: "json_schema",
-    price_in_per_mtok: 0.14,
-    price_out_per_mtok: 0.28,
+    price_in_per_mtok: 0.065,
+    price_out_per_mtok: 0.18,
     context: 1_310_720,
-    allows_customer_data: false,
-    price_source: `${MODEL_CATALOGUE_SOURCE}, ${MODEL_CATALOGUE_PROBED_AT}: $0.14/M in, $0.28/M out, structured_outputs supported`,
+    /**
+     * TEST ENVIRONMENT clearance — Josh, 2026-09-05: "lets use them now";
+     * Melissa's countersign (T0-03) still open on the record; revert before
+     * production.
+     *
+     * This is the routine decision 1 of the demo-full-loop campaign brief: the
+     * owner's chosen default model is cleared for homeowner text so A01's
+     * classify and clarifier alternates can run in the trial environment. The
+     * clearance is scoped to THIS model; every other text model below stays
+     * uncleared and the privacy rule in callModel.ts is unchanged.
+     */
+    allows_customer_data: true,
+    price_source: "GET https://openrouter.ai/api/v1/models, 2026-09-05: $0.065/M in, $0.18/M out, structured_outputs supported",
+    probed_at: "2026-09-05",
     free: false,
+    accepts_images: false,
   },
   {
     /** A FREE model that DOES support strict schemas — the cheapest way to test mode A. */
@@ -159,7 +198,38 @@ export const MODEL_CATALOGUE: readonly ModelConfig[] = [
     context: 256_000,
     allows_customer_data: false,
     price_source: `${MODEL_CATALOGUE_SOURCE}, ${MODEL_CATALOGUE_PROBED_AT}: free tier, structured_outputs supported`,
+    probed_at: MODEL_CATALOGUE_PROBED_AT,
     free: true,
+    accepts_images: false,
+  },
+  {
+    /**
+     * THE VISION MODEL for `read_equipment_label` (campaign routine decision 2,
+     * DECISIONS FOR MELISSA decision 1 recommendation B). Added 2026-09-05 from
+     * a live read-only probe of GET https://openrouter.ai/api/v1/models (431
+     * models, 262 image-capable): the cheapest current Gemini Flash whose
+     * `architecture.input_modalities` includes "image" and whose
+     * `supported_parameters` includes `structured_outputs`, so it runs in strict
+     * json_schema mode like the deepseek default. The vendor record also lists
+     * a per-image figure of $0.0000001 (pricing.image) and 1,048,576 context.
+     *
+     * TEST ENVIRONMENT clearance — Josh, 2026-09-05: "lets use them now";
+     * Melissa's countersign (T0-03) still open on the record; revert before
+     * production. The only thing this model is ever sent is a photograph of a
+     * rating plate with its EXIF/GPS metadata already stripped
+     * (platform/media/exif.ts); it never sees the homeowner's own words.
+     */
+    id: "google/gemini-2.5-flash-lite",
+    provider: "openrouter",
+    mode: "json_schema",
+    price_in_per_mtok: 0.1,
+    price_out_per_mtok: 0.4,
+    context: 1_048_576,
+    allows_customer_data: true,
+    price_source: `GET https://openrouter.ai/api/v1/models (live probe, 431 models), 2026-09-05: pricing.prompt 0.0000001 ($0.10/M in), pricing.completion 0.0000004 ($0.40/M out), pricing.image 0.0000001, input_modalities text+image+file+audio+video, structured_outputs supported`,
+    probed_at: "2026-09-05",
+    free: false,
+    accepts_images: true,
   },
 ] as const;
 
@@ -212,11 +282,21 @@ export function estimateModelCall(
     (maxOutputTokens / 1_000_000) * model.price_out_per_mtok;
   return {
     estimated_usd: Math.ceil(cost * 1e6) / 1e6,
-    basis: `~${promptTokens} prompt tok @ $${model.price_in_per_mtok}/M + ${maxOutputTokens} max output tok @ $${model.price_out_per_mtok}/M (${model.id}, prices probed ${MODEL_CATALOGUE_PROBED_AT})`,
+    basis: `~${promptTokens} prompt tok @ $${model.price_in_per_mtok}/M + ${maxOutputTokens} max output tok @ $${model.price_out_per_mtok}/M (${model.id}, prices probed ${model.probed_at})`,
     known: true,
     figure_label: TEST_FIGURE_LABEL,
   };
 }
+
+/**
+ * HOW MANY PROMPT TOKENS ONE ATTACHED IMAGE IS ASSUMED TO COST, for the
+ * pre-call estimate only. Vision models tokenise an image by tiles (Gemini
+ * documents 258 tokens per 768px tile, so a phone photo lands in the low
+ * thousands); the estimate assumes the high end so the brake errs on refusing,
+ * never on letting an expensive call through. The post-call re-check uses the
+ * tokens the vendor actually reported. An ESTIMATE, labelled as one.
+ */
+export const IMAGE_TOKEN_ALLOWANCE = 2_000;
 
 /** Cost of a call that already happened, from the tokens it actually used. */
 export function actualModelCost(
@@ -239,7 +319,7 @@ export function actualModelCost(
     (completionTokens / 1_000_000) * model.price_out_per_mtok;
   return {
     estimated_usd: Math.ceil(cost * 1e6) / 1e6,
-    basis: `${promptTokens} + ${completionTokens} tok @ $${model.price_in_per_mtok}/$${model.price_out_per_mtok} per M (${model.id}, prices probed ${MODEL_CATALOGUE_PROBED_AT})`,
+    basis: `${promptTokens} + ${completionTokens} tok @ $${model.price_in_per_mtok}/$${model.price_out_per_mtok} per M (${model.id}, prices probed ${model.probed_at})`,
     known: true,
     figure_label: TEST_FIGURE_LABEL,
   };

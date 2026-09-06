@@ -3,7 +3,8 @@ import type { EvidenceObject } from "@/domain/problem/contracts";
 import { buildPacket } from "@/domain/problem/packet";
 import { findPlaybook, selectPlaybook } from "@/domain/intake/playbooks";
 import type { IntakePlaybook } from "@/domain/intake/playbook";
-import { runtimeStore, type Journey } from "@/platform/stores/runtime";
+import { journeySafetyRule } from "@/domain/problem/journey-safety";
+import { runtimeStore, type JobAddress, type Journey } from "@/platform/stores/runtime";
 
 /**
  * Shared server helpers for the post-description intake ("complete your
@@ -19,11 +20,40 @@ export async function loadJourneyContext(requestId: string): Promise<{
   playbook: IntakePlaybook;
   textEvidence: EvidenceObject;
   allEvidence: EvidenceObject[];
+  /** The job address, when the homeowner has given it (Directions §3.3). */
+  address: JobAddress | null;
+  /**
+   * Latest label-read confidence word per field key ("high" | "medium" |
+   * "low"), from the file store's sidecar (platform/intake/media.ts). Empty
+   * when nothing was read or the environment records none.
+   */
+  labelConfidence: Record<string, "high" | "medium" | "low">;
 } | null> {
   const store = runtimeStore();
   const journey = await store.getJourney(requestId);
   if (!journey) return null;
-  const allEvidence = await store.listEvidence(journey.problem.problem_id);
+  const allEvidence = await store.listEvidence(journey.problem.problem_id, requestId);
+  // Campaign track P4: the address and the label-read confidences ride along
+  // so the walkthrough page can confirm-not-assert (Coverage Standard §4.3)
+  // and ask for the address once. Both are best-effort reads: a store that
+  // cannot answer leaves them empty rather than failing the journey.
+  let address: JobAddress | null = null;
+  try {
+    address = await store.getJobAddress(requestId);
+  } catch {
+    address = null;
+  }
+  const labelConfidence: Record<string, "high" | "medium" | "low"> = {};
+  try {
+    // Dynamic: media.ts imports this module, and the sidecar reader is the
+    // only thing needed from it here.
+    const { readLabelConfidence } = await import("@/platform/intake/media");
+    for (const record of readLabelConfidence(requestId) ?? []) {
+      for (const [key, word] of Object.entries(record.confidence)) labelConfidence[key] = word;
+    }
+  } catch {
+    /* no sidecar, no confidence words — the page confirms anyway */
+  }
   const textEvidence =
     allEvidence.find((e) => e.kind === "customer_text") ??
     ({
@@ -36,7 +66,7 @@ export async function loadJourneyContext(requestId: string): Promise<{
   const playbook =
     (journey.session.playbook_id ? findPlaybook(journey.session.playbook_id) : null) ??
     selectPlaybook(textEvidence.content, journey.problem.service_category);
-  return { journey, playbook, textEvidence, allEvidence };
+  return { journey, playbook, textEvidence, allEvidence, address, labelConfidence };
 }
 
 /**
@@ -62,6 +92,8 @@ export async function loadJourneyContext(requestId: string): Promise<{
 export async function regeneratePacket(requestId: string): Promise<void> {
   const ctx = await loadJourneyContext(requestId);
   if (!ctx) return;
+  const safety = journeySafetyRule(ctx.journey.problem);
+  if (safety && !safety.intake_may_continue) return;
   const store = runtimeStore();
   const [answers, diagnosis, claims] = await Promise.all([
     store.listIntakeAnswers(requestId),
@@ -96,7 +128,7 @@ export async function regeneratePacket(requestId: string): Promise<void> {
     new_id: () => `jp_${randomUUID()}`,
   });
   if (!outcome.ok || !outcome.packet) return;
-  await store.savePacket(outcome.packet);
+  await store.savePacket(outcome.packet, requestId);
   /**
    * THE CHAIN IS MAINTAINED (finding 3, 2026-08-25).
    *

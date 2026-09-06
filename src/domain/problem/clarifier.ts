@@ -26,6 +26,12 @@ import type { FieldRequirement, IntakePlaybook } from "@/domain/intake/playbook"
  * audit is explicit that a per-question tag is not the same thing and that the
  * mechanism, not the number, is what a build session decides.
  *
+ * Since the 2026-08-30 ruling, every question ALSO carries its canon
+ * `value_reason` tag (six categories — see ClarifierCandidate and
+ * intake/playbook.ts). The tag is the licence to ask; the count is the
+ * ceiling. Neither substitutes for the other, which is exactly the
+ * distinction the audit drew.
+ *
  * The NUMBER is `intake.max_clarifying_questions` and is TODO-ASK-OWNER
  * (Melissa). Its shipped value reproduces the `.slice(0, 5)` already in
  * buildJobPacketFixture — an observed constant, not a chosen limit.
@@ -44,6 +50,13 @@ export interface ClarifierCandidate {
   /** The playbook's own label, asked as a question. */
   question: string;
   why_it_matters: string;
+  /**
+   * One of the SIX CANON tags (A01 spec §4; ruled 2026-08-28 condition 3 and
+   * crew 2026-08-30): the machine-checkable licence to ask. `why_it_matters`
+   * above is the same fact as prose — the tag classifies, the prose explains,
+   * and neither replaces the other.
+   */
+  value_reason: FieldRequirement["value_reason"];
   priority: FieldRequirement["priority"];
   /** How the homeowner may answer — the playbook's own list. */
   accepts: FieldRequirement["accepts"];
@@ -89,6 +102,7 @@ export function clarifierCandidates(
       field_key: f.field_key,
       question: f.label,
       why_it_matters: f.why_it_matters,
+      value_reason: f.value_reason,
       priority: f.priority,
       accepts: f.accepts,
     }));

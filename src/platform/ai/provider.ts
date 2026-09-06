@@ -65,6 +65,9 @@ export type StructuredOutputMode = "json_schema" | "json_object";
 export type DataCollectionPreference = "deny" | "allow";
 
 export interface ModelCallInput {
+  /** Hard ceiling for HTTP attempts, including the initial attempt. A provider
+   * must never retry beyond this amount reserved by callModel. */
+  maxAttempts?: number;
   /** Vendor-neutral model identifier, resolved from policy — never a literal at a call site. */
   modelId: string;
   /** The rules. Carries the rendered JSON schema in json_object mode. */
@@ -82,8 +85,27 @@ export interface ModelCallInput {
   jsonSchema: Record<string, unknown>;
   mode: StructuredOutputMode;
   maxTokens: number;
+  /** Explicit per-model reasoning mode; absent preserves the vendor default. */
+  reasoningEnabled?: boolean;
   timeoutMs: number;
   dataCollection: DataCollectionPreference;
+  /**
+   * Images attached to the user turn, as raw bytes already base64-encoded.
+   * Absent or empty means a text-only call and the request body a provider
+   * builds is byte-identical to what it built before this field existed. The
+   * caller owns what is in the bytes: `callModel` refuses images to a model not
+   * configured `accepts_images`, and the one capability that sends a photo
+   * strips its metadata first (platform/media/exif.ts).
+   */
+  images?: ModelImage[];
+}
+
+export const MAX_MODEL_HTTP_ATTEMPTS = 3;
+
+export interface ModelImage {
+  /** "image/jpeg" | "image/png" | "image/webp" — whatever the vendor accepts as a data URL. */
+  mime: string;
+  base64: string;
 }
 
 /**
@@ -113,9 +135,10 @@ export type ModelFailureReason =
   | "not_permitted";
 
 export interface ModelUsage {
-  prompt_tokens: number;
-  completion_tokens: number;
-  total_tokens: number;
+  /** Absent or malformed counters are unknown, never a reported zero. */
+  prompt_tokens: number | null;
+  completion_tokens: number | null;
+  total_tokens: number | null;
   /**
    * Cost as the API itself reported it, when it reports one. NEVER computed from
    * a hardcoded price table for a marketplace whose prices vary per model and

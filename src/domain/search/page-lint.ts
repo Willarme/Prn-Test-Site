@@ -2,7 +2,7 @@ import {
   DEFAULT_PAGE_FACTORY_POLICY,
   type PageFactoryPolicy,
 } from "@/domain/search/page-factory-policy";
-import type { PageSpec } from "@/domain/search/pages";
+import { PageSpec } from "@/domain/search/pages";
 
 /**
  * A05's PRE-FILTERS — condition C14 and coherence report issue 8.
@@ -290,6 +290,18 @@ export function lintPageBeforeQa(
   spec: PageSpec,
   policy: PageFactoryPolicy = DEFAULT_PAGE_FACTORY_POLICY
 ): LintResult {
+  // The reviewed v43 page contains attributed statistics and prices. Its
+  // immutable binding is the pre-filter: a modified field cannot borrow the
+  // template's provenance. A06 independently checks actual source freshness,
+  // assets and production capabilities before any release.
+  if (spec.door_template || spec.template_id === "door-v43") {
+    const parsed = PageSpec.safeParse(spec);
+    const findings: LintFinding[] = parsed.success && parsed.data.door_template ? [] : [{
+      check: "door_template.frozen_binding", severity: "blocker", where: "door_template",
+      message: "The complete reviewed v43 binding and frozen fields are required; regenerate from the reviewed kit.",
+    }];
+    return { passed: findings.length === 0, findings };
+  }
   const findings = [
     ...lintUrgencySlot(spec),
     ...lintDirectoryFraming(spec),

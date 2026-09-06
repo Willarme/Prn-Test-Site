@@ -1,0 +1,9 @@
+<!-- ================= REPAIR RECORD, TRIMMED ================= -->
+<section class="sec tint tint-warm chapter" id="repair-record">
+  <div class="wrap">
+    <p class="eyebrow"><i class="pennant" aria-hidden="true"></i>LIVE repair record</p>
+    <h2 class="display h2">{%repair_record.heading_html%}</h2>
+    <div class="record-grid">{%each repair_record.cards%}<div class="record-card {%.color_class%}" data-metric-slot="auto"><div class="record-icon">{%.icon_svg%}</div><div class="scope-chip">{%.scope_chip%}</div><div class="record-kicker">{%.kicker%}</div><div class="record-value">{%.value%}</div><div class="record-copy">{%.copy%}</div></div>{%/each%}</div><div class="record-method"><p><b class="ink">How the numbers are calculated:</b> every published metric carries its geography, time window, sample size, source class, calculation version and &ldquo;reported&rdquo; or &ldquo;verified&rdquo; status. Percentages never publish without a denominator. Small cells are suppressed. A provider-confirmed cause is never inferred from a homeowner guess.</p><a href="/local-records/methodology">See the calculation rules and data definitions &rarr;</a></div>
+  </div>
+</section>
+

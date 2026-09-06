@@ -17,8 +17,9 @@ Ask My People / Find someone for me).
 ## Authority
 
 All build authority lives in [docs/canon/](docs/canon/AUTHORITY.md). Read it
-before changing anything. Conflicts between documents are never resolved
-silently — they become Owner Decision items.
+before changing anything. Current project decisions and work orders are maintained
+in the shared PRN vault. Its September 5 delegation allows routine implementation
+decisions within approved scope; substantive release, consent and activation gates remain.
 
 ## Structure
 
@@ -37,5 +38,15 @@ npm run dev       # local dev server
 
 ## Status
 
-Wave 0 (canon + frozen contracts). No customer-facing features exist yet.
-See docs/canon/gates/ for the current gate report.
+The September 6, 2026 source checkpoint contains the local AC demo, intake and
+results flow, portable packet/PDF, request-scoped sharing controls, concept-preview
+directory, and frozen v43 SEO-template integration. Start with
+[the delivery status and setup notes](docs/repository-status-2026-09-06.md) and
+[the demo guide](docs/client-demo.md).
+
+The illustrated feature services remain concept previews. The generated SEO draft
+remains rejected, and production release is still blocked. Repository updates do
+not establish a working external demo or a live production deployment.
+
+Automatic Vercel Git deployments are paused in `vercel.json`; deployment remains
+an explicit step through the project's authorized hosting setup. Preserve noindex.

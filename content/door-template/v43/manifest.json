@@ -1,0 +1,237 @@
+{
+  "version": 1,
+  "template_id": "door-v43",
+  "source_origin": "prn-vault/Project/03 Build/SEO Intent Pages/door-template",
+  "reference_sha256": "756fb95907fd3fb21f7bc9a86e854d0e90f8ef35455776b83a17b4935f8d8843",
+  "content_date": "2026-09-05",
+  "content_date_basis": {
+    "commit": "9b4d64044e2247633807acfea413e142363bd618",
+    "modified_at": "2026-09-05T19:45:35Z",
+    "explanation": "Git commit time of the last material change to the checked-in door source; independent of checkout mtime or request time"
+  },
+  "source_tree_sha256": "07d511adf4828ed43739c91616fca29005b06e71d7ad13ff37a31d5f310df0ca",
+  "files": [
+    {
+      "path": "TEMPLATE_SECTION_ORDER.json",
+      "sha256": "8372fb98618ed789dc72a8a7441ba9b099c0c26b6d95760a169ea4ffed8d4c4c"
+    },
+    {
+      "path": "build.js",
+      "sha256": "9ac3656bb24bfd1d5c397b41e6ba3a48d69bb75450d6292617b9fe4bf74dc4c9"
+    },
+    {
+      "path": "reference/approved-v43.html",
+      "sha256": "756fb95907fd3fb21f7bc9a86e854d0e90f8ef35455776b83a17b4935f8d8843"
+    },
+    {
+      "path": "reference/content-date-evidence.json",
+      "sha256": "93e5e1ff781d1a513afd383575b6b0d9bb975a2b049cf008e70a7fe73bc0b3e2"
+    },
+    {
+      "path": "spec/ac-blowing-warm-air/accents.json",
+      "sha256": "9c9bf0c6e3fcfa4c38c60071ce8de4584859d56f9b3e0f81d3bb2d1b0a7311c7"
+    },
+    {
+      "path": "spec/ac-blowing-warm-air/brand.json",
+      "sha256": "dd7ece4e44391d68bdb5e768f018f1cc5623f4de1ba02d65400c6bdbc3811a3c"
+    },
+    {
+      "path": "spec/ac-blowing-warm-air/capability-registry.json",
+      "sha256": "3f60eec63df70fe2ab591911fb9af66c11cfe49db3bb4c40d4fbfcab96db12c1"
+    },
+    {
+      "path": "spec/ac-blowing-warm-air/capability.json",
+      "sha256": "fbb1019a884d51950f2af11da23cbd4122edf2743c490f7000c0eaecdadca451"
+    },
+    {
+      "path": "spec/ac-blowing-warm-air/closer.json",
+      "sha256": "03bee7edd5249f4c9d80f2aed3b237ddf59b4c92d2ffe74beab2f36a9739a849"
+    },
+    {
+      "path": "spec/ac-blowing-warm-air/common_causes.json",
+      "sha256": "d9df76cdfb00089cae2a0b2f0ecc89ad998608ee0ad4f19b6ef6f5b6be32518e"
+    },
+    {
+      "path": "spec/ac-blowing-warm-air/crumb.json",
+      "sha256": "07b4663c0d8905c24a91e34340f028ded8d7fe910a5fce6f5e98c5bfb8cac779"
+    },
+    {
+      "path": "spec/ac-blowing-warm-air/faq.json",
+      "sha256": "f58e09a82ee9734cca744447b10872b7bf2b0d5c294ad9814526d05ab9297057"
+    },
+    {
+      "path": "spec/ac-blowing-warm-air/flip.json",
+      "sha256": "b2956a1fabc30794e29f1bb1a57cbc4d645c78f9fa9821d85411cb7b7b30ffef"
+    },
+    {
+      "path": "spec/ac-blowing-warm-air/general_vs_yours.json",
+      "sha256": "80d772a9c5abba15ebf30124f075efbb171896925a3560cec3b4b0b4643c08c3"
+    },
+    {
+      "path": "spec/ac-blowing-warm-air/hero.json",
+      "sha256": "3d4d211e5497d68bf994e8f75cb4ab61346316b0d5ebc56cb8673cada4d58829"
+    },
+    {
+      "path": "spec/ac-blowing-warm-air/intake.json",
+      "sha256": "95386422a4ae8c2ed4d010ef5f26f97bfd86c625350e55f9e7a7e73cf3a85b40"
+    },
+    {
+      "path": "spec/ac-blowing-warm-air/job_packet.json",
+      "sha256": "a28d84edf42ec3a99f21dcbfeb627c9cc6cf47fd3b82044941a2674f065e14c5"
+    },
+    {
+      "path": "spec/ac-blowing-warm-air/nav.json",
+      "sha256": "8427f701e87a41a6e6b1851eaff404e0df804c4f6515dc8619f51984b6b588c0"
+    },
+    {
+      "path": "spec/ac-blowing-warm-air/observations.json",
+      "sha256": "d5f7347a498056d3b2b5d2c9e11778bc361e7ec1d0490a1517388e6a4bb5a3c1"
+    },
+    {
+      "path": "spec/ac-blowing-warm-air/page.json",
+      "sha256": "743eeefca4fa8049fa52dbb4c9f4104324fb25d9ec70f8684abef6d37cc8800e"
+    },
+    {
+      "path": "spec/ac-blowing-warm-air/plates/behind-the-panel.svg",
+      "sha256": "0bdf2e3d30045bd9c955a45f6ea8c87da4aeee6eaf41191b5d5e0955d40e0a4a"
+    },
+    {
+      "path": "spec/ac-blowing-warm-air/plates/ice-or-clear.svg",
+      "sha256": "d1150ca96b6927bf2d83a216cb5fb1d2b97a8917e4826c4fd2da1d9eaf5c650c"
+    },
+    {
+      "path": "spec/ac-blowing-warm-air/plates/where-to-look.svg",
+      "sha256": "8644db26f0b9018b3f4f1ea9fb583b2e96f14383c1a49b9e741848d4b75cd771"
+    },
+    {
+      "path": "spec/ac-blowing-warm-air/related.json",
+      "sha256": "4d2b808d66008efb401d962f094449cbd3460580de85440696514f7a091938b5"
+    },
+    {
+      "path": "spec/ac-blowing-warm-air/repair_record.json",
+      "sha256": "02b77459742c53b5b8c749dfe7cad0fd04aa9943ae53a438b52383ce20a7dc02"
+    },
+    {
+      "path": "spec/ac-blowing-warm-air/safe_observations.json",
+      "sha256": "3dedf75fd81af0b1d3b9b152a4ec07dcaf58e70e9a15a331b915ba9774fa1b16"
+    },
+    {
+      "path": "spec/ac-blowing-warm-air/site.json",
+      "sha256": "da0275b952aab2d2bad91eb546f17b13cc93efc7edd618f36843974095a83569"
+    },
+    {
+      "path": "spec/ac-blowing-warm-air/sources.json",
+      "sha256": "7ac7621333095af3ee8f50074e610bf625d45c07a843db061c03add81e91d736"
+    },
+    {
+      "path": "spec/ac-blowing-warm-air/stats.json",
+      "sha256": "afbf857d779f25c0a2cb298fe857df9e956b31109aaefe10aeb8b4e7bf28c11d"
+    },
+    {
+      "path": "spec/ac-blowing-warm-air/visuals.json",
+      "sha256": "7dfe44526dd23623314dfe6aeb114861993450d717bf6b9160af8690daa92f21"
+    },
+    {
+      "path": "template/chrome-top.html",
+      "sha256": "780f71dc77d4a1871d6e5ee900d751c3ce96f960161f8cfb0caf29b291ff1d6e"
+    },
+    {
+      "path": "template/colophon.html",
+      "sha256": "9d01dcfc457b2d45d8c7c9037596780c800f13a43ddbc677c1f1d59bfcc5406f"
+    },
+    {
+      "path": "template/head-close.html",
+      "sha256": "fef7a9a7d2436dd0b4d2d5467c0aa55b3a7ccbdcb1e0d6fccd1b0b6a1d994b0c"
+    },
+    {
+      "path": "template/head-open.html",
+      "sha256": "6b4581f8db54af50764ffa4a257f6ff3c58af8ccca5f565dbf1cc0de5033cdf7"
+    },
+    {
+      "path": "template/jsonld.html",
+      "sha256": "d399d14a7afa505706962c8ace1b299499d1f4f0d3460a515692712d3f7fee22"
+    },
+    {
+      "path": "template/scripts.html",
+      "sha256": "901eb88143adde1d31dbc2738b72232036d639cbf78591895cc42dbabe4bf6f2"
+    },
+    {
+      "path": "template/sections/capability-questions.html",
+      "sha256": "baa9297221012bffa13701902729082dc590f4e553a7d1663a8275cf9ff0372b"
+    },
+    {
+      "path": "template/sections/closer.html",
+      "sha256": "7f370a1eeb98b99c335c8f4c775edf4750fadb7283e3441e28d33e5978565fab"
+    },
+    {
+      "path": "template/sections/common-causes.html",
+      "sha256": "904423dd5ab7f94f95dd7a97d1b9b781f4d86b939cd1dc1f296bb8376e6ab20d"
+    },
+    {
+      "path": "template/sections/faq.html",
+      "sha256": "cf838ea9c1803f9dd5998a1cda2b203eb6ac5a7adc2f456a44a735ac43f9c967"
+    },
+    {
+      "path": "template/sections/flip.html",
+      "sha256": "de37de6026eb2b52a41fbe1ecdc79f88924fd091d5b718c05049405bebacbfa0"
+    },
+    {
+      "path": "template/sections/general-vs-yours.html",
+      "sha256": "255140bd7752a22373728a888147e910641b48f37df13593970c1cef32619861"
+    },
+    {
+      "path": "template/sections/hero.html",
+      "sha256": "7aab6995409c63908e6c8259e224fc572f123410a5f9651433b13679bead9cd2"
+    },
+    {
+      "path": "template/sections/job-packet.html",
+      "sha256": "de0847170ce944fab118c37e7b4ae0fa9a15e2f1a0df54998759393b9d05088f"
+    },
+    {
+      "path": "template/sections/observations.html",
+      "sha256": "99485f1c892336027a7040808b154bcbefdd60e0cea842e789ed1e8b062dfbfd"
+    },
+    {
+      "path": "template/sections/related.html",
+      "sha256": "8216e3e1752c6e9896ac74b78099ba797387dd993836c05caea307ca46000bd8"
+    },
+    {
+      "path": "template/sections/repair-record.html",
+      "sha256": "e3b880f402790781cc166cfc4074ed2c27cf704cc063d22d2818a93988b52a78"
+    },
+    {
+      "path": "template/sections/stats.html",
+      "sha256": "9810ccf7e8d166179e50723c2040ca7a3488d4a6625fe98899b07b43288bc995"
+    },
+    {
+      "path": "template/sections/visuals.html",
+      "sha256": "132c90e4208f1e8ceed13826847ec54fcd369bce68f52f3aa02121e8eb9adba9"
+    },
+    {
+      "path": "template/sections/what-to-check.html",
+      "sha256": "89bc48a13a1d18be3918b0a16c43502ef6b04c7ea4fbe4fd87e98577b5d0338e"
+    },
+    {
+      "path": "template/styles.css",
+      "sha256": "8e00d3f13e4ec43822f731cf778f2b7fdf7c09c14d7ee1902ac2516b3d5ed1d8"
+    },
+    {
+      "path": "template/tail.html",
+      "sha256": "02ed54edc42fbbbc36988b2a184b67e49568be4807832538ba9b7edda53744d8"
+    },
+    {
+      "path": "template/tokens.css",
+      "sha256": "c590cbed43b09ccecf32f25e1605c9d43e6d31b5641fc45eb48bba2f8661bdb7"
+    },
+    {
+      "path": "tools/fidelity-v43.js",
+      "sha256": "6b42d23f23b9444406411ed52d9274e8dea5a9991225e82ac127b12e7e96d314"
+    },
+    {
+      "path": "tools/fidelity-v43.test.js",
+      "sha256": "6aada11adfbabd31dcfeb192f92cbb611c1066aa3170a2ef6c91fb1fbb427860"
+    }
+  ],
+  "rendered_sha256": "4eb1823eff991067a4922d3e068f57e71356073546e65eaa2e9143b057663cb5",
+  "binding_sha256": "3f14222350a5ae401381ab37b31b7b66c83dd05416a4fd2631b533db417518ea"
+}

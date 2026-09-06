@@ -34,7 +34,8 @@ export type QaCheckStatus = "PASS" | "FAIL" | "SKIPPED_NOT_MEASURABLE";
 
 /**
  * `blocker` stops release. `major` and `minor` are reported on the owner's queue
- * and do not stop a page — which checks sit in which class is per-tenant policy
+ * and alone do not stop a page. An explicit critic FAIL still stops release.
+ * Which checks sit in which class is per-tenant policy
  * (`policy.page_qa.blocker_checks`), never a hardcoded constant.
  */
 export type QaSeverity = "blocker" | "major" | "minor";
@@ -122,7 +123,7 @@ export interface PageQAResult {
   deterministic: DeterministicStageResult;
   ai_critic: AiCriticStageResult;
   overall: QaOverall;
-  /** Findings whose severity is `blocker` — the reason release_eligible is false. */
+  /** Findings whose severity is `blocker`. Explicit critic FAIL can also stop release. */
   blockers: QaFinding[];
   /**
    * THE ONE RELEASE SIGNAL (condition C10, coherence issue 6). The publish route
@@ -136,7 +137,7 @@ export interface PageQAResult {
   /* --- the shipped QaResult fields, unchanged in meaning ------------------- */
   /** PASS/FAIL written onto `PageSpec.qa.state`. A06 is its sole writer. */
   state: QaVerdict;
-  /** Written onto `PageSpec.qa.reasons`. Blocker messages only. */
+  /** Written onto `PageSpec.qa.reasons`: blockers and explicit critic failure details. */
   reasons: string[];
   /** Written onto `PageSpec.user_value_score`. */
   user_value_score: number | null;

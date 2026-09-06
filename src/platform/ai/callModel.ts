@@ -5,6 +5,7 @@ import {
   actualModelCost,
   estimateModelCall,
   findModel,
+  IMAGE_TOKEN_ALLOWANCE,
   MODEL_CATALOGUE,
   TEST_FIGURE_LABEL,
   type ModelConfig,
@@ -16,8 +17,8 @@ import {
   renderRepairPrompt,
   renderSchemaInstructions,
 } from "@/platform/ai/prompt";
-import type { ModelCallInput, ModelUsage } from "@/platform/ai/provider";
-import { spendLedger, utcDay, type SpendLedger } from "@/platform/ai/spend";
+import { MAX_MODEL_HTTP_ATTEMPTS, type ModelCallInput, type ModelCallResult, type ModelImage, type ModelUsage } from "@/platform/ai/provider";
+import { spendLedger, utcDay, type SpendLedger, type SpendReservation } from "@/platform/ai/spend";
 import { resolveCapability } from "@/platform/capabilities/registry";
 import { validateAndEmit } from "@/platform/events/steward";
 import { checkKillSwitch } from "@/platform/killswitch";
@@ -168,6 +169,14 @@ export interface CallModelInput<T> {
   json_schema: Record<string, unknown>;
   /** Canonical IDs describing the inputs — never raw PII. */
   input_ids?: string[];
+  /**
+   * Images attached to the user turn (the rating-plate reader is the one
+   * caller). The model must be configured `accepts_images` or the gate refuses
+   * before the network; each image adds IMAGE_TOKEN_ALLOWANCE to the pre-call
+   * estimate. A caller sending a homeowner's photo sets `handles_customer_data`
+   * and strips the file's metadata first — neither happens here.
+   */
+  images?: ModelImage[];
   tenant_id?: string;
   trigger?: AgentRunTrigger;
   deps?: CallModelDeps;
@@ -344,10 +353,23 @@ async function gate<T>(
     );
   }
 
+  // 6b. An image may only go to a model configured to take one. Checked on the
+  //     CONFIG, before the network, for the same reason as the privacy rule: a
+  //     text-only endpoint given a photo is a billed call that answers nothing.
+  const imageCount = input.images?.length ?? 0;
+  if (imageCount > 0 && !model.accepts_images) {
+    return fail(
+      "not_permitted",
+      `"${capabilityKey}" attached ${imageCount} image(s), and model "${model.id}" is not configured accepts_images — refused before any network call`,
+      { model_id: model.id }
+    );
+  }
+
   // 7. Budget — priced BEFORE the call, against a spend record that survives a restart.
+  //    Each attached image is priced at IMAGE_TOKEN_ALLOWANCE prompt tokens (~4 chars each).
   const estimate = estimateModelCall(
     model.id,
-    input.system.length + input.user.length,
+    input.system.length + input.user.length + imageCount * IMAGE_TOKEN_ALLOWANCE * 4,
     capPolicy.max_output_tokens,
     deps.catalogue ?? MODEL_CATALOGUE
   );
@@ -488,13 +510,15 @@ export async function callModel<T>(input: CallModelInput<T>): Promise<CallModelR
     };
   }
   if (!gated.ok) return gated.failure;
-  const { model, capabilityKey, maxOutputTokens, timeoutMs, maxRepairRetries, estimateUsd, estimateBasis } =
+  const { model, capabilityKey, maxOutputTokens, timeoutMs, maxRepairRetries, estimateUsd } =
     gated.gate;
 
   // 8. The credential. Checked AFTER governance so a keyless deployment still
   //    reports "disabled" rather than "no_key" when the flags are off — the
   //    reason an owner reads should be the FIRST thing that was wrong.
-  const provider = providerFactory();
+  let provider: ReturnType<AiProviderFactory>;
+  try { provider = providerFactory(); }
+  catch { return recordRefusal(input as CallModelInput<unknown>, "no_key", "the model provider could not be initialized", { model_id: model.id }); }
   if (!provider) {
     return recordRefusal(
       input as CallModelInput<unknown>,
@@ -517,14 +541,99 @@ export async function callModel<T>(input: CallModelInput<T>): Promise<CallModelR
     jsonSchema: input.json_schema,
     mode: model.mode,
     maxTokens: maxOutputTokens,
+    reasoningEnabled: model.reasoning_enabled,
     timeoutMs,
     // Deny is unconditional for customer data and the safe default otherwise:
     // there is no reason PRN would prefer its page copy retained either.
     dataCollection: "deny",
+    ...(input.images && input.images.length > 0 ? { images: input.images } : {}),
   });
 
+  // Reserve the existing per-call allowance once (or the remaining daily
+  // allowance when smaller). The first completion,
+  // transport retries and every repair share it; none gets a second allowance.
+  // An accounting-only injected ledger cannot bypass atomic admission.
+  if (!resolved.spend.reserve || !resolved.spend.settle) {
+    return recordRefusal(input as CallModelInput<unknown>, "disabled", "the spend ledger does not support atomic budget reservations", { model_id: model.id });
+  }
+  const capPolicy = capabilityPolicy(gated.gate.policy, capabilityKey)!;
+  const day = utcDay(resolved.now());
+  let reservation: SpendReservation | null;
+  try {
+    reservation = await resolved.spend.reserve({
+      day, capability: capabilityKey, usd: capPolicy.max_cost_per_call_usd,
+      global_cap_usd: gated.gate.policy.global_daily_budget_usd,
+      capability_cap_usd: capPolicy.daily_cap_usd,
+      allow_partial: true,
+    });
+  } catch {
+    return recordRefusal(input as CallModelInput<unknown>, "disabled", "the spend ledger could not reserve the call allowance; no model request was sent", { model_id: model.id });
+  }
+  if (!reservation) {
+    return recordRefusal(input as CallModelInput<unknown>, "over_budget", "recorded spend and pending reservations leave insufficient daily budget for this call allowance", { model_id: model.id, day });
+  }
+  const activeReservation = reservation;
+
+  let actualSpentUsd = 0;
+  let uncertainUsd = 0;
+  let attemptedProviderCalls = 0;
+  let uncertaintyDetail: string | null = null;
+  const roundUp = (usd: number) => Math.max(0, Math.ceil(usd * 1e6 - 1e-9) / 1e6);
+  /** Each request gets an explicit HTTP-attempt ceiling backed by the remaining
+   * reservation. UTF-8 bytes provide a conservative text-token allowance;
+   * include the rendered schema, repair text and image token allowance too. */
+  const completeReserved = async (request: ModelCallInput): Promise<ModelCallResult> => {
+    const bytes = Buffer.byteLength(request.system, "utf8") + Buffer.byteLength(request.user, "utf8") +
+      Buffer.byteLength(JSON.stringify(request.jsonSchema), "utf8") + 256;
+    const upper = estimateModelCall(model.id,
+      bytes * 4 + (request.images?.length ?? 0) * IMAGE_TOKEN_ALLOWANCE * 4,
+      maxOutputTokens, resolved.catalogue ?? MODEL_CATALOGUE);
+    const remaining = Math.max(0, activeReservation.usd - actualSpentUsd - uncertainUsd);
+    const attemptsAllowed = remaining <= 0 ? 0 : upper.known && upper.estimated_usd === 0 ? MAX_MODEL_HTTP_ATTEMPTS :
+      upper.known ? Math.min(MAX_MODEL_HTTP_ATTEMPTS, Math.floor((remaining + 1e-10) / upper.estimated_usd)) : 0;
+    if (attemptsAllowed < 1) {
+      return { ok: false, reason: "over_budget", detail: "the call or repair would exceed its reserved per-call allowance", provider: provider.id, attempts: 0 };
+    }
+    const exposure = roundUp(upper.estimated_usd * attemptsAllowed);
+    let result: ModelCallResult;
+    try { result = await provider.complete({ ...request, maxAttempts: attemptsAllowed }); }
+    catch {
+      result = { ok: false, reason: "http_error", detail: "the model provider failed without a confirmed billing outcome", provider: provider.id, attempts: attemptsAllowed };
+    }
+    const validAttempts = Number.isInteger(result.attempts) && result.attempts >= 0 && result.attempts <= attemptsAllowed && (!result.ok || result.attempts > 0);
+    if (result.attempts > 0 || !validAttempts) attemptedProviderCalls += 1;
+    if (!validAttempts) {
+      uncertainUsd = roundUp(uncertainUsd + exposure);
+      uncertaintyDetail = "the provider did not honor the reserved attempt contract; its allowance remains held";
+      return { ok: false, reason: "http_error", detail: uncertaintyDetail, provider: provider.id, attempts: attemptsAllowed };
+    }
+    if (!result.ok) {
+      // Even a timeout/HTTP error may have generated billed tokens. Only an
+      // explicit zero-attempt refusal proves this provider call incurred none.
+      uncertainUsd = roundUp(uncertainUsd + upper.estimated_usd * result.attempts);
+      return result;
+    }
+    const u = result.usage;
+    const usageValid = [u.prompt_tokens, u.completion_tokens, u.total_tokens].every(n => typeof n === "number" && Number.isSafeInteger(n) && n >= 0) &&
+      u.prompt_tokens !== null && u.completion_tokens !== null && u.total_tokens !== null &&
+      u.total_tokens > 0 && u.prompt_tokens + u.completion_tokens === u.total_tokens;
+    const reported = u.reported_cost_usd;
+    const derived = usageValid ? actualModelCost(model.id, u.prompt_tokens!, u.completion_tokens!, resolved.catalogue ?? MODEL_CATALOGUE) : null;
+    const known = reported !== null ? Number.isFinite(reported) && reported >= 0 : usageValid && derived?.known;
+    if (!known) {
+      uncertainUsd = roundUp(uncertainUsd + upper.estimated_usd * result.attempts);
+      uncertaintyDetail = "the model replied without trustworthy usage or cost; its allowance remains held pending reconciliation";
+      return { ok: false, reason: "http_error", detail: uncertaintyDetail, provider: provider.id, attempts: result.attempts };
+    }
+    actualSpentUsd += reported ?? derived!.estimated_usd;
+    // The successful response reports THIS attempt, never earlier transport
+    // failures. Keep those amounts held rather than treating the retries as free.
+    uncertainUsd = roundUp(uncertainUsd + upper.estimated_usd * Math.max(0, result.attempts - 1));
+    return result;
+  };
+
   const started = Date.now();
-  let attempt = await provider.complete(call(baseSystem, input.user));
+  let attempt = await completeReserved(call(baseSystem, input.user));
   let usage: ModelUsage = { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0, reported_cost_usd: null };
   let generationId: string | null = null;
   let repaired = false;
@@ -555,7 +664,7 @@ export async function callModel<T>(input: CallModelInput<T>): Promise<CallModelR
            * question it can no longer see — which produces a well-formed answer
            * to nothing.
            */
-          const retry = await provider.complete(
+          const retry = await completeReserved(
             call(
               baseSystem,
               `${input.user}\n\n---\n\n${renderRepairPrompt(previousReply, lastValidationError)}`
@@ -567,11 +676,11 @@ export async function callModel<T>(input: CallModelInput<T>): Promise<CallModelR
           }
           repaired = true;
           usage = {
-            prompt_tokens: usage.prompt_tokens + retry.usage.prompt_tokens,
-            completion_tokens: usage.completion_tokens + retry.usage.completion_tokens,
-            total_tokens: usage.total_tokens + retry.usage.total_tokens,
+            prompt_tokens: addKnownCounter(usage.prompt_tokens, retry.usage.prompt_tokens),
+            completion_tokens: addKnownCounter(usage.completion_tokens, retry.usage.completion_tokens),
+            total_tokens: addKnownCounter(usage.total_tokens, retry.usage.total_tokens),
             reported_cost_usd:
-              usage.reported_cost_usd === null && retry.usage.reported_cost_usd === null
+              usage.reported_cost_usd === null || retry.usage.reported_cost_usd === null
                 ? null
                 : (usage.reported_cost_usd ?? 0) + (retry.usage.reported_cost_usd ?? 0),
           };
@@ -597,36 +706,29 @@ export async function callModel<T>(input: CallModelInput<T>): Promise<CallModelR
    * from the tokens actually used. Either way the label is TEST, because it is a
    * PRN figure derived from a vendor fact.
    */
-  const derived = actualModelCost(
-    model.id,
-    usage.prompt_tokens,
-    usage.completion_tokens,
-    resolved.catalogue ?? MODEL_CATALOGUE
-  );
-  const spentUsd =
-    usage.reported_cost_usd !== null
-      ? usage.reported_cost_usd
-      : derived.known
-        ? derived.estimated_usd
-        : estimateUsd;
-  const costBasis =
-    usage.reported_cost_usd !== null
-      ? `reported by the provider on the response (${TEST_FIGURE_LABEL})`
-      : derived.known
-        ? `${derived.basis} (${TEST_FIGURE_LABEL})`
-        : `pre-call estimate, no usage reported: ${estimateBasis} (${TEST_FIGURE_LABEL})`;
+  const spentUsd = actualSpentUsd;
+  const costBasis = `completed attempts use provider-reported cost or registered token rates (${TEST_FIGURE_LABEL}); ` +
+    (uncertainUsd > 0 ? `$${uncertainUsd} remains reserved for attempts with an unknown charge` : "unused allowance released");
 
-  const day = utcDay(resolved.now());
   let dayTotal = 0;
-  if (usage.total_tokens > 0 || attempt.ok) {
-    const after = await resolved.spend.record(day, capabilityKey, spentUsd);
-    dayTotal = after.total_usd;
+  let spendRecordFailure: string | null = null;
+  {
+    try {
+      const after = await resolved.spend.settle(reservation, spentUsd, Math.min(reservation.usd, uncertainUsd), attemptedProviderCalls > 0);
+      dayTotal = after.total_usd;
+    } catch (error) {
+      // The provider already ran. Keep its charge in the run receipt, but do not
+      // present an unaccounted model result as successful or crash the intake.
+      const code = (error as NodeJS.ErrnoException)?.code;
+      const fault = typeof code === "string" && /^[A-Z0-9_]+$/.test(code) ? ` (${code})` : "";
+      spendRecordFailure = `the model call completed, but the spend ledger could not record its cost${fault}; the AI result is withheld and the caller must use its deterministic fallback`;
+    }
   }
 
   const agentId = /^A\d{2}$/.test(input.agent_id) ? input.agent_id : "A00";
 
-  if (!attempt.ok || value === null) {
-    const reason: CallModelFailureReason = !attempt.ok
+  if (spendRecordFailure || !attempt.ok || value === null) {
+    const reason: CallModelFailureReason = spendRecordFailure ? "disabled" : !attempt.ok
       ? attempt.reason === "no_key"
         ? "no_key"
         : attempt.reason === "rate_limited"
@@ -637,11 +739,17 @@ export async function callModel<T>(input: CallModelInput<T>): Promise<CallModelR
               ? "refused"
               : attempt.reason === "invalid_json"
                 ? "invalid_after_repair"
-                : "http_error"
+                : attempt.reason === "over_budget"
+                  ? "over_budget"
+                  : attempt.reason === "not_permitted"
+                  ? // The provider refused before the wire (the vitest guard in
+                    // providers/openrouter.ts). Same class as a governance refusal.
+                    "not_permitted"
+                  : "http_error"
       : "invalid_after_repair";
-    const detail = !attempt.ok
+    const detail = spendRecordFailure ?? (!attempt.ok
       ? attempt.detail
-      : `the reply did not satisfy ${input.schema_name}${repaired ? " even after one repair turn" : ""}: ${lastValidationError}`;
+      : `the reply did not satisfy ${input.schema_name}${repaired ? " even after one repair turn" : ""}: ${lastValidationError}`);
 
     const run = await recordAgentRun({
       agent_id: agentId,
@@ -667,6 +775,8 @@ export async function callModel<T>(input: CallModelInput<T>): Promise<CallModelR
         model_id: model.id,
         prompt_id: input.prompt_id,
         cost_figure_label: TEST_FIGURE_LABEL,
+        budget_reservation_id: reservation.id,
+        budget_uncertain_usd: String(uncertainUsd),
         ...(generationId ? { generation_id: generationId } : {}),
       },
       versions: { prompt: input.prompt_version, model: model.id },
@@ -680,9 +790,9 @@ export async function callModel<T>(input: CallModelInput<T>): Promise<CallModelR
   /**
    * THE POST-CALL RE-CHECK. The pre-call gate priced the worst case; this is what
    * it actually cost. A call that lands over a cap is NOT un-made — it already
-   * happened — but it is recorded at its real cost, so the very next call through
-   * the gate is refused. The overshoot is bounded by one call, which is the
-   * strongest guarantee an after-the-fact figure allows.
+   * happened — but it is recorded at its real cost. Concurrent callers reserve
+   * their allowances atomically; provider billing beyond an allowance is still
+   * recorded honestly, never hidden by truncating the charge to our estimate.
    */
   const overshot = spentUsd > estimateUsd;
 
@@ -706,6 +816,8 @@ export async function callModel<T>(input: CallModelInput<T>): Promise<CallModelR
       cost_figure_label: TEST_FIGURE_LABEL,
       day_total_usd_after: dayTotal,
       estimate_overshot: overshot,
+      budget_reservation_id: reservation.id,
+      budget_uncertain_usd: uncertainUsd,
     },
     cost_usd: spentUsd,
     latency_ms: latency,
@@ -743,4 +855,8 @@ export async function callModel<T>(input: CallModelInput<T>): Promise<CallModelR
     run_id: run.run_id,
     repaired,
   };
+}
+
+function addKnownCounter(left: number | null, right: number | null): number | null {
+  return left !== null && right !== null && Number.isSafeInteger(left + right) ? left + right : null;
 }

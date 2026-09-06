@@ -1,5 +1,6 @@
-import { mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
+import { withFileLock, writeFileAtomic } from "@/platform/stores/atomic-file";
 import type {
   DerivationRecord,
   EvidenceObject,
@@ -11,6 +12,16 @@ import type { ConsentEvent } from "@/domain/privacy/contracts";
 import type { IntakeSession } from "@/domain/intake/contracts";
 import type { IntentPage, PageSpec } from "@/domain/search/pages";
 import type { EventEnvelope } from "@/platform/events/envelope";
+import type {
+  AskAnswer,
+  Email,
+  Feedback,
+  JobAddressRow,
+  KeepClaim,
+  LinkRevocation,
+  MagicLink,
+  Signup,
+} from "@/platform/stores/interfaces";
 
 /**
  * Dev/preview runtime store: one JSON file, server-side only. This is the
@@ -82,6 +93,22 @@ export interface DevDb {
    * through the zod shape in domain/search/decision.ts on the way in and out.
    */
   opportunity_decisions: unknown[];
+
+  /**
+   * LOOP SURFACES (campaign track F2b, 2026-09-05; migration 00020 on the
+   * Supabase side, same table names). The rows behind the scoped links, the
+   * Home Memory claim, the Trust Network ask, the feedback popup, the mail
+   * outbox, the job address and the product-page vote. All append-only;
+   * magic_links is the one collection updated in place (consumed once).
+   */
+  link_revocations: LinkRevocation[];
+  keep_claims: KeepClaim[];
+  magic_links: MagicLink[];
+  ask_answers: AskAnswer[];
+  feedback: Feedback[];
+  email_outbox: Email[];
+  job_addresses: JobAddressRow[];
+  signups: Signup[];
 }
 
 /**
@@ -119,6 +146,14 @@ function emptyDb(): DevDb {
     repair_executions: [],
     repair_reversal_snapshots: [],
     opportunity_decisions: [],
+    link_revocations: [],
+    keep_claims: [],
+    magic_links: [],
+    ask_answers: [],
+    feedback: [],
+    email_outbox: [],
+    job_addresses: [],
+    signups: [],
   };
 }
 
@@ -131,37 +166,56 @@ function dbPath(): string {
   return join(process.cwd(), "data", "runtime", "dev-db.json");
 }
 
-export function readDevDb(): DevDb {
+export function readDevDb(options: { strictRevocationLedger?: boolean } = {}): DevDb {
   const path = dbPath();
   let raw: string;
   try {
     raw = readFileSync(path, "utf-8");
-  } catch {
-    return emptyDb(); // no file yet — genuinely empty
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT" &&
+        !existsSync(`${path}.initialized`) && !options.strictRevocationLedger) return emptyDb();
+    throw new Error("Local record store is unavailable; existing records have been preserved.");
   }
+  // Adopt an existing pre-marker store without rewriting its data. Even a
+  // damaged legacy file counts as established state, never a fresh store.
+  if (!existsSync(`${path}.initialized`)) writeFileAtomic(`${path}.initialized`, "1\n");
   try {
-    return { ...emptyDb(), ...(JSON.parse(raw) as Partial<DevDb>) };
-  } catch {
-    // Corrupt/partial file: preserve it for recovery instead of letting the
-    // next write silently erase all prior journeys (verification finding).
-    try {
-      renameSync(path, `${path}.corrupt-${Date.now()}`);
-    } catch {
-      /* best effort */
+    const parsed = JSON.parse(raw) as Partial<DevDb>;
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) throw new Error("invalid store");
+    for (const key of Object.keys(emptyDb()) as Array<keyof DevDb>) {
+      if (parsed[key] !== undefined && !Array.isArray(parsed[key])) throw new Error("invalid collection");
     }
-    return emptyDb();
+    if (options.strictRevocationLedger && !Array.isArray(parsed.link_revocations)) throw new Error("missing revocation ledger");
+    if (parsed.link_revocations && !parsed.link_revocations.every(row => row &&
+      typeof row.link_id === "string" && row.link_id.length > 0 &&
+      typeof row.request_id === "string" && row.request_id.length > 0 &&
+      typeof row.revoked_at === "string" && Number.isFinite(Date.parse(row.revoked_at)))) throw new Error("invalid revocation ledger");
+    return { ...emptyDb(), ...parsed };
+  } catch {
+    // Keep the original bytes. Empty recovery followed by a normal write
+    // would erase both homeowner records and previous link revocations.
+    throw new Error("Local record store is damaged; restore it before continuing.");
   }
 }
 
 export function writeDevDb(db: DevDb): void {
   const path = dbPath();
-  mkdirSync(dirname(path), { recursive: true });
-  writeFileSync(path, JSON.stringify(db, null, 2), "utf-8");
+  withFileLock(path, () => persist(path, db));
+}
+
+function persist(path: string, db: DevDb): void {
+  // Marker first: a crash must fail closed, not turn an established missing
+  // database into a new empty one. The JSON replacement itself is atomic.
+  writeFileAtomic(`${path}.initialized`, "1\n");
+  writeFileAtomic(path, JSON.stringify(db, null, 2));
 }
 
 export function updateDevDb(mutate: (db: DevDb) => void): DevDb {
-  const db = readDevDb();
-  mutate(db);
-  writeDevDb(db);
-  return db;
+  const path = dbPath();
+  return withFileLock(path, () => {
+    const db = readDevDb();
+    mutate(db);
+    persist(path, db);
+    return db;
+  });
 }

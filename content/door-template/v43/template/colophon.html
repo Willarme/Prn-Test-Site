@@ -1,0 +1,34 @@
+<div class="colophon-strip">
+<section id="sources-and-review" class="sec sec-sources">
+  <div class="wrap">
+    <details class="sheet sources">
+      <summary class="bold">Sources &amp; review notes</summary>
+      <div class="src-body muted">
+        <p class="src-intro">Technical, cost and reference claims on this page are checked against the sources below. First-party Repair Record statistics use a separate methodology. {%sources.intro_tail%}</p>
+        <ol class="src-list">
+{%each sources.list%}{%.pre|          %}<li id="src-{%@i%}"><strong class="ink">[{%@i%}] {%.publisher%}: &ldquo;{%.title%}&rdquo;</strong><br>{%.note%} <a href="{%.url%}" rel="nofollow noopener" target="_blank">View source</a></li>{%.post|\n%}{%/each%}</ol>
+        <p class="src-note dim">{%sources.note_lead%} Pages without a displayed publication date are recorded as date not shown rather than given an assumed date. Cost guidance is re-checked every 90 days, manufacturer safety guidance every 180 days.</p>
+      </div>
+    </details>
+  </div>
+</section>
+
+<section aria-label="Informational and safety notice" class="sec sec-notice">
+  <div class="wrap">
+    <p class="notice">
+      <strong class="notice-s">Informational and safety notice:</strong> This site provides educational guidance and a structured way to collect information about your home problem. It is not a professional diagnosis, engineering opinion, warranty, emergency service, or substitute for an appropriately licensed or qualified technician when one is needed. Do not perform electrical, refrigerant, gas, combustion, structural, or other hazardous work unless you are properly qualified and authorized to do so. Stop and seek appropriate professional, utility, or emergency help for immediate hazards. Costs, causes, outcomes, codes, licensing requirements, equipment configurations, and safe procedures can vary by property, equipment, jurisdiction, and circumstance. See our <a href="/terms">Terms</a> and <a href="/privacy">Privacy Notice</a>.
+    </p>
+  </div>
+</section>
+
+<footer class="foot">
+  <div class="wrap foot-in">
+    <span class="pennant" aria-hidden="true"></span>
+    <span>&copy; 2026 {{site.name}}</span>
+    <a href="/what-this-tool-can-help-with/" class="dim">What this tool can do</a>
+    <a href="{%nav.category_href%}" class="dim">{%nav.category_label%}</a>
+    <a href="/local-records/methodology" class="dim">How our numbers work</a>
+    <span class="foot-r">United States</span>
+  </div>
+</footer>
+</div>

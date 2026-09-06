@@ -1,0 +1,6 @@
+{
+  "_what": "The colour-token pair (design doc §3.1, §4.2 row 35). The ONLY per-customer colour values. Every accent on the page derives from a and b; warn is the one documented exception (the amber 'Stop and call someone now if' sheet).",
+  "a": "#2D5C68",
+  "b": "#FF2E7E",
+  "warn": "#9A6A1F"
+}

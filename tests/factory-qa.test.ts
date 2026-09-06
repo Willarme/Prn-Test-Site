@@ -180,9 +180,17 @@ describe("A06 QA gate", () => {
     expect(reasons.join(" ")).toMatch(/unsupported claim/);
   });
 
-  it("factory-generated pages pass QA when distinct", () => {
-    const spec = compilePageSpec(acOpp, { now: NOW });
+  it("generic factory-generated pages pass QA when distinct", () => {
+    const spec = compilePageSpec({ ...acOpp, keyword: "ac airflow feels weak" }, { now: NOW });
     const [result] = qaCandidatePages([spec], []);
     expect(result.state).toBe("PASS");
+  });
+
+  it("the reviewed v43 AC door remains blocked without production evidence", () => {
+    const spec = compilePageSpec(acOpp, { now: NOW });
+    expect(spec.door_template).toBeDefined();
+    expect(spec.indexed).toBe(false);
+    const [result] = qaCandidatePages([spec], []);
+    expect(result.state).toBe("FAIL");
   });
 });

@@ -1,287 +1,159 @@
-import Link from "next/link";
 import { cookies } from "next/headers";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+import { journeySafetyRule } from "@/domain/problem/journey-safety";
 import type { Metadata } from "next";
-import { FEATURE_CONCEPTS } from "@/domain/feature-lab/concepts";
-import {
-  JOURNEY_COOKIE_NAME,
-  decodeJourneyCookie,
-  projectPacketForCookie,
-  type PacketCookieView,
-} from "@/domain/problem/journey-cookie";
-import { ACTIVE_PACKET_COPY, fillCopy } from "@/domain/problem/packet-copy";
-import { SAFETY_RULES } from "@/domain/problem/safety";
+import { ResultsTemplate } from "@/components/results/ResultsTemplate";
+import { JOURNEY_COOKIE_NAME, decodeJourneyCookie } from "@/domain/problem/journey-cookie";
 import { recordCustomerEvent } from "@/platform/events/customer";
 import { flagEnabled } from "@/platform/flags";
+import { issueLink, readKeepState } from "@/platform/links/ledger";
+import { ownerAllowed } from "@/platform/links/owner";
 import { runtimeStore } from "@/platform/stores/runtime";
-import { AlreadyHaveSomeone, PacketActions } from "@/components/results/PacketActions";
+import type { AskAnswer } from "@/platform/stores/interfaces";
 
 export const metadata: Metadata = {
+  referrer: "no-referrer",
   title: "Your Job Packet is ready",
   robots: { index: false, follow: false }, // customer results are always private
 };
 
 export const dynamic = "force-dynamic";
 
+/**
+ * GET /results/[request_id] — the approved results page (MOCKUP-2), rebuilt
+ * with every button live (campaign track P2, 2026-09-05).
+ *
+ * WHAT CHANGED FROM THE SHELL THIS REPLACES. The old page printed the packet
+ * inline — the homeowner's summary, the details, the diagnosis, the call
+ * script — under a hero that said "Request rq_…" and "Packet jp_… · v2 ·
+ * engine". PRN Master Build Spec MERGED §6.4 (BINDING) rules the results page
+ * a TEMPLATE with no per-request values, and Melissa's checklist D1 fails any
+ * number or phrase that differs between a rich request and a thin one. The
+ * packet itself now lives at /packet/[request_id] (track P1, the Directions
+ * contract), which "Open my Job Packet" opens. This page reads the store for
+ * exactly three things: that the request exists (or it is a 404), the friend's
+ * Trust Network answers (rendered only when there are any), and the ids its
+ * `packet.viewed` envelope carries.
+ *
+ * THE SAFETY BANNER the old page printed for a continue-class safety rule is
+ * not on the approved page. A halt-class rule never reaches here at all
+ * (startIntake sends the homeowner to /safety/[rule_id] and creates no
+ * packet); a continue-class rule's approved copy prints on packet page 1,
+ * where the Directions put the safety block. Noted in the P2 report.
+ *
+ * THE LINKS. /keep and /ask carry signed, scoped, revocable tokens (§16.2;
+ * src/platform/links/tokens.ts) minted at render — a fresh link id per view,
+ * each one revocable on its own, none of them carrying anything the homeowner
+ * typed. /packet, /results/[id]/email, /results/[id]/send and
+ * /results/[id]/find take the request id in the path: they are the
+ * homeowner's own pages, reached from a page they already hold.
+ *
+ * ?kept=1 returns to the same frozen results template. A separate accessible
+ * receipt appears only when the current claim matches the confirmed ledger;
+ * a URL parameter alone can never claim that the record has been saved.
+ *
+ * Zero model calls, zero per-request assembly (§6.4).
+ */
 export default async function ResultsPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ request_id: string }>;
+  searchParams?: Promise<{ k?: string; kept?: string }>;
 }) {
   if (!flagEnabled("results_shell_enabled")) notFound();
   const { request_id } = await params;
+  const query = await searchParams;
+  const k = query?.k;
+  if (!(await ownerAllowed(request_id, k))) notFound();
   const store = runtimeStore();
   const journey = await store.getJourney(request_id);
+  const safety = journey ? journeySafetyRule(journey.problem) : null;
+  if (safety && !safety.intake_may_continue) redirect(`/safety/${encodeURIComponent(safety.safety_rule_id)}`);
 
-  /**
-   * ONE RENDER TYPE, WHATEVER THE SOURCE (A02 step 8). The page renders a
-   * PacketCookieView — the allow-listed projection — so the store path and the
-   * cookie path are structurally identical, and a field that may not travel in
-   * a cookie cannot be rendered from the store path either and then quietly
-   * "needed" in the cookie later.
-   */
-  let packet: PacketCookieView | undefined = journey
-    ? projectPacketForCookie(journey.packet)
-    : undefined;
-  let safetyRuleId: string | null = journey?.problem.safety_rule_id ?? null;
+  let exists = journey !== null;
   let fromCookie = false;
+  let packetIds: { problem_id: string; job_packet_id: string; packet_version: string } | null =
+    journey
+      ? {
+          problem_id: journey.problem.problem_id,
+          job_packet_id: journey.packet.job_packet_id,
+          packet_version: String(journey.packet.packet_version),
+        }
+      : null;
 
-  // Fallback ONLY when there is no database configured (local dev / a preview
-  // deploy without credentials): the journey rides in the tester own browser
-  // cookie so the flow can still be walked end to end. Never used once the
-  // database is wired. See domain/problem/journey-cookie.ts for exactly what
-  // may travel and why this is an accepted exposure rather than an absolute
-  // the code contradicts.
-  if (!packet && store.kind === "file") {
+  // Fallback ONLY when there is no database configured (a keyless preview
+  // deploy whose /tmp file store is per-instance): the journey rides in the
+  // tester's own httpOnly cookie. See domain/problem/journey-cookie.ts for the
+  // exact bounds of that exposure. It proves the request exists; nothing from
+  // it renders, because nothing per-request renders here at all.
+  if (!exists && store.kind === "file") {
     const payload = decodeJourneyCookie(
       (await cookies()).get(JOURNEY_COOKIE_NAME)?.value,
       request_id
     );
     if (payload) {
-      packet = payload.packet;
-      safetyRuleId = payload.safety_rule_id;
+      exists = true;
       fromCookie = true;
+      packetIds = {
+        problem_id: payload.packet.problem_id,
+        job_packet_id: payload.packet.job_packet_id,
+        packet_version: String(payload.packet.packet_version),
+      };
     }
   }
 
-  if (!packet) notFound();
+  if (!exists) notFound();
 
-  const safetyRule = SAFETY_RULES.find((r) => r.safety_rule_id === safetyRuleId) ?? null;
-  const copySummary = packet.call_script;
-  /**
-   * PACKET COPY FROM CONFIG (Loop Spec Audit A02 condition 8). Every heading and
-   * label inside the packet card below moved VERBATIM to
-   * domain/problem/packet-copy.ts — same words, sourced from a package a
-   * white-label deployment can swap. The page copy AROUND the packet (the hero,
-   * the three-paths section, the Feature Lab) is deliberately NOT moved: it is
-   * not packet copy, and the Trust wording in particular is owned elsewhere
-   * (#15 / OD-11).
-   */
-  const S = ACTIVE_PACKET_COPY.sections;
+  let kept = false;
+  if (query?.kept === "1") {
+    try {
+      const claim = await store.getKeepClaim(request_id);
+      const confirmation = readKeepState(request_id);
+      kept = !!(claim && confirmation?.confirmed_at && confirmation.magic_id === claim.magic_link_id);
+    } catch {
+      // An unavailable receipt cannot become a claim of a successful save.
+    }
+  }
+
+  let askAnswers: AskAnswer[] = [];
+  try {
+    askAnswers = await store.listAskAnswers(request_id);
+  } catch {
+    // A missing answers read costs one optional block, never the page.
+  }
 
   /**
-   * packet.viewed — REGISTERED SINCE #14A §18.2, EMITTED BY NOTHING UNTIL NOW
-   * (Trial Spec Audit §4: grepping for a producer outside the dictionary files
-   * returned zero). This page is `force-dynamic`, so a render IS a view, and a
+   * packet.viewed — this page is `force-dynamic`, so a render IS a view, and a
    * server-rendered view is the only reading that does not depend on a browser
-   * cooperating.
-   *
-   * TIME-CRITICAL, WHICH IS WHY IT SHIPS WITH A02 RATHER THAN WITH A07: events
-   * are append-only history. A packet view during the trial that nobody
-   * recorded is gone permanently, and A07's first KpiSnapshot would then have
-   * no baseline to compare against.
-   *
-   * Awaited but fail-soft by contract — recordCustomerEvent never throws, so
-   * this cannot stop a homeowner seeing their packet.
+   * cooperating. Awaited but fail-soft by contract: recordCustomerEvent never
+   * throws, so this cannot stop a homeowner seeing their results.
    */
   await recordCustomerEvent({
     event_name: "packet.viewed",
     guest_session_id: journey?.session.guest_session_id ?? null,
     context: {
       request_id,
-      problem_id: packet.problem_id,
-      job_packet_id: packet.job_packet_id,
-      packet_version: String(packet.packet_version),
+      ...(packetIds ?? {}),
       source: fromCookie ? "browser_fallback" : "store",
     },
     landing_path: `/results/${request_id}`,
-    versions: { schema: packet.schema_version, engine: packet.engine },
+    ...(journey
+      ? { versions: { schema: journey.packet.schema_version, engine: journey.packet.engine } }
+      : {}),
   });
 
-  return (
-    <main>
-      {safetyRule && (
-        // Prints deliberately: safety guidance belongs on the paper copy too.
-        <div style={{ background: "var(--amber)", color: "#1a1408", padding: "14px 0" }}>
-          <div className="wrap">
-            <strong>Safety first:</strong> {safetyRule.approved_response}
-          </div>
-        </div>
-      )}
-      <section className="section" style={{ paddingBottom: 48 }}>
-        <div className="wrap-narrow">
-          <div className="eyebrow">Request {request_id}</div>
-          <h1 className="d2">
-            Your Job Packet is <em>ready</em>.
-          </h1>
-          <p className="lede" style={{ margin: "16px 0 6px" }}>
-            Give a provider the whole problem once. Your packet organizes the symptoms,
-            context and useful answers before the conversation starts — that can mean less
-            provider time spent gathering information, and potentially less of your money
-            spent on that time where it&apos;s billable.
-          </p>
-          <p style={{ marginTop: 14 }} className="no-print">
-            <Link href={`/complete/${request_id}`} className="btn btn-ghost btn-sm">
-              ← Add details or walk through it (strengthens the packet)
-            </Link>
-          </p>
-          <p className="mono" style={{ color: "var(--on-dark-faint)", marginTop: 12 }}>
-            Packet {packet.job_packet_id} · v{packet.packet_version} · engine: {packet.engine}
-            {fromCookie ? " · preview: shown from this browser only" : ""}
-          </p>
-        </div>
-      </section>
-
-      <section className="section section-light packet-print" style={{ paddingTop: 56 }}>
-        <div className="wrap-narrow">
-          <div className="card-light">
-            <span className="pill pill-pink no-print">{S.packet_label}</span>
-            <PacketActions copyText={copySummary} requestId={request_id} />
-            <div className="prose">
-              <h2>{S.problem_in_your_words}</h2>
-              <p>{packet.summary_plain}</p>
-
-              {(packet.collected_details.length > 0 || packet.media_count > 0) && (
-                <>
-                  <h2>{S.details_supplied}</h2>
-                  <ul>
-                    {packet.collected_details.map((d, i) => (
-                      <li key={i}>
-                        <strong>{d.label}:</strong> {d.value}
-                      </li>
-                    ))}
-                    {packet.media_count > 0 && (
-                      <li>
-                        <strong>{S.media_attached_label}</strong> {packet.media_count}{" "}
-                        {S.media_attached_note}
-                      </li>
-                    )}
-                  </ul>
-                </>
-              )}
-
-              {packet.diagnosis && (
-                <>
-                  <h2>{S.guided_walkthrough_findings}</h2>
-                  <p>
-                    <strong>{packet.diagnosis.outcome_title}</strong> — {packet.diagnosis.likely_cause}
-                  </p>
-                  <ul>
-                    {packet.diagnosis.steps_answered.map((s, i) => (
-                      <li key={i}>
-                        {s.step}: <em>{s.answer}</em>
-                      </li>
-                    ))}
-                  </ul>
-                  <p className="hint">{S.provider_note_prefix} {packet.diagnosis.provider_note}</p>
-                </>
-              )}
-
-              <h2>{S.likely_service_category}</h2>
-              <p>
-                {packet.likely_service_category.value ?? S.service_category_unknown}{" "}
-                <span className="pill pill-amber">
-                  {fillCopy(S.inference_badge_template, {
-                    confidence: packet.likely_service_category.confidence,
-                  })}
-                </span>
-              </p>
-              <p className="hint">{packet.likely_service_category.note}</p>
-
-              <h2>{S.what_remains_unknown}</h2>
-              <ul>
-                {packet.what_remains_unknown.map((u, i) => (
-                  <li key={i}>{u}</li>
-                ))}
-              </ul>
-
-              <h2>{S.useful_preparation}</h2>
-              <ul>
-                {packet.safe_prep_notes.map((n, i) => (
-                  <li key={i}>{n}</li>
-                ))}
-              </ul>
-
-              <h2>{S.questions_for_provider}</h2>
-              <ul>
-                {packet.questions_for_provider.map((q, i) => (
-                  <li key={i}>{q}</li>
-                ))}
-              </ul>
-
-              <h2>{S.call_script}</h2>
-              <p style={{ fontStyle: "italic" }}>&ldquo;{packet.call_script}&rdquo;</p>
-            </div>
-          </div>
-
-          <p style={{ margin: "26px 0 10px", maxWidth: "62ch" }}>
-            <strong>Compare the same problem, not three interpretations of it.</strong> Sending
-            this same packet to each provider gives every quote a consistent starting point —
-            and helps whoever comes arrive better prepared.
-          </p>
-        </div>
-      </section>
-
-      <section className="section section-lighter no-print">
-        <div className="wrap">
-          <div className="eyebrow">What happens next</div>
-          <h2 className="d2" style={{ marginBottom: 26 }}>
-            Three ways forward. Your call.
-          </h2>
-          <div className="grid3">
-            <AlreadyHaveSomeone callScript={packet.call_script} requestId={request_id} />
-            {/* Descriptive-neutral copy only: #15 owns Trust wording (OD-11). */}
-            <div className="cell">
-              <span className="tag">Path 2 · In build</span>
-              <h3 className="d3">Ask My People</h3>
-              <p style={{ margin: "8px 0 14px" }}>
-                Send a small ask to someone you trust — they can answer in seconds, with no
-                signup on their side.
-              </p>
-              <span className="pill pill-amber">Arriving in this trial — being wired now</span>
-            </div>
-            <div className="cell">
-              <span className="tag">Path 3 · In build</span>
-              <h3 className="d3">Find someone for me</h3>
-              <p style={{ margin: "8px 0 14px" }}>
-                One suggested provider, with the specific reasons behind the suggestion.
-              </p>
-              <span className="pill pill-amber">Arriving in this trial — being wired now</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="section no-print">
-        <div className="wrap">
-          <div className="eyebrow">We&apos;re building what homeowners actually want next</div>
-          <h2 className="d3" style={{ marginBottom: 22 }}>
-            A look at what&apos;s coming — tell us what&apos;s worth building first.
-          </h2>
-          <div className="grid2">
-            {FEATURE_CONCEPTS.map((c) => (
-              <div className="cell" key={c.slug}>
-                <span className="tag">{c.name}</span>
-                <h3 className="d3">{c.card_hook}</h3>
-                <p style={{ margin: "8px 0 14px" }}>{c.card_line}</p>
-                <Link className="btn btn-ghost btn-sm" href={`/future/${c.slug}`}>
-                  See what we&apos;re thinking →
-                </Link>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-    </main>
-  );
+  const keepHref = `/keep/${issueLink({ scope: "keep", request_id }).token}`;
+  return <>
+    {kept && <div role="status" className="wrap-narrow" style={{ padding: "18px 24px" }} data-keep-receipt>
+      Saved to Home Memory. <a href={keepHref}>Open your saved record</a>
+    </div>}
+    <ResultsTemplate
+      requestId={request_id}
+      ownerKey={k}
+      keepHref={keepHref}
+      askHref={`/ask/${issueLink({ scope: "ask", request_id }).token}`}
+      askAnswers={askAnswers}
+    />
+  </>;
 }

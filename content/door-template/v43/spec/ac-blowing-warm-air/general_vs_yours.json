@@ -1,0 +1,50 @@
+{
+  "_what": "GENERAL VS YOURS section (catalogue.md § GENERAL VS YOURS; per-page-rules.md §4.2 row 19): the section heading and the comparison-table content — the three column headers (text + .mw width class) and the 4-to-6 competitor rows (where people go / what it gives you / what a LIVE walkthrough of this trade's equipment gives you). Eyebrow, the ledger/scroll wrapper and the scroll-hint SVG stay template-constant in the partial.",
+  "heading_html": "A search result cannot see <span class=\"accent\">your AC. We can.</span>",
+  "columns": [
+    {
+      "label": "Where people go",
+      "mw_class": "mw150"
+    },
+    {
+      "label": "What it gives you",
+      "mw_class": "mw270"
+    },
+    {
+      "label": "What a LIVE walkthrough of your AC gives you",
+      "mw_class": "mw300"
+    }
+  ],
+  "rows": [
+    {
+      "where": "A blog article",
+      "gives": "Eight causes, no particular house, and a gazillion ads",
+      "ours": "The causes that survive after your thermostat reading, your filter and your outdoor unit are accounted for"
+    },
+    {
+      "where": "A Reddit thread",
+      "gives": "One stranger's fix for a unit that is not yours",
+      "ours": "Questions that change based on what you just showed us, not what worked in someone else's basement"
+    },
+    {
+      "where": "A YouTube video",
+      "gives": "A confident stranger opening a panel you should not, in a basement that is not yours",
+      "ours": "We tell you which parts still hold a charge with the power off, so you finish the evening with all ten fingers"
+    },
+    {
+      "where": "Guessing and buying a part",
+      "gives": "A capacitor that was never the problem, and the house is still warm",
+      "ours": "What is actually still open on your system, and what has to be measured before anyone spends money"
+    },
+    {
+      "where": "An AI summary",
+      "gives": "A fluent answer with no access to your equipment",
+      "ours": "Your model read from a photo, and which causes are still possible on a unit like yours"
+    },
+    {
+      "where": "Calling around",
+      "gives": "Explaining it four times, then paying for the hour it takes them to catch up",
+      "ours": "One packet that arrives before they do, so the billable hour starts further along"
+    }
+  ]
+}
