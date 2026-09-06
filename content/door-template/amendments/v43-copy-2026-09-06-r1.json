@@ -1,0 +1,397 @@
+{
+  "schema_version": 1,
+  "amendment_id": "v43-copy-2026-09-06-r1",
+  "base": {
+    "binding_sha256": "3f14222350a5ae401381ab37b31b7b66c83dd05416a4fd2631b533db417518ea",
+    "source_tree_sha256": "07d511adf4828ed43739c91616fca29005b06e71d7ad13ff37a31d5f310df0ca",
+    "reference_sha256": "756fb95907fd3fb21f7bc9a86e854d0e90f8ef35455776b83a17b4935f8d8843",
+    "rendered_sha256": "4eb1823eff991067a4922d3e068f57e71356073546e65eaa2e9143b057663cb5",
+    "content_date": "2026-09-05",
+    "content_date_receipt_sha256": "93e5e1ff781d1a513afd383575b6b0d9bb975a2b049cf008e70a7fe73bc0b3e2"
+  },
+  "authorization": {
+    "basis": "User continued the concrete prepared wording-correction proposal in this task; applies to the listed corrections and their matching text duplicates only.",
+    "proposal_path": "docs/seo-claim-corrections-review-2026-09-06.md",
+    "proposal_sha256": "3b9db56c14045ffcd08a6bf51d65821d5ba8e8b574b246dc7bda18e8cfdf493b",
+    "scope": "Copy corrections only; preserve all fifteen sections, design, capability holds, noindex, and rejection of the generated draft."
+  },
+  "source_modified_at": "2026-09-06T17:28:56.224Z",
+  "date_basis": "Timestamp of this material authored amendment; separate from the immutable base Git content date and never request or checkout time.",
+  "replacements": [
+    {
+      "id": "stat-1-attribution",
+      "rendered": {
+        "from": "HVAC companies in four U.S. markets report 40 to 50% of warm-air calls resolving on simple checks.",
+        "to": "HVAC company websites in four U.S. markets describe about half of warm-air calls as simple or checkable causes. These are company assertions, not measured national odds.",
+        "count": 1
+      },
+      "binding": {
+        "from": "HVAC companies in four U.S. markets report 40 to 50% of warm-air calls resolving on simple checks.",
+        "to": "HVAC company websites in four U.S. markets describe about half of warm-air calls as simple or checkable causes. These are company assertions, not measured national odds.",
+        "count": 5
+      }
+    },
+    {
+      "id": "stat-1-source-class",
+      "rendered": {
+        "from": "Practitioner field reports &middot; 4 U.S. markets",
+        "to": "Company website assertions &middot; 4 U.S. markets",
+        "count": 1
+      },
+      "binding": {
+        "from": "Practitioner field reports · 4 U.S. markets",
+        "to": "Company website assertions · 4 U.S. markets",
+        "count": 4
+      }
+    },
+    {
+      "id": "stat-1-source-summary",
+      "rendered": {
+        "from": "Sources: multi-market HVAC field reports",
+        "to": "Sources: multi-market HVAC website assertions",
+        "count": 1
+      },
+      "binding": {
+        "from": "Sources: multi-market HVAC field reports",
+        "to": "Sources: multi-market HVAC website assertions",
+        "count": 3
+      }
+    },
+    {
+      "id": "stat-1-ledger-intro",
+      "rendered": {
+        "from": "Sources 1 to 4 are individual HVAC companies describing their own service calls in their own markets, not national research.",
+        "to": "Sources 1 to 4 are HVAC company website assertions from four U.S. markets, including one that repeats unattributed industry data; they are not measured national odds.",
+        "count": 1
+      },
+      "binding": {
+        "from": "Sources 1 to 4 are individual HVAC companies describing their own service calls in their own markets, not national research.",
+        "to": "Sources 1 to 4 are HVAC company website assertions from four U.S. markets, including one that repeats unattributed industry data; they are not measured national odds.",
+        "count": 3
+      }
+    },
+    {
+      "id": "stat-1-ledger-class",
+      "rendered": {
+        "from": "Supports the field-report range",
+        "to": "Contains an approximate-half website assertion",
+        "count": 4
+      },
+      "binding": {
+        "from": "Supports the field-report range",
+        "to": "Contains an approximate-half website assertion",
+        "count": 16
+      }
+    },
+    {
+      "id": "cause-2-price",
+      "rendered": {
+        "from": "$15 to $40",
+        "to": "Check the price for your filter size and type.",
+        "count": 1
+      },
+      "binding": {
+        "from": "$15 to $40",
+        "to": "Check the price for your filter size and type.",
+        "count": 4
+      }
+    },
+    {
+      "id": "cause-2-ledger",
+      "rendered": {
+        "from": "The air filter price is a retail part cost, not a repair, and carries no citation because no source we would stand behind publishes a national figure for it.",
+        "to": "Filter prices depend on size and type; no generic national filter price is displayed.",
+        "count": 1
+      },
+      "binding": {
+        "from": "The air filter price is a retail part cost, not a repair, and carries no citation because no source we would stand behind publishes a national figure for it.",
+        "to": "Filter prices depend on size and type; no generic national filter price is displayed.",
+        "count": 3
+      }
+    },
+    {
+      "id": "cause-3-reset",
+      "rendered": {
+        "from": "Reset once only",
+        "to": "Leave a tripped breaker off; call for service.",
+        "count": 1
+      },
+      "binding": {
+        "from": "Reset once only",
+        "to": "Leave a tripped breaker off; call for service.",
+        "count": 4
+      }
+    },
+    {
+      "id": "cause-4-ledger",
+      "rendered": {
+        "from": "A frozen coil caused by a dirty filter resolves at service call money; one caused by a damaged coil runs to the top of the range.",
+        "to": "The guide separates common central-AC repairs at $150–$650 from evaporator replacement at $700–$2,500+; these are cause-dependent examples.",
+        "count": 1
+      },
+      "binding": {
+        "from": "A frozen coil caused by a dirty filter resolves at service call money; one caused by a damaged coil runs to the top of the range.",
+        "to": "The guide separates common central-AC repairs at $150–$650 from evaporator replacement at $700–$2,500+; these are cause-dependent examples.",
+        "count": 4
+      }
+    },
+    {
+      "id": "cause-4-ledger-range",
+      "rendered": {
+        "from": "Supports the $150 to $2,500 spread for a frozen evaporator coil, which depends entirely on the underlying cause.",
+        "to": "Supports the stated central-AC repair and evaporator-replacement categories, not one closed frozen-coil price range.",
+        "count": 1
+      },
+      "binding": {
+        "from": "Supports the $150 to $2,500 spread for a frozen evaporator coil, which depends entirely on the underlying cause.",
+        "to": "Supports the stated central-AC repair and evaporator-replacement categories, not one closed frozen-coil price range.",
+        "count": 4
+      }
+    },
+    {
+      "id": "cause-4-price",
+      "rendered": {
+        "from": "$150 to $2,500",
+        "to": "Cause-dependent: common central-AC repairs $150–$650; evaporator replacement $700–$2,500+.",
+        "count": 1
+      },
+      "binding": {
+        "from": "$150 to $2,500",
+        "to": "Cause-dependent: common central-AC repairs $150–$650; evaporator replacement $700–$2,500+.",
+        "count": 4
+      }
+    },
+    {
+      "id": "cause-5-ledger",
+      "rendered": {
+        "from": "Carrier gives $100 to $400 covering part and professional installation; we publish the narrower $150 to $400 because Carrier&rsquo;s own figure of $75 to $150 per hour for technician time makes the $100 floor an edge case.",
+        "to": "Carrier publishes $100 to $400 for the part and professional installation; the actual price varies with the unit and local rates.",
+        "count": 1
+      },
+      "binding": {
+        "from": "Carrier gives $100 to $400 covering part and professional installation; we publish the narrower $150 to $400 because Carrier’s own figure of $75 to $150 per hour for technician time makes the $100 floor an edge case.",
+        "to": "Carrier publishes $100 to $400 for the part and professional installation; the actual price varies with the unit and local rates.",
+        "count": 4
+      }
+    },
+    {
+      "id": "cause-5-price",
+      "rendered": {
+        "from": "$150 to $400",
+        "to": "$100 to $400",
+        "count": 2
+      },
+      "binding": {
+        "from": "$150 to $400",
+        "to": "$100 to $400",
+        "count": 8
+      }
+    },
+    {
+      "id": "cause-7-onset",
+      "rendered": {
+        "from": "Cooling fading over weeks, ice, sometimes a hiss.",
+        "to": "Reduced cooling, ice, sometimes a hiss.",
+        "count": 1
+      },
+      "binding": {
+        "from": "Cooling fading over weeks, ice, sometimes a hiss.",
+        "to": "Reduced cooling, ice, sometimes a hiss.",
+        "count": 4
+      }
+    },
+    {
+      "id": "continued-operation-faq",
+      "rendered": {
+        "from": "No ice and nothing smelling wrong, running it while you arrange a visit is usually fine.",
+        "to": "If warm air persists after the safe checks, switch cooling off and arrange service.",
+        "count": 1
+      },
+      "binding": {
+        "from": "No ice and nothing smelling wrong, running it while you arrange a visit is usually fine.",
+        "to": "If warm air persists after the safe checks, switch cooling off and arrange service.",
+        "count": 3
+      }
+    },
+    {
+      "id": "continued-operation-plate",
+      "rendered": {
+        "from": "Safe to keep running for now",
+        "to": "No visible ice; keep checking the cause.",
+        "count": 1
+      },
+      "binding": {
+        "from": "Safe to keep running for now",
+        "to": "No visible ice; keep checking the cause.",
+        "count": 3
+      }
+    },
+    {
+      "id": "continued-operation-description",
+      "rendered": {
+        "from": "and the label says cooling may keep running while a visit is arranged.",
+        "to": "and the label says there is no visible ice and to keep checking the cause.",
+        "count": 2
+      },
+      "binding": {
+        "from": "and the label says cooling may keep running while a visit is arranged.",
+        "to": "and the label says there is no visible ice and to keep checking the cause.",
+        "count": 4
+      }
+    },
+    {
+      "id": "room-scope",
+      "rendered": {
+        "from": "Whole-house and one-room problems have almost no causes in common.",
+        "to": "Whole-house and one-room patterns point to different checks, but some causes overlap.",
+        "count": 1
+      },
+      "binding": {
+        "from": "Whole-house and one-room problems have almost no causes in common.",
+        "to": "Whole-house and one-room patterns point to different checks, but some causes overlap.",
+        "count": 3
+      }
+    },
+    {
+      "id": "frozen-compressor-damage",
+      "rendered": {
+        "from": "Running a frozen system can flood the compressor and turn a few-hundred-dollar repair into a few-thousand-dollar one.",
+        "to": "Running a frozen system can damage the compressor and lead to an expensive repair.",
+        "count": 1
+      },
+      "binding": {
+        "from": "Running a frozen system can flood the compressor and turn a few-hundred-dollar repair into a few-thousand-dollar one.",
+        "to": "Running a frozen system can damage the compressor and lead to an expensive repair.",
+        "count": 3
+      }
+    }
+  ],
+  "assets": [
+    {
+      "asset_id": "plate-1",
+      "source_path": "spec/ac-blowing-warm-air/plates/ice-or-clear.svg",
+      "base_sha256": "d1150ca96b6927bf2d83a216cb5fb1d2b97a8917e4826c4fd2da1d9eaf5c650c",
+      "amended_sha256": "b3b07c984a11b395ab2800fbd43d446ebb1bcae0e9d8fe5b381fd491c3b6490c"
+    }
+  ],
+  "claims": [
+    {
+      "claim_id": "stat-1",
+      "before_sha256": "0415b64c0a9a7da7e52e13ebdd059d13fe0ff18ce7374a58760417f8074840b0",
+      "after_sha256": "6af9de9457532bfa4f64a9a81e2f004c3ae0ad8b7e34edaaa54e7255b8cced7c"
+    },
+    {
+      "claim_id": "stat-2",
+      "before_sha256": "cb6f820e001f77da127e65509088f5d130b2998237cd7069f5fe272ccff5596b",
+      "after_sha256": "cb6f820e001f77da127e65509088f5d130b2998237cd7069f5fe272ccff5596b"
+    },
+    {
+      "claim_id": "stat-3",
+      "before_sha256": "dffba4aceae9f6be5350f224389bd9c6bee0292def4554e83b027ebac7fc9d99",
+      "after_sha256": "dffba4aceae9f6be5350f224389bd9c6bee0292def4554e83b027ebac7fc9d99"
+    },
+    {
+      "claim_id": "cause-1",
+      "before_sha256": "4a037855feeec52500240188d5951202a04a1e0b973c1852638cde9f12f836d6",
+      "after_sha256": "4a037855feeec52500240188d5951202a04a1e0b973c1852638cde9f12f836d6"
+    },
+    {
+      "claim_id": "cause-2",
+      "before_sha256": "c5eb848af94bb242d882c4c3325c479dbd6fe9e5560343b28a034d01f599cb03",
+      "after_sha256": "8b6d1134e4a53a44cd928a03cc7f0eda32eb5788cc2c64273dc03f7327d177d2"
+    },
+    {
+      "claim_id": "cause-3",
+      "before_sha256": "3e31d32b3e17d376893a9e1e684f723534a341c3f6d3c19fed9fd71ad5946b60",
+      "after_sha256": "407451dd81ac9a913dae092e2e7befcf4203b3ef6d02d8034a656bd2bb90bfca"
+    },
+    {
+      "claim_id": "cause-4",
+      "before_sha256": "ca00f62109d1db89a0792b9b45d8fa09c1c60c876cd0f32a782f48f0e8820dba",
+      "after_sha256": "c9a3fae1bdf4f4d62351512215a21d9484c09b92c2af59b2a74631482983c19e"
+    },
+    {
+      "claim_id": "cause-5",
+      "before_sha256": "a2a04e44a55c712e6f67dfcfb218f2a721d431f77f13d72c271aca53df5a7c04",
+      "after_sha256": "ba4a1a5538393e3147d6e53531e3abc9a1a4d1da8d4448297a5e87c54668b32e"
+    },
+    {
+      "claim_id": "cause-6",
+      "before_sha256": "964d985cbc5b27de0d0d11b7d9cca12ede97f378b307a340cba861b188803d82",
+      "after_sha256": "964d985cbc5b27de0d0d11b7d9cca12ede97f378b307a340cba861b188803d82"
+    },
+    {
+      "claim_id": "cause-7",
+      "before_sha256": "96030344b9ef4a773be33aacea908369c8169ec1debdc6773b93ab8166c3448d",
+      "after_sha256": "e9aaccc8048eb93dbcd7ee65c105143cad8b9705bf529ca97b2a6111f9e0c27e"
+    },
+    {
+      "claim_id": "cap.ac_warm_air.narrow_why_still_warm",
+      "before_sha256": "6d0169624b3e88b9ac1ec9693141a340654b603023bb0ccadf0ddda645092e7c",
+      "after_sha256": "6d0169624b3e88b9ac1ec9693141a340654b603023bb0ccadf0ddda645092e7c"
+    },
+    {
+      "claim_id": "cap.ac_warm_air.thermostat_or_fan_setting",
+      "before_sha256": "0b8e54526eceb9d3145e81bb309feed962532c2e1db6318ea98db940f498acac",
+      "after_sha256": "0b8e54526eceb9d3145e81bb309feed962532c2e1db6318ea98db940f498acac"
+    },
+    {
+      "claim_id": "cap.ac_warm_air.filter_relevance",
+      "before_sha256": "e38dda3fafeea1c832a28f08b726d927b6f2c7e8f35e2244fb6acce45e98319d",
+      "after_sha256": "e38dda3fafeea1c832a28f08b726d927b6f2c7e8f35e2244fb6acce45e98319d"
+    },
+    {
+      "claim_id": "cap.ac_warm_air.ice_on_line_next_step",
+      "before_sha256": "fd52db6a2856f464a0dbee87f21e518e8df514b1b538383ab6088ab1da64b0b2",
+      "after_sha256": "fd52db6a2856f464a0dbee87f21e518e8df514b1b538383ab6088ab1da64b0b2"
+    },
+    {
+      "claim_id": "cap.ac_warm_air.outdoor_unit_involved",
+      "before_sha256": "7f7957a4a0b11db31e954e0940b31203a178da56d31af862eaa469d24094b8af",
+      "after_sha256": "7f7957a4a0b11db31e954e0940b31203a178da56d31af862eaa469d24094b8af"
+    },
+    {
+      "claim_id": "cap.ac_warm_air.read_model_from_label_photo",
+      "before_sha256": "2231d231b996d2e64a3539edef56c07b50b8e1933177e0a2ad1bb7197419bd29",
+      "after_sha256": "2231d231b996d2e64a3539edef56c07b50b8e1933177e0a2ad1bb7197419bd29"
+    },
+    {
+      "claim_id": "cap.ac_warm_air.capacitor_confirmation",
+      "before_sha256": "ceab39a5eaf930f90bd18400478ad70faef05a8e3460cbbe6978f200dcb9388e",
+      "after_sha256": "ceab39a5eaf930f90bd18400478ad70faef05a8e3460cbbe6978f200dcb9388e"
+    },
+    {
+      "claim_id": "cap.ac_warm_air.refrigerant_charge_confirmation",
+      "before_sha256": "64a152a3b6e9ce5a7d463ebbfc022b29bb70fa94f37f9e2263c71afd3eecda7a",
+      "after_sha256": "64a152a3b6e9ce5a7d463ebbfc022b29bb70fa94f37f9e2263c71afd3eecda7a"
+    },
+    {
+      "claim_id": "cap.ac_warm_air.job_packet_for_provider",
+      "before_sha256": "709da29b2810bb0545917c8e8d5c10547147f65a4d93b07791eef71a338f1b34",
+      "after_sha256": "709da29b2810bb0545917c8e8d5c10547147f65a4d93b07791eef71a338f1b34"
+    }
+  ],
+  "result": {
+    "binding_sha256": "fd85de29c6ac6c7b70bce416c59e974b305575b1a85ef2fc53e80a3f36b55f25",
+    "rendered_sha256": "4bd2a178679fed0dfd1a979c03ccd6e39ecc57ff45d4f49e4adb75a2efc3fa56",
+    "section_order": [
+      "HERO",
+      "INTAKE",
+      "STAT_CARDS",
+      "WHAT_CHANGES_THE_ANSWER",
+      "COMMON_POSSIBILITIES",
+      "SAFE_OBSERVATIONS",
+      "VISUALS",
+      "THE_FLIP",
+      "GENERAL_VS_YOURS",
+      "CAPABILITY_QUESTIONS",
+      "JOB_PACKET",
+      "REPAIR_RECORD",
+      "FAQ",
+      "RELATED",
+      "CLOSER"
+    ],
+    "content_date": "2026-09-06"
+  },
+  "amendment_sha256": "d3c0334191addd6b4f6394701ba59cbfb224b8905aba8f8c9f756c037eaa0601"
+}

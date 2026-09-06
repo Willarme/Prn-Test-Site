@@ -14,8 +14,11 @@ import {
   selectNextClarifierDeterministic,
 } from "@/domain/problem/clarifier";
 import { findPlaybook } from "@/domain/intake/playbooks";
+import { QUESTION_COSTS } from "@/domain/intake/readiness";
 import { ACTIVE_DISCLOSURE } from "@/domain/privacy/disclosures";
+import { MAX_INTAKE_EFFORT, readIntakeEffort } from "@/platform/intake/effort";
 import { getPolicySetting, requirePolicyNumber } from "@/platform/policy/store";
+import { runtimeStore } from "@/platform/stores/runtime";
 import { rememberOwner, ownerTokenFor } from "./helpers/journey-auth";
 
 /**
@@ -88,9 +91,8 @@ describe("A01 — the photo cap", () => {
     const setting = getPolicySetting<number>("intake.max_photos_per_request");
     expect(setting).not.toBeNull();
     expect(setting?.level).toBe("COMPANY");
-    // 6 since 2026-09-05: DEFAULT pending Melissa, decision 2 recommendation B
-    // (was 4, the standing decision of 20 Aug). The policy store carries the
-    // reason; this pins that the number moved deliberately, version bumped.
+    // The stored photo policy is six, independently of the T1-35 combined
+    // effort ceiling. Six admitted media actions plus opening would cost 23.
     expect(maxPhotosPerRequest()).toBe(6);
     expect(setting?.version).toBe(2);
     expect(maxPhotosPerRequest()).toBe(requirePolicyNumber("intake.max_photos_per_request"));
@@ -118,14 +120,20 @@ describe("A01 — the photo cap", () => {
     expect(photoCapDecision(9, 6).allowed).toBe(false);
   });
 
-  it("THE PHOTO PAST THE CAP IS REFUSED BY THE SERVER, and nothing is stored", async () => {
+  it("refuses a photo at the stored six-photo cap without writing evidence", async () => {
     const requestId = await startJourney();
-    const target = "unit_photo";
+    const target = "door_photo";
     const max = maxPhotosPerRequest();
-
+    const store = runtimeStore();
+    const journey = (await store.getJourney(requestId))!;
+    // Seed the independent storage boundary explicitly. A fresh accepted
+    // journey reaches the effort ceiling before it can upload six photos.
     for (let i = 1; i <= max; i += 1) {
-      const res = await uploadPhoto(requestId, target, i);
-      expect(res.status, `photo ${i} should be accepted`).toBe(200);
+      await store.attachEvidence(journey.problem.problem_id, requestId, {
+        evidence_id: `ev_${requestId}_cap_${i}`, kind: "photo", privacy: "private",
+        content: `private://test-cap/photo-${i}.png`, captured_at: "2026-09-06T12:00:00Z",
+        mime: "image/png", bytes: PNG.length, field_key: target,
+      });
     }
 
     const over = await uploadPhoto(requestId, target, max + 1);
@@ -139,11 +147,38 @@ describe("A01 — the photo cap", () => {
 
     // …and the next is refused identically — the cap is a state, not a one-off.
     expect((await uploadPhoto(requestId, target, max + 2)).status).toBe(409);
+    expect(countPhotos(await store.listEvidence(journey.problem.problem_id))).toBe(max);
+    expect((await readIntakeEffort({ request_id: requestId, tenant_id: "prn" })).effort_spent).toBe(QUESTION_COSTS.free_text);
   });
 
-  it("the refusal is the ONLY customer-visible change: a first photo still works", async () => {
+  it("admits five photos after opening, then refuses more work at 20 effort without storing it", async () => {
     const requestId = await startJourney();
-    const res = await uploadPhoto(requestId, "unit_photo", 1);
+    const maxAdmitted = Math.floor((MAX_INTAKE_EFFORT - QUESTION_COSTS.free_text) / QUESTION_COSTS.media);
+    expect(maxAdmitted).toBe(5);
+    for (let i = 1; i <= maxAdmitted; i += 1) {
+      expect((await uploadPhoto(requestId, "door_photo", i)).status, `photo ${i}`).toBe(200);
+    }
+    const store = runtimeStore();
+    const journey = (await store.getJourney(requestId))!;
+    const evidenceBefore = await store.listEvidence(journey.problem.problem_id);
+    for (const i of [maxAdmitted + 1, maxAdmitted + 2]) {
+      const refused = await uploadPhoto(requestId, "door_photo", i);
+      expect(refused.status).toBe(409);
+      const body = await refused.json();
+      expect(body.error).toMatch(/intake limit/i);
+      expect(body.evidence_id).toBeUndefined();
+    }
+    expect(await store.listEvidence(journey.problem.problem_id)).toEqual(evidenceBefore);
+    const ledger = await readIntakeEffort({ request_id: requestId, tenant_id: "prn" });
+    expect(ledger.effort_spent).toBe(20);
+    expect(ledger.attempts.filter(a => a.accepted && a.operation.kind === "media")).toHaveLength(5);
+    expect(ledger.attempts.filter(a => !a.accepted).every(a => a.charged_units === 0 && a.rejection_reason === "effort_limit")).toBe(true);
+    expect(countPhotos(evidenceBefore)).toBe(maxAdmitted);
+  });
+
+  it("a first photo for an approved door target still works", async () => {
+    const requestId = await startJourney();
+    const res = await uploadPhoto(requestId, "door_photo", 1);
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.ok).toBe(true);

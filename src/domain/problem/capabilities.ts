@@ -267,6 +267,8 @@ export async function classifyProblem(
    */
   if (options.allow_model !== false) {
     const refined = await classifyHomeProblem(input, {
+      request_id: options.request_id,
+      tenant_id: options.tenant_id,
       vocabulary: options.vocabulary,
       deps: options.deps,
     });
@@ -475,7 +477,9 @@ export async function selectClarifier(
   let costUsd: number | null = null;
 
   if (options.allow_model !== false) {
-    const refined = await selectNextClarifier(input, { deps: options.deps });
+    const refined = await selectNextClarifier(input, {
+      deps: options.deps, request_id: options.request_id, tenant_id: options.tenant_id,
+    });
     selection = {
       ask: refined.ask,
       reason: refined.reason,

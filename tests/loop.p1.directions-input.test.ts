@@ -284,7 +284,7 @@ describe("P1 · buildDirectionsInput", () => {
     expect(input.narrative.facts.find((f) => f.text === "Outdoor fan is turning")?.provenance).toBe("reported");
     expect(input.provider.checks.find((c) => c.name === "Outdoor unit running?")?.result_provenance).toBe("reported");
     expect(input.provider.checks.some((c) => c.name === "Filter condition")).toBe(false);
-    expect(input.narrative.facts).toContainEqual({ text: "Homeowner reports the filter is clean", provenance: "reported", kind: "maintenance" });
+    expect(input.narrative.facts).toContainEqual(expect.objectContaining({ text: "Homeowner reports the filter is clean", provenance: "reported", kind: "maintenance", source_fields: ["check:filter"] }));
     expect(input.provider.unknowns.some((u) => /thermostat setpoint|filter condition/i.test(u.item))).toBe(false);
     expect(input.problem.safety_state).toBe("safety_not_established");
     const rendered = render.renderPacketHtml(input);
@@ -338,10 +338,13 @@ describe("P1 · buildDirectionsInput", () => {
     expect(out.html).toContain("Nothing outstanding was identified at intake.");
   });
 
-  it("without an address the builder returns an empty property block and the renderer halts (§3.3; decision 10)", async () => {
+  it("a typed T1-35 address gap renders honestly; an untyped missing address still halts", async () => {
     const id = await createJourney("AC is blowing warm air, not cooling at all.");
     const input = await build(id, false);
     expect(input.property.street).toBe("");
+    expect(input.property.unknown_reason).toBeTruthy();
+    expect(render.renderPacketHtml(input).html).toContain("Job address still unknown");
+    delete input.property.unknown_reason;
     expect(() => render.renderPacketHtml(input)).toThrow(render.PacketHaltError);
   });
 

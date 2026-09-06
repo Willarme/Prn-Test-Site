@@ -59,5 +59,14 @@ export function adaptDoorMetadata(source: string, origin: string, receipt: DoorM
     '<meta property="og:image:width" content="' + image.width + '">',
     '<meta property="og:image:height" content="' + image.height + '">',
   ].join("\n");
+  // Joshua authorized this narrow wrapping repair on 2026-09-06 after the
+  // browser audit found 31px overflow at 320px. Keep the reviewed source and
+  // its CSS intact; only the methodology link's small-screen grid may wrap.
+  html = html.replace("</head>", `<style id="door-narrow-methodology-repair">
+@media (max-width:360px){
+  #repair-record .record-method{grid-template-columns:minmax(0,1fr);min-width:0;}
+  #repair-record .record-method a{white-space:normal;overflow-wrap:anywhere;text-wrap:pretty;}
+}
+</style></head>`);
   return html.replace('<meta name="twitter:card" content="summary_large_image">', '<meta name="twitter:card" content="summary_large_image">\n' + social);
 }

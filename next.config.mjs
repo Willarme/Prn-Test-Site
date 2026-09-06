@@ -1,4 +1,7 @@
 /* global process */
+import { ocrRuntimeTracePlan } from './tools/ocr-runtime-tracing.mjs';
+
+const ocrRuntime = ocrRuntimeTracePlan();
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -10,7 +13,10 @@ const nextConfig = {
   // page (GET /problems/ac-blowing-warm-air) is read from content/doors/ at
   // request time and would otherwise be missing from the deploy (F1 flagged it).
   outputFileTracingIncludes: {
-    "/**": ["./data/seo-factory-policy.json", "./content/doors/**", "./content/door-template/v43/**"],
+    "/**": ["./data/seo-factory-policy.json", "./content/doors/**", "./content/door-template/v43/**", "./content/door-template/amendments/**", "./config/ac-door*.json", "./content/source-evidence/**"],
+    // Both upload paths can invoke the same isolated OCR child. Next cannot
+    // follow that process into its worker, traineddata, WASM and native assets.
+    ...Object.fromEntries(ocrRuntime.routes.map(route => [route, ocrRuntime.patterns])),
   },
 };
 

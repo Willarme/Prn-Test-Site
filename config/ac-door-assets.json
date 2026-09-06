@@ -1,10 +1,10 @@
 {
-  "source": "Approved v43 plus existing demo attribution and anchor repair",
+  "source": "Approved v43 demo attribution/anchor derivative plus explicitly reviewed copy amendment",
   "source_path": "content/doors/ac-blowing-warm-air.html",
-  "source_sha256_lf": "f3dcd40e9bb998e273cad4f3c7e7243aa0e05098eccd81c992fff8eb72bf3784",
-  "source_commit": "9b4d64044e2247633807acfea413e142363bd618",
-  "source_modified_at": "2026-09-05T19:45:35Z",
-  "source_date_basis": "Git commit time of the last material change to the checked-in door source; independent of checkout mtime or request time",
+  "source_sha256_lf": "b85cd59d508181bdab4c6f0ec66778eb7cdc610e6a23a2501742624d2c1def60",
+  "source_commit": null,
+  "source_modified_at": "2026-09-06T17:48:12.769Z",
+  "source_date_basis": "Timestamp of this material authored demo copy amendment; not checkout, deployment or request time.",
   "assets": [
     {
       "svg": "/images/ac-refrigerant-line-iced-vs-normal.svg",
@@ -27,5 +27,12 @@
       "height": 518,
       "og_image": false
     }
-  ]
+  ],
+  "source_base_commit": "9b4d64044e2247633807acfea413e142363bd618",
+  "source_amendment": {
+    "receipt_path": "config/ac-door-demo-copy-amendment.json",
+    "receipt_sha256": "529412062ef537bd426aa3b83766c0f30403a3702b54ac0c3fd3f0ce4dff8e00",
+    "base_source_sha256_lf": "f3dcd40e9bb998e273cad4f3c7e7243aa0e05098eccd81c992fff8eb72bf3784",
+    "amendment_sha256": "d3c0334191addd6b4f6394701ba59cbfb224b8905aba8f8c9f756c037eaa0601"
+  }
 }

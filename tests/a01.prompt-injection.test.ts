@@ -18,6 +18,9 @@ import type { EvidenceObject } from "@/domain/problem/contracts";
 import { resetAgentRunLedgerForTests } from "@/platform/runs/ledger";
 import { resetKillSwitchForTests } from "@/platform/killswitch";
 import { requirePolicyNumber } from "@/platform/policy/store";
+import { QUESTION_COSTS } from "@/domain/intake/readiness";
+import { MAX_INTAKE_EFFORT, readIntakeEffort } from "@/platform/intake/effort";
+import { runtimeStore } from "@/platform/stores/runtime";
 
 /**
  * A01 STEP 7 — HOMEOWNER TEXT IS EVIDENCE, NEVER INSTRUCTIONS (A01 §7 / C4).
@@ -141,7 +144,7 @@ describe("A01 — injection changes nothing about the CAPS", () => {
     expect(decision.max).toBe(max);
   });
 
-  it("a fifth photo is refused on a journey whose description is an attack", async () => {
+  it("an instruction-shaped description cannot lift the combined effort ceiling", async () => {
     const res = await intakePost(
       new Request("http://localhost/api/intake", {
         method: "POST",
@@ -168,15 +171,23 @@ describe("A01 — injection changes nothing about the CAPS", () => {
       const form = new FormData();
       form.set("request_id", requestId);
       form.set("k", ownerKey);
-      form.set("target", "unit_photo");
+      form.set("target", "door_photo");
       form.set("file", new File([new Uint8Array(PNG)], `p${i}.png`, { type: "image/png" }));
       return mediaPost(
         new Request("http://localhost/api/intake/media", { method: "POST", body: form })
       );
     };
-    const max = requirePolicyNumber("intake.max_photos_per_request");
+    const max = Math.floor((MAX_INTAKE_EFFORT - QUESTION_COSTS.free_text) / QUESTION_COSTS.media);
+    expect(max).toBe(5);
     for (let i = 1; i <= max; i += 1) expect((await upload(i)).status).toBe(200);
-    expect((await upload(max + 1)).status).toBe(409);
+    const store = runtimeStore();
+    const journey = (await store.getJourney(requestId))!;
+    const before = await store.listEvidence(journey.problem.problem_id);
+    const refused = await upload(max + 1);
+    expect(refused.status).toBe(409);
+    expect((await refused.json()).error).toMatch(/intake limit/i);
+    expect(await store.listEvidence(journey.problem.problem_id)).toEqual(before);
+    expect((await readIntakeEffort({ request_id: requestId, tenant_id: "prn" })).effort_spent).toBe(20);
   });
 
   it("the question ceiling is counted, not argued with", async () => {

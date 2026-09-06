@@ -82,7 +82,7 @@ export interface LoadedPacket {
   address: JobAddress | null;
   /** Existing record became unsafe later; route to the approved safety page. */
   safety_halt?: string;
-  /** Null until an address exists (Directions §3.3; routine decision 10). */
+  /** Null for a safety halt. T1-35 packets carry explicit address gaps. */
   input: DirectionsInput | null;
 }
 
@@ -103,7 +103,7 @@ export async function loadPacket(
     store.listDiagnosisAnswers(requestId),
     store.listClaims(ctx.journey.problem.problem_id),
   ]);
-  if (!address) return { journey: ctx.journey, address: null, input: null };
+  if (!address && !ctx.journey.packet.intake_snapshot) return { journey: ctx.journey, address: null, input: null };
 
   const thumbnails: Record<string, string> = {};
   for (const e of ctx.allEvidence) {
@@ -137,9 +137,12 @@ export async function loadPacket(
       home_memory_url: keep ? `${opts.link_base}/keep/${keep}` : "",
       trust_network_url: ask ? `${opts.link_base}/ask/${ask}` : "",
       media_link: media ? `${opts.link_base}/media/${media}` : null,
-      now: opts.now,
+      now: opts.now ?? ctx.journey.packet.generated_at,
     }
   );
   input.config.owner_actions = opts.owner === true;
+  if (ctx.journey.packet.intake_snapshot) {
+    input.counts = { ...input.counts, facts_captured: ctx.journey.packet.intake_snapshot.handoff.counts.facts };
+  }
   return { journey: ctx.journey, address, input };
 }

@@ -113,14 +113,14 @@ describe("P1 · GET /packet/[request_id]", () => {
     expect(scoped.status).toBe(404);
   });
 
-  it("asks for the address first, then builds the packet after POST /api/packet/address (decision 10, checklist F5)", async () => {
+  it("renders an honest address gap, then adds the accepted address to the next packet", async () => {
     const id = await createJourney("The air conditioner is on and I can feel air but it's just not cold anymore.");
     const first = await packetGet(new Request(`${ORIGIN}/packet/${id}`), params(id));
     expect(first.status).toBe(200);
     const formHtml = await first.text();
-    expect(formHtml).toContain("Where is the job?");
-    expect(formHtml).toContain('action="/api/packet/address"');
-    expect(formHtml).not.toContain("Page 1 — for the homeowner");
+    expect(formHtml).toContain("Job address still unknown");
+    expect(first.headers.get("x-packet-self-check")).toBe("ok");
+    expect(formHtml).toContain("Page 1 — for the homeowner");
 
     // Both lines are required: a short post bounces back with the error code.
     const bad = await addressPost(addressForm(id, { city_state_zip: "" }));
@@ -169,7 +169,7 @@ describe("P1 · GET /packet/[request_id]", () => {
     expect(sharedHtml).not.toMatch(/href="[^"]*\/(keep|ask|media)\//);
     // packet.viewed recorded, with the source distinguishing the share link.
     const events = (await import("@/platform/stores/dev-db")).readDevDb().events.filter((e) => e.event_name === "packet.viewed" && e.context.request_id === id);
-    expect(events.map((e) => e.context.source)).toEqual(["packet_view", "share_link"]);
+    expect(events.map((e) => e.context.source)).toEqual(["packet_view", "packet_view", "share_link"]);
     expect(events[0].actor.actor_type).toBe("guest");
   });
 
@@ -198,11 +198,12 @@ describe("P1 · GET /packet/[request_id]", () => {
 });
 
 describe("P1 · GET /packet/[request_id]/pdf", () => {
-  it("303s to the packet view when there is no address, and to ?print=1 when the renderer is unavailable", async () => {
+  it("keeps a no-address packet printable and falls back to ?print=1 when the renderer is unavailable", async () => {
     const id = await createJourney("AC is running but the air is warm.");
+    process.env.PRN_PDF_DISABLED = "1";
     const noAddress = await pdfGet(new Request(`${ORIGIN}/packet/${id}/pdf`), params(id));
     expect(noAddress.status).toBe(303);
-    expect(noAddress.headers.get("location")).toBe(`${ORIGIN}/packet/${id}`);
+    expect(noAddress.headers.get("location")).toBe(`${ORIGIN}/packet/${id}?print=1`);
     await addressPost(addressForm(id));
     process.env.PRN_PDF_DISABLED = "1";
     try {

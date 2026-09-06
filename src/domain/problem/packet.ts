@@ -162,6 +162,7 @@ export async function buildPacket(input: BuildPacketInput): Promise<BuildPacketO
   const args: GenerateJobPacketArgs = wantsAssembly
     ? {
         assemble: true,
+        request_id: input.request_id ?? undefined,
         problem: input.problem,
         textEvidence: input.textEvidence,
         allEvidence,

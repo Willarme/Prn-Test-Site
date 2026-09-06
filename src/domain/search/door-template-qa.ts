@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { isDeepStrictEqual } from "node:util";
-import reviewed from "../../../content/door-template/v43/binding.json";
+import original from "../../../content/door-template/v43/binding.json";
+import { getAmendedV43Binding } from "./door-template-amendment";
 import type { PageSpec } from "@/domain/search/pages";
 import type { QaFinding } from "@/domain/search/qa-types";
 
@@ -14,11 +15,20 @@ export const V43_QA_PINS = {
   source_modified_at: "2026-09-05T19:45:35Z",
   source_commit: "9b4d64044e2247633807acfea413e142363bd618",
 } as const;
+/** Separate pins for the approved derivative; never rebaseline the original kit. */
+export const V43_QA_AMENDMENT_PINS = {
+  amendment: "d3c0334191addd6b4f6394701ba59cbfb224b8905aba8f8c9f756c037eaa0601",
+  binding: "fd85de29c6ac6c7b70bce416c59e974b305575b1a85ef2fc53e80a3f36b55f25",
+  rendered: "4bd2a178679fed0dfd1a979c03ccd6e39ecc57ff45d4f49e4adb75a2efc3fa56",
+  source_modified_at: "2026-09-06T17:28:56.224Z",
+  asset_receipt: "d0aba512c373092063f2abb0b29d7b384090e52b8a79ef7b2d00379fcb40a7b8",
+} as const;
+const reviewed = getAmendedV43Binding();
 export const V43_QA_RENDER_ORIGIN = "https://v43-preview.invalid";
 
 /** Actual existing files measured 2026-09-06; this is local fidelity, not HTTP proof. */
 export const V43_ASSET_PINS: Readonly<Record<string, { svg: string; png: string }>> = {
-  "plate-1": { svg: "f53f3a9a845b0536ddb786bdc94248d30c4008b2f48ab2be7a288ace7e33f5ff", png: "7631415e03a6d18f4d1264d46478bd89b47166ba8bddbd3bfdeab96ee098610b" },
+  "plate-1": { svg: "062160937fe42df2ea43f9862af51ab7b93805bcb514b4f34f1ee4a4074c7832", png: "965d46e0c22105b693ffe6672e7995a3084245850152b230a9f85ae0e147f535" },
   "plate-2": { svg: "b889cc7e1161e5334ff41ac8eb4639aadc2b99b5400e7834bdd047de909578fb", png: "f90f2d5352e0cd6e6d796a7cfe57a8940532dc0bcc1b5d7ce8944cc0ee9af391" },
   "plate-3": { svg: "5c72886833771575c61e9627ea9328896e9c69a18752dfed53e97b67a420e39d", png: "dce3de077486dec9e701ef7c0afbfcd42fcd1239dd1f5ef2a4931bd57c9127c5" },
 };
@@ -76,12 +86,18 @@ export interface DoorTemplateEvidence {
   source_tree_sha256: string | null;
   binding_sha256: string | null;
   rendered_sha256: string | null;
+  base_binding_sha256: string | null;
+  base_rendered_sha256: string | null;
+  amendment_sha256: string | null;
   /** Raw server reads let A06 inspect the receipt and final HTML independently. */
   source_date_evidence_text: string | null;
+  amendment_evidence_text: string | null;
+  asset_amendment_evidence_text: string | null;
   final_rendered_html: string | null;
   assets: DoorAssetEvidence[];
   social: { og_image: string | null; twitter_image: string | null; width: number | null; height: number | null; encoding_format: string | null } | null;
   sources: DoorSourceVerification[];
+  source_review_findings?: Array<{ id: string; reason: string }>;
   capabilities: DoorCapabilityVerification[];
   /** No production receipt adapter is installed yet. Missing means blocked. */
   production: null | {
@@ -99,7 +115,8 @@ const validHash = (value: string | null | undefined) => typeof value === "string
 const time = (value: string) => Date.parse(value);
 const isCurrent = (verified: string, expires: string, now: number, maxDays: number) =>
   Number.isFinite(time(verified)) && Number.isFinite(time(expires)) && time(verified) <= now &&
-  time(expires) > now && time(expires) > time(verified) && now - time(verified) <= maxDays * 86400000;
+  time(expires) > now && time(expires) > time(verified) && now - time(verified) <= maxDays * 86400000 &&
+  time(expires) - time(verified) <= maxDays * 86400000;
 
 function htmlAttributes(tag: string): Record<string, string> {
   const attributes: Record<string, string> = {};
@@ -142,8 +159,12 @@ export function runV43DoorChecks(spec: PageSpec, evidence?: DoorTemplateEvidence
   const integrity = (where: string, message: string) => fail("door_template.integrity", where, message,
     "Restore the independently reviewed v43 binding, frozen copy/design and matching source-version receipts; run QA again.");
 
+  const { binding_sha256: originalHash, ...originalPayload } = original;
+  if (originalHash !== V43_QA_PINS.binding || sha(JSON.stringify(originalPayload)) !== V43_QA_PINS.binding) {
+    integrity("original_binding", "A06's immutable original v43 binding no longer matches its independent fingerprint.");
+  }
   const { binding_sha256: bindingHash, ...bindingPayload } = reviewed;
-  if (bindingHash !== V43_QA_PINS.binding || sha(JSON.stringify(bindingPayload)) !== V43_QA_PINS.binding) {
+  if (bindingHash !== V43_QA_AMENDMENT_PINS.binding || sha(JSON.stringify(bindingPayload)) !== V43_QA_AMENDMENT_PINS.binding) {
     integrity("reviewed_binding", "A06's independent reviewed binding fingerprint no longer matches its artifact.");
   }
   if (!spec.door_template || !isDeepStrictEqual(spec.door_template, reviewed)) {
@@ -163,7 +184,9 @@ export function runV43DoorChecks(spec: PageSpec, evidence?: DoorTemplateEvidence
   const now = collected ? time(collected.collected_at) : Date.now();
   if (!collected || !Number.isFinite(now)) integrity("evidence", "No valid server-collected v43 evidence is available for this exact page spec.");
   for (const [field, expected] of Object.entries({ reference_sha256: V43_QA_PINS.reference,
-    source_tree_sha256: V43_QA_PINS.tree, binding_sha256: V43_QA_PINS.binding, rendered_sha256: V43_QA_PINS.rendered })) {
+    source_tree_sha256: V43_QA_PINS.tree, base_binding_sha256: V43_QA_PINS.binding, base_rendered_sha256: V43_QA_PINS.rendered,
+    amendment_sha256: V43_QA_AMENDMENT_PINS.amendment, binding_sha256: V43_QA_AMENDMENT_PINS.binding,
+    rendered_sha256: V43_QA_AMENDMENT_PINS.rendered })) {
     if (collected?.[field as keyof DoorTemplateEvidence] !== expected) integrity(field, `Actual ${field} does not match the independently pinned v43 release.`);
   }
   for (const error of collected?.errors ?? []) integrity("evidence", error);
@@ -177,11 +200,39 @@ export function runV43DoorChecks(spec: PageSpec, evidence?: DoorTemplateEvidence
     }
     const receipt = JSON.parse(text) as Record<string, unknown>;
     if (receipt.source_modified_at !== V43_QA_PINS.source_modified_at || receipt.source_commit !== V43_QA_PINS.source_commit ||
-        reviewed.content_date !== V43_QA_PINS.source_modified_at.slice(0, 10)) {
+        original.content_date !== V43_QA_PINS.source_modified_at.slice(0, 10)) {
       throw new Error("The content date does not identify the reviewed source commit.");
     }
   } catch {
     integrity("content_date_receipt", "The actual source-date evidence is missing, changed or inconsistent with the independently pinned source commit/date.");
+  }
+  try {
+    if (!collected?.amendment_evidence_text) throw new Error("Missing amendment record");
+    const { amendment_sha256, ...amendment } = JSON.parse(collected.amendment_evidence_text);
+    if (amendment_sha256 !== V43_QA_AMENDMENT_PINS.amendment || sha(JSON.stringify(amendment)) !== V43_QA_AMENDMENT_PINS.amendment ||
+        amendment.base.binding_sha256 !== V43_QA_PINS.binding || amendment.base.rendered_sha256 !== V43_QA_PINS.rendered ||
+        amendment.base.reference_sha256 !== V43_QA_PINS.reference || amendment.base.source_tree_sha256 !== V43_QA_PINS.tree ||
+        amendment.base.content_date_receipt_sha256 !== V43_QA_PINS.content_date_receipt ||
+        amendment.result.binding_sha256 !== V43_QA_AMENDMENT_PINS.binding || amendment.result.rendered_sha256 !== V43_QA_AMENDMENT_PINS.rendered ||
+        amendment.source_modified_at !== V43_QA_AMENDMENT_PINS.source_modified_at ||
+        amendment.result.content_date !== reviewed.content_date || reviewed.content_date !== V43_QA_AMENDMENT_PINS.source_modified_at.slice(0, 10) ||
+        !isDeepStrictEqual(amendment.result.section_order, original.section_order)) throw new Error("Amendment chain mismatch");
+  } catch {
+    integrity("copy_amendment_receipt", "The actual approved wording amendment is missing, altered or detached from the immutable base, exact outputs or authored date.");
+  }
+  try {
+    if (!collected?.asset_amendment_evidence_text) throw new Error("Missing asset derivative record");
+    const { receipt_sha256, ...receipt } = JSON.parse(collected.asset_amendment_evidence_text);
+    if (receipt_sha256 !== V43_QA_AMENDMENT_PINS.asset_receipt || sha(JSON.stringify(receipt)) !== V43_QA_AMENDMENT_PINS.asset_receipt ||
+        receipt.amendment_sha256 !== V43_QA_AMENDMENT_PINS.amendment || receipt.assets.length !== 1) throw new Error("Unreviewed asset receipt");
+    const asset = receipt.assets[0], expected = reviewed.visual_assets[0];
+    if (asset.asset_id !== expected.asset_id || asset.base_source_sha256 !== original.visual_assets[0].source_sha256 ||
+        asset.amended_source_sha256 !== expected.source_sha256 || asset.public_svg_path !== expected.public_svg_path ||
+        asset.public_svg_sha256 !== V43_ASSET_PINS[expected.asset_id].svg || asset.raster_path !== expected.raster_path ||
+        asset.raster_sha256 !== V43_ASSET_PINS[expected.asset_id].png || asset.width !== expected.width || asset.height !== expected.height ||
+        asset.encoding_format !== "image/png" || asset.has_alpha !== false) throw new Error("Asset derivative chain mismatch");
+  } catch {
+    integrity("asset_amendment_receipt", "The actual diagram derivative receipt is missing, altered or detached from the approved wording amendment and measured raster.");
   }
   try {
     const html = collected?.final_rendered_html;
@@ -201,7 +252,7 @@ export function runV43DoorChecks(spec: PageSpec, evidence?: DoorTemplateEvidence
       const nodes = Array.isArray(data["@graph"]) ? data["@graph"] : [data];
       for (const node of nodes) if (node?.["@type"] === "WebPage") pages.push(node);
     }
-    if (pages.length !== 1 || pages[0].dateModified !== V43_QA_PINS.source_modified_at.slice(0, 10)) {
+    if (pages.length !== 1 || pages[0].dateModified !== V43_QA_AMENDMENT_PINS.source_modified_at.slice(0, 10)) {
       integrity("rendered_date_modified", "The final WebPage dateModified is missing, ambiguous or differs from the hashed source-version date.");
     }
     if (pages.length !== 1 || pages[0].url !== expected || pages[0]["@id"] !== expected + "#webpage") {
@@ -213,6 +264,10 @@ export function runV43DoorChecks(spec: PageSpec, evidence?: DoorTemplateEvidence
 
   // These are immutable exact mappings. A source id attached to arbitrary new
   // prose, or a model PASS, can never substitute for reviewed claim support.
+  for (const issue of collected?.source_review_findings ?? []) {
+    fail("door_template.source_verification", `review:${issue.id}`, issue.reason,
+      "Resolve the documented source conflict or coverage gap through a reviewed revision; preserve frozen copy and the release hold.");
+  }
   for (const source of reviewed.source_bindings) {
     const receipt = collected?.sources.find((row) => row.source_id === source.source_id && row.url === source.url);
     const maxAge = /\$|\bcost|\bprice|\brange\b/i.test(source.inherited_note) ? 90 : 180;
@@ -241,6 +296,17 @@ export function runV43DoorChecks(spec: PageSpec, evidence?: DoorTemplateEvidence
           "Fetch and verify the exact claim against the named source, retain its capture/hash and expiration, and re-run release QA.");
       }
     }
+  }
+  // The unchanged stat-3 prose needs the separately reviewed Trane URL. A
+  // receipt for its original Carrier citation alone cannot establish both attributions.
+  const frozenCoil = reviewed.claim_bindings.find(row => row.claim_id === "stat-3")!;
+  const trane = collected?.sources.find(row => row.source_id === "sup-trane-frozen-causes");
+  if (!trane || trane.url !== "https://www.trane.com/residential/en/resources/blog/frozen-evaporator-coil-causes/" ||
+      trane.content_sha256 !== "9cecca766f13e3007a8d1b82a5716d16f52b4066904efc3ed6594efec94811b9" ||
+      !validHash(trane.receipt_sha256) || !trane.verifier.trim() || !isCurrent(trane.verified_at, trane.expires_at, now, 180) ||
+      !trane.supported_claim_sha256.includes(sha(frozenCoil.text))) {
+    fail("door_template.source_verification", "stat-3:sup-trane-frozen-causes", "The exact supplemental Trane capture and claim receipt are required for the amended page's two-manufacturer frozen-coil guidance.",
+      "Restore the reviewed supplemental source evidence and re-run QA; do not relabel the original Trane URL.");
   }
 
   for (const asset of reviewed.visual_assets) {
@@ -287,7 +353,7 @@ export function runV43DoorChecks(spec: PageSpec, evidence?: DoorTemplateEvidence
   const production = collected?.production;
   if (!production || !publicOrigin(production.origin) || !production.deployment_id.trim() ||
       !isCurrent(production.verified_at, production.expires_at, now, 7) || !validHash(production.receipt_sha256) ||
-      production.canonical_path !== spec.canonical_path || production.content_sha256 !== V43_QA_PINS.rendered ||
+      production.canonical_path !== spec.canonical_path || production.content_sha256 !== V43_QA_AMENDMENT_PINS.rendered ||
       !production.public_release_authorized || !production.crawler_checks_passed || !production.image_render_parity_passed ||
       !production.browser_accessibility_checks_passed || !production.links_and_sitemaps_passed ||
       !spec.indexed || spec.noindex_reason !== null) {

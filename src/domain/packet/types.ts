@@ -105,6 +105,8 @@ export interface PacketMeta {
 export interface PropertyBlock {
   street: string;
   city_state_zip: string;
+  /** Explicit T1-35 gap permits a packet without inventing an address. */
+  unknown_reason?: string | null;
   type?: string | null;
   storeys?: string | null;
 }
@@ -159,6 +161,10 @@ export interface Reading {
   value: string | number;
   provenance: Provenance;
   source_media?: string | null;
+  /** Printed unit, when explicit; no conversion is implied by this field. */
+  unit?: string;
+  /** Only an actual source:confirmed answer can set this flag. */
+  confirmed_by_homeowner?: boolean;
   approximate?: boolean;
 }
 
@@ -166,7 +172,9 @@ export interface EvidenceBlock {
   media: MediaItem[];
   readings?: Partial<
     Record<
-      "thermostat_mode" | "thermostat_setpoint_f" | "room_temp_f" | "filter_age_weeks" | "filter_condition",
+      "thermostat_mode" | "fan_mode" | "thermostat_setpoint" | "room_temp" |
+      "thermostat_setpoint_f" | "room_temp_f" | "filter_nominal_dimensions" |
+      "printed_cooling_capacity" | "filter_age_weeks" | "filter_condition",
       Reading
     >
   >;
@@ -185,6 +193,8 @@ export type FactKind =
 export interface Fact {
   text: string;
   provenance: Provenance;
+  /** Internal trace keys for the actual contributing held fields/evidence. */
+  source_fields?: string[];
   emphasis_word?: string | null;
   inline_tag?: string | null;
   kind?: FactKind;

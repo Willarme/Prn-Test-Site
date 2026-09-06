@@ -19,6 +19,7 @@ import {
 } from "@/platform/ai/prompt";
 import { MAX_MODEL_HTTP_ATTEMPTS, type ModelCallInput, type ModelCallResult, type ModelImage, type ModelUsage } from "@/platform/ai/provider";
 import { spendLedger, utcDay, type SpendLedger, type SpendReservation } from "@/platform/ai/spend";
+import { FileRequestCallLedger, requestCallPolicy, requestCallsRequireSharedStore, validRequestCallIdentity, type RequestCallLedger } from "@/platform/ai/request-calls";
 import { resolveCapability } from "@/platform/capabilities/registry";
 import { validateAndEmit } from "@/platform/events/steward";
 import { checkKillSwitch } from "@/platform/killswitch";
@@ -141,11 +142,14 @@ export interface CallModelDeps {
   /** Supply a policy directly and the store is not consulted. */
   policy?: AiPolicy;
   spend?: SpendLedger;
+  requestCalls?: RequestCallLedger;
   now?: () => Date;
 }
 
 export interface CallModelInput<T> {
   agent_id: string;
+  /** Trusted server-issued journey id. Required with tenant_id for A01 models. */
+  request_id?: string | null;
   /** Capability Registry key or alias. Resolved, permission-checked, and used as the policy key. */
   capability: string;
   /**
@@ -513,6 +517,22 @@ export async function callModel<T>(input: CallModelInput<T>): Promise<CallModelR
   const { model, capabilityKey, maxOutputTokens, timeoutMs, maxRepairRetries, estimateUsd } =
     gated.gate;
 
+  // A01's three model capabilities share the request allowance. Keeping this
+  // at the gateway prevents a missing adapter field or false privacy flag from
+  // silently bypassing it. SEO/admin model work retains its existing budget.
+  const requestScoped = input.agent_id === "A01" || input.request_id !== undefined;
+  const identity = { request_id: input.request_id ?? undefined, tenant_id: input.tenant_id };
+  if (requestScoped && !validRequestCallIdentity(identity)) {
+    return recordRefusal(input as CallModelInput<unknown>, "not_permitted", "homeowner model work requires a trusted request and tenant identity");
+  }
+  if (requestScoped && requestCallsRequireSharedStore()) {
+    return recordRefusal(input as CallModelInput<unknown>, "disabled", "homeowner model work requires a shared durable request-call store in this runtime; none is installed");
+  }
+  const requestCalls = deps.requestCalls ?? new FileRequestCallLedger();
+  let requestPolicy: ReturnType<typeof requestCallPolicy> | null = null;
+  try { if (requestScoped) requestPolicy = requestCallPolicy(); }
+  catch { return recordRefusal(input as CallModelInput<unknown>, "disabled", "the versioned request-call policy is unavailable"); }
+
   // 8. The credential. Checked AFTER governance so a keyless deployment still
   //    reports "disabled" rather than "no_key" when the flags are off — the
   //    reason an owner reads should be the FIRST thing that was wrong.
@@ -589,10 +609,22 @@ export async function callModel<T>(input: CallModelInput<T>): Promise<CallModelR
       bytes * 4 + (request.images?.length ?? 0) * IMAGE_TOKEN_ALLOWANCE * 4,
       maxOutputTokens, resolved.catalogue ?? MODEL_CATALOGUE);
     const remaining = Math.max(0, activeReservation.usd - actualSpentUsd - uncertainUsd);
-    const attemptsAllowed = remaining <= 0 ? 0 : upper.known && upper.estimated_usd === 0 ? MAX_MODEL_HTTP_ATTEMPTS :
+    let attemptsAllowed = remaining <= 0 ? 0 : upper.known && upper.estimated_usd === 0 ? MAX_MODEL_HTTP_ATTEMPTS :
       upper.known ? Math.min(MAX_MODEL_HTTP_ATTEMPTS, Math.floor((remaining + 1e-10) / upper.estimated_usd)) : 0;
     if (attemptsAllowed < 1) {
       return { ok: false, reason: "over_budget", detail: "the call or repair would exceed its reserved per-call allowance", provider: provider.id, attempts: 0 };
+    }
+    if (requestPolicy && validRequestCallIdentity(identity)) {
+      // Reserve ONE HTTP attempt, including a repair. Transport retries cannot
+      // run invisibly inside the provider: maxAttempts below is one. Admissions
+      // are never refunded after provider uncertainty or a process crash.
+      try {
+        const admitted = await requestCalls.reserve(identity, requestPolicy, capabilityKey);
+        if (!admitted) return { ok: false, reason: "over_budget", detail: `request model-call ceiling reached (${requestPolicy.max_calls}, policy v${requestPolicy.version}); use the deterministic result`, provider: provider.id, attempts: 0 };
+      } catch {
+        return { ok: false, reason: "not_permitted", detail: "the request model-call ledger is unavailable; no model request was sent", provider: provider.id, attempts: 0 };
+      }
+      attemptsAllowed = 1;
     }
     const exposure = roundUp(upper.estimated_usd * attemptsAllowed);
     let result: ModelCallResult;

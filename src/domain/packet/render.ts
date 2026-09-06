@@ -224,7 +224,7 @@ const PROVENANCE_RANK: Record<Provenance, number> = {
   read_from_label: 0, seen_in_photo_or_video: 1, confirmed_by_homeowner: 2, reported: 3, inference: 4, unknown: 5,
 };
 
-function selectFacts(candidates: Fact[]): { facts: Fact[]; shortfall: boolean } {
+export function selectFacts(candidates: Fact[]): { facts: Fact[]; shortfall: boolean } {
   const genuine = candidates.filter((f) => f.provenance !== "inference" && f.text.trim().length > 0);
   if (genuine.length <= 7) return { facts: genuine, shortfall: genuine.length < 7 };
   const scored = genuine.map((f, i) => ({ f, i, p: FACT_PRIORITY[f.kind ?? "other"], r: PROVENANCE_RANK[f.provenance] }));
@@ -282,7 +282,7 @@ export function renderPacketHtml(input: DirectionsInput, options: RenderOptions 
   const tz = input.config.time_zone ?? DEFAULT_TIME_ZONE;
   const generated = wallClock(input.packet.generated_at, tz);
   if (!generated) throw new PacketHaltError("packet.generated_at is required (Directions §3.3)");
-  if (!input.property?.street || !input.property?.city_state_zip) {
+  if ((!input.property?.street || !input.property?.city_state_zip) && !input.property?.unknown_reason?.trim()) {
     throw new PacketHaltError("property.street and property.city_state_zip are required (Directions §3.3)");
   }
   if (!input.problem?.title) throw new PacketHaltError("problem.title is required (Directions §3.3)");
@@ -298,7 +298,7 @@ export function renderPacketHtml(input: DirectionsInput, options: RenderOptions 
   const homeMemoryUrl = input.config.home_memory_url ?? `${input.config.link_base}${keepPath}${input.packet.id}`;
   const trustNetworkUrl = input.config.trust_network_url ?? `${input.config.link_base}${askPath}${input.packet.id}`;
   const propertyLine =
-    `${input.property.street} · ${input.property.city_state_zip}` +
+    (input.property.street && input.property.city_state_zip ? `${input.property.street} · ${input.property.city_state_zip}` : `Job address still unknown. ${input.property.unknown_reason}`) +
     (input.property.type ? ` · ${input.property.type}${input.property.storeys ? `, ${input.property.storeys}` : ""}` : input.property.storeys ? ` · ${input.property.storeys}` : "");
 
   // --- §9: hard stop, from the flags or from the homeowner's own words.

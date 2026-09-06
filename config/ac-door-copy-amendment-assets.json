@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "amendment_id": "v43-copy-2026-09-06-r1",
+  "amendment_sha256": "d3c0334191addd6b4f6394701ba59cbfb224b8905aba8f8c9f756c037eaa0601",
+  "rendered_at": "2026-09-06T17:39:11.893Z",
+  "scope": "Local SVG text derivative and native PNG raster. Preserves geometry and dimensions; deployed parity and browser layout approval remain separate.",
+  "renderer": {
+    "library": "sharp",
+    "version": "0.35.4",
+    "svg_engine": "librsvg",
+    "svg_engine_version": "2.62.91",
+    "density": 144,
+    "fit": "contain",
+    "background": "#ffffff",
+    "compression_level": 9
+  },
+  "assets": [
+    {
+      "asset_id": "plate-1",
+      "base_public_svg_sha256": "f53f3a9a845b0536ddb786bdc94248d30c4008b2f48ab2be7a288ace7e33f5ff",
+      "base_public_png_sha256": "7631415e03a6d18f4d1264d46478bd89b47166ba8bddbd3bfdeab96ee098610b",
+      "source_path": "spec/ac-blowing-warm-air/plates/ice-or-clear.svg",
+      "base_source_sha256": "d1150ca96b6927bf2d83a216cb5fb1d2b97a8917e4826c4fd2da1d9eaf5c650c",
+      "amended_source_sha256": "b3b07c984a11b395ab2800fbd43d446ebb1bcae0e9d8fe5b381fd491c3b6490c",
+      "public_svg_path": "/images/ac-refrigerant-line-iced-vs-normal.svg",
+      "public_svg_sha256": "062160937fe42df2ea43f9862af51ab7b93805bcb514b4f34f1ee4a4074c7832",
+      "raster_path": "/images/how-to-tell-an-iced-refrigerant-line-from-a-normal-one-and-wha.png",
+      "raster_sha256": "965d46e0c22105b693ffe6672e7995a3084245850152b230a9f85ae0e147f535",
+      "width": 1200,
+      "height": 409,
+      "encoding_format": "image/png",
+      "has_alpha": false,
+      "replacement_ids": [
+        "continued-operation-plate",
+        "continued-operation-description"
+      ]
+    }
+  ],
+  "receipt_sha256": "d0aba512c373092063f2abb0b29d7b384090e52b8a79ef7b2d00379fcb40a7b8"
+}

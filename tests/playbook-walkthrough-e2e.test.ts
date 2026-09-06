@@ -195,6 +195,21 @@ describe("guided-diagnosis UX walked end to end — HVAC cooling (rating/photo/y
     async () => {
       const id = await createRequest("The AC is blowing warm air, not cooling at all, since this morning");
 
+      // Explicitly complete the two preceding T1-35 screens through accepted
+      // escape actions; each gap is charged and survives in the final packet.
+      await getCompleteHtml(id);
+      for (const field_key of ["unit_model_serial", "symptom_timing", "thermostat_photo"]) {
+        const gap = await fetch(`${BASE}/api/intake/answer`, { method: "POST",
+          headers: { "Content-Type": "application/json", ...ownerHeaders(id) },
+          body: JSON.stringify({ request_id: id, fields: [{ field_key, value: "__cannot_reach__" }] }) });
+        expect(gap.status).toBe(200);
+        await getCompleteHtml(id);
+      }
+      const addressGap = await fetch(`${BASE}/api/intake/answer`, { method: "POST",
+        headers: { "Content-Type": "application/json", ...ownerHeaders(id) },
+        body: JSON.stringify({ request_id: id, address_skipped: true }) });
+      expect(addressGap.status).toBe(200);
+
       // --- initial load: step 1 of 5, no resumed pill ---
       let page = await getCompleteHtml(id);
       expect(page.status).toBe(200);
@@ -255,9 +270,8 @@ describe("guided-diagnosis UX walked end to end — HVAC cooling (rating/photo/y
 
       // --- "Start over" — a read-only reset back to the first step ---
       const reset = await startOver(id);
-      const resetStep = expectStep(reset.view);
-      expect(resetStep.step_id).toBe("filter");
-      expect(resetStep.step_number).toBe(1);
+      expect(reset.view.step).toBeNull();
+      expect(reset.view.outcome?.outcome_id).toBe("needs_technician_cooling");
       // It does not erase the saved walkthrough: a fresh page load still
       // resumes at the outcome, exactly like the pre-fix client-only reset
       // never persisted anything either.

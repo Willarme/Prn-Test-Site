@@ -1,5 +1,5 @@
 import { z } from "zod";
-import reviewedBinding from "../../../content/door-template/v43/binding.json";
+import { getAmendedV43Binding } from "./door-template-amendment";
 import { FactBundle, type SearchOpportunity } from "@/domain/search/contracts";
 
 const Text = z.string().min(1);
@@ -68,8 +68,11 @@ const Shape = z.object({
   direct_answer: DirectAnswer, tool_value: ToolValue, capability_questions: z.array(CapabilityQuestion).length(9),
   metric_cards: z.array(MetricCard).length(3), visual_assets: z.array(VisualAsset).length(3), methodology: Methodology,
   source_bindings: z.array(SourceBinding).length(11), claim_bindings: z.array(ClaimBinding).min(1),
+  amendment: z.object({ amendment_id: z.literal("v43-copy-2026-09-06-r1"), base_binding_sha256: Hash,
+    source_modified_at: z.string().datetime({ offset: true }),
+  }).strict(),
 }).strict();
-const frozen = Shape.parse(reviewedBinding);
+const frozen = Shape.parse(getAmendedV43Binding());
 const fingerprint = stableV43Value(frozen);
 export const DoorTemplateBinding = Shape.superRefine((binding, ctx) => {
   if (stableV43Value(binding) !== fingerprint) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "v43 binding differs from reviewed frozen source; export a reviewed version, never edit owner/AI fields" });

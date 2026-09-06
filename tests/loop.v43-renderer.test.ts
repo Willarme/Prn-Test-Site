@@ -10,6 +10,7 @@ import { renderV43DoorPage, renderV43Template } from "@/platform/pages/v43-door-
 import { generatePageCopy } from "@/platform/search/ai-page-copy";
 import { ACTIVE_DISCLOSURE } from "@/domain/privacy/disclosures";
 import manifest from "../content/door-template/v43/manifest.json";
+import { amendV43Html } from "@/domain/search/door-template-amendment";
 
 function frozenSpec(): PageSpec {
   return compilePageSpec({
@@ -22,7 +23,7 @@ describe("the factory's real v43 render path", () => {
   it("rebuilds exact reviewed HTML from the shipped kit, including all section and source content", () => {
     const spec = frozenSpec();
     const html = renderV43Template(spec);
-    expect(html).toBe(readFileSync(join(process.cwd(), "content/door-template/v43/rendered.html"), "utf8").replace(/\r\n/g, "\n"));
+    expect(html).toBe(amendV43Html(readFileSync(join(process.cwd(), "content/door-template/v43/rendered.html"), "utf8")));
     expect(spec.door_template?.section_order).toHaveLength(15);
     expect(html).toContain('id="common-causes"');
     expect(html).toContain('id="sources-and-review"');
@@ -43,7 +44,7 @@ describe("the factory's real v43 render path", () => {
     expect(html.match(/<form\b/g)).toHaveLength(1);
     expect(html).toContain('content="noindex,nofollow"');
     expect(html).toContain('name="twitter:image" content="http://127.0.0.1:3291/images/');
-    expect(html).toContain('"dateModified": "2026-09-05"');
+    expect(html).toContain('"dateModified": "2026-09-06"');
     const canonical = "http://127.0.0.1:3291" + spec.canonical_path;
     expect(html).toContain('<link rel="canonical" href="' + canonical + '">');
     expect(html).toContain('<meta property="og:url" content="' + canonical + '">');

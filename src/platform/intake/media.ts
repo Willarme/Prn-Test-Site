@@ -1,9 +1,8 @@
 import { randomUUID } from "node:crypto";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { withFileLock, writeFileAtomic } from "@/platform/stores/atomic-file";
-import { dirname, join } from "node:path";
+import { basename, dirname, join } from "node:path";
 import {
-  advanceWalkthrough,
   projectWalkthroughView,
   resolveWalkthroughPosition,
   type WalkthroughView,
@@ -15,9 +14,15 @@ import {
 } from "@/platform/adapters/media-storage";
 import { emitClarifierAnswered, reclassifyOnNewEvidence } from "@/domain/problem/capabilities";
 import { photoCapDecisionFor } from "@/domain/problem/evidence-caps";
+import { DEFAULT_TENANT_ID } from "@/domain/problem/contracts";
 import { loadJourneyContext, nowIso, regeneratePacket } from "@/platform/intake/complete";
 import { journeySafetyRule } from "@/domain/problem/journey-safety";
 import { runtimeStore } from "@/platform/stores/runtime";
+import { appendIntakeEffort } from "@/platform/intake/effort";
+import { intakeReadiness } from "@/platform/intake/readiness";
+import { readPrintedEvidence } from "@/platform/problem/printed-evidence";
+import { emptyPrintedEvidence, StoredPrintedEvidence, type PrintedEvidenceResult } from "@/domain/problem/printed-evidence";
+import { printedAnswers, printedKeysForTarget } from "@/domain/intake/printed-readings";
 
 /**
  * THE EVIDENCE ATTACH PATH, AS A FUNCTION.
@@ -30,9 +35,9 @@ import { runtimeStore } from "@/platform/stores/runtime";
  * authorization, the same evidence write and the same regeneration. One
  * function, two callers.
  *
- * The walkthrough behaviour is UNCHANGED — playbook field keys and `step:<id>`
- * targets do exactly what they did, including the server-side replay that
- * proves a step target is this customer's actual current step.
+ * Playbook field keys and `step:<id>` targets retain the server-side replay
+ * that proves a step is this customer's actual current step. After the write,
+ * the shared known-fact/effort selector controls which next check is emitted.
  */
 
 /**
@@ -88,9 +93,14 @@ export type LabelReadResult =
         model?: string;
         serial?: string;
         manufacture_year?: number;
+        capacity?: string;
       };
+      capacity_reading?: { printed_label: string; printed_value: string; printed_unit: string };
       confidence: Record<string, "high" | "medium" | "low">;
       run_id: string | null;
+      /** The real reader distinguishes unreadable pixels from a call that
+       * could not run/finish. Absent on legacy injected readers. */
+      extraction_status?: "unreadable" | "failed";
     }
   | { ok: false; reason: string };
 
@@ -98,6 +108,8 @@ type LabelReader = (input: {
   bytes: Buffer;
   mime: string;
   request_id: string;
+  tenant_id?: string;
+  evidence_id?: string;
 }) => Promise<LabelReadResult>;
 
 /**
@@ -135,7 +147,7 @@ export function __setLabelReaderForTests(reader: LabelReader | null | undefined)
 }
 
 // ---------------------------------------------------------------------------
-// The confidence sidecar.
+// The confidence and extraction-completion sidecar.
 // ---------------------------------------------------------------------------
 
 /**
@@ -154,10 +166,10 @@ export function __setLabelReaderForTests(reader: LabelReader | null | undefined)
  * `readLabelConfidence(request_id)` — which is what the walkthrough's confirm
  * ladder needs ("is this right?" asked harder when the read was weak).
  *
- * HONEST LIMIT: this is the FILE store's environment only, which is the whole
- * demo. With Supabase configured the sidecar is not written and the reader
- * returns null, so a caller gets "no confidence recorded" rather than a wrong
- * one. A column on intake_details is owed before the Supabase path uses this.
+ * HONEST LIMIT: completion persistence is currently local-file based. A failed
+ * aggregate write uses a separate atomic completion file; failure of both
+ * returns503 before extracted answers are saved. This is not shared/serverless
+ * durability. A shared completion adapter is required for hosted verification.
  */
 export interface LabelConfidenceRecord {
   request_id: string;
@@ -166,6 +178,12 @@ export interface LabelConfidenceRecord {
   run_id: string | null;
   /** field_key -> the word. Confidence in words only (routine decision 5). */
   confidence: Record<string, "high" | "medium" | "low">;
+  /** Completion belongs to this evidence, never in a printable answer value. */
+  extraction_status?: "readable" | "unreadable" | "failed";
+  reason?: string;
+  /** No raw OCR transcript or source image. Exact bounded typed fields and gaps. */
+  printed_evidence?: PrintedEvidenceResult;
+  target?: string;
 }
 
 function labelSidecarPath(requestId: string): string {
@@ -173,9 +191,10 @@ function labelSidecarPath(requestId: string): string {
   return join(process.env.PRN_DEV_DB_PATH ? dirname(process.env.PRN_DEV_DB_PATH) : join(process.cwd(), "data", "runtime"), "label-reads", `${safe}.json`);
 }
 
-function reserveLabelAttempt(requestId: string): boolean {
-  // One label-model request per journey, including concurrent photo uploads.
-  const file = labelSidecarPath(requestId) + ".attempt";
+function reserveLabelAttempt(requestId: string, evidenceId: string): boolean {
+  // One attempt for these bytes. A new accepted capture may retry, subject to
+  // the cumulative effort ledger and callModel's shared request/spend ceiling.
+  const file = labelSidecarPath(requestId) + `.${evidenceId}.attempt`;
   try { return withFileLock(file, () => {
     if (existsSync(file)) return false;
     writeFileAtomic(file, new Date().toISOString());
@@ -183,27 +202,85 @@ function reserveLabelAttempt(requestId: string): boolean {
   }); } catch { return false; }
 }
 
-function writeLabelConfidence(record: LabelConfidenceRecord): void {
+const LABEL_ID = /^[a-z0-9_-]+$/i;
+
+function completedLabelRecord(value: unknown, requestId: string): value is LabelConfidenceRecord {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+  const record = value as Partial<LabelConfidenceRecord>;
+  return record.request_id === requestId && typeof record.evidence_id === "string" && LABEL_ID.test(record.evidence_id)
+    && typeof record.read_at === "string" && Number.isFinite(Date.parse(record.read_at))
+    && (record.run_id === null || typeof record.run_id === "string")
+    && !!record.confidence && typeof record.confidence === "object" && !Array.isArray(record.confidence)
+    && Object.values(record.confidence).every(word => ["high", "medium", "low"].includes(word))
+    && (record.extraction_status === undefined || ["readable", "unreadable", "failed"].includes(record.extraction_status))
+    && (record.reason === undefined || typeof record.reason === "string")
+    && (record.printed_evidence === undefined || (StoredPrintedEvidence.safeParse(record.printed_evidence).success
+      && record.printed_evidence.evidence_id === record.evidence_id && typeof record.target === "string" && printedKeysForTarget(record.target).length > 0));
+}
+
+/** A real completed result, not the earlier reservation, survives an aggregate
+ * sidecar failure in its own atomic file. Neither location holds photo bytes. */
+function writeLabelConfidence(record: LabelConfidenceRecord): boolean {
+  if (!LABEL_ID.test(record.request_id) || !completedLabelRecord(record, record.request_id)) return false;
+  const path = labelSidecarPath(record.request_id);
   try {
-    const path = labelSidecarPath(record.request_id);
     withFileLock(path, () => {
-      const existing = readLabelConfidence(record.request_id);
+      const existing = readLabelReadings(record.request_id);
       writeFileAtomic(path, JSON.stringify([...(existing ?? []), record]));
     });
+    return true;
   } catch {
-    /* a sidecar is never worth a homeowner's upload */
+    const fallback = `${path}.${record.evidence_id}.completion.json`;
+    try {
+      withFileLock(fallback, () => writeFileAtomic(fallback, JSON.stringify(record)));
+      return true;
+    } catch {
+      // The photo is already stored. The caller reports this narrower failure
+      // instead of claiming the completed extraction result was persisted.
+      return false;
+    }
   }
 }
 
-/** Every label read recorded for this request, oldest first. Null when none. */
-export function readLabelConfidence(requestId: string): LabelConfidenceRecord[] | null {
+/** Every completed label attempt, including explicit gaps, oldest first. */
+export function readLabelReadings(requestId: string): LabelConfidenceRecord[] | null {
+  if (!LABEL_ID.test(requestId)) return null;
+  const path = labelSidecarPath(requestId);
+  const records: LabelConfidenceRecord[] = [];
   try {
-    const raw = readFileSync(labelSidecarPath(requestId), "utf-8");
-    const parsed: unknown = JSON.parse(raw);
-    return Array.isArray(parsed) ? (parsed as LabelConfidenceRecord[]) : null;
-  } catch {
-    return null;
+    const parsed: unknown = JSON.parse(readFileSync(path, "utf-8"));
+    if (Array.isArray(parsed)) records.push(...parsed.filter(record => completedLabelRecord(record, requestId)));
+  } catch { /* Independent per-evidence completions may still be available. */ }
+  try {
+    const prefix = `${basename(path)}.`;
+    const suffix = ".completion.json";
+    for (const entry of readdirSync(dirname(path), { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
+      if (!entry.isFile() || !entry.name.startsWith(prefix) || !entry.name.endsWith(suffix)) continue;
+      const evidenceId = entry.name.slice(prefix.length, -suffix.length);
+      if (!LABEL_ID.test(evidenceId)) continue;
+      try {
+        const record: unknown = JSON.parse(readFileSync(join(dirname(path), entry.name), "utf-8"));
+        if (completedLabelRecord(record, requestId) && record.evidence_id === evidenceId && record.extraction_status !== undefined) records.push(record);
+      } catch { /* Corrupt/unavailable files establish no completed result. */ }
+    }
+  } catch { /* Missing directory establishes no completed result either. */ }
+  const latest = new Map<string, LabelConfidenceRecord>();
+  for (const record of records) {
+    const held = latest.get(record.evidence_id);
+    // On equal timestamps prefer the aggregate copy; recovery copies the same
+    // result there. Stable insertion order preserves legacy chronological ties.
+    if (!held || Date.parse(record.read_at) > Date.parse(held.read_at)) latest.set(record.evidence_id, record);
   }
+  const completed = [...latest.values()].sort((a, b) => Date.parse(a.read_at) - Date.parse(b.read_at));
+  return completed.length ? completed : null;
+}
+
+/** Legacy packet callers use these ids as read-from-label provenance. An
+ * unreadable/failed attempt must never enter that successful-read view. */
+export function readLabelConfidence(requestId: string): LabelConfidenceRecord[] | null {
+  const readable = readLabelReadings(requestId)?.filter(record =>
+    record.extraction_status === undefined || record.extraction_status === "readable");
+  return readable?.length ? readable : null;
 }
 
 // ---------------------------------------------------------------------------
@@ -226,6 +303,7 @@ export type AttachMediaResult =
       view?: WalkthroughView;
       /** What the label reader made of a photo, when it ran at all. */
       label_read?: LabelReadResult;
+      printed_read?: PrintedEvidenceResult;
     }
   | {
       ok: false;
@@ -253,6 +331,8 @@ function answersFromLabel(
   const f = read.fields;
   if (f.equipment_type) out.push({ field_key: "equipment_type", value_text: f.equipment_type });
   if (f.brand) out.push({ field_key: "brand", value_text: f.brand });
+  if (f.capacity && read.capacity_reading) out.push({ field_key: "printed_cooling_capacity",
+    value_text: `${read.capacity_reading.printed_label}: ${read.capacity_reading.printed_value} ${read.capacity_reading.printed_unit}` });
   const modelSerial = [f.model ? `Model ${f.model}` : null, f.serial ? `Serial ${f.serial}` : null]
     .filter(Boolean)
     .join(", ");
@@ -321,6 +401,9 @@ export async function attachMedia(input: AttachMediaInput): Promise<AttachMediaR
   const store = runtimeStore();
   const isStep = target.startsWith("step:");
   const isDoor = isDoorTarget(target);
+  if (!isStep && !isDoor && !ctx.playbook.required_fields.some(field => field.field_key === target)) {
+    return { ok: false, status: 400, error: "Unknown evidence target" };
+  }
   if (isStep) {
     // AUTHORIZATION, not just validation — `target` naming a real step is not
     // enough, it must be THIS customer's actual current step, replayed
@@ -338,6 +421,18 @@ export async function attachMedia(input: AttachMediaInput): Promise<AttachMediaR
     }
   }
 
+  const selected = await intakeReadiness(ctx);
+  const admission = await appendIntakeEffort({
+    request_id: requestId, tenant_id: ctx.journey.problem.tenant_id ?? "prn",
+    operation_id: `media:${randomUUID()}`, kind: "media", question_id: target,
+    question_type: "media", decision_reason: "One media capture attempt costs three effort units.",
+    selection_decisions: selected.screen.decisions,
+  });
+  if (!admission.accepted) return {
+    ok: false, status: 409,
+    error: "You have reached the intake limit. Your saved packet is available, including what is still unknown.",
+  };
+
   const now = nowIso();
   const evidenceId = `ev_${randomUUID()}`;
   // No ":" in the key — a colon in a path segment is invalid on Windows, and
@@ -347,6 +442,8 @@ export async function attachMedia(input: AttachMediaInput): Promise<AttachMediaR
   const data = Buffer.from(await file.arrayBuffer());
   let view: WalkthroughView | undefined;
   let labelRead: LabelReadResult | undefined;
+  let printedRead: PrintedEvidenceResult | undefined;
+  let photoSaved = false;
   const kind: "photo" | "video" | "voice_note" = isVoice
     ? "voice_note"
     : file.type.startsWith("video/")
@@ -375,6 +472,7 @@ export async function attachMedia(input: AttachMediaInput): Promise<AttachMediaR
        */
       field_key: isStep || isDoor ? null : target,
     });
+    photoSaved = true;
     if (isStep) {
       const stepId = target.slice(5);
       await store.saveDiagnosisAnswer({
@@ -384,9 +482,6 @@ export async function attachMedia(input: AttachMediaInput): Promise<AttachMediaR
         evidence_id: evidenceId,
         answered_at: now,
       });
-      // Same branch resolution a typed/choice answer gets — a photo answers
-      // "any" (DiagnoseWalkthrough never asks which branch a photo took).
-      view = advanceWalkthrough(ctx.playbook, stepId, "any") ?? undefined;
       // A step photo can also satisfy required fields (e.g. unit label).
       const step = ctx.playbook.diagnostic_steps.find((s) => s.step_id === stepId);
       if (step && step.satisfies_fields.length > 0) {
@@ -401,7 +496,7 @@ export async function attachMedia(input: AttachMediaInput): Promise<AttachMediaR
           }))
         );
       }
-    } else if (!isDoor) {
+    } else if (!isDoor && !(await store.listIntakeAnswers(requestId)).some(answer => answer.field_key === target && answer.value_text !== null)) {
       await store.saveIntakeAnswers([
         {
           request_id: requestId,
@@ -438,49 +533,78 @@ export async function attachMedia(input: AttachMediaInput): Promise<AttachMediaR
      * READ THE RATING PLATE (routine decision 2, recommendation B).
      *
      * One narrow capability, called on a photo that is ALREADY SAFELY STORED.
-     * Everything below this line is a bonus: a failed, slow or absent reader
-     * leaves the homeowner exactly where they were, which is being asked to
-     * type the model later. It never becomes an error, and it never overwrites
-     * an answer this person already gave (never ask twice, and never contradict
-     * them with a guess).
+     * A failed, slow or absent reader leaves the photo intact and records an
+     * explicit extraction gap. It never overwrites an answer this person
+     * already gave. If neither completion store can retain that outcome, the
+     * response distinguishes the saved photo from the unsaved reading status.
      */
-    if (kind === "photo") {
+    if (kind === "photo" && printedKeysForTarget(target).length) {
+      try {
+        printedRead = reserveLabelAttempt(requestId, evidenceId)
+          ? await readPrintedEvidence({ evidence_id: evidenceId, image: data })
+          : emptyPrintedEvidence(evidenceId, null, "unavailable");
+      } catch { printedRead = emptyPrintedEvidence(evidenceId, null, "unavailable"); }
+      const projected = printedAnswers(target, printedRead);
+      const completion: LabelConfidenceRecord = {
+        request_id: requestId, evidence_id: evidenceId, read_at: new Date().toISOString(), run_id: null,
+        target, printed_evidence: printedRead, confidence: projected.confidence, extraction_status: projected.extraction_status,
+        ...(projected.extraction_status === "readable" ? {} : { reason: projected.extraction_status === "failed"
+          ? "The printed-text reader could not finish this photo." : "This photo did not yield a legible value for the requested reading." }),
+      };
+      // Complete provenance first. A saved answer must never outlive a missing
+      // confidence record and be promoted to an observed/confirmed fact.
+      if (!writeLabelConfidence(completion)) return { ok: false, status: 503,
+        error: "Your photo was saved, but its reading result could not be saved. You can keep your existing packet or add the details you can read." };
+      const existing = await store.listIntakeAnswers(requestId);
+      const answered = new Set(existing.filter(answer => answer.value_text !== null).map(answer => answer.field_key));
+      const fresh = projected.answers.filter(answer => !answered.has(answer.field_key));
+      if (fresh.length) await store.saveIntakeAnswers(fresh.map(answer => ({ ...answer, request_id: requestId,
+        evidence_id: evidenceId, source: "photo" as const, answered_at: now })));
+    } else if (kind === "photo") {
+      let labelAnswers: Array<{ field_key: string; value_text: string }> = [];
+      let completion: Pick<LabelConfidenceRecord, "extraction_status" | "reason"> = {
+        extraction_status: "failed", reason: "The label reader was unavailable for this upload.",
+      };
       try {
         const reader = await loadLabelReader();
-        if (reader && reserveLabelAttempt(requestId)) {
-          labelRead = await reader({ bytes: data, mime: file.type, request_id: requestId });
-          if (labelRead.ok && labelRead.readable) {
+        if (reader && reserveLabelAttempt(requestId, evidenceId)) {
+          labelRead = await reader({ bytes: data, mime: file.type, request_id: requestId, tenant_id: ctx.journey.problem.tenant_id ?? DEFAULT_TENANT_ID, evidence_id: evidenceId });
+          const extracted = labelRead.ok && labelRead.readable && labelRead.extraction_status !== "failed"
+            ? answersFromLabel(labelRead, now) : [];
+          completion = labelRead.ok && labelRead.extraction_status === "failed"
+            ? { extraction_status: "failed", reason: "Label extraction could not run or finish for this upload." }
+            : labelRead.ok
+            ? extracted.length
+              ? { extraction_status: "readable" }
+              : { extraction_status: "unreadable", reason: "The submitted photo did not yield a readable equipment-label value." }
+            : { extraction_status: "failed", reason: "The label-reading attempt did not complete with a usable result." };
+          if (extracted.length) {
             const existing = await store.listIntakeAnswers(requestId);
             const alreadyAnswered = new Set(
               existing.filter((a) => a.value_text !== null).map((a) => a.field_key)
             );
-            const fresh = answersFromLabel(labelRead, now).filter(
+            labelAnswers = extracted.filter(
               (a) => !alreadyAnswered.has(a.field_key)
             );
-            if (fresh.length > 0) {
-              await store.saveIntakeAnswers(
-                fresh.map((a) => ({
-                  request_id: requestId,
-                  field_key: a.field_key,
-                  value_text: a.value_text,
-                  evidence_id: evidenceId,
-                  source: "photo" as const,
-                  answered_at: now,
-                }))
-              );
-              writeLabelConfidence({
-                request_id: requestId,
-                evidence_id: evidenceId,
-                read_at: now,
-                run_id: labelRead.run_id,
-                confidence: labelRead.confidence,
-              });
-            }
           }
+        } else if (reader) {
+          completion = { extraction_status: "failed", reason: "No additional label-reading attempt was started for this evidence." };
         }
       } catch {
-        /* the homeowner types it later — that is the designed fallback */
+        completion = { extraction_status: "failed", reason: "The label-reading attempt failed before a usable value was saved." };
       }
+      const completionSaved = writeLabelConfidence({
+        request_id: requestId, evidence_id: evidenceId, read_at: new Date().toISOString(),
+        run_id: labelRead?.ok ? labelRead.run_id : null,
+        confidence: completion.extraction_status === "readable" && labelRead?.ok ? labelRead.confidence : {},
+        ...completion,
+      });
+      if (!completionSaved) return {
+        ok: false, status: 503,
+        error: "Your photo was saved, but its label-reading result could not be saved. You can keep your existing packet or add the details you can read.",
+      };
+      if (labelAnswers.length) await store.saveIntakeAnswers(labelAnswers.map(answer => ({ ...answer,
+        request_id: requestId, evidence_id: evidenceId, source: "photo" as const, answered_at: now })));
     }
 
     /**
@@ -534,14 +658,20 @@ export async function attachMedia(input: AttachMediaInput): Promise<AttachMediaR
 
     await regeneratePacket(requestId);
     if (isStep) {
-      const position = resolveWalkthroughPosition(ctx.playbook, await store.listDiagnosisAnswers(requestId));
-      view = projectWalkthroughView(ctx.playbook, position.currentStepId, position.outcomeId);
+      const fresh = await loadJourneyContext(requestId);
+      view = { step: null, outcome: null };
+      if (fresh) {
+        const next = await intakeReadiness(fresh);
+        const check = next.screen.questions.find(question => question.source_kind === "check");
+        view = projectWalkthroughView(fresh.playbook, check?.source_key ?? null, next.position.outcomeId);
+      }
     }
   } catch (err) {
     return {
       ok: false,
       status: 503,
-      error: "We could not save that file right now — please try again.",
+      error: photoSaved ? "Your file was saved, but we could not finish updating its reading or packet. Your previous packet remains available."
+        : "We could not save that file right now — please try again.",
       detail: err instanceof Error ? err.message : String(err),
     };
   }
@@ -550,5 +680,6 @@ export async function attachMedia(input: AttachMediaInput): Promise<AttachMediaR
     evidence_id: evidenceId,
     ...(view ? { view } : {}),
     ...(labelRead ? { label_read: labelRead } : {}),
+    ...(printedRead ? { printed_read: printedRead } : {}),
   };
 }

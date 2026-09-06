@@ -52,7 +52,8 @@ async function main() {
     factory: { staged: factory.staged.length, template_id: created.spec.template_id, section_count: created.spec.door_template.section_order.length,
       source_count: created.spec.door_template.source_bindings.length, capability_count: created.spec.door_template.capability_questions.length,
       rendered_sha256: created.spec.door_template.rendered_sha256, copy_runs: factory.copy_runs },
-    qa_result: { state: qa.results[0].state, rule_set_version: qa.results[0].rule_set_version, reasons: gate.decision.reasons },
+    qa_result: { state: qa.results[0].state, rule_set_version: qa.results[0].rule_set_version,
+      blockers: qa.results[0].blockers, reasons: gate.decision.reasons },
     release_eligible: gate.decision.release_eligible, repeated_run_staged: repeat.staged.length,
     preview_path: "/staged-template/" + created.spec.page_spec_id,
   };

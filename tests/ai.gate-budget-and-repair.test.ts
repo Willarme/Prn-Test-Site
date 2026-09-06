@@ -1,3 +1,4 @@
+import { modelRequest, useLocalRequestBudgetFixtures } from "./helpers/request-budget-fixture";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -15,6 +16,8 @@ import {
   resetKillSwitchForTests,
 } from "@/platform/killswitch";
 import { recentAgentRuns, resetAgentRunLedgerForTests } from "@/platform/runs/ledger";
+
+useLocalRequestBudgetFixtures();
 
 /**
  * AI STEP 2 — THE GATE, THE BUDGET, THE PRIVACY RULE AND THE ONE REPAIR TURN.
@@ -437,7 +440,7 @@ describe("the privacy rule — enforced on CONFIG, before the wire", () => {
     });
     const result = await callModel({
       ...criticCall({
-        agent_id: "A01",
+        ...modelRequest(),        agent_id: "A01",
         // A01 holds the A00-spec ALIAS in its allowed list, which is the shipped
         // convention the gateway's own tests use. callModel resolves the alias
         // and keys policy off the CANONICAL key, so the policy entry is
@@ -465,7 +468,7 @@ describe("the privacy rule — enforced on CONFIG, before the wire", () => {
     const policy = enabledPolicy();
     const result = await callModel({
       ...criticCall({
-        agent_id: "A01",
+        ...modelRequest(),        agent_id: "A01",
         capability: "classify_problem",
         handles_customer_data: false, // same call, no customer text in it
       }),

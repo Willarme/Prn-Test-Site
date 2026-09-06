@@ -145,7 +145,8 @@ describe("playbook-graph browser exposure — real /complete payload", () => {
       // The walkthrough opens on "filter" (a rating step) — its own content
       // legitimately belongs in the payload.
       const currentStep = HVAC_COOLING_PLAYBOOK.diagnostic_steps.find((s) => s.step_id === "filter")!;
-      expect(html).toContain("Find the panel that opens on your indoor unit");
+      expect(html).toContain("data-active-intake-screen");
+      expect(html).not.toContain("Find the panel that opens on your indoor unit");
       expect(currentStep.step_id).toBe("filter"); // sanity: this is really the first step
 
       // "power_check" sits three branches deep (filter -> outdoor_unit ->
@@ -176,8 +177,9 @@ describe("playbook-graph browser exposure — real /complete payload", () => {
 
       // "thermostat" is the first step, a `choice` kind — its own options
       // are legitimate current-step content.
-      expect(html).toContain("Display is blank");
-      expect(html).toContain("On, and set correctly");
+      expect(html).toContain("data-active-intake-screen");
+      expect(html).not.toContain("Display is blank");
+      expect(html).not.toContain("On, and set correctly");
 
       // "drain_pan" is two branches deeper (thermostat -> breaker ->
       // drain_pan). Its instruction must not appear yet.

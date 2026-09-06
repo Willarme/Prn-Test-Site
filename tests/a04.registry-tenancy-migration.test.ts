@@ -137,7 +137,7 @@ describe("migration 00011 — applied 2026-08-25, and parseable", () => {
    * The real property is sequence integrity: 00011 is A04's, it sits where it
    * should, and no number was skipped by anyone.
    */
-  it("is numbered 00011 and the migration sequence has no gaps", () => {
+  it("keeps 00011 and every migration outside the documented branch reservation gap", () => {
     const migrations = readdirSync(join(process.cwd(), "supabase/migrations")).sort();
     expect(migrations).toContain("00011_opportunity_decision.sql");
     const numbers = migrations.map((m) => Number(m.slice(0, 5)));
@@ -146,8 +146,14 @@ describe("migration 00011 — applied 2026-08-25, and parseable", () => {
     // 00016-00018 are already claimed on unmerged branches (t2-08, t5-06,
     // t6-03 — Merge Train 2026-08-30). The gap closes as those branches land;
     // a strict 1..N assertion cannot survive multi-branch numbering. 00020 =
-    // the loop surfaces (campaign track F2b, 2026-09-05), the next free number.
-    expect(numbers).toEqual([...numbers.slice(0, 15).map((_, i) => i + 1), 19, 20]);
+    // the loop surfaces (campaign track F2b, 2026-09-05); 00021 hardens their
+    // inherited operation grants without renumbering any existing migration.
+    // 00021 hardens loop grants; 00022 persists T1-35 effort. Both must exist,
+    // as must 00020: only the existing 00016-00018 reservation is excepted.
+    expect(numbers).toEqual([...Array.from({ length: 15 }, (_, i) => i + 1), 19, 20, 21, 22]);
+    expect(migrations).toContain("00020_loop_surfaces.sql");
+    expect(migrations).toContain("00021_loop_grant_hardening.sql");
+    expect(migrations).toContain("00022_intake_effort.sql");
     expect(numbers).toContain(11);
   });
 

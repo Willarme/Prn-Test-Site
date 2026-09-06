@@ -6,6 +6,7 @@ import { signLink } from "@/platform/links/tokens";
 import { ACTIVE_DISCLOSURE } from "@/domain/privacy/disclosures";
 import { CANNOT_REACH_FIELD_VALUE, CANNOT_REACH_STEP_ANSWER } from "@/domain/intake/extract";
 import type { WalkthroughView } from "@/domain/intake/playbook";
+import { __setLabelReaderForTests } from "@/platform/intake/media";
 
 /**
  * The answer route as the walkthrough uses it (campaign track P4):
@@ -228,11 +229,24 @@ describe("POST /api/intake/answer — the address and the confirm", () => {
 
   it("a Yes on a photo read stores the value with source 'confirmed'", async () => {
     const request_id = await startJourney("My Carrier AC is 8 years old and blowing warm air since Tuesday");
-    const res = await answer({ request_id, fields: [{ field_key: "unit_model_serial", value: "24ABC636A003", confirmed: true }] });
+    const { POST: mediaPost } = await import("@/app/api/intake/media/route");
+    const form = new FormData();
+    form.set("request_id", request_id); form.set("k", signLink({ scope: "keep", request_id }));
+    form.set("target", "unit_model_serial");
+    const png = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==", "base64");
+    form.set("file", new File([png], "synthetic-label.png", { type: "image/png" }));
+    __setLabelReaderForTests(async () => ({ ok: true, readable: true, fields: { model: "24ABC636A003" },
+      confidence: { model: "low" }, run_id: "synthetic-p4-label" }));
+    try {
+      expect((await mediaPost(new Request("http://localhost/api/intake/media", { method: "POST", body: form }))).status).toBe(200);
+    } finally { __setLabelReaderForTests(undefined); }
+    const held = (await runtimeStore().listIntakeAnswers(request_id)).findLast(a => a.field_key === "unit_model_serial" && a.value_text);
+    expect(held).toMatchObject({ value_text: "Model 24ABC636A003", source: "photo", evidence_id: expect.any(String) });
+    const res = await answer({ request_id, fields: [{ field_key: "unit_model_serial", value: held!.value_text, confirmed: true }] });
     expect(res.status).toBe(200);
     const saved = await runtimeStore().listIntakeAnswers(request_id);
     const row = saved.filter((a) => a.field_key === "unit_model_serial").at(-1);
-    expect(row?.value_text).toBe("24ABC636A003");
+    expect(row?.value_text).toBe(held!.value_text);
     expect(row?.source).toBe("confirmed");
   });
 });

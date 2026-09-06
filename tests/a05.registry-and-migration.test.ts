@@ -98,7 +98,7 @@ describe("migration 00012 — applied 2026-08-25, and structurally sound", () =>
     "utf-8"
   );
 
-  it("is the next free number and the sequence has no gaps", () => {
+  it("keeps 00012 and every migration outside the documented branch reservation gap", () => {
     const migrations = readdirSync(join(process.cwd(), "supabase/migrations")).sort();
     expect(migrations).toContain("00012_page_registry.sql");
     const numbers = migrations.map((m) => Number(m.slice(0, 5)));
@@ -106,8 +106,14 @@ describe("migration 00012 — applied 2026-08-25, and structurally sound", () =>
     // cross-branch high-water (00016-00018 live on unmerged branches —
     // Merge Train 2026-08-30). Strict 1..N cannot survive multi-branch
     // numbering; the gap closes as those branches land. 00020 = the loop
-    // surfaces (campaign track F2b, 2026-09-05), the next free number.
-    expect(numbers).toEqual([...numbers.slice(0, 15).map((_, i) => i + 1), 19, 20]);
+    // surfaces (campaign track F2b, 2026-09-05); 00021 hardens their inherited
+    // operation grants without renumbering any existing migration.
+    // Existing 00021 hardens loop grants; T1-35 adds 00022 effort. Neither
+    // extends the old 00016-00018 reservation or permits a missing migration.
+    expect(numbers).toEqual([...Array.from({ length: 15 }, (_, i) => i + 1), 19, 20, 21, 22]);
+    expect(migrations).toContain("00020_loop_surfaces.sql");
+    expect(migrations).toContain("00021_loop_grant_hardening.sql");
+    expect(migrations).toContain("00022_intake_effort.sql");
     // Nothing renumbered or rewrote an already-committed migration.
     expect(migrations[10]).toBe("00011_opportunity_decision.sql");
   });

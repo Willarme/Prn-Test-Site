@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { z } from "zod";
+import { modelRequest, useLocalRequestBudgetFixtures } from "./helpers/request-budget-fixture";
 import { callModel } from "@/platform/ai/callModel";
 import { defaultAiProvider, resetAiProviderForTests } from "@/platform/ai/client";
 import { AiPolicy, DEFAULT_AI_POLICY } from "@/platform/ai/policy";
@@ -23,6 +24,7 @@ import { resetKillSwitchForTests } from "@/platform/killswitch";
  * own request-shape tests keep working.
  */
 
+useLocalRequestBudgetFixtures();
 const SECRET = "sk-or-v1-TESTONLY-guard-000000";
 
 function input() {
@@ -108,6 +110,7 @@ describe("the vitest guard", () => {
     });
     const spend = new MemorySpendLedger();
     const result = await callModel({
+      ...modelRequest(),
       agent_id: "A01",
       capability: "classify_home_problem",
       handles_customer_data: true,

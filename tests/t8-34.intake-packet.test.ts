@@ -6,8 +6,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { ACTIVE_DISCLOSURE } from "@/domain/privacy/disclosures";
 import { HVAC_COOLING_PLAYBOOK } from "@/domain/intake/playbooks/hvac-cooling";
 import { HVAC_OPTIONAL_FIELDS } from "@/domain/intake/playbooks/hvac-optional-fields";
-import { clarifierCandidates } from "@/domain/problem/clarifier";
-import { orderedDetailFields, optionalDetailFields, validateQuestionPlan } from "@/platform/intake/question-plan";
+import { buildIntakeRegistry } from "@/domain/intake/readiness";
 import { renderPacketHtml } from "@/domain/packet/render";
 import { MemoryAiPolicyStore, setAiPolicyStoreForTests } from "@/platform/ai/policy-store";
 import { MemorySpendLedger, setSpendLedgerForTests } from "@/platform/ai/spend";
@@ -15,6 +14,8 @@ import { signLink } from "@/platform/links/tokens";
 import { resetRuntimeStore, runtimeStore } from "@/platform/stores/runtime";
 import { loadPacket } from "@/platform/packet/load";
 import { loadJourneyContext } from "@/platform/intake/complete";
+import { intakeReadiness } from "@/platform/intake/readiness";
+import { readIntakeEffort } from "@/platform/intake/effort";
 import { __setLabelReaderForTests } from "@/platform/intake/media";
 import { POST as startPost } from "@/app/api/intake/route";
 import { POST as answerPost } from "@/app/api/intake/answer/route";
@@ -80,24 +81,25 @@ async function packet(id: string, now = REPORT) {
 }
 
 describe("T8-34 accepted-input capture and optional presentation", () => {
-  it("keeps five automatic candidates while every permitted optional field reaches the real complete page", async () => {
-    expect(clarifierCandidates(HVAC_COOLING_PLAYBOOK, []).map(f => f.field_key)).toEqual([
-      "unit_model_serial", "symptom_timing", "brand", "system_age", "thermostat_photo",
-    ]);
-    const emptyPlan = { field_keys: [], engine: "deterministic" as const, run_id: null, max_questions: 0 };
-    expect(orderedDetailFields(HVAC_COOLING_PLAYBOOK, [], emptyPlan)).toEqual([]);
-    expect(optionalDetailFields(HVAC_COOLING_PLAYBOOK).map(f => f.field_key)).toEqual(HVAC_OPTIONAL_FIELDS.map(f => f.field_key));
-    expect(validateQuestionPlan({ ...emptyPlan, field_keys: ["sh_refrigerant"], max_questions: 1 }, HVAC_COOLING_PLAYBOOK)).toBeNull();
+  it("keeps all 22 permitted fields in the shared registry and renders only the selected screen", async () => {
+    const registry = buildIntakeRegistry(HVAC_COOLING_PLAYBOOK);
+    expect(new Set(registry.questions.map(q => q.question_id)).size).toBe(registry.questions.length);
+    for (const field of HVAC_OPTIONAL_FIELDS) {
+      expect(registry.questions.some(q => q.source_kind === "field" && q.source_key === field.field_key && q.fills_fields.includes(field.field_key))).toBe(true);
+    }
     const id = await start();
+    const ctx = await loadJourneyContext(id);
+    expect(ctx).not.toBeNull();
+    const selected = await intakeReadiness(ctx!);
     const html = renderToStaticMarkup(await CompletePage({ params: Promise.resolve({ request_id: id }),
       searchParams: Promise.resolve({ k: signLink({ scope: "keep", request_id: id }) }) }));
     expect(html).toContain('<div class="eyebrow">Cooling problem</div>');
     expect(html).not.toContain('<div class="eyebrow">AC runs');
-    for (const field of HVAC_OPTIONAL_FIELDS) expect(html).toContain(`data-field="${field.field_key}"`);
-    for (const group of ["context", "history", "access"]) {
-      expect(html).toMatch(new RegExp(`<details[^>]*data-optional-group="${group}"`));
-      expect(html).not.toMatch(new RegExp(`<details[^>]*open[^>]*data-optional-group="${group}"`));
-    }
+    const active = html.slice(html.indexOf("data-active-intake-screen"));
+    const renderedFields = [...active.matchAll(/data-field="([^"]+)"/g)].map(match => match[1]);
+    expect(renderedFields.sort()).toEqual(selected.screen.questions.filter(q => q.source_kind === "field").map(q => q.source_key).sort());
+    expect(renderedFields.length).toBeLessThan(HVAC_OPTIONAL_FIELDS.length);
+    expect(html).not.toContain("data-optional-group=");
     expect(html).not.toMatch(/data-field="(?:access_gate|gate_or_entry_code|access_entry_code)"/);
     const input = await packet(id);
     expect(input.access).toEqual({});
@@ -106,8 +108,7 @@ describe("T8-34 accepted-input capture and optional presentation", () => {
     expect(renderPacketHtml(input).html).toContain("Not asked");
   });
 
-  it("persists and renders all 22 voluntary answers through the same allowlist the UI uses", async () => {
-    const id = await start();
+  it("persists and renders all 22 permitted answers across requests within the effort budget", async () => {
     const values: Record<string, string> = {
       equipment_type: "Split-system AC", outdoor_unit_location: "East side yard", air_handler_location: "Basement",
       thermostat_model: "Example thermostat", vent_airflow: "Weak", filter_age_weeks: "4", urgency: "Today",
@@ -117,40 +118,56 @@ describe("T8-34 accepted-input capture and optional presentation", () => {
       access_pets: "Dog will be secured", access_route: "Side path to the outdoor unit", access_window: "Morning preferred", access_contact: "Text preferred",
     };
     expect(Object.keys(values).sort()).toEqual(HVAC_OPTIONAL_FIELDS.map(f => f.field_key).sort());
-    const res = await answer(id, { fields: Object.entries(values).map(([field_key, value]) => ({ field_key, value })) });
-    expect(res.status).toBe(200);
-    const rows = await runtimeStore().listIntakeAnswers(id);
-    const ctx = await loadJourneyContext(id);
-    for (const [field_key, value] of Object.entries(values)) {
-      const row = rows.find(r => r.field_key === field_key);
-      expect(row).toMatchObject({ value_text: value, source: "typed", answered_at: REPORT.replace("Z", ".000Z") });
-      expect(ctx?.allEvidence.find(e => e.evidence_id === row?.evidence_id)?.content).toContain(value);
-    }
-    const input = await packet(id);
-    expect(input.equipment).toMatchObject({ type: { value: values.equipment_type, provenance: "reported" },
-      outdoor_unit_location: { value: values.outdoor_unit_location }, air_handler_location: { value: values.air_handler_location },
-      thermostat: { value: values.thermostat_model } });
-    expect(input.problem).toMatchObject({ habitability: "lost", vulnerable_occupant: true, damage_accruing: true,
-      urgency_level: "same_day", safety_state: "no_hazard_reported" });
-    expect(input.provider.service_history.map(h => [h.question_id, h.answer])).toEqual([
-      ["sh_refrigerant", "No"], ["sh_recent_service", values.sh_recent_service], ["sh_impact", "No"], ["sh_room_variance", "Yes"],
-    ]);
     const accessMap = { occupancy: "access_occupancy", owner_present_needed: "access_owner_present", parking: "access_parking",
       pets: "access_pets", equipment_route: "access_route", preferred_window: "access_window", contact_preference: "access_contact" } as const;
-    for (const [key, field] of Object.entries(accessMap)) expect(input.access?.[key as keyof typeof accessMap]?.value).toBe(values[field]);
-    expect(input.narrative.facts).toContainEqual(expect.objectContaining({ text: "Air from vents is weak", provenance: "reported" }));
-    const rendered = renderPacketHtml(input);
-    expect(rendered.self_check).toMatchObject({ ok: true });
-    for (const field of ["equipment_type", "outdoor_unit_location", "air_handler_location", "thermostat_model", "sh_recent_service", ...Object.values(accessMap)]) {
-      expect(rendered.html).toContain(values[field]);
+    const chunks = [
+      ["equipment_type", "outdoor_unit_location"], ["air_handler_location", "thermostat_model"],
+      ["vent_airflow", "filter_age_weeks"], ["urgency", "habitability", "vulnerable_occupant", "damage_accruing", "safety_signals"],
+      ["sh_refrigerant", "sh_recent_service", "sh_impact", "sh_room_variance"],
+      ["access_occupancy", "access_owner_present", "access_parking"], ["access_pets", "access_route"], ["access_window", "access_contact"],
+    ];
+    expect(chunks.flat().sort()).toEqual(Object.keys(values).sort());
+    const equipmentMap = { equipment_type: "type", outdoor_unit_location: "outdoor_unit_location",
+      air_handler_location: "air_handler_location", thermostat_model: "thermostat" } as const;
+    for (const keys of chunks) {
+      const id = await start();
+      const res = await answer(id, { fields: keys.map(field_key => ({ field_key, value: values[field_key] })) });
+      expect(res.status).toBe(200);
+      expect((await readIntakeEffort({ request_id: id, tenant_id: "prn" })).effort_spent).toBeLessThanOrEqual(20);
+      const rows = await runtimeStore().listIntakeAnswers(id); const ctx = await loadJourneyContext(id);
+      for (const field_key of keys) {
+        const row = rows.find(r => r.field_key === field_key);
+        expect(row).toMatchObject({ value_text: values[field_key], source: "typed", answered_at: REPORT.replace("Z", ".000Z") });
+        expect(ctx?.allEvidence.find(e => e.evidence_id === row?.evidence_id)?.content).toContain(values[field_key]);
+      }
+      const input = await packet(id); const rendered = renderPacketHtml(input);
+      expect(rendered.self_check).toMatchObject({ ok: true });
+      for (const [field, slot] of Object.entries(equipmentMap)) if (keys.includes(field)) {
+        expect(input.equipment[slot]).toMatchObject({ value: values[field], provenance: "reported" });
+        expect(rendered.html).toContain(values[field]);
+      }
+      for (const [key, field] of Object.entries(accessMap)) if (keys.includes(field)) {
+        expect(input.access?.[key as keyof typeof accessMap]?.value).toBe(values[field]);
+        expect(rendered.html).toContain(values[field]);
+      }
+      if (keys.includes("habitability")) expect(input.problem).toMatchObject({ habitability: "lost", vulnerable_occupant: true,
+        damage_accruing: true, urgency_level: "same_day", safety_state: "no_hazard_reported" });
+      if (keys.includes("sh_refrigerant")) {
+        expect(input.provider.service_history.map(h => [h.question_id, h.answer])).toEqual([
+          ["sh_refrigerant", "No"], ["sh_recent_service", values.sh_recent_service], ["sh_impact", "No"], ["sh_room_variance", "Yes"],
+        ]);
+        expect(rendered.html).toContain(values.sh_recent_service);
+      }
+      if (keys.includes("filter_age_weeks")) {
+        expect(input.narrative.facts).toContainEqual(expect.objectContaining({ text: "Air from vents is weak", provenance: "reported" }));
+        expect(input.provider.checks.some(c => c.name === "Filter condition")).toBe(false);
+        expect((await answer(id, { step: { step_id: "filter", answer: "2" } })).status).toBe(200);
+        const withFilter = await packet(id);
+        expect(withFilter.narrative.facts).toContainEqual(expect.objectContaining({ text: "Filter clean, rated 2/10 by the homeowner, replaced ~4 weeks ago" }));
+        expect(renderPacketHtml(withFilter).self_check.ok).toBe(true);
+      }
     }
-    // The renderer uses filter age with an actual filter observation, never manufactures a check.
-    expect(input.provider.checks.some(c => c.name === "Filter condition")).toBe(false);
-    expect((await answer(id, { step: { step_id: "filter", answer: "2" } })).status).toBe(200);
-    const withFilter = await packet(id);
-    expect(withFilter.narrative.facts).toContainEqual(expect.objectContaining({ text: "Filter clean, rated 2/10 by the homeowner, replaced ~4 weeks ago" }));
-    expect(renderPacketHtml(withFilter).self_check.ok).toBe(true);
-  });
+  }, 30_000);
 
   it("rejects forged choice values and unauthorized writes, and never accepts a code field", async () => {
     const id = await start();

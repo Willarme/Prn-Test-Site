@@ -1,5 +1,7 @@
 import { inferProblemFamily } from "@/domain/search/intent-classifier";
 import { checkSafety } from "@/domain/problem/safety";
+import { selectPlaybook } from "@/domain/intake/playbooks";
+import { buildCurrentFactState, filterFixtureQuestions, type CurrentFactState } from "@/domain/intake/readiness";
 import {
   EvidenceObject,
   JobPacket,
@@ -99,11 +101,14 @@ export function buildJobPacketFixture(
   evidence: EvidenceObject,
   now: string,
   taxonomy: ProblemTaxonomy = ACTIVE_PROBLEM_TAXONOMY,
-  copy: PacketCopyPackage = ACTIVE_PACKET_COPY
+  copy: PacketCopyPackage = ACTIVE_PACKET_COPY,
+  currentFacts?: CurrentFactState,
 ): JobPacket {
   const family = problem.service_category;
   const label = familyLabel(family, taxonomy);
-  const questions = questionsForFamily(family, taxonomy);
+  const facts = currentFacts ?? buildCurrentFactState({ request_id: problem.intake_session_id ?? problem.problem_id,
+    playbook: selectPlaybook(evidence.content, family), problem, evidence: [evidence] });
+  const questions = filterFixtureQuestions(family, questionsForFamily(family, taxonomy), facts);
   const c = copy.content;
 
   const unknowns = [

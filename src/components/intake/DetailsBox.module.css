@@ -1,0 +1,5 @@
+.details { min-width: 0; width: 100%; margin: 0; }
+.details button, .details input, .details select, .details summary { min-height: 44px; }
+.details button { min-width: 44px; white-space: normal; overflow-wrap: anywhere; }
+.details input, .details select { min-width: 0; max-width: 100%; }
+.details :focus-visible { outline: 3px solid var(--pink); outline-offset: 3px; }

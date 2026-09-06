@@ -6,29 +6,18 @@ import { ACTIVE_DISCLOSURE } from "@/domain/privacy/disclosures";
 import { engageKillSwitch, releaseKillSwitch } from "@/platform/killswitch";
 import { readDevDb } from "@/platform/stores/dev-db";
 import { runtimeStore } from "@/platform/stores/runtime";
+import { QUESTION_COSTS, READINESS_POLICY_VERSION } from "@/domain/intake/readiness";
+import { loadJourneyContext } from "@/platform/intake/complete";
+import { MAX_INTAKE_EFFORT, readIntakeEffort } from "@/platform/intake/effort";
+import { intakeReadiness } from "@/platform/intake/readiness";
 
 /**
- * A01'S PRODUCTION SURFACE, PROVEN BY DRIVING THE REAL ROUTE.
- *
- * ─── WHY THIS FILE EXISTS AT ALL ───────────────────────────────────────────
- *
- * A01's surface shipped with a full test suite and ZERO live callers. Every one
- * of those tests called `classifyProblem` directly, so all of them passed while
- * the running app produced no FactClaim, no DerivationRecord (`claim_ids: []`
- * on every stored record) and could not fire either of the two instruments A01
- * owns. Reading the code proved the surface worked; nothing proved it was
- * REACHED.
- *
- * So every assertion below goes through `POST /api/intake` — the same entry the
- * browser posts to — and then reads the persisted records back out of the
- * store. Nothing here imports A01's surface, on purpose: a test that called it
- * would be measuring the same thing the old suite already measured.
- *
- * ─── AND THE OTHER HALF: THE HOMEOWNER'S JOURNEY IS UNCHANGED ──────────────
- *
- * The last case pins the customer-visible response shape and the packet's own
- * words, because "richer records behind it" is only true if the thing in front
- * of it did not move.
+ * Drive POST /api/intake and read the persisted claims, derivation and packet.
+ * T1-35 S1/S2 retains governed A01 classification and replaces live clarifier
+ * model calls with shared-fact deterministic selection. The question cases
+ * invoke the same durable read model as the complete page; they do not claim
+ * browser or model-provider acceptance. The response and literal homeowner
+ * wording remain pinned independently of the richer internal records.
  */
 let intakePost: (req: Request) => Promise<Response>;
 
@@ -139,7 +128,7 @@ describe("A01 — a real customer journey produces durable facts", () => {
     expect(derivation.agent_run_id).toMatch(/^ar_/);
   });
 
-  it("both A01 instruments fire on the live path — and neither carries the homeowner's words", async () => {
+  it("classification facts and deterministic screen decisions persist without the homeowner's words", async () => {
     const marker = "the PURPLE THERMOSTAT in the hallway is blank and the AC won't start";
     const j = await driveJourney(marker);
 
@@ -149,9 +138,25 @@ describe("A01 — a real customer journey produces durable facts", () => {
     const asked = j.events.filter(
       (e) => e.event_name === "intake.clarifier_asked" && e.context.request_id === j.body.request_id
     );
-    // Neither of these could fire anywhere in the running app before this wiring.
     expect(facts.length).toBe(j.problem.claim_ids.length);
-    expect(asked.length).toBeGreaterThan(0);
+    // T1-35 S2 records the emitted screen in the durable effort ledger. The
+    // legacy model clarifier instrument is not evidence of this new path.
+    expect(asked).toEqual([]);
+    const ctx = (await loadJourneyContext(j.body.request_id))!;
+    const emitted = await intakeReadiness(ctx, true); // same read model as /complete
+    expect(emitted.screen.questions.length).toBeGreaterThan(0);
+    const ledger = await readIntakeEffort({ request_id: j.body.request_id, tenant_id: "prn" });
+    const selections = ledger.attempts.filter(a => a.operation.kind === "selection");
+    expect(selections).toHaveLength(1);
+    expect(selections[0].accepted).toBe(true);
+    expect(selections[0].charged_units).toBe(0);
+    expect(selections[0].operation.selection_decisions).toEqual(emitted.screen.decisions);
+    expect(emitted.screen.decisions.map(d => d.question_id)).toEqual(emitted.screen.questions.map(q => q.question_id));
+    for (const decision of emitted.screen.decisions) {
+      expect(decision.policy_version).toBe(READINESS_POLICY_VERSION);
+      expect(decision.fills_fields.length).toBeGreaterThan(0);
+      expect(decision.fills_fields.filter(field => decision.already_populated_fields.includes(field))).toEqual([]);
+    }
 
     // The fact envelope carries ids and classifications — never the claim's value.
     for (const e of facts) {
@@ -159,26 +164,26 @@ describe("A01 — a real customer journey produces durable facts", () => {
       expect(e.context.claim_class).toBeTruthy();
       expect(e.privacy_class).toBe("internal");
     }
-    // The clarifier envelope carries the field key; the question's own words
-    // live in the playbook and the answer lives in the IntakeAnswer row.
-    for (const e of asked) {
-      expect(e.context.field_key).toBeTruthy();
-      expect(e.context.playbook_id).toBeTruthy();
-    }
-    expect(JSON.stringify([...facts, ...asked])).not.toContain("PURPLE THERMOSTAT");
+    expect(JSON.stringify([facts, selections])).not.toContain("PURPLE THERMOSTAT");
   });
 
-  it("the questions asked stay inside A01's configured ceiling and are never repeated", async () => {
-    const j = await driveJourney("AC blowing warm air, nothing else seems wrong");
-    const asked = j.events.filter(
-      (e) => e.event_name === "intake.clarifier_asked" && e.context.request_id === j.body.request_id
-    );
-    const keys = asked.map((e) => e.context.field_key);
-    expect(new Set(keys).size).toBe(keys.length); // no question selected twice
-    for (const e of asked) {
-      expect(Number(e.context.asked_count)).toBeLessThan(Number(e.context.max_questions));
-    }
-    expect(keys.length).toBeLessThanOrEqual(Number(asked[0].context.max_questions));
+  it("reloading the emitted screen is idempotent, excludes supplied facts, and stays within effort", async () => {
+    const j = await driveJourney("My Carrier AC is 9 years old and started blowing warm air yesterday");
+    const ctx = (await loadJourneyContext(j.body.request_id))!;
+    const first = await intakeReadiness(ctx, true);
+    const second = await intakeReadiness((await loadJourneyContext(j.body.request_id))!, true);
+    expect(first.screen.questions.length).toBeGreaterThan(0);
+    expect(second.screen).toEqual(first.screen);
+    const targets = first.screen.questions.flatMap(q => q.fills_fields);
+    expect(new Set(targets).size).toBe(targets.length);
+    expect(first.facts.fields.symptom_timing?.value).toBeTruthy();
+    expect(targets).not.toContain("symptom_timing");
+    const ledger = await readIntakeEffort({ request_id: j.body.request_id, tenant_id: "prn" });
+    expect(ledger.attempts.filter(a => a.operation.kind === "selection")).toHaveLength(1);
+    expect(ledger.effort_spent).toBe(QUESTION_COSTS.free_text);
+    expect(ledger.attempts.reduce((sum, a) => sum + a.charged_units, 0)).toBe(ledger.effort_spent);
+    expect(first.screen.projected_effort).toBe(ledger.effort_spent + first.screen.questions.reduce((sum, q) => sum + QUESTION_COSTS[q.input_type], 0));
+    expect(first.screen.projected_effort).toBeLessThanOrEqual(MAX_INTAKE_EFFORT);
   });
 
   it("the classification really went through the governed door", async () => {

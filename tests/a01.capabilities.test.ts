@@ -263,38 +263,24 @@ describe("A01 — the file it was told not to touch", () => {
   });
 
   /**
-   * REWRITTEN 2026-08-25 (finding 1). This case used to assert that the intake
-   * route did NOT import A01's surface — i.e. it pinned the fact that A01's
-   * production surface had no live callers at all. That was the finding: a
-   * production surface nothing calls is a rehearsal, and the two instruments it
-   * owns could not fire anywhere in the running app.
-   *
-   * The invariant the case was REACHING for is intact and is what it pins now:
-   * A01 wraps the fixture engine rather than replacing it, and the live path
-   * goes THROUGH A01's surface rather than around it. The packet path is
-   * unchanged and still does not import it — A02 owns that side.
-   */
-  /**
-   * MOVED AND ONE LINE REVERSED, 2026-09-05 (campaign track F1).
-   *
-   * MOVED: the live path is now `platform/intake/start.ts::startIntake`, which
-   * the JSON route AND the static door page's multipart adapter both call. The
-   * invariant is unchanged and is checked where the code went; the route is
-   * still checked for the thing it must never do.
-   *
-   * REVERSED: `allow_model: false` became `allow_model: true`. That line was
-   * pinned here because no model was cleared for customer data, so consulting
-   * one bought a refusal row and nothing else. Josh cleared the test
-   * environment on 2026-09-05 ("use them now"); Melissa's countersign T0-03 is
-   * still open on the record. The deterministic pass is still the fallback and
-   * still owns safety, which is what the rest of this file pins.
+   * startIntake is shared by the JSON and multipart entry points. T1-35 S2
+   * retains its governed A01 classification and existing model policy gates;
+   * homeowner question selection now uses the deterministic shared-fact
+   * registry. Packet assembly remains A02's capability boundary.
    */
   it("the live intake path goes THROUGH A01's surface, not around it", () => {
     const route = readFileSync(join(process.cwd(), "src/app/api/intake/route.ts"), "utf-8");
     const live = readFileSync(join(process.cwd(), "src/platform/intake/start.ts"), "utf-8");
     expect(live).toMatch(/from "@\/domain\/problem\/capabilities"/);
     expect(live).toMatch(/classifyProblem\(/);
-    expect(live).toMatch(/selectClarifier\(/);
+    // T1-35 S2: the two authored banks use shared facts and deterministic
+    // selection. Classification keeps A01's governed capability boundary.
+    const readiness = readFileSync(join(process.cwd(), "src/platform/intake/readiness.ts"), "utf-8");
+    expect(live).toMatch(/clarifierCandidates\(/);
+    expect(live).not.toMatch(/selectClarifier\(/);
+    expect(readiness).toMatch(/selectQuestionScreen\(/);
+    expect(readiness).toMatch(/recordIntakeSelection\(/);
+    expect(readiness).not.toMatch(/selectClarifier\(|select_clarifying_questions/);
     // The whole point: no direct CALL to the implementation, which would mean a
     // kill switch on A01 stops nothing. (The name may still appear in the note
     // recording what this path used to do — a check that cannot tell a rule
@@ -303,7 +289,8 @@ describe("A01 — the file it was told not to touch", () => {
       expect(source).not.toMatch(/analyzeProblemFixture\s*\(/);
       expect(source).not.toMatch(/import .*analyzeProblemFixture/);
     }
-    // The model-backed alternate is consulted, under the owner's clearance.
+    // Classification may consult its alternate through the existing gateway;
+    // this source check grants no new model or live-use authorization.
     expect(live).toMatch(/allow_model: true/);
     expect(live).not.toMatch(/allow_model: false/);
   });

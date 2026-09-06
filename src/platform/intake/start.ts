@@ -1,7 +1,10 @@
 import { saveQuestionPlan, type QuestionPlan } from "@/platform/intake/question-plan";
 import { randomUUID } from "node:crypto";
 import type { DoorAttribution } from "@/domain/intake/contracts";
-import { classifyProblem, selectClarifier } from "@/domain/problem/capabilities";
+import { classifyProblem } from "@/domain/problem/capabilities";
+import { clarifierCandidates } from "@/domain/problem/clarifier";
+import { appendIntakeEffort } from "@/platform/intake/effort";
+import { initialPacketSnapshot } from "@/platform/intake/handoff";
 import { DEFAULT_TENANT_ID } from "@/domain/problem/contracts";
 import { createOwnerCookie } from "@/platform/links/owner";
 import { buildPacket } from "@/domain/problem/packet";
@@ -12,7 +15,7 @@ import { selectPlaybook } from "@/domain/intake/playbooks";
 import { emitPlatformEvent } from "@/platform/events/emit";
 import { flagEnabled } from "@/platform/flags";
 import { requirePolicyNumber } from "@/platform/policy/store";
-import { runtimeStore } from "@/platform/stores/runtime";
+import { runtimeStore, type RecordJourneyInput } from "@/platform/stores/runtime";
 import type { EventEnvelope } from "@/platform/events/envelope";
 
 /**
@@ -166,6 +169,7 @@ export async function startIntake(input: StartIntakeInput): Promise<StartIntakeR
     },
     {
       allow_model: true,
+      request_id: requestId,
       tenant_id: DEFAULT_TENANT_ID,
       input_ids: [requestId, intakeSessionId],
       resolve_fields: (p) => selectPlaybook(description, p.service_category).required_fields,
@@ -271,7 +275,7 @@ export async function startIntake(input: StartIntakeInput): Promise<StartIntakeR
     answered_at: now,
   }));
 
-  // One useful model selection, then governed deterministic choices. The plan
+  // Governed deterministic choices only. The legacy compatibility plan
   // is persisted separately from answers and actually consumed by /complete.
   const questionPlan: QuestionPlan = {
     field_keys: [], engine: "deterministic", run_id: null,
@@ -281,15 +285,12 @@ export async function startIntake(input: StartIntakeInput): Promise<StartIntakeR
     const settled = new Set(detected.map(d => d.field_key));
     const limit = Math.min(playbook.required_fields.filter(f => !settled.has(f.field_key)).length, questionPlan.max_questions);
     for (let askedCount = 0; askedCount < limit; askedCount += 1) {
-      const selection = await selectClarifier(
-        { playbook, answered_field_keys: [...settled], asked_count: askedCount, max_questions: questionPlan.max_questions },
-        { allow_model: askedCount === 0, request_id: requestId, tenant_id: DEFAULT_TENANT_ID },
-      );
-      if (!selection.ok || !selection.ask || settled.has(selection.ask.field_key)) break;
-      if (!playbook.required_fields.some(f => f.field_key === selection.ask!.field_key)) break;
-      if (askedCount === 0) { questionPlan.engine = selection.engine; questionPlan.run_id = selection.run_id; }
-      settled.add(selection.ask.field_key);
-      questionPlan.field_keys.push(selection.ask.field_key);
+      // Merged §11.2: authored candidates are deterministic set arithmetic.
+      // A model selection consumes an OCR slot without establishing a fact.
+      const selection = clarifierCandidates(playbook, [...settled])[0];
+      if (!selection || settled.has(selection.field_key)) break;
+      settled.add(selection.field_key);
+      questionPlan.field_keys.push(selection.field_key);
     }
   } catch { /* The saved journey remains usable with deterministic questions. */ }
 
@@ -345,7 +346,7 @@ export async function startIntake(input: StartIntakeInput): Promise<StartIntakeR
     // The exact wording shown must be reproducible later, independent of any
     // future revision to the text (#14A 9.3).
     await store.ensureDisclosure(ACTIVE_DISCLOSURE);
-    await store.recordJourney({
+    const pendingJourney: RecordJourneyInput = {
       session: {
         intake_session_id: intakeSessionId,
         schema_version: "1.0.0",
@@ -370,6 +371,20 @@ export async function startIntake(input: StartIntakeInput): Promise<StartIntakeR
        */
       claims,
       derivation,
+    };
+    const openingDiagnosis = detectDiagnosis(description, playbook).map(observed => ({
+      request_id: requestId, ...observed, evidence_id: evidence.evidence_id, answered_at: now,
+    }));
+    pendingJourney.packet = { ...packet, intake_snapshot: initialPacketSnapshot({
+      journey: pendingJourney, playbook, textEvidence: evidence, allEvidence: [evidence], address: null,
+      labelConfidence: {}, labelReadings: [],
+    }, detected, openingDiagnosis, claims) };
+    await store.recordJourney(pendingJourney);
+    await appendIntakeEffort({
+      request_id: requestId, tenant_id: problem.tenant_id ?? DEFAULT_TENANT_ID,
+      operation_id: `opening:${intakeSessionId}`, kind: "opening",
+      question_id: "opening-description", question_type: "free_text",
+      decision_reason: "The opening description is the one free-text turn (merged section 13.3).",
     });
     for (const observed of detectDiagnosis(description, playbook)) {
       await store.saveDiagnosisAnswer({ request_id: requestId, ...observed, evidence_id: evidence.evidence_id, answered_at: now });

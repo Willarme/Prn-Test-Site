@@ -107,6 +107,8 @@ function userPrompt(input: ClarifierInput, candidates: readonly ClarifierCandida
 }
 
 export interface ClarifierOptions {
+  request_id?: string | null;
+  tenant_id?: string;
   deps?: CallModelDeps;
 }
 
@@ -151,6 +153,8 @@ export async function selectNextClarifier(
 
   const call = await callModel({
     agent_id: "A01",
+    request_id: options.request_id,
+    tenant_id: options.tenant_id,
     capability: CLARIFIER_CAPABILITY,
     handles_customer_data: true,
     prompt_id: CLARIFIER_PROMPT.prompt_id,

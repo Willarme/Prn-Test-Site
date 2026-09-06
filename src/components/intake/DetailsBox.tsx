@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CANNOT_REACH_FIELD_VALUE } from "@/domain/intake/extract";
+import styles from "./DetailsBox.module.css";
 
 /**
  * Box 1 — "Details a technician will want." Green check = already have it
@@ -69,12 +70,16 @@ export function DetailsBox({
   fields,
   address,
   labelConfidence,
+  showAddress = true,
+  readOnly = false,
 }: {
   requestId: string;
   ownerKey?: string;
   fields: DetailsField[];
   address: DetailsAddress | null;
   labelConfidence: Record<string, "high" | "medium" | "low">;
+  showAddress?: boolean;
+  readOnly?: boolean;
 }) {
   const router = useRouter();
   const [open, setOpen] = useState<string | null>(null);
@@ -106,7 +111,7 @@ export function DetailsBox({
       return false;
     }
     if (!res?.ok) {
-      setErr(failMessage);
+      setErr(typeof data?.error === "string" ? data.error : failMessage);
       return false;
     }
     return true;
@@ -173,6 +178,14 @@ export function DetailsBox({
     if (!ok) return;
     setAddressOpen(false);
     router.refresh();
+  }
+
+  async function skipAddress() {
+    setBusy("address");
+    setErr(null);
+    const ok = await post({ address_skipped: true }, "Could not save that choice — try again.");
+    setBusy(null);
+    if (ok) router.refresh();
   }
 
   async function upload(fieldKey: string, file: File) {
@@ -393,7 +406,7 @@ export function DetailsBox({
   }
 
   return (
-    <div className="card-light">
+    <fieldset disabled={readOnly} className={`card-light ${styles.details}`}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 12 }}>
         <h2 className="d3" style={{ margin: 0 }}>
           Details a technician will want
@@ -413,7 +426,7 @@ export function DetailsBox({
       )}
 
       {/* The address of the house — first when missing, one line when held. */}
-      <div style={{ borderTop: "1px solid var(--line-l)", padding: "12px 0" }} data-address-group>
+      {showAddress && <div style={{ borderTop: "1px solid var(--line-l)", padding: "12px 0" }} data-address-group>
         <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
           <span
             aria-hidden
@@ -507,7 +520,7 @@ export function DetailsBox({
                     <button className="btn btn-pink btn-sm" disabled={busy === "address"} onClick={saveAddress}>
                       Save the address
                     </button>
-                    <button className="btn btn-ghost btn-sm" disabled={busy === "address"} onClick={() => setAddressOpen(false)}>
+                    <button className="btn btn-ghost btn-sm" disabled={busy === "address"} onClick={skipAddress}>
                       Skip for now
                     </button>
                   </div>
@@ -516,7 +529,7 @@ export function DetailsBox({
             )}
           </div>
         </div>
-      </div>
+      </div>}
 
       <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
         {fields.filter(f => !f.optional_group).map(renderField)}
@@ -531,6 +544,6 @@ export function DetailsBox({
           <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>{grouped.map(renderField)}</ul>
         </details>;
       })}
-    </div>
+    </fieldset>
   );
 }

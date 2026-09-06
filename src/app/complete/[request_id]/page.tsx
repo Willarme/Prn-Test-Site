@@ -5,15 +5,16 @@ import { DetailsBox, type DetailsField } from "@/components/intake/DetailsBox";
 import { DiagnoseWalkthrough } from "@/components/intake/DiagnoseWalkthrough";
 import { AttachmentRecovery } from "@/components/intake/AttachmentRecovery";
 import { acknowledgementLine, trialScope, type HeldFact } from "@/domain/intake/extract";
-import { projectWalkthroughView, resolveWalkthroughPosition } from "@/domain/intake/playbook";
+import { projectWalkthroughView } from "@/domain/intake/playbook";
 import { flagEnabled } from "@/platform/flags";
 import { loadJourneyContext } from "@/platform/intake/complete";
-import { loadQuestionPlan, orderedDetailFields, optionalDetailFields } from "@/platform/intake/question-plan";
 import { runtimeStore } from "@/platform/stores/runtime";
 import { ownerAllowed } from "@/platform/links/owner";
 import { journeySafetyRule } from "@/domain/problem/journey-safety";
 import { heldFieldConflicts } from "@/domain/intake/field-conflicts";
 import { HVAC_COOLING_TITLE } from "@/domain/packet/knowledge-hvac-cooling";
+import { intakeReadiness } from "@/platform/intake/readiness";
+import { FinishIntake } from "@/components/intake/FinishIntake";
 
 export const metadata: Metadata = {
   referrer: "no-referrer",
@@ -128,16 +129,21 @@ export default async function CompletePage({ params, searchParams }: { params: P
     );
   }
 
-  const questionPlan = loadQuestionPlan(request_id, ctx.playbook);
-  const fields: DetailsField[] = [...orderedDetailFields(ctx.playbook, answers, questionPlan), ...optionalDetailFields(ctx.playbook)].map((f) => ({
+  const merged = await intakeReadiness(ctx, true);
+  const chosenKeys = new Set(merged.screen.questions.filter(q => q.source_kind === "field").map(q => q.source_key));
+  const showAddress = merged.screen.questions.some(q => q.source_kind === "address");
+  const showWalkthrough = merged.screen.questions.some(q => q.source_kind === "check");
+  const allFields: DetailsField[] = ctx.playbook.required_fields.map((f) => ({
     field_key: f.field_key,
     label: f.label,
     why_it_matters: f.why_it_matters,
     how_to_find: f.how_to_find,
     photo_prompt: f.photo_prompt,
-    accepts: f.accepts,
+    accepts: f.accepts.filter(kind => kind === "photo" ? merged.screen.effort_remaining >= 3 : !!f.choices || merged.screen.effort_remaining >= 4),
     priority: f.priority,
-    optional_group: f.optional_group,
+    // The selector has already grouped this screen. A second collapsed group
+    // would hide the selected controls and silently reintroduce a third bank.
+    optional_group: undefined,
     choices: f.choices,
     harvest_to_property_memory: f.harvest_to_property_memory,
     have: latest.get(f.field_key) ?? null,
@@ -146,11 +152,13 @@ export default async function CompletePage({ params, searchParams }: { params: P
       return conflict ? { held_value: conflict.held_value, reported_values: conflict.reported_values } : undefined;
     })(),
   }));
+  const fields = allFields.filter(f => chosenKeys.has(f.field_key));
+  const reviewFields = allFields.filter(f => !chosenKeys.has(f.field_key) && f.have);
 
   // Resume point for the walkthrough: replay answers through the same branch
   // rules the client uses. This is the SAME authority the answer/media
   // routes use to reject a step_id the customer hasn't actually reached.
-  const { currentStepId, outcomeId } = resolveWalkthroughPosition(ctx.playbook, diagnosis);
+  const { currentStepId, outcomeId } = merged.position;
 
   return (
     <main>
@@ -178,23 +186,30 @@ export default async function CompletePage({ params, searchParams }: { params: P
             <span className="hint" style={{ color: "var(--on-dark-faint)", alignSelf: "center" }}>
               It updates automatically as you add details below.
             </span>
+            <FinishIntake requestId={request_id} ownerKey={k} />
           </div>
+          {reviewFields.length > 0 && <details style={{ marginTop: 20 }} data-shared-facts>
+            <summary style={{ minHeight: 44, cursor: "pointer" }}>Review or correct your saved details</summary>
+            <DetailsBox requestId={request_id} ownerKey={k} fields={reviewFields} address={ctx.address}
+              labelConfidence={ctx.labelConfidence} showAddress={false} readOnly={!!merged.ledger.finished_at || merged.ledger.effort_spent >= 20} />
+          </details>}
         </div>
       </section>
 
-      <section className="section section-light" style={{ paddingTop: 48 }}>
+      <section className="section section-light" style={{ paddingTop: 48 }} data-active-intake-screen>
         <div className="wrap">
           <div className="grid2" style={{ background: "transparent", border: "none", gap: 22 }}>
-            <div>
+            {(fields.length > 0 || showAddress) && <div>
               <DetailsBox
                 requestId={request_id}
                 ownerKey={k}
                 fields={fields}
                 address={ctx.address}
                 labelConfidence={ctx.labelConfidence}
+                showAddress={showAddress}
               />
-            </div>
-            <div>
+            </div>}
+            {(showWalkthrough || outcomeId) && <div>
               <div style={{ marginBottom: 10 }}>
                 <span className="pill pill-green">Optional</span>{" "}
                 <strong>Walk through it with me (if you want)</strong>
@@ -207,7 +222,8 @@ export default async function CompletePage({ params, searchParams }: { params: P
                 <DiagnoseWalkthrough
                   requestId={request_id}
                   ownerKey={k}
-                  initialView={projectWalkthroughView(ctx.playbook, currentStepId, outcomeId)}
+                  key={`${currentStepId}:${outcomeId}`}
+                  initialView={projectWalkthroughView(ctx.playbook, showWalkthrough ? currentStepId : null, outcomeId)}
                   resumed={diagnosis.length > 0}
                 />
               ) : (
@@ -218,7 +234,12 @@ export default async function CompletePage({ params, searchParams }: { params: P
                   </p>
                 </div>
               )}
-            </div>
+            </div>}
+            {merged.screen.questions.length === 0 && !outcomeId && <div className="card-light" data-intake-finished>
+              <h2 className="d3">Your record is ready to review.</h2>
+              <p>What you supplied is saved. Anything still unknown is recorded as a gap.</p>
+              <Link href={`/results/${request_id}${ownerQuery}`} className="btn btn-pink">View my Job Packet →</Link>
+            </div>}
           </div>
         </div>
       </section>

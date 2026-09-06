@@ -1,0 +1,68 @@
+.root {
+  min-width: 0;
+}
+
+.root :is(button, a, input:not([type="file"])) {
+  min-width: 44px;
+  min-height: 44px;
+  max-width: 100%;
+}
+
+.root :is(button, a) {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.root :is(button, a, input):focus-visible {
+  outline: 2px solid var(--pink-ink);
+  outline-offset: 3px;
+}
+
+.rating {
+  min-width: 0;
+}
+
+.ratingInput {
+  display: block;
+  width: 100%;
+  margin: 0;
+  accent-color: var(--pink);
+}
+
+.ratingValue {
+  display: block;
+  margin: 0 0 8px;
+  color: var(--ink);
+  font-family: var(--font-mono), monospace;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.ratingLabels {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+  align-items: start;
+}
+
+.ratingLabels > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.ratingLabels > span:last-child {
+  text-align: right;
+}
+
+.textControls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.textControls > input {
+  flex: 1 1 12rem;
+  min-width: 0;
+}

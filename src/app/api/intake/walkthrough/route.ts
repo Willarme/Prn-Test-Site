@@ -4,16 +4,14 @@ import { flagEnabled } from "@/platform/flags";
 import { loadJourneyContext } from "@/platform/intake/complete";
 import { ownerAllowed } from "@/platform/links/owner";
 import { journeySafetyRule } from "@/domain/problem/journey-safety";
+import { intakeReadiness } from "@/platform/intake/readiness";
 
 /**
- * Read-only reset for the guided-diagnosis walkthrough ("Start over").
+ * Resume the currently authorized, budget-feasible walkthrough view.
  *
  * The browser no longer holds the playbook graph (T1-15) — it only ever
- * holds the ONE step or outcome it is currently showing — so returning to
- * the first step needs a server round-trip like every other step change.
- * This route never writes an answer and never regenerates the packet; it
- * only re-reads the playbook's first step through the same projection every
- * other caller uses.
+ * holds one step or outcome. Completed checks never reappear through this
+ * endpoint; a new walkthrough starts a new request. No answer is written.
  */
 export async function GET(request: Request): Promise<NextResponse> {
   if (!flagEnabled("intake_shell_enabled")) return NextResponse.json({ error: "not enabled" }, { status: 404 });
@@ -27,6 +25,9 @@ export async function GET(request: Request): Promise<NextResponse> {
     next: `/safety/${encodeURIComponent(safety.safety_rule_id)}`,
     safety: { rule_id: safety.safety_rule_id, message: safety.approved_response, intake_may_continue: false },
   }, { status: 409 });
-  const view = projectWalkthroughView(ctx.playbook, ctx.playbook.first_step_id, null);
+  const current = await intakeReadiness(ctx, true);
+  const view = projectWalkthroughView(ctx.playbook,
+    current.screen.questions.some(q => q.source_kind === "check") ? current.position.currentStepId : null,
+    current.position.outcomeId);
   return NextResponse.json({ view });
 }

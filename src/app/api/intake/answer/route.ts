@@ -17,6 +17,10 @@ import { flagEnabled } from "@/platform/flags";
 import { loadJourneyContext, regeneratePacket } from "@/platform/intake/complete";
 import { runtimeStore } from "@/platform/stores/runtime";
 import { ownerAllowed } from "@/platform/links/owner";
+import { appendIntakeEffort } from "@/platform/intake/effort";
+import { intakeReadiness } from "@/platform/intake/readiness";
+import { heldFieldConflicts } from "@/domain/intake/field-conflicts";
+import { printedAnswers } from "@/domain/intake/printed-readings";
 
 /**
  * Typed answers to required fields, guided-diagnosis steps, and (campaign
@@ -44,6 +48,7 @@ const Body = z.object({
     )
     .optional(),
   step: z.object({ step_id: z.string().min(1), answer: z.string().min(1).max(200) }).optional(),
+  address_skipped: z.literal(true).optional(),
   /** Directions §3.3: the packet requires a job address (routine decision 10). */
   address: z
     .object({
@@ -67,7 +72,8 @@ export async function POST(request: Request): Promise<NextResponse> {
   if (!flagEnabled("intake_shell_enabled")) return NextResponse.json({ error: "not enabled" }, { status: 404 });
   const parsed = Body.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: "invalid" }, { status: 400 });
-  const { request_id, fields, step, address } = parsed.data;
+  const { request_id, fields, step, address, address_skipped } = parsed.data;
+  if (address && address_skipped) return NextResponse.json({ error: "Choose an address or skip it." }, { status: 400 });
   if (!(await ownerAllowed(request_id, parsed.data.k))) return NextResponse.json({ error: "Unknown request" }, { status: 404 });
   const ctx = await loadJourneyContext(request_id);
   if (!ctx) return NextResponse.json({ error: "Unknown request" }, { status: 404 });
@@ -81,10 +87,17 @@ export async function POST(request: Request): Promise<NextResponse> {
   let view: WalkthroughView | undefined;
   let changed: string | null = null;
   let newSafety: SafetyRule | null = null;
+  let invalidStepAnswer = false;
   try {
     const valid = new Set(ctx.playbook.required_fields.map((f) => f.field_key));
     const accepted = (fields ?? []).filter((f) => valid.has(f.field_key));
+    const heldAnswers = await store.listIntakeAnswers(request_id);
+    const conflicts = heldFieldConflicts(heldAnswers, ctx.allEvidence, ctx.playbook.required_fields);
     for (const field of accepted) {
+      if (field.confirmed && !heldAnswers.some(a => a.field_key === field.field_key && a.value_text === field.value) &&
+          !conflicts.some(c => c.field_key === field.field_key && c.reported_values.includes(field.value))) {
+        return NextResponse.json({ error: "A confirmation must match a value already in this record." }, { status: 400 });
+      }
       const choices = ctx.playbook.required_fields.find(f => f.field_key === field.field_key)?.choices;
       if (choices && field.value !== CANNOT_REACH_FIELD_VALUE && !choices.some(c => c.value === field.value)) {
         return NextResponse.json({ error: "Choose one of the offered answers." }, { status: 400 });
@@ -100,22 +113,34 @@ export async function POST(request: Request): Promise<NextResponse> {
       if (position.outcomeId !== null || position.currentStepId !== step.step_id) {
         return NextResponse.json({ error: "That step is not currently active for this request." }, { status: 409 });
       }
+      const supplied = step.answer.trim();
+      if (supplied !== CANNOT_REACH_STEP_ANSWER) {
+        const validAnswer = known.input.kind === "text" ||
+          (known.input.kind === "yes_no" && /^(yes|no)$/i.test(supplied)) ||
+          (known.input.kind === "rating" && /^(?:[1-9]|10)$/.test(supplied)) ||
+          (known.input.kind === "choice" && known.input.options.some(option => option.toLowerCase() === supplied.toLowerCase())) ||
+          (known.input.kind === "photo" && supplied === "skipped photo");
+        invalidStepAnswer = !validAnswer;
+      }
     }
     const reports = accepted.filter(f => f.value !== CANNOT_REACH_FIELD_VALUE).map(f => f.value);
-    if (step && step.answer !== CANNOT_REACH_STEP_ANSWER) reports.push(step.answer);
+    if (step && step.answer !== CANNOT_REACH_STEP_ANSWER && step.answer !== "skipped photo") reports.push(step.answer);
     const reportText = reports.join(".\n");
     // The same deterministic registry used at entry runs on new free text,
     // before extraction, branch advancement or packet generation.
     const rules = reports.map(text => checkSafety(text)).filter((r): r is SafetyRule => r !== null);
     newSafety = rules.find(r => !r.intake_may_continue) ?? rules[0] ?? null;
     const evidenceId = reportText ? `ev_${randomUUID()}` : null;
-    if (evidenceId) {
-      await store.attachEvidence(ctx.journey.problem.problem_id, request_id, {
+    const problemId = ctx.journey.problem.problem_id;
+    async function attachReportEvidence() {
+      if (!evidenceId) return;
+      await store.attachEvidence(problemId, request_id, {
         evidence_id: evidenceId, kind: "customer_text", content: reportText,
         privacy: "private", captured_at: now, field_key: "intake_answer_text",
       });
     }
     if (newSafety && !newSafety.intake_may_continue) {
+      await attachReportEvidence();
       await recordCustomerEvent({
         event_name: "safety.triggered", guest_session_id: ctx.journey.session.guest_session_id,
         context: { request_id, problem_id: ctx.journey.problem.problem_id, safety_rule_id: newSafety.safety_rule_id, halted: "true", source: "intake_answer" },
@@ -123,6 +148,27 @@ export async function POST(request: Request): Promise<NextResponse> {
       });
       return safetyResponse(newSafety);
     }
+    if (invalidStepAnswer) return NextResponse.json({ error: "Choose one of the offered answers." }, { status: 400 });
+    const units = accepted.reduce((sum, f) => sum +
+      (f.confirmed || f.value === CANNOT_REACH_FIELD_VALUE ||
+       ctx.playbook.required_fields.find(field => field.field_key === f.field_key)?.choices ? 1 : 4), 0) +
+      (address ? 4 : address_skipped ? 1 : 0) + (step ? (step.answer === CANNOT_REACH_STEP_ANSWER || known?.input.kind !== "text" ? 1 : 4) : 0);
+    if (units > 20) return NextResponse.json({ error: "This group is too large. Your packet is available now." }, { status: 409 });
+    if (units > 0) {
+      const selected = await intakeReadiness(ctx);
+      const admission = await appendIntakeEffort({
+        request_id, tenant_id: ctx.journey.problem.tenant_id ?? "prn",
+        operation_id: `answer:${randomUUID()}`, kind: "answer", question_id: step ? `check:${step.step_id}` : "screen:details",
+        question_type: "closed_choice", units,
+        decision_reason: "Server-authored sum: choice/confirmation/escape 1, short typed answer/address group 4.",
+        selection_decisions: selected.screen.decisions,
+      });
+      if (!admission.accepted) return NextResponse.json({
+        error: "You have reached the intake limit. Your saved packet is available, including what is still unknown.",
+        packet_available: true, next: `/results/${request_id}`, effort_spent: admission.ledger.effort_spent,
+      }, { status: 409 });
+    }
+    await attachReportEvidence();
     if (accepted.length > 0) {
       await store.saveIntakeAnswers(
         accepted.map((f) => ({
@@ -134,6 +180,34 @@ export async function POST(request: Request): Promise<NextResponse> {
           answered_at: now,
         }))
       );
+      // Editing the compound display withdraws its older reader-derived
+      // components. Keep the new words as one supplied answer; do not infer
+      // replacement units or values here. Independently typed fields survive.
+      if (accepted.some(field => !field.confirmed && field.field_key === "thermostat_photo")) {
+        const componentKeys = ["thermostat_mode", "fan_mode", "thermostat_setpoint", "room_temp", "thermostat_setpoint_f", "room_temp_f"];
+        const withdrawn = componentKeys.filter(key => {
+          const held = heldAnswers.findLast(answer => answer.field_key === key);
+          return held && (held.source === "photo" || held.source === "confirmed") &&
+            ctx.allEvidence.some(evidence => evidence.evidence_id === held.evidence_id && evidence.kind === "photo");
+        });
+        if (withdrawn.length) await store.saveIntakeAnswers(withdrawn.map(field_key => ({ request_id, field_key,
+          value_text: null, evidence_id: evidenceId, source: "typed" as const, answered_at: now })));
+      }
+      // Confirm only the component values actually displayed in this exact
+      // photo summary. Missing fields and later manual corrections stay as-is.
+      for (const field of accepted.filter(field => field.confirmed && field.field_key === "thermostat_photo")) {
+        const photo = heldAnswers.findLast(answer => answer.field_key === field.field_key && answer.source === "photo" && answer.value_text === field.value);
+        const reading = ctx.labelReadings.findLast(record => record.evidence_id === photo?.evidence_id && record.target === field.field_key);
+        if (!photo || !reading?.printed_evidence) continue;
+        const projected = printedAnswers(field.field_key, reading.printed_evidence);
+        if (projected.answers.find(answer => answer.field_key === field.field_key)?.value_text !== field.value) continue;
+        const components = projected.answers.filter(answer => answer.field_key !== field.field_key && answer.value_text !== null).filter(answer => {
+          const held = heldAnswers.findLast(item => item.field_key === answer.field_key);
+          return held?.source === "photo" && held.evidence_id === photo.evidence_id && held.value_text === answer.value_text;
+        });
+        if (components.length) await store.saveIntakeAnswers(components.map(answer => ({ ...answer, request_id,
+          evidence_id: photo.evidence_id, source: "confirmed" as const, answered_at: now })));
+      }
       /**
        * A01 INSTRUMENT — `intake.clarifier_answered`, one per field actually
        * accepted. These are the playbook's own required fields, which is exactly
@@ -192,6 +266,8 @@ export async function POST(request: Request): Promise<NextResponse> {
         storeys: address.storeys?.trim() || null,
       });
     }
+    if (address_skipped) await store.saveIntakeAnswers([{ request_id, field_key: "property.address",
+      value_text: "__skipped__", evidence_id: null, source: "typed", answered_at: now }]);
     if (step) {
       // AUTHORIZATION, not just validation: `step.step_id` naming a real
       // step in this playbook is not enough — it must be THIS customer's
@@ -205,7 +281,7 @@ export async function POST(request: Request): Promise<NextResponse> {
         request_id,
         step_id: step.step_id,
         answer,
-        evidence_id: null,
+        evidence_id: evidenceId,
         answered_at: now,
       });
       // Resolve the branch SERVER-SIDE (the one resolver, playbook.ts) and
@@ -222,6 +298,15 @@ export async function POST(request: Request): Promise<NextResponse> {
       view = projectWalkthroughView(ctx.playbook, freshPosition.currentStepId, freshPosition.outcomeId);
     }
     await regeneratePacket(request_id);
+    if (step) {
+      const fresh = await loadJourneyContext(request_id);
+      if (fresh) {
+        const next = await intakeReadiness(fresh);
+        view = projectWalkthroughView(fresh.playbook,
+          next.screen.questions.some(q => q.source_kind === "check") ? next.position.currentStepId : null,
+          next.position.outcomeId);
+      }
+    }
   } catch (err) {
     if (newSafety && !newSafety.intake_may_continue) return safetyResponse(newSafety, false);
     return NextResponse.json(

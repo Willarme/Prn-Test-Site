@@ -37,6 +37,8 @@ import { spelled } from "@/domain/packet/script";
  */
 
 export interface HvacCoolingView {
+  /** Exact source choices resolved by the Directions adapter, not all media. */
+  fact_sources?: Partial<Record<"homeowner" | "fan" | "thermostat" | "vent" | "ice" | "filter" | "fins" | "onset" | "safety" | "power", string[]>>;
   /** Literal, printable opening complaint. A playbook match is not an observation. */
   homeowner_words?: string;
   /** Step `filter`: the 0–10 rating, when answered. */
@@ -45,9 +47,9 @@ export interface HvacCoolingView {
   filter_reported_clean?: boolean;
   /** Reported filter age in weeks, when a field carries it. */
   filter_age_weeks: number | null;
-  /** Whether a photo of the filter exists. */
+  /** Attachment presence only; it does not assess or corroborate the filter rating. */
   filter_photo: boolean;
-  /** Step `outdoor_unit`: a photo exists. */
+  /** Step `outdoor_unit`: an attachment exists, not a visual assessment of the fins. */
   outdoor_photo: boolean;
   /** Step `fan_moving`. */
   fan_moving: "yes" | "no" | null;
@@ -58,6 +60,7 @@ export interface HvacCoolingView {
   power_photo: boolean;
   /** Optional steps another track may add. */
   ice: "yes" | "no" | null;
+  /** Attachment presence only; the ice answer retains its own source. */
   ice_photo: boolean;
   /** A literal statement is reported evidence, not an inspected line or photo. */
   ice_reported?: boolean;
@@ -133,7 +136,7 @@ const ONSET_ADVERB: Record<OnsetCharacter, string> = {
 export function hvacCoolingFacts(v: HvacCoolingView): Fact[] {
   const facts: Fact[] = [];
   // The complaint this cluster matched on — the symptom, never a cause.
-  if (v.homeowner_words) facts.push({ text: `Homeowner reports: “${v.homeowner_words}”`, provenance: "reported", kind: "other" });
+  if (v.homeowner_words) facts.push({ text: `Homeowner reports: “${v.homeowner_words}”`, provenance: "reported", kind: "other", source_fields: v.fact_sources?.homeowner ?? ["user_language"] });
 
   if (v.fan_moving === "yes") {
     facts.push({
@@ -141,6 +144,7 @@ export function hvacCoolingFacts(v: HvacCoolingView): Fact[] {
       emphasis_word: "is",
       provenance: v.fan_provenance ?? "confirmed_by_homeowner",
       kind: "machine_state",
+      source_fields: v.fact_sources?.fan ?? ["check:fan_moving", ...(v.compressor_audible === "yes" ? ["check:compressor_audible"] : [])],
     });
   } else if (v.fan_moving === "no") {
     facts.push({
@@ -148,6 +152,7 @@ export function hvacCoolingFacts(v: HvacCoolingView): Fact[] {
       emphasis_word: "not",
       provenance: v.fan_provenance ?? "confirmed_by_homeowner",
       kind: "machine_state",
+      source_fields: v.fact_sources?.fan ?? ["check:fan_moving"],
     });
   }
 
@@ -156,28 +161,31 @@ export function hvacCoolingFacts(v: HvacCoolingView): Fact[] {
       text: `Thermostat: ${v.thermostat_mode ? `${v.thermostat_mode}, ` : ""}set ${v.thermostat_setpoint_f}°F, room ${v.room_temp_f}°F`,
       provenance: v.thermostat_reading_provenance ?? "reported",
       kind: "reading",
+      source_fields: v.fact_sources?.thermostat ?? ["thermostat_photo"],
     });
   }
 
   if (v.vent_airflow === "normal") {
-    facts.push({ text: "Air from vents is moving at normal strength", provenance: "reported", kind: "other" });
+    facts.push({ text: "Air from vents is moving at normal strength", provenance: "reported", kind: "other", source_fields: v.fact_sources?.vent ?? ["vent_airflow"] });
   } else if (v.vent_airflow === "weak") {
-    facts.push({ text: "Air from vents is weak", provenance: "reported", kind: "other" });
+    facts.push({ text: "Air from vents is weak", provenance: "reported", kind: "other", source_fields: v.fact_sources?.vent ?? ["vent_airflow"] });
   } else if (v.vent_airflow === "none") {
-    facts.push({ text: "Homeowner reports no airflow at the vents", provenance: "reported", kind: "other" });
+    facts.push({ text: "Homeowner reports no airflow at the vents", provenance: "reported", kind: "other", source_fields: v.fact_sources?.vent ?? ["vent_airflow"] });
   }
 
   if (v.ice === "no") {
     facts.push({
       text: v.ice_reported ? "Homeowner reports no visible ice" : "No visible ice on accessible refrigerant line",
-      provenance: v.ice_reported ? "reported" : v.ice_photo ? "seen_in_photo_or_video" : "confirmed_by_homeowner",
+      provenance: v.ice_reported ? "reported" : "confirmed_by_homeowner",
       kind: "check_result",
+      source_fields: v.fact_sources?.ice ?? ["check:ice_check"],
     });
   } else if (v.ice === "yes") {
     facts.push({
       text: v.ice_reported ? "Homeowner reports visible ice" : "Ice visible on accessible refrigerant line",
-      provenance: v.ice_reported ? "reported" : v.ice_photo ? "seen_in_photo_or_video" : "confirmed_by_homeowner",
+      provenance: v.ice_reported ? "reported" : "confirmed_by_homeowner",
       kind: "check_result",
+      source_fields: v.fact_sources?.ice ?? ["check:ice_check"],
     });
   }
 
@@ -185,25 +193,27 @@ export function hvacCoolingFacts(v: HvacCoolingView): Fact[] {
     const age = v.filter_age_weeks !== null ? `, replaced ~${v.filter_age_weeks} weeks ago` : "";
     facts.push({
       text: `Filter ${filterWord(v.filter_rating)}, rated ${v.filter_rating}/10 by the homeowner${age}`,
-      provenance: v.filter_photo ? "seen_in_photo_or_video" : "reported",
+      provenance: "reported",
       kind: "maintenance",
+      source_fields: v.fact_sources?.filter ?? ["check:filter", ...(v.filter_age_weeks !== null ? ["filter_age_weeks"] : [])],
     });
   } else if (v.filter_reported_clean) {
-    facts.push({ text: "Homeowner reports the filter is clean", provenance: "reported", kind: "maintenance" });
+    facts.push({ text: "Homeowner reports the filter is clean", provenance: "reported", kind: "maintenance", source_fields: v.fact_sources?.filter ?? ["check:filter"] });
   }
 
   if (v.fins) {
     facts.push({
       text: v.fins === "mostly clear" ? "Outdoor fins mostly clear" : "Outdoor fins packed with debris",
-      provenance: v.outdoor_photo ? "seen_in_photo_or_video" : "confirmed_by_homeowner",
+      provenance: "confirmed_by_homeowner",
       kind: "check_result",
+      source_fields: v.fact_sources?.fins ?? ["check:fins_blocked"],
     });
   }
 
   if (v.onset_character) {
     const span = v.onset_span_days !== null && v.onset_span_days > 0 ? ` over ~${v.onset_span_days} days` : "";
     const tail = v.onset_character === "gradual" ? ", not sudden" : "";
-    facts.push({ text: `Onset ${v.onset_character}${span}${tail}`, provenance: "reported", kind: "onset" });
+    facts.push({ text: `Onset ${v.onset_character}${span}${tail}`, provenance: "reported", kind: "onset", source_fields: v.fact_sources?.onset ?? ["symptom_timing"] });
   }
 
   if (v.safety_negative === true) {
@@ -211,6 +221,7 @@ export function hvacCoolingFacts(v: HvacCoolingView): Fact[] {
       text: "No breaker trips, no burning smell, no water",
       provenance: "confirmed_by_homeowner",
       kind: "safety",
+      source_fields: v.fact_sources?.safety ?? ["safety_signals"],
     });
   }
 
@@ -219,6 +230,7 @@ export function hvacCoolingFacts(v: HvacCoolingView): Fact[] {
       text: "Outdoor disconnect photographed",
       provenance: "seen_in_photo_or_video",
       kind: "other",
+      source_fields: v.fact_sources?.power ?? ["check:power_check"],
     });
   }
   return facts;
@@ -354,7 +366,7 @@ export function hvacCoolingChecks(v: HvacCoolingView): Check[] {
         word === "dirty"
           ? "Confirms a restricted filter at the return"
           : "Makes airflow restriction at the filter unlikely",
-      result_provenance: v.filter_photo ? "seen_in_photo_or_video" : "reported",
+      result_provenance: "reported",
       changed_provenance: "inference",
       certainty: word === "dirty" ? "confirms" : "unlikely",
     });
@@ -409,7 +421,7 @@ export function hvacCoolingChecks(v: HvacCoolingView): Check[] {
         v.fins === "mostly clear"
           ? "Makes a blocked condenser coil unlikely"
           : "Confirms restricted airflow across the condenser",
-      result_provenance: v.outdoor_photo ? "seen_in_photo_or_video" : "confirmed_by_homeowner",
+      result_provenance: "confirmed_by_homeowner",
       changed_provenance: "inference",
       certainty: v.fins === "mostly clear" ? "unlikely" : "confirms",
     });
@@ -422,7 +434,7 @@ export function hvacCoolingChecks(v: HvacCoolingView): Check[] {
         v.ice === "no"
           ? "Makes a severe freeze-up less likely, though not excluded at the coil"
           : "Confirms ice at the accessible section",
-      result_provenance: v.ice_reported ? "reported" : v.ice_photo ? "seen_in_photo_or_video" : "confirmed_by_homeowner",
+      result_provenance: v.ice_reported ? "reported" : "confirmed_by_homeowner",
       changed_provenance: v.ice_reported ? "reported" : "inference",
       certainty: v.ice_reported ? "noted" : v.ice === "no" ? "less_likely" : "confirms",
     });
@@ -567,7 +579,7 @@ export function hvacCoolingBranches(v: HvacCoolingView): { branches: Branch[]; t
     candidates.push({
       name: "Blocked condenser coil",
       for: ["outdoor fins packed with debris"],
-      against: v.fan_moving === "yes" ? ["the unit is still running with the fan turning"] : ["the fins were judged from a photo, not cleared and retested"],
+      against: v.fan_moving === "yes" ? ["the unit is still running with the fan turning"] : ["the homeowner's visual assessment alone does not show whether clearing the fins would restore cooling"],
       weight: 2,
     });
   }

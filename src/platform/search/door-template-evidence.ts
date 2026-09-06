@@ -1,10 +1,11 @@
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { join, resolve, sep } from "node:path";
-import reviewed from "../../../content/door-template/v43/binding.json";
+import { getAmendedV43Binding, amendV43SourceAsset } from "@/domain/search/door-template-amendment";
 import type { PageSpec } from "@/domain/search/pages";
 import { requiresV43DoorChecks, V43_QA_RENDER_ORIGIN, type DoorTemplateEvidence, type DoorAssetEvidence } from "@/domain/search/door-template-qa";
 import { renderV43DoorPage, renderV43Template } from "@/platform/pages/v43-door-renderer";
+import { collectSourceReview } from "@/platform/search/source-review-store";
 
 const sha = (value: string | Buffer) => createHash("sha256").update(value).digest("hex");
 const lf = (value: Buffer) => value.toString("utf8").replace(/\r\n/g, "\n");
@@ -23,19 +24,31 @@ export function collectDoorTemplateEvidence(specs: readonly PageSpec[]): Record<
     const evidence: DoorTemplateEvidence = {
       page_spec_id: spec.page_spec_id, collected_at: new Date().toISOString(),
       reference_sha256: null, source_tree_sha256: null, binding_sha256: null, rendered_sha256: null,
-      source_date_evidence_text: null, final_rendered_html: null,
+      base_binding_sha256: null, base_rendered_sha256: null, amendment_sha256: null,
+      source_date_evidence_text: null, amendment_evidence_text: null, asset_amendment_evidence_text: null, final_rendered_html: null,
       assets: [], social: null, sources: [], capabilities: [], production: null, errors: [],
     };
     const kit = join(process.cwd(), "content/door-template/v43");
+    let reviewed: ReturnType<typeof getAmendedV43Binding> | undefined;
+    let amendment: unknown;
     try {
       const manifest = JSON.parse(readFileSync(join(kit, "manifest.json"), "utf8")) as { files: Array<{ path: string }> };
       const files = manifest.files.map(({ path }) => ({ path, sha256: sha(lf(readFileSync(inside(kit, path)))) }));
       evidence.source_tree_sha256 = sha(JSON.stringify(files));
       evidence.reference_sha256 = sha(lf(readFileSync(join(kit, "reference/approved-v43.html"))));
       evidence.source_date_evidence_text = lf(readFileSync(join(kit, "reference/content-date-evidence.json")));
-      const binding = JSON.parse(readFileSync(join(kit, "binding.json"), "utf8")) as Record<string, unknown>;
-      delete binding.binding_sha256;
-      evidence.binding_sha256 = sha(JSON.stringify(binding));
+      const base = JSON.parse(readFileSync(join(kit, "binding.json"), "utf8"));
+      const { binding_sha256: _baseHash, ...basePayload } = base;
+      evidence.base_binding_sha256 = sha(JSON.stringify(basePayload));
+      evidence.base_rendered_sha256 = sha(lf(readFileSync(join(kit, "rendered.html"))));
+      evidence.amendment_evidence_text = lf(readFileSync(join(process.cwd(), "content/door-template/amendments/v43-copy-2026-09-06-r1.json")));
+      amendment = JSON.parse(evidence.amendment_evidence_text);
+      const { amendment_sha256: _claimedAmendmentHash, ...amendmentPayload } = amendment as Record<string, unknown>;
+      evidence.amendment_sha256 = sha(JSON.stringify(amendmentPayload));
+      reviewed = getAmendedV43Binding(base, amendment);
+      const { binding_sha256: _amendedHash, ...bindingPayload } = reviewed;
+      evidence.binding_sha256 = sha(JSON.stringify(bindingPayload));
+      evidence.asset_amendment_evidence_text = lf(readFileSync(join(process.cwd(), "config/ac-door-copy-amendment-assets.json")));
     } catch { evidence.errors.push("The current v43 source/reference/binding files could not be read and independently hashed."); }
 
     let imageObjects: Array<Record<string, unknown>> = [];
@@ -52,13 +65,13 @@ export function collectDoorTemplateEvidence(specs: readonly PageSpec[]): Record<
       imageObjects = graph["@graph"].flatMap((node) => node["@type"] === "WebPage" && Array.isArray(node.image) ? node.image : []);
     } catch { evidence.errors.push("The actual v43 renderer or its image metadata failed independent inspection."); }
 
-    for (const asset of reviewed.visual_assets) {
+    for (const asset of reviewed?.visual_assets ?? []) {
       const actual: DoorAssetEvidence = {
         asset_id: asset.asset_id, source_sha256: null, svg_path: asset.public_svg_path, svg_sha256: null,
         raster_path: asset.raster_path, raster_sha256: null, encoding_format: null, width: null, height: null, metadata: null,
       };
       try {
-        actual.source_sha256 = sha(lf(readFileSync(inside(kit, asset.source_path))));
+        actual.source_sha256 = sha(amendV43SourceAsset(asset.asset_id, lf(readFileSync(inside(kit, asset.source_path))), amendment));
         const vector = readFileSync(inside(join(process.cwd(), "public"), asset.public_svg_path));
         if (!/<svg\b/.test(lf(vector))) throw new Error("Invalid SVG");
         actual.svg_sha256 = sha(lf(vector));
@@ -79,10 +92,13 @@ export function collectDoorTemplateEvidence(specs: readonly PageSpec[]): Record<
       evidence.assets.push(actual);
     }
 
-    // Deliberately empty. The imported ledger's September 1 prose is retained
-    // provenance, not a fresh source fetch. There is no authenticated production
-    // verification adapter yet. PageSpec and the capability manifest cannot
-    // author their own source/runtime/launch proof. These remain release blockers.
+    try {
+      const review = collectSourceReview(new Date(evidence.collected_at));
+      evidence.sources = review.sources;
+      evidence.source_review_findings = review.openFindings.map(row => ({ id: row.finding_id, reason: row.reason }));
+    } catch { evidence.errors.push("Current server-owned source review failed integrity checks or is unavailable."); }
+    // Runtime and launch proof remain absent. A source review, PageSpec or
+    // capability manifest cannot author production capability/consent receipts.
     return [spec.page_spec_id, evidence];
   }));
 }

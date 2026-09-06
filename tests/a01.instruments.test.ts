@@ -107,13 +107,13 @@ describe("A01 — intake.clarifier_answered fires on the live answer route", () 
     expect(JSON.stringify(ev)).not.toContain("9 years old");
   });
 
-  it("a photo that satisfies a required field counts as an answer too", async () => {
+  it("an uploaded photo for a registered required field records its answer instrument", async () => {
     const requestId = await startJourney();
     const before = events("intake.clarifier_answered").length;
 
     const form = new FormData();
     form.set("request_id", requestId);
-    form.set("target", "unit_photo");
+    form.set("target", "unit_model_serial");
     form.set("k", ownerTokenFor(requestId));
     form.set("file", new File([new Uint8Array(PNG)], "plate.png", { type: "image/png" }));
     const res = await mediaPost(
@@ -124,7 +124,7 @@ describe("A01 — intake.clarifier_answered fires on the live answer route", () 
     const after = events("intake.clarifier_answered");
     expect(after.length).toBe(before + 1);
     expect(after[after.length - 1].context.source).toBe("photo");
-    expect(after[after.length - 1].context.field_key).toBe("unit_photo");
+    expect(after[after.length - 1].context.field_key).toBe("unit_model_serial");
   });
 });
 

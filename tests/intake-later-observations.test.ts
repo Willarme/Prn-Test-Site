@@ -79,13 +79,14 @@ describe("literal current observations", () => {
 describe("later fields feed the shared evidence map", () => {
   it("captures missing fields and observations from another field while preserving confirmed facts", async () => {
     const id = await start();
+    expect((await answer(id, { fields: [{ field_key: "brand", value: "Carrier" }] })).status).toBe(200);
     await answer(id, { fields: [{ field_key: "brand", value: "Carrier", confirmed: true }] });
     const beforeCalls = network.mock.calls.length;
     const res = await answer(id, { fields: [{ field_key: "symptom_timing", value: "My Trane AC is 8 years old, started Tuesday. The outdoor fan runs. I see no ice." }] });
     expect(res.status).toBe(200);
     const rows = await runtimeStore().listIntakeAnswers(id);
-    expect(rows.filter(a => a.field_key === "brand")).toHaveLength(1);
-    expect(rows.find(a => a.field_key === "brand")).toMatchObject({ value_text: "Carrier", source: "confirmed" });
+    expect(rows.filter(a => a.field_key === "brand")).toHaveLength(2);
+    expect(rows.filter(a => a.field_key === "brand").at(-1)).toMatchObject({ value_text: "Carrier", source: "confirmed" });
     expect(rows.find(a => a.field_key === "system_age")).toMatchObject({ value_text: "8 years", source: "auto_detected" });
     const observations = await runtimeStore().listDiagnosisAnswers(id);
     expect(observations.find(a => a.step_id === "ice_check")).toMatchObject({ answer: "no" });

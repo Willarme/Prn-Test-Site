@@ -9,6 +9,7 @@ import {
 import type { DiagnosisAnswer, IntakeAnswer, IntakePlaybook } from "@/domain/intake/playbook";
 import { nextFor } from "@/domain/intake/playbook";
 import { fieldConflictText, heldFieldConflicts } from "@/domain/intake/field-conflicts";
+import { buildCurrentFactState } from "@/domain/intake/readiness";
 
 /**
  * Assemble a packet VERSION from everything the customer has supplied so far:
@@ -16,6 +17,8 @@ import { fieldConflictText, heldFieldConflicts } from "@/domain/intake/field-con
  * attached media, and the guided-diagnosis trail. Deterministic; no AI.
  */
 export interface AssembleInput {
+  /** Canonical request ID; distinct from the intake attribution session ID. */
+  request_id?: string;
   problem: ProblemRecord;
   textEvidence: EvidenceObject;
   allEvidence: EvidenceObject[];
@@ -121,12 +124,18 @@ export function generateJobPacket(args: GenerateJobPacketArgs): JobPacket {
 
 export function assemblePacket(input: AssembleInput): JobPacket {
   const copy = input.copy ?? ACTIVE_PACKET_COPY;
+  const currentFacts = input.playbook ? buildCurrentFactState({
+    request_id: input.request_id ?? input.answers[0]?.request_id ?? input.diagnosis[0]?.request_id ?? input.problem.problem_id,
+    playbook: input.playbook, problem: input.problem, evidence: input.allEvidence,
+    answers: input.answers, diagnosisAnswers: input.diagnosis,
+  }) : undefined;
   const base = buildJobPacketFixture(
     input.problem,
     input.textEvidence,
     input.now,
     undefined,
-    copy
+    copy,
+    currentFacts,
   );
   const labelFor = (key: string) =>
     input.playbook?.required_fields.find((f) => f.field_key === key)?.label ?? key;

@@ -106,10 +106,12 @@ describe("GET /complete/[request_id] — the acknowledgement and never-ask-twice
     expect(html).not.toMatch(/aria-label="When did it start/);
     // No praise, no negative form.
     expect(html).not.toMatch(/Great job|really helpful|don&#x27;t need to tell us|You don't need/);
-    // The address group leads the details, and the walkthrough starts at the filter with a way out.
-    expect(html).toContain("The address of the house");
-    expect(html).toContain("Check the air filter");
-    expect(html).toContain('data-escape="filter"');
+    // T1-35 emits one missing-fact group at a time; known facts stay in review.
+    expect(html).toContain("data-active-intake-screen");
+    const active = html.slice(html.indexOf("data-active-intake-screen"));
+    expect(active).toContain('data-field="unit_model_serial"');
+    expect(active).not.toContain('data-field="brand"');
+    expect(active).not.toContain("Check the air filter");
   });
 
   it("a garage door typed into the AC door gets the route-out and no thermostat or filter step (F6)", async () => {

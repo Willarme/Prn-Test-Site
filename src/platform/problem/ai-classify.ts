@@ -155,6 +155,8 @@ function systemPrompt(trades: readonly string[]): string {
 }
 
 export interface ClassifyOptions {
+  request_id?: string | null;
+  tenant_id?: string;
   vocabulary?: MarketVocabulary;
   deps?: CallModelDeps;
 }
@@ -213,6 +215,8 @@ export async function classifyHomeProblem(
 
   const call = await callModel({
     agent_id: "A01",
+    request_id: options.request_id,
+    tenant_id: options.tenant_id,
     capability: CLASSIFY_CAPABILITY,
     // The homeowner's own words. This is what makes the privacy rule bite.
     handles_customer_data: true,

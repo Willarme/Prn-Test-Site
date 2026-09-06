@@ -1,10 +1,11 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useId, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { CANNOT_REACH_STEP_ANSWER } from "@/domain/intake/extract";
 import type { Outcome, StepView, WalkthroughView } from "@/domain/intake/playbook";
+import styles from "./DiagnoseWalkthrough.module.css";
 
 /**
  * Box 2 — guided diagnosis. One step at a time; the branch is resolved
@@ -34,6 +35,7 @@ export function DiagnoseWalkthrough({
   resumed: boolean;
 }) {
   const router = useRouter();
+  const controlId = useId();
   const [step, setStep] = useState<StepView | null>(initialView.step);
   const [outcome, setOutcome] = useState<Outcome | null>(initialView.outcome);
   const [changed, setChanged] = useState<string | null>(null);
@@ -65,7 +67,7 @@ export function DiagnoseWalkthrough({
       return;
     }
     if (!res?.ok) {
-      setErr("Could not save that answer — try again.");
+      setErr(typeof data?.error === "string" ? data.error : "Could not save that answer — try again.");
       return;
     }
     setChanged(typeof data.changed === "string" ? data.changed : null);
@@ -122,7 +124,7 @@ export function DiagnoseWalkthrough({
 
   if (outcome) {
     return (
-      <div className="card-light">
+      <div className={`card-light ${styles.root}`}>
         {changedLine}
         <span className="pill pill-green">Walkthrough complete</span>
         <h2 className="d3" style={{ margin: "10px 0 6px" }}>
@@ -159,7 +161,7 @@ export function DiagnoseWalkthrough({
 
   if (!step) {
     return (
-      <div className="card-light">
+      <div className={`card-light ${styles.root}`}>
         {changedLine}
         {started ? (
           <>
@@ -174,7 +176,7 @@ export function DiagnoseWalkthrough({
   }
 
   return (
-    <div className="card-light">
+    <div className={`card-light ${styles.root}`}>
       {changedLine}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
         <span className="mono" style={{ color: "var(--on-light-mute)" }}>
@@ -182,7 +184,7 @@ export function DiagnoseWalkthrough({
         </span>
         {resumed && <span className="pill">resumed</span>}
       </div>
-      <h2 className="d3" style={{ margin: "8px 0 6px" }}>
+      <h2 id={`${controlId}-title`} className="d3" style={{ margin: "8px 0 6px" }}>
         {step.title}
       </h2>
       {step.safety_note && (
@@ -216,12 +218,22 @@ export function DiagnoseWalkthrough({
         </div>
       )}
       {step.input.kind === "rating" && (
-        <div>
-          <input type="range" min={0} max={10} value={rating} onChange={(e) => setRating(Number(e.target.value))} style={{ width: "100%" }} />
-          <div style={{ display: "flex", justifyContent: "space-between" }} className="hint">
-            <span>{step.input.min_label}</span>
-            <strong style={{ color: "var(--ink)" }}>{rating}</strong>
-            <span>{step.input.max_label}</span>
+        <div className={styles.rating}>
+          <input
+            id={controlId}
+            className={styles.ratingInput}
+            type="range"
+            min={0}
+            max={10}
+            value={rating}
+            aria-labelledby={`${controlId}-title`}
+            aria-describedby={`${controlId}-min ${controlId}-max`}
+            onChange={(e) => setRating(Number(e.target.value))}
+          />
+          <output className={styles.ratingValue} htmlFor={controlId}>{rating}</output>
+          <div className={`hint ${styles.ratingLabels}`}>
+            <span id={`${controlId}-min`}>{step.input.min_label}</span>
+            <span id={`${controlId}-max`}>{step.input.max_label}</span>
           </div>
           <button className="btn btn-pink" style={{ marginTop: 10 }} disabled={busy} onClick={() => answer(String(rating))}>
             That&apos;s about a {rating}
@@ -247,8 +259,8 @@ export function DiagnoseWalkthrough({
         </div>
       )}
       {step.input.kind === "text" && (
-        <div style={{ display: "flex", gap: 8 }}>
-          <input className="inp" value={text} onChange={(e) => setText(e.target.value)} onKeyDown={(e) => e.key === "Enter" && text.trim() && answer(text)} />
+        <div className={styles.textControls}>
+          <input className="inp" aria-labelledby={`${controlId}-title`} value={text} onChange={(e) => setText(e.target.value)} onKeyDown={(e) => e.key === "Enter" && text.trim() && answer(text)} />
           <button className="btn btn-pink btn-sm" disabled={busy || !text.trim()} onClick={() => answer(text)}>Next</button>
         </div>
       )}

@@ -5,6 +5,7 @@ import { SearchOpportunity } from "@/domain/search/contracts";
 import { PageSpec } from "@/domain/search/pages";
 import { DoorTemplateBinding, getV43DoorBinding, getV43TemplateBundle, isV43Opportunity, V43_TEMPLATE_BUNDLE_ID } from "@/domain/search/door-template";
 import committed from "../data/factory/staged-specs.json";
+import originalBinding from "../content/door-template/v43/binding.json";
 
 const now = () => "2026-09-06T12:00:00Z";
 function opportunity(overrides: Partial<SearchOpportunity> = {}): SearchOpportunity {
@@ -40,7 +41,8 @@ describe("reviewed v43 factory integration", () => {
     expect(page.content_blocks).toEqual(binding.page_fields.content_blocks);
     expect(page.content_blocks).toHaveLength(16);
     expect(binding.section_order).toHaveLength(15);
-    expect(page.content_blocks.map((b) => b.body_md).join(" ")).toContain("$15 to $40");
+    expect(page.content_blocks.map((b) => b.body_md).join(" ")).toContain("Check the price for your filter size and type.");
+    expect(binding.amendment.base_binding_sha256).toBe(originalBinding.binding_sha256);
     expect(binding.direct_answer.source_ids).toEqual([]);
     expect(binding.source_bindings.every((source) => source.evidence_status === "INHERITED_UNVERIFIED" && source.verified_at === null)).toBe(true);
     expect(binding.capability_questions.every((cap) => cap.runtime_status === "CLAIMED_ON_PAGE_PENDING_RUNTIME_VERIFICATION")).toBe(true);
@@ -100,6 +102,7 @@ describe("reviewed v43 factory integration", () => {
     expect(result.status).toBe("PASS");
     expect(result.files).toBe(55);
     expect(result.content_date).toBe("2026-09-05");
-    expect(result.rendered_sha256).toBe(getV43DoorBinding().rendered_sha256);
+    expect(result.rendered_sha256).toBe(originalBinding.rendered_sha256);
+    expect(result.rendered_sha256).not.toBe(getV43DoorBinding().rendered_sha256);
   });
 });

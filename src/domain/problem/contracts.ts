@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { Id, IsoDateTime, SchemaVersion } from "@/domain/shared/primitives";
+import { ProblemRecordHandoff, ProviderReadinessState } from "@/domain/intake/readiness";
 
 /**
  * ProblemRecord — canonical structured state of one home problem (#14A §10.2).
@@ -428,6 +429,12 @@ export const JobPacket = z.object({
    * rather than defaulting to [].
    */
   claim_basis: z.array(Id).optional(),
+  /** Private, immutable intake assessment for this exact packet version. */
+  intake_snapshot: z.object({
+    packet_id: Id, packet_version: z.number().int().positive(),
+    policy_version: z.string().min(1), effort_spent: z.number().int().min(0).max(20),
+    handoff: ProblemRecordHandoff, readiness: ProviderReadinessState,
+  }).optional(),
   evidence_basis: z.array(Id).optional(),
   /** Agent Run Ledger id of the run that produced this version. */
   generation_run_id: Id.nullable().optional(),

@@ -1,5 +1,9 @@
 import { runtimeStore } from "@/platform/stores/runtime";
 import { ownerAllowed } from "@/platform/links/owner";
+import { randomUUID } from "node:crypto";
+import { appendIntakeEffort } from "@/platform/intake/effort";
+import { regeneratePacket } from "@/platform/intake/complete";
+import { journeySafetyRule } from "@/domain/problem/journey-safety";
 
 /**
  * POST /api/packet/address — the job address the packet requires (Directions
@@ -57,12 +61,19 @@ export async function POST(request: Request): Promise<Response> {
   const store = runtimeStore();
   const journey = await store.getJourney(requestId).catch(() => null);
   if (!journey) return new Response("not found", { status: 404 });
-
+  const safety = journeySafetyRule(journey.problem);
+  if (safety && !safety.intake_may_continue) return redirect(`/safety/${encodeURIComponent(safety.safety_rule_id)}`);
+  const admission = await appendIntakeEffort({ request_id: requestId, tenant_id: journey.problem.tenant_id ?? "prn",
+    operation_id: `address:${randomUUID()}`, kind: "answer", question_id: "property:address",
+    question_type: "short_text", requirement_ids: ["property.street", "property.city_state_zip"],
+    decision_reason: "A typed address group costs four units through every intake entry point." });
+  if (!admission.accepted) return new Response("Your saved packet is available with the address still unknown. Intake is finished or has reached its effort limit.", { status: 409 });
   await store.saveJobAddress(requestId, {
     street,
     city_state_zip: cityStateZip,
     property_type: typeRaw && PROPERTY_TYPES.has(typeRaw) ? typeRaw : null,
     storeys: storeysRaw && /^\d storey$/.test(storeysRaw) ? storeysRaw : null,
   });
+  await regeneratePacket(requestId);
   return redirect(back);
 }

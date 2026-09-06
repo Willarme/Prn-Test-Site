@@ -60,6 +60,14 @@ export type PolicySetting<T = unknown> = Omit<z.infer<typeof PolicySetting>, "va
  */
 export const PLATFORM_POLICY_SETTINGS: readonly PolicySetting[] = [
   {
+    key: "intake.max_ai_calls_per_request",
+    level: "COMPANY",
+    // T1-14: operative merged build spec §14.4. Includes provider HTTP
+    // attempts and repair turns across the whole request, never per capability.
+    value: 2,
+    version: 1,
+  },
+  {
     key: "intake.media_max_bytes",
     level: "COMPANY",
     value: 25 * 1024 * 1024, // 25 MB — short phone clips fit (value unchanged in the A00 migration)
@@ -112,14 +120,14 @@ export const PLATFORM_POLICY_SETTINGS: readonly PolicySetting[] = [
      * precisely because a decided cap nobody built is a decision that did not
      * happen.
      *
-     * WHAT IS STILL PARKED, AND STAYS PARKED. Video LENGTH and the number of AI
-     * calls per request are explicitly undetermined — the same audit says do not
-     * invent numbers for either. So there is no video-length key and no
-     * AI-call-count key here; adding one with a plausible value would convert a
-     * parked question into a shipped limit nobody chose.
+     * HISTORICAL HOLD: the original audit left video LENGTH and AI-call counts
+     * undetermined. T1-14 now reads the operative merged-spec §14.4 ceiling from
+     * intake.max_ai_calls_per_request above. The video-length setting remains
+     * absent; its verification and the four-versus-six photo policy conflict
+     * are separate unfinished parts of T1-14.
      *
-     * TODO-ASK-OWNER (Melissa): maximum video length, maximum AI calls per
-     * request, and whether the photo cap counts videos too (it does not today —
+     * Remaining media policy: maximum video length and whether the photo cap
+     * counts videos too (it does not today —
      * this cap is about pictures, which is what was decided).
      *
      * RAISED 4 -> 6 ON 2026-09-05. // DEFAULT pending Melissa: decision 2

@@ -1,3 +1,4 @@
+import { modelRequest, useLocalRequestBudgetFixtures } from "./helpers/request-budget-fixture";
 import { beforeEach, describe, expect, it } from "vitest";
 import {
   capReached,
@@ -20,6 +21,8 @@ import {
 } from "@/platform/problem/ai-clarifier";
 import { resetAgentRunLedgerForTests } from "@/platform/runs/ledger";
 import { resetKillSwitchForTests } from "@/platform/killswitch";
+
+useLocalRequestBudgetFixtures();
 
 /**
  * AI STEP 3 — A01's TWO CAPABILITIES.
@@ -140,7 +143,7 @@ describe("classification: the safety gate is not something the model can reach",
     const p = provider([reply("{}")]);
     const outcome = await classifyHomeProblem(
       { ...INPUT, description: "I smell gas in the basement and the alarm is going off" },
-      { deps: deps(p.provider) }
+      { ...modelRequest(), deps: deps(p.provider) }
     );
     expect(outcome.engine).toBe("deterministic");
     expect(outcome.fallback_reason).toMatch(/hard stop/);
@@ -164,7 +167,7 @@ describe("classification: the safety gate is not something the model can reach",
     const description = "there is standing water spreading across the basement floor";
     const outcome = await classifyHomeProblem(
       { ...INPUT, description },
-      { deps: deps(p.provider) }
+      { ...modelRequest(), deps: deps(p.provider) }
     );
     const baseline = analyzeProblemFixture({ ...INPUT, description });
 
@@ -195,7 +198,7 @@ describe("classification: the safety gate is not something the model can reach",
     ]);
     const outcome = await classifyHomeProblem(
       INPUT,
-      { deps: deps(p.provider) }
+      { ...modelRequest(), deps: deps(p.provider) }
     );
     expect(outcome.engine).toBe("model");
     expect(p.calls).toBe(1);
@@ -219,7 +222,7 @@ describe("classification: what the model may and may not assert", () => {
         })
       ),
     ]);
-    const outcome = await classifyHomeProblem(INPUT, { deps: deps(p.provider) });
+    const outcome = await classifyHomeProblem(INPUT, { ...modelRequest(), deps: deps(p.provider) });
     expect(outcome.engine).toBe("model");
     expect(outcome.facts).toHaveLength(1);
     expect(outcome.facts[0].provenance).toBe("inferred");
@@ -238,7 +241,7 @@ describe("classification: what the model may and may not assert", () => {
         })
       ),
     ]);
-    const outcome = await classifyHomeProblem(INPUT, { deps: deps(p.provider) });
+    const outcome = await classifyHomeProblem(INPUT, { ...modelRequest(), deps: deps(p.provider) });
     expect(outcome.engine).toBe("deterministic");
     expect(outcome.fallback_reason).toMatch(/invalid_after_repair/);
   });
@@ -255,23 +258,23 @@ describe("classification: what the model may and may not assert", () => {
         })
       ),
     ]);
-    const outcome = await classifyHomeProblem(INPUT, { deps: deps(p.provider) });
+    const outcome = await classifyHomeProblem(INPUT, { ...modelRequest(), deps: deps(p.provider) });
     expect(outcome.engine).toBe("deterministic");
   });
 });
 
 describe("classification: the fallback contract, reason by reason", () => {
   const cases: Array<[string, ModelCallResult]> = [
-    ["rate_limited", { ok: false, reason: "rate_limited", detail: "429", provider: "fake", attempts: 3 }],
+    ["rate_limited", { ok: false, reason: "rate_limited", detail: "429", provider: "fake", attempts: 1 }],
     ["timeout", { ok: false, reason: "timeout", detail: "slow", provider: "fake", attempts: 1 }],
     ["refused", { ok: false, reason: "refused", detail: "filtered", provider: "fake", attempts: 1 }],
-    ["http_error", { ok: false, reason: "http_error", detail: "500", provider: "fake", attempts: 3 }],
+    ["http_error", { ok: false, reason: "http_error", detail: "500", provider: "fake", attempts: 1 }],
   ];
 
   for (const [label, result] of cases) {
     it(`${label} returns today's deterministic result, unchanged, with the reason recorded`, async () => {
       const p = provider([result]);
-      const outcome = await classifyHomeProblem(INPUT, { deps: deps(p.provider) });
+      const outcome = await classifyHomeProblem(INPUT, { ...modelRequest(), deps: deps(p.provider) });
       expect(outcome.engine).toBe("deterministic");
       expect(outcome.fallback_reason).toContain(label);
       expect(outcome.result).toEqual(analyzeProblemFixture(INPUT));
@@ -281,6 +284,7 @@ describe("classification: the fallback contract, reason by reason", () => {
   it("disabled (the shipped default) returns the deterministic result and calls nothing", async () => {
     const p = provider([reply("{}")]);
     const outcome = await classifyHomeProblem(INPUT, {
+      ...modelRequest(),
       deps: deps(p.provider, DEFAULT_AI_POLICY),
     });
     expect(outcome.engine).toBe("deterministic");
@@ -290,7 +294,7 @@ describe("classification: the fallback contract, reason by reason", () => {
   });
 
   it("keyless returns the deterministic result", async () => {
-    const outcome = await classifyHomeProblem(INPUT, { deps: deps(null) });
+    const outcome = await classifyHomeProblem(INPUT, { ...modelRequest(), deps: deps(null) });
     expect(outcome.engine).toBe("deterministic");
     expect(outcome.fallback_reason).toMatch(/^no_key/);
     expect(outcome.result).toEqual(analyzeProblemFixture(INPUT));
@@ -320,6 +324,7 @@ describe("classification: the fallback contract, reason by reason", () => {
     });
     const outcome = await classifyHomeProblem(INPUT, {
       // THE REAL, SHIPPED CATALOGUE — no clearance injected.
+      ...modelRequest(),
       deps: deps(p.provider, policy, MODEL_CATALOGUE),
     });
     expect(outcome.engine).toBe("deterministic");
@@ -343,7 +348,7 @@ describe("the clarifier ceiling is a branch the model never reaches", () => {
     const p = provider([reply('{"field_key":"brand","why":"x"}')]);
     const outcome = await selectNextClarifier(
       { playbook, answered_field_keys: [], asked_count: cap, max_questions: cap },
-      { deps: deps(p.provider) }
+      { ...modelRequest(), deps: deps(p.provider) }
     );
     expect(outcome.ask).toBeNull();
     expect(outcome.engine).toBe("deterministic");
@@ -355,7 +360,7 @@ describe("the clarifier ceiling is a branch the model never reaches", () => {
     const p = provider([reply('{"field_key":"brand","why":"x"}')]);
     const outcome = await selectNextClarifier(
       { playbook, answered_field_keys: [], asked_count: cap + 3, max_questions: cap },
-      { deps: deps(p.provider) }
+      { ...modelRequest(), deps: deps(p.provider) }
     );
     expect(outcome.ask).toBeNull();
     expect(p.calls).toBe(0);
@@ -371,7 +376,7 @@ describe("the clarifier ceiling is a branch the model never reaches", () => {
     ]);
     const outcome = await selectNextClarifier(
       { playbook, answered_field_keys: [], asked_count: 0, max_questions: cap },
-      { deps: deps(p.provider) }
+      { ...modelRequest(), deps: deps(p.provider) }
     );
     expect(outcome.engine).toBe("model");
     expect(outcome.ask?.field_key).toBe(target.field_key);
@@ -383,7 +388,7 @@ describe("the clarifier ceiling is a branch the model never reaches", () => {
     const p = provider([reply('{"field_key":"something_invented","why":"x"}')]);
     const outcome = await selectNextClarifier(
       { playbook, answered_field_keys: [], asked_count: 0, max_questions: cap },
-      { deps: deps(p.provider) }
+      { ...modelRequest(), deps: deps(p.provider) }
     );
     expect(outcome.engine).toBe("deterministic");
     const expected = selectNextClarifierDeterministic({
@@ -398,7 +403,7 @@ describe("the clarifier ceiling is a branch the model never reaches", () => {
   it("with the flag off, the choice is the playbook's own order — CORE before HELPFUL", async () => {
     const outcome = await selectNextClarifier(
       { playbook, answered_field_keys: [], asked_count: 0, max_questions: cap },
-      { deps: deps(null, DEFAULT_AI_POLICY) }
+      { ...modelRequest(), deps: deps(null, DEFAULT_AI_POLICY) }
     );
     expect(outcome.engine).toBe("deterministic");
     expect(outcome.ask?.priority).toBe("core");
@@ -422,7 +427,7 @@ describe("the clarifier ceiling is a branch the model never reaches", () => {
         asked_count: 0,
         max_questions: cap,
       },
-      { deps: deps(p.provider) }
+      { ...modelRequest(), deps: deps(p.provider) }
     );
     expect(outcome.engine).toBe("deterministic");
     expect(outcome.ask?.field_key).toBe(all[all.length - 1]);

@@ -5,6 +5,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { ACTIVE_DISCLOSURE } from "@/domain/privacy/disclosures";
 import { readDevDb } from "@/platform/stores/dev-db";
 import { runtimeStore } from "@/platform/stores/runtime";
+import { appendIntakeEffort, readIntakeEffort } from "@/platform/intake/effort";
 import { filesUnder } from "../evals/source";
 
 /**
@@ -125,13 +126,27 @@ describe("the reserved tenant is populated on the real write path", () => {
     expect(stored.tenant_id).toBe("other_client");
   });
 
-  it("runtime tenancy remains reserved; exact reviewed-template scope cannot cross tenants", () => {
+  it("rejects foreign-tenant effort reads and writes without changing the owner's ledger", async () => {
+    const response = await intakePost(intakeRequest("The AC runs but blows warm air"));
+    expect(response.status).toBe(200);
+    const { request_id } = await response.json();
+    const own = { request_id, tenant_id: "prn" };
+    const before = await readIntakeEffort(own);
+    expect(before.effort_spent).toBe(5);
+    const foreign = { request_id, tenant_id: "foreign_client" };
+    await expect(readIntakeEffort(foreign)).rejects.toThrow("Intake effort request ownership mismatch");
+    await expect(appendIntakeEffort({ ...foreign, operation_id: "foreign_attempt", kind: "answer",
+      question_id: "symptom_timing", question_type: "closed_choice" })).rejects.toThrow("Intake effort request ownership mismatch");
+    expect(await readIntakeEffort(own)).toEqual(before);
+  });
+
+  it("runtime tenant product logic stays reserved with exact template and effort isolation seams", () => {
     /**
      * Runtime tenancy remains reserved. The reviewed PRN-only v43 template
-     * has two narrowly allowed scope validations; this does not grant tenant
-     * authorization, record filtering or generic runtime routing.
-     * Populating the field would violate the second half if anything started
-     * routing, filtering or authorising on it, so the scan looks for the three
+     * has two narrowly allowed scope validations. T1-35 also requires the
+     * durable effort ledger to validate and scope its exact request+tenant;
+     * the foreign-read/write probe above protects that integrity boundary.
+     * This does not introduce tenant product routing. The scan checks three
      * shapes that would mean exactly that: a comparison against a NAMED tenant,
      * a comparison of one record's tenant against another's, and a query
      * filtered by the column.
@@ -154,7 +169,11 @@ describe("the reserved tenant is populated on the real write path", () => {
           '&& (opportunity.tenant_id === undefined || opportunity.tenant_id === "prn")',
           'if (spec.tenant_id !== undefined && spec.tenant_id !== "prn") issues.push("tenant_id");',
         ].includes(line.trim());
-        if ((namedTenant && !reviewedScope) || crossRecord || filtered) {
+        const reviewedEffort = file.path === "src/platform/intake/effort.ts" && [
+          'if (ledger.request_id !== identity.request_id || ledger.tenant_id !== identity.tenant_id || ledger.problem_id !== problemId ||',
+          '.eq("request_id", identity.request_id).eq("tenant_id", identity.tenant_id).maybeSingle();',
+        ].includes(line.trim());
+        if (((namedTenant && !reviewedScope) || crossRecord || filtered) && !reviewedEffort) {
           offenders.push(`${file.path}:${i + 1}  ${line.trim()}`);
         }
       }

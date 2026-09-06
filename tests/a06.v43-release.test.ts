@@ -1,11 +1,11 @@
 import { createHash } from "node:crypto";
-import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve, sep } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { SAMPLE_PAGE_SPEC } from "@/domain/search/fixtures/sample-page-spec";
 import { getV43DoorBinding, v43SpecFields, V43_NOINDEX_REASON } from "@/domain/search/door-template";
-import { DOOR_TEMPLATE_CHECK_IDS, runV43DoorChecks, type DoorTemplateEvidence } from "@/domain/search/door-template-qa";
+import { DOOR_TEMPLATE_CHECK_IDS, runV43DoorChecks, V43_QA_PINS, V43_QA_AMENDMENT_PINS, type DoorTemplateEvidence } from "@/domain/search/door-template-qa";
 import { PageSpec } from "@/domain/search/pages";
 import { registryRowFor } from "@/domain/search/page-registry";
 import { evaluateReleaseForPublish, runPageQaSync, withCriticStage, DEFAULT_PAGE_QA_POLICY } from "@/domain/search/qa";
@@ -25,6 +25,16 @@ const fixture = () => PageSpec.parse({ ...SAMPLE_PAGE_SPEC, ...v43SpecFields(),
 const evidenceFor = (spec: PageSpec) => collectDoorTemplateEvidence([spec])[spec.page_spec_id];
 const checks = (spec: PageSpec, evidence?: DoorTemplateEvidence) => runV43DoorChecks(spec, evidence).map((finding) => finding.check);
 const temporary: string[] = [];
+const copyEvidenceFixture = () => {
+  const dir = mkdtempSync(join(tmpdir(), "door-v43-file-mutation-")); temporary.push(dir);
+  cpSync(join(ROOT, "content/door-template"), join(dir, "content/door-template"), { recursive: true });
+  cpSync(join(ROOT, "content/source-evidence"), join(dir, "content/source-evidence"), { recursive: true });
+  cpSync(join(ROOT, "public/images"), join(dir, "public/images"), { recursive: true });
+  mkdirSync(join(dir, "config"), { recursive: true });
+  cpSync(join(ROOT, "config/ac-door-copy-amendment-assets.json"), join(dir, "config/ac-door-copy-amendment-assets.json"));
+  vi.spyOn(process, "cwd").mockReturnValue(dir);
+  return dir;
+};
 const backend = process.env.PRN_RUNTIME_STORE;
 const database = process.env.PRN_DEV_DB_PATH;
 afterEach(() => {
@@ -44,11 +54,20 @@ describe("independent v43 release checks", () => {
     expect(evidence.errors).toEqual([]);
     const findings = runV43DoorChecks(spec, evidence);
     expect(findings.filter((finding) => ["door_template.integrity", "door_template.asset_receipt"].includes(finding.check))).toEqual([]);
-    expect(findings.some((finding) => finding.check === "door_template.claim_binding" && finding.where === "cause-2" && finding.message.includes("$15 to $40"))).toBe(true);
+    expect(findings.some((finding) => finding.check === "door_template.claim_binding" && finding.where === "cause-2" && finding.message.includes("Check the price for your filter size and type."))).toBe(true);
     expect(findings.filter((finding) => finding.check === "door_template.capability_runtime")).toHaveLength(9);
     expect(findings.some((finding) => finding.check === "door_template.source_verification")).toBe(true);
+    expect(findings.filter((finding) => finding.where.startsWith("review:"))).toHaveLength(0);
+    expect(findings.some((finding) => finding.where === "stat-2:src-5")).toBe(false);
+    expect(findings.some((finding) => finding.where === "stat-3:src-6")).toBe(false);
+    expect(findings.some((finding) => finding.where === "stat-3:sup-trane-frozen-causes")).toBe(false);
+    expect(findings.some((finding) => finding.where === "cause-5:src-8")).toBe(false);
     expect(findings.some((finding) => finding.check === "door_template.production_release")).toBe(true);
     expect(spec.door_template?.source_bindings.every((source) => source.verified_at === null && source.evidence_status === "INHERITED_UNVERIFIED")).toBe(true);
+    expect(evidence.base_binding_sha256).toBe(V43_QA_PINS.binding);
+    expect(evidence.base_rendered_sha256).toBe(V43_QA_PINS.rendered);
+    expect(evidence.binding_sha256).toBe(V43_QA_AMENDMENT_PINS.binding);
+    expect(evidence.rendered_sha256).toBe(V43_QA_AMENDMENT_PINS.rendered);
   });
 
   it.each(["binding_removed", "copy", "number", "source", "fingerprint", "asset", "live_label"])("fails closed on %s mutation without trusting schema validation", (mutation) => {
@@ -91,11 +110,11 @@ describe("independent v43 release checks", () => {
       '<meta property="og:url" content="' + current + '">', '<meta property="og:url" content="https://v43-preview.invalid/ac-blowing-warm-air">');
     if (mutation === "webpage_url") evidence.final_rendered_html = evidence.final_rendered_html!.replace(
       '"url": "' + current + '"', '"url": "https://v43-preview.invalid/ac-blowing-warm-air"');
-    if (mutation === "date") evidence.final_rendered_html = evidence.final_rendered_html!.replace('"dateModified": "2026-09-05"', '"dateModified": "2099-12-31"');
+    if (mutation === "date") evidence.final_rendered_html = evidence.final_rendered_html!.replace('"dateModified": "2026-09-06"', '"dateModified": "2099-12-31"');
     if (mutation === "duplicate_canonical") evidence.final_rendered_html += '<link rel="canonical" href="' + current + '">';
-    if (mutation === "duplicate_webpage") evidence.final_rendered_html += '<script type="application/ld+json">{"@type":"WebPage","dateModified":"2026-09-05"}</script>';
+    if (mutation === "duplicate_webpage") evidence.final_rendered_html += '<script type="application/ld+json">{"@type":"WebPage","dateModified":"2026-09-06"}</script>';
     if (mutation === "missing_html") evidence.final_rendered_html = null;
-    Object.assign(evidence, { canonical: current, dateModified: "2026-09-05" });
+    Object.assign(evidence, { canonical: current, dateModified: "2026-09-06" });
     expect(runV43DoorChecks(spec, evidence).some((finding) => finding.check === "door_template.integrity" && finding.where.startsWith("rendered_"))).toBe(true);
   });
 
@@ -119,12 +138,17 @@ describe("independent v43 release checks", () => {
   it("requires current evidence for the exact claim and source, including price expiry", () => {
     const spec = fixture();
     const evidence = evidenceFor(spec);
+    // This test synthesizes claim coverage only. Actual collected review gaps
+    // remain independently blocking in the real-evidence tests.
+    evidence.source_review_findings = [];
+    const trane = evidence.sources.find(row => row.source_id === "sup-trane-frozen-causes")!;
     const now = Date.parse(evidence.collected_at);
     evidence.sources = spec.door_template!.source_bindings.map((source) => ({ source_id: source.source_id, url: source.url,
       content_sha256: "b".repeat(64), receipt_sha256: "c".repeat(64), verifier: "synthetic-unit-fixture",
       verified_at: new Date(now - 86400000).toISOString(), expires_at: new Date(now + 86400000).toISOString(),
       supported_claim_sha256: spec.door_template!.claim_bindings.filter((claim) => claim.source_ids.includes(source.source_id)).map((claim) => hash(claim.text)),
     }));
+    evidence.sources.push(trane);
     expect(checks(spec, evidence)).not.toContain("door_template.source_verification");
     const carrier = evidence.sources.find((source) => source.source_id === "src-5")!;
     carrier.expires_at = new Date(now - 1).toISOString();
@@ -149,10 +173,7 @@ describe("independent v43 release checks", () => {
   });
 
   it("reads actual bytes again and catches a PNG/header or source-design mutation", () => {
-    const dir = mkdtempSync(join(tmpdir(), "door-v43-file-mutation-")); temporary.push(dir);
-    cpSync(join(ROOT, "content/door-template/v43"), join(dir, "content/door-template/v43"), { recursive: true });
-    cpSync(join(ROOT, "public/images"), join(dir, "public/images"), { recursive: true });
-    vi.spyOn(process, "cwd").mockReturnValue(dir);
+    const dir = copyEvidenceFixture();
     const spec = fixture();
     const first = evidenceFor(spec);
     expect(checks(spec, first)).not.toContain("door_template.asset_receipt");
@@ -162,6 +183,64 @@ describe("independent v43 release checks", () => {
     const style = join(dir, "content/door-template/v43/template/styles.css");
     writeFileSync(style, readFileSync(style, "utf8") + "\nbody { color: red; }\n");
     expect(checks(spec, evidenceFor(spec))).toContain("door_template.integrity");
+  });
+
+  it.each(["missing_amendment", "amendment_wording", "amendment_date", "rehashed_amendment", "base_binding", "base_render", "asset_receipt"])("rejects raw %s evidence even when collector scalar claims are left intact", mutation => {
+    const spec = fixture();
+    const evidence = evidenceFor(spec);
+    if (mutation === "missing_amendment") evidence.amendment_evidence_text = null;
+    if (["amendment_wording", "amendment_date", "rehashed_amendment"].includes(mutation)) {
+      const value = JSON.parse(evidence.amendment_evidence_text!);
+      if (mutation === "amendment_date") value.source_modified_at = "2099-01-01T00:00:00Z";
+      else value.replacements[0].rendered.to += " Extra unreviewed text.";
+      if (mutation === "rehashed_amendment") {
+        const { amendment_sha256: _old, ...payload } = value;
+        value.amendment_sha256 = hash(JSON.stringify(payload));
+        evidence.amendment_sha256 = value.amendment_sha256;
+      }
+      evidence.amendment_evidence_text = JSON.stringify(value);
+    }
+    if (mutation === "base_binding") evidence.base_binding_sha256 = V43_QA_AMENDMENT_PINS.binding;
+    if (mutation === "base_render") evidence.base_rendered_sha256 = V43_QA_AMENDMENT_PINS.rendered;
+    if (mutation === "asset_receipt") {
+      const value = JSON.parse(evidence.asset_amendment_evidence_text!);
+      value.assets[0].raster_sha256 = "a".repeat(64);
+      const { receipt_sha256: _old, ...payload } = value;
+      value.receipt_sha256 = hash(JSON.stringify(payload));
+      evidence.asset_amendment_evidence_text = JSON.stringify(value);
+    }
+    expect(checks(spec, evidence)).toContain("door_template.integrity");
+  });
+
+  it.each(["amendment", "base_binding", "base_reference", "public_svg", "asset_receipt"])("re-reads changed %s files instead of using cached approval", mutation => {
+    const dir = copyEvidenceFixture();
+    const spec = fixture();
+    expect(evidenceFor(spec).errors).toEqual([]);
+    const paths = { amendment: "content/door-template/amendments/v43-copy-2026-09-06-r1.json",
+      base_binding: "content/door-template/v43/binding.json", base_reference: "content/door-template/v43/reference/approved-v43.html",
+      public_svg: "public/images/ac-refrigerant-line-iced-vs-normal.svg", asset_receipt: "config/ac-door-copy-amendment-assets.json" };
+    const path = join(dir, paths[mutation as keyof typeof paths]);
+    if (mutation === "amendment" || mutation === "asset_receipt" || mutation === "base_binding") {
+      const value = JSON.parse(readFileSync(path, "utf8"));
+      if (mutation === "amendment") value.replacements[0].rendered.count++;
+      if (mutation === "asset_receipt") value.assets[0].width = 1199;
+      if (mutation === "base_binding") value.claim_bindings[0].text += " Unreviewed.";
+      writeFileSync(path, JSON.stringify(value));
+    } else writeFileSync(path, readFileSync(path, "utf8") + "\n<!-- changed -->\n");
+    const result = checks(spec, evidenceFor(spec));
+    expect(result).toContain(mutation === "public_svg" ? "door_template.asset_receipt" : "door_template.integrity");
+  });
+
+  it("requires the exact supplemental Trane receipt in addition to the original Carrier citation", () => {
+    const spec = fixture(); const evidence = evidenceFor(spec);
+    evidence.sources = evidence.sources.filter(row => row.source_id !== "sup-trane-frozen-causes");
+    expect(runV43DoorChecks(spec, evidence).some(row => row.where === "stat-3:sup-trane-frozen-causes")).toBe(true);
+  });
+
+  it("keeps any still-open source review finding blocking", () => {
+    const spec = fixture(); const evidence = evidenceFor(spec);
+    evidence.source_review_findings = [{ id: "remaining-source-review", reason: "Actual unresolved source evidence remains." }];
+    expect(runV43DoorChecks(spec, evidence).some(row => row.where === "review:remaining-source-review")).toBe(true);
   });
 
   it("rechecks source/runtime/activation evidence at the actual publish route and queue", async () => {

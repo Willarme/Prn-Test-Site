@@ -5,6 +5,9 @@ import { findPlaybook, selectPlaybook } from "@/domain/intake/playbooks";
 import type { IntakePlaybook } from "@/domain/intake/playbook";
 import { journeySafetyRule } from "@/domain/problem/journey-safety";
 import { runtimeStore, type JobAddress, type Journey } from "@/platform/stores/runtime";
+import { intakeReadiness } from "@/platform/intake/readiness";
+import { buildIntakeHandoff } from "@/platform/intake/handoff";
+import type { LabelConfidenceRecord } from "@/platform/intake/media";
 
 /**
  * Shared server helpers for the post-description intake ("complete your
@@ -28,6 +31,7 @@ export async function loadJourneyContext(requestId: string): Promise<{
    * when nothing was read or the environment records none.
    */
   labelConfidence: Record<string, "high" | "medium" | "low">;
+  labelReadings: LabelConfidenceRecord[];
 } | null> {
   const store = runtimeStore();
   const journey = await store.getJourney(requestId);
@@ -44,11 +48,14 @@ export async function loadJourneyContext(requestId: string): Promise<{
     address = null;
   }
   const labelConfidence: Record<string, "high" | "medium" | "low"> = {};
+  const labelReadings: LabelConfidenceRecord[] = [];
   try {
     // Dynamic: media.ts imports this module, and the sidecar reader is the
     // only thing needed from it here.
-    const { readLabelConfidence } = await import("@/platform/intake/media");
-    for (const record of readLabelConfidence(requestId) ?? []) {
+    const { readLabelReadings } = await import("@/platform/intake/media");
+    for (const record of readLabelReadings(requestId) ?? []) {
+      if (!allEvidence.some(evidence => evidence.kind === "photo" && evidence.evidence_id === record.evidence_id)) continue;
+      labelReadings.push(record);
       for (const [key, word] of Object.entries(record.confidence)) labelConfidence[key] = word;
     }
   } catch {
@@ -66,7 +73,7 @@ export async function loadJourneyContext(requestId: string): Promise<{
   const playbook =
     (journey.session.playbook_id ? findPlaybook(journey.session.playbook_id) : null) ??
     selectPlaybook(textEvidence.content, journey.problem.service_category);
-  return { journey, playbook, textEvidence, allEvidence, address, labelConfidence };
+  return { journey, playbook, textEvidence, allEvidence, address, labelConfidence, labelReadings };
 }
 
 /**
@@ -82,12 +89,9 @@ export async function loadJourneyContext(requestId: string): Promise<{
  * `buildPacket`, so it is governed like every other capability call and emits
  * `packet.regenerated`.
  *
- * STILL RETURNS void, AND STILL NEVER THROWS. Its three callers (the answer
- * route, the media route, and the page) treat regeneration as a
- * best-effort refresh after the customer's own write has already succeeded — a
- * governance refusal must not turn a saved photo into an error, so a refusal
- * leaves the previous packet version standing, exactly as a missing journey
- * always has.
+ * Governance refusals leave the previous version standing. Persistence or
+ * handoff validation failures propagate to the caller for an honest retry;
+ * they never replace the previous saved packet with an invalid generation.
  */
 export async function regeneratePacket(requestId: string): Promise<void> {
   const ctx = await loadJourneyContext(requestId);
@@ -128,7 +132,13 @@ export async function regeneratePacket(requestId: string): Promise<void> {
     new_id: () => `jp_${randomUUID()}`,
   });
   if (!outcome.ok || !outcome.packet) return;
-  await store.savePacket(outcome.packet, requestId);
+  const snapshot = await intakeReadiness(ctx);
+  const packet = { ...outcome.packet, intake_snapshot: {
+    packet_id: outcome.packet.job_packet_id, packet_version: outcome.packet.packet_version,
+    policy_version: snapshot.registry.version, effort_spent: snapshot.ledger.effort_spent,
+    handoff: buildIntakeHandoff(ctx, snapshot, outcome.packet), readiness: snapshot.readiness,
+  } };
+  await store.savePacket(packet, requestId);
   /**
    * THE CHAIN IS MAINTAINED (finding 3, 2026-08-25).
    *

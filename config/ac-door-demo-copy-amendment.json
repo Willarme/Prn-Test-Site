@@ -1,0 +1,171 @@
+{
+  "schema_version": 1,
+  "derivative_id": "v43-demo-copy-2026-09-06-r1",
+  "amendment_id": "v43-copy-2026-09-06-r1",
+  "amendment_sha256": "d3c0334191addd6b4f6394701ba59cbfb224b8905aba8f8c9f756c037eaa0601",
+  "base": {
+    "source_path": "content/doors/ac-blowing-warm-air.html",
+    "reference_path": "content/doors/reference/ac-blowing-warm-air-before-copy-amendment.html",
+    "source_sha256_lf": "f3dcd40e9bb998e273cad4f3c7e7243aa0e05098eccd81c992fff8eb72bf3784",
+    "git_commit": "46e4892ec0d2b6a2702bda55a759c45179c2dbd4",
+    "git_blob": "53e69857b47523fff5412c3f28de2e1b9ddfb53e",
+    "scope": "Tracked demo derivative includes existing attribution and anchor repairs; distinct from the immutable raw v43 kit."
+  },
+  "source_modified_at": "2026-09-06T17:48:12.769Z",
+  "date_basis": "Timestamp of this material authored demo copy amendment; not checkout, deployment or request time.",
+  "replacements": [
+    {
+      "id": "stat-1-attribution",
+      "from": "HVAC companies in four U.S. markets report 40 to 50% of warm-air calls resolving on simple checks.",
+      "to": "HVAC company websites in four U.S. markets describe about half of warm-air calls as simple or checkable causes. These are company assertions, not measured national odds.",
+      "count": 1
+    },
+    {
+      "id": "stat-1-source-class",
+      "from": "Practitioner field reports &middot; 4 U.S. markets",
+      "to": "Company website assertions &middot; 4 U.S. markets",
+      "count": 1
+    },
+    {
+      "id": "stat-1-source-summary",
+      "from": "Sources: multi-market HVAC field reports",
+      "to": "Sources: multi-market HVAC website assertions",
+      "count": 1
+    },
+    {
+      "id": "stat-1-ledger-intro",
+      "from": "Sources 1 to 4 are individual HVAC companies describing their own service calls in their own markets, not national research.",
+      "to": "Sources 1 to 4 are HVAC company website assertions from four U.S. markets, including one that repeats unattributed industry data; they are not measured national odds.",
+      "count": 1
+    },
+    {
+      "id": "stat-1-ledger-class",
+      "from": "Supports the field-report range",
+      "to": "Contains an approximate-half website assertion",
+      "count": 4
+    },
+    {
+      "id": "cause-2-price",
+      "from": "$15 to $40",
+      "to": "Check the price for your filter size and type.",
+      "count": 1
+    },
+    {
+      "id": "cause-2-ledger",
+      "from": "The air filter price is a retail part cost, not a repair, and carries no citation because no source we would stand behind publishes a national figure for it.",
+      "to": "Filter prices depend on size and type; no generic national filter price is displayed.",
+      "count": 1
+    },
+    {
+      "id": "cause-3-reset",
+      "from": "Reset once only",
+      "to": "Leave a tripped breaker off; call for service.",
+      "count": 1
+    },
+    {
+      "id": "cause-4-ledger",
+      "from": "A frozen coil caused by a dirty filter resolves at service call money; one caused by a damaged coil runs to the top of the range.",
+      "to": "The guide separates common central-AC repairs at $150–$650 from evaporator replacement at $700–$2,500+; these are cause-dependent examples.",
+      "count": 1
+    },
+    {
+      "id": "cause-4-ledger-range",
+      "from": "Supports the $150 to $2,500 spread for a frozen evaporator coil, which depends entirely on the underlying cause.",
+      "to": "Supports the stated central-AC repair and evaporator-replacement categories, not one closed frozen-coil price range.",
+      "count": 1
+    },
+    {
+      "id": "cause-4-price",
+      "from": "$150 to $2,500",
+      "to": "Cause-dependent: common central-AC repairs $150–$650; evaporator replacement $700–$2,500+.",
+      "count": 1
+    },
+    {
+      "id": "cause-5-ledger",
+      "from": "Carrier gives $100 to $400 covering part and professional installation; we publish the narrower $150 to $400 because Carrier&rsquo;s own figure of $75 to $150 per hour for technician time makes the $100 floor an edge case.",
+      "to": "Carrier publishes $100 to $400 for the part and professional installation; the actual price varies with the unit and local rates.",
+      "count": 1
+    },
+    {
+      "id": "cause-5-price",
+      "from": "$150 to $400",
+      "to": "$100 to $400",
+      "count": 2
+    },
+    {
+      "id": "cause-7-onset",
+      "from": "Cooling fading over weeks, ice, sometimes a hiss.",
+      "to": "Reduced cooling, ice, sometimes a hiss.",
+      "count": 1
+    },
+    {
+      "id": "continued-operation-faq",
+      "from": "No ice and nothing smelling wrong, running it while you arrange a visit is usually fine.",
+      "to": "If warm air persists after the safe checks, switch cooling off and arrange service.",
+      "count": 1
+    },
+    {
+      "id": "continued-operation-plate",
+      "from": "Safe to keep running for now",
+      "to": "No visible ice; keep checking the cause.",
+      "count": 1
+    },
+    {
+      "id": "continued-operation-description",
+      "from": "and the label says cooling may keep running while a visit is arranged.",
+      "to": "and the label says there is no visible ice and to keep checking the cause.",
+      "count": 2
+    },
+    {
+      "id": "room-scope",
+      "from": "Whole-house and one-room problems have almost no causes in common.",
+      "to": "Whole-house and one-room patterns point to different checks, but some causes overlap.",
+      "count": 1
+    },
+    {
+      "id": "frozen-compressor-damage",
+      "from": "Running a frozen system can flood the compressor and turn a few-hundred-dollar repair into a few-thousand-dollar one.",
+      "to": "Running a frozen system can damage the compressor and lead to an expensive repair.",
+      "count": 1
+    }
+  ],
+  "date_replacement": {
+    "from": "\"dateModified\": \"2026-09-01\"",
+    "to": "\"dateModified\": \"2026-09-06\"",
+    "count": 1
+  },
+  "preserved": {
+    "section_tags_sha256": "519de014e227a8436ceca8239a0b916a8e601a99039d6dd91b620cbd6445d61b",
+    "form_sha256": "1ffc30210a052379b71c469feb15118cdaee01cc81467530a62eeca8ddfe6780",
+    "styles_sha256": "68b3fc346da62f6c7da53bef912539df6479fb15238ba11563f7c477bb30722b",
+    "scripts_sha256": "74a972f74abb0e79d13c6b71cd11a822e098d5d6889f3ea1623ac6d0827f7735",
+    "logical_section_order": [
+      "HERO",
+      "INTAKE",
+      "STAT_CARDS",
+      "WHAT_CHANGES_THE_ANSWER",
+      "COMMON_POSSIBILITIES",
+      "SAFE_OBSERVATIONS",
+      "VISUALS",
+      "THE_FLIP",
+      "GENERAL_VS_YOURS",
+      "CAPABILITY_QUESTIONS",
+      "JOB_PACKET",
+      "REPAIR_RECORD",
+      "FAQ",
+      "RELATED",
+      "CLOSER"
+    ]
+  },
+  "result": {
+    "source_path": "content/doors/ac-blowing-warm-air.html",
+    "source_sha256_lf": "b85cd59d508181bdab4c6f0ec66778eb7cdc610e6a23a2501742624d2c1def60",
+    "content_date": "2026-09-06"
+  },
+  "release": {
+    "indexed": false,
+    "generated_seo_draft": "REJECTED",
+    "production_capability_receipts": "PENDING"
+  },
+  "receipt_sha256": "529412062ef537bd426aa3b83766c0f30403a3702b54ac0c3fd3f0ce4dff8e00"
+}

@@ -22,7 +22,7 @@ describe("door metadata uses real backed assets without altering the frozen draw
     expect(html).toContain('<meta property="og:url" content="' + canonical + '">');
     const graph = jsonld(html)["@graph"];
     const page = graph.find((item: Record<string, string>) => item["@type"] === "WebPage");
-    expect(page.dateModified).toBe("2026-09-05");
+    expect(page.dateModified).toBe("2026-09-06");
     expect(page.url).toBe(canonical);
     expect(page["@id"]).toBe(canonical + "#webpage");
     for (const image of page.image) {
@@ -36,11 +36,27 @@ describe("door metadata uses real backed assets without altering the frozen draw
     expect(html).toContain('<meta name="twitter:description"');
   });
 
-  it("leaves all body markup, SVG diagrams, visible words and CSS unchanged", () => {
+  it("leaves all body markup, SVG diagrams, visible words and original CSS unchanged", () => {
     const rendered = adaptDoorMetadata(source, "http://localhost:3188");
     expect(visibleBody(rendered)).toBe(visibleBody(source));
     expect(rendered.match(/<style>[\s\S]*?<\/style>/)![0]).toBe(source.match(/<style>[\s\S]*?<\/style>/)![0]);
     expect((rendered.match(/<img\b/g) ?? []).length).toBe(0); // row 1 remains incomplete, truthfully
+  });
+
+  it("adds only the authorized narrow methodology wrapping rule after source validation", () => {
+    const rendered = adaptDoorMetadata(source, "http://localhost:3188");
+    const addedStyles = [...rendered.matchAll(/<style\b[^>]*>[\s\S]*?<\/style>/g)]
+      .map(match => match[0]).filter(style => !source.includes(style));
+    expect(addedStyles).toHaveLength(1);
+    const repair = addedStyles[0];
+    expect(repair).toContain('id="door-narrow-methodology-repair"');
+    expect(repair.match(/@media[^{]+/g)).toEqual(["@media (max-width:360px)"]);
+    expect(repair.match(/#[^{]+(?=\{)/g)).toEqual([
+      "#repair-record .record-method", "#repair-record .record-method a",
+    ]);
+    expect(repair).not.toMatch(/!important|font|color|display:|position:|overflow:hidden/);
+    expect(rendered.indexOf(repair)).toBeLessThan(rendered.indexOf("</head>"));
+    expect(visibleBody(rendered)).toBe(visibleBody(source));
   });
 
   it("cannot publish a stale source date after an unreviewed source replacement", () => {

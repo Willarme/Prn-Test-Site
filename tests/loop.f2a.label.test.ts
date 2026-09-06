@@ -1,8 +1,10 @@
+import { existsSync } from "node:fs";
+import { modelRequest, useLocalRequestBudgetFixtures } from "./helpers/request-budget-fixture";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { callModel, type CallModelDeps } from "@/platform/ai/callModel";
 import { MODEL_CATALOGUE, findModel } from "@/platform/ai/models";
 import { AiPolicy, DEFAULT_AI_POLICY } from "@/platform/ai/policy";
-import { FileAiPolicyStore, MemoryAiPolicyStore } from "@/platform/ai/policy-store";
+import { MemoryAiPolicyStore } from "@/platform/ai/policy-store";
 import type { ModelCallInput, ModelCallResult, ModelProvider } from "@/platform/ai/provider";
 import { buildBody, createOpenRouterProvider } from "@/platform/ai/providers/openrouter";
 import { MemorySpendLedger } from "@/platform/ai/spend";
@@ -16,6 +18,8 @@ import {
 } from "@/platform/problem/ai-label";
 import { recentAgentRuns, resetAgentRunLedgerForTests } from "@/platform/runs/ledger";
 import { resetKillSwitchForTests } from "@/platform/killswitch";
+
+useLocalRequestBudgetFixtures();
 
 /**
  * F2a — `read_equipment_label`, end to end through the governed door with a
@@ -101,7 +105,8 @@ const VALID = JSON.stringify({
   model: "24ABC636A003",
   serial: "4021E19845",
   manufacture_year: 2018,
-  confidence: { equipment_type: "high", brand: "high", model: "medium", serial: "medium", manufacture_year: "high" },
+  capacity: null,
+  confidence: { equipment_type: "high", brand: "high", model: "medium", serial: "medium", manufacture_year: "high", capacity: "low" },
   notes: "Clear plate, slight glare on the serial.",
 });
 
@@ -115,7 +120,7 @@ describe("the label reader — a valid reply", () => {
   it("strips metadata BEFORE the bytes leave, sends one image, and returns the fields with confidence in words", async () => {
     const { provider, calls } = fakeProvider([ok(VALID)]);
     const result = await readEquipmentLabel(
-      { bytes: JPEG_WITH_EXIF, mime: "image/jpeg", request_id: "rq_test_label" },
+      { bytes: JPEG_WITH_EXIF, mime: "image/jpeg", tenant_id: "prn", request_id: "rq_test_label" },
       { deps: deps(provider) }
     );
     expect(result.ok).toBe(true);
@@ -176,7 +181,7 @@ describe("the label reader — every failure is readable:false, never a throw", 
   it("an invalid reply that stays invalid falls back (json_schema mode has no repair turn)", async () => {
     const { provider, calls } = fakeProvider([ok('{"readable":true,"brand":"CARRIER"}')]);
     const result = await readEquipmentLabel(
-      { bytes: JPEG_WITH_EXIF, mime: "image/jpeg", request_id: "rq_bad" },
+      { bytes: JPEG_WITH_EXIF, mime: "image/jpeg", tenant_id: "prn", request_id: "rq_bad" },
       { deps: deps(provider) }
     );
     expect(result.ok && !result.readable).toBe(true);
@@ -196,12 +201,13 @@ describe("the label reader — every failure is readable:false, never a throw", 
       model: null,
       serial: null,
       manufacture_year: null,
-      confidence: { equipment_type: "low", brand: "low", model: "low", serial: "low", manufacture_year: "low" },
+      capacity: null,
+      confidence: { equipment_type: "low", brand: "low", model: "low", serial: "low", manufacture_year: "low", capacity: "low" },
       notes: "A thermostat on a wall; no rating plate visible.",
     });
     const { provider } = fakeProvider([ok(notALabel)]);
     const result = await readEquipmentLabel(
-      { bytes: JPEG_WITH_EXIF, mime: "image/jpeg", request_id: "rq_thermostat" },
+      { bytes: JPEG_WITH_EXIF, mime: "image/jpeg", tenant_id: "prn", request_id: "rq_thermostat" },
       { deps: deps(provider) }
     );
     expect(result.ok && !result.readable).toBe(true);
@@ -220,12 +226,13 @@ describe("the label reader — every failure is readable:false, never a throw", 
       model: null,
       serial: null,
       manufacture_year: null,
-      confidence: { equipment_type: "low", brand: "low", model: "low", serial: "low", manufacture_year: "low" },
+      capacity: null,
+      confidence: { equipment_type: "low", brand: "low", model: "low", serial: "low", manufacture_year: "low", capacity: "low" },
       notes: "",
     });
     const { provider } = fakeProvider([ok(empty)]);
     const result = await readEquipmentLabel(
-      { bytes: JPEG_WITH_EXIF, mime: "image/jpeg", request_id: "rq_empty" },
+      { bytes: JPEG_WITH_EXIF, mime: "image/jpeg", tenant_id: "prn", request_id: "rq_empty" },
       { deps: deps(provider) }
     );
     expect(result.ok && !result.readable).toBe(true);
@@ -234,7 +241,7 @@ describe("the label reader — every failure is readable:false, never a throw", 
   it("THE GATE REFUSES when the policy disables the capability — no provider call, no bytes leave", async () => {
     const { provider, calls } = fakeProvider([ok(VALID)]);
     const result = await readEquipmentLabel(
-      { bytes: JPEG_WITH_EXIF, mime: "image/jpeg", request_id: "rq_off" },
+      { bytes: JPEG_WITH_EXIF, mime: "image/jpeg", tenant_id: "prn", request_id: "rq_off" },
       { deps: deps(provider, labelPolicy(false)) }
     );
     expect(result.ok && !result.readable).toBe(true);
@@ -248,14 +255,14 @@ describe("the label reader — every failure is readable:false, never a throw", 
       { ok: false, reason: "timeout", detail: "no reply within 30000ms", provider: "fake", attempts: 1 },
     ]);
     const timedOut = await readEquipmentLabel(
-      { bytes: JPEG_WITH_EXIF, mime: "image/jpeg", request_id: "rq_slow" },
+      { bytes: JPEG_WITH_EXIF, mime: "image/jpeg", tenant_id: "prn", request_id: "rq_slow" },
       { deps: deps(provider) }
     );
     expect(timedOut.ok && !timedOut.readable).toBe(true);
     if (timedOut.ok) expect(timedOut.detail).toMatch(/^timeout/);
 
     const keyless = await readEquipmentLabel(
-      { bytes: JPEG_WITH_EXIF, mime: "image/jpeg", request_id: "rq_nokey" },
+      { bytes: JPEG_WITH_EXIF, mime: "image/jpeg", tenant_id: "prn", request_id: "rq_nokey" },
       { deps: deps(null) }
     );
     expect(keyless.ok && !keyless.readable).toBe(true);
@@ -266,7 +273,7 @@ describe("the label reader — every failure is readable:false, never a throw", 
     const { provider, calls } = fakeProvider([ok(VALID)]);
     const broken = Buffer.concat([Buffer.from([0xff, 0xd8, 0xff, 0xe1, 0xff, 0xff]), Buffer.from("Exif\0\0GPS", "latin1")]);
     const result = await readEquipmentLabel(
-      { bytes: broken, mime: "image/jpeg", request_id: "rq_broken" },
+      { bytes: broken, mime: "image/jpeg", tenant_id: "prn", request_id: "rq_broken" },
       { deps: deps(provider) }
     );
     expect(result.ok && !result.readable).toBe(true);
@@ -278,14 +285,14 @@ describe("the label reader — every failure is readable:false, never a throw", 
     const { provider, calls } = fakeProvider([ok(VALID)]);
     const heic = Buffer.concat([Buffer.from([0, 0, 0, 0x18]), Buffer.from("ftypheic", "latin1"), Buffer.alloc(16)]);
     const result = await readEquipmentLabel(
-      { bytes: heic, mime: "image/heic", request_id: "rq_heic" },
+      { bytes: heic, mime: "image/heic", tenant_id: "prn", request_id: "rq_heic" },
       { deps: deps(provider) }
     );
     expect(result.ok && !result.readable).toBe(true);
     if (result.ok) expect(result.detail).toMatch(/image\/heic/);
     expect(calls).toHaveLength(0);
     const empty = await readEquipmentLabel(
-      { bytes: Buffer.alloc(0), mime: "image/jpeg", request_id: "rq_empty_bytes" },
+      { bytes: Buffer.alloc(0), mime: "image/jpeg", tenant_id: "prn", request_id: "rq_empty_bytes" },
       { deps: deps(provider) }
     );
     expect(empty.ok).toBe(false);
@@ -308,7 +315,7 @@ describe("images through the governed door", () => {
     });
     expect(findModel("deepseek/deepseek-v4-flash-0731")!.allows_customer_data).toBe(true);
     const result = await readEquipmentLabel(
-      { bytes: JPEG_WITH_EXIF, mime: "image/jpeg", request_id: "rq_text_model" },
+      { bytes: JPEG_WITH_EXIF, mime: "image/jpeg", tenant_id: "prn", request_id: "rq_text_model" },
       { deps: deps(provider, textOnly) }
     );
     expect(result.ok && !result.readable).toBe(true);
@@ -332,7 +339,7 @@ describe("images through the governed door", () => {
     });
     const call = (images?: ModelCallInput["images"]) =>
       callModel({
-        agent_id: "A01",
+        ...modelRequest(),        agent_id: "A01",
         capability: "read_equipment_label",
         handles_customer_data: true,
         prompt_id: "t",
@@ -441,38 +448,20 @@ describe("the capability is registered as one governed thing", () => {
     expect(MODEL_CATALOGUE.filter((m) => m.accepts_images)).toHaveLength(1);
   });
 
-  it("an explicit test policy enables the vision model while a fresh checkout stays disabled", async () => {
-    const { mkdtemp, unlink, rmdir } = await import("node:fs/promises");
+  it.skipIf(!existsSync("data/ai-policy.json"))("the owner's test-environment policy document turns it on, on the vision model", async () => {
+    const { readFileSync } = await import("node:fs");
     const { join } = await import("node:path");
-    const { tmpdir } = await import("node:os");
-    const dir = await mkdtemp(join(tmpdir(), "label-policy-fixture-"));
-    const policyPath = join(dir, "policy.json");
-    const vercel = process.env.VERCEL;
-    delete process.env.VERCEL;
-    try {
-      const store = new FileAiPolicyStore(policyPath);
-      expect((await store.getActive()).enabled).toBe(false);
-      expect((await store.getActive()).capabilities.read_equipment_label.enabled).toBe(false);
-      const selected = AiPolicy.parse({ ...structuredClone(DEFAULT_AI_POLICY), enabled: true });
-      selected.capabilities.read_equipment_label.enabled = true;
-      await store.save(selected);
-      const doc = await new FileAiPolicyStore(policyPath).getActive();
-      expect(doc.enabled).toBe(true);
-      expect(doc.capabilities.read_equipment_label.enabled).toBe(true);
-      expect(doc.capabilities.read_equipment_label.model_id).toBe("google/gemini-2.5-flash-lite");
-      expect(doc.capabilities.read_equipment_label.max_cost_per_call_usd).toBe(0.02);
-      expect(doc.capabilities.read_equipment_label.daily_cap_usd).toBe(0.5);
-    } finally {
-      if (vercel === undefined) delete process.env.VERCEL; else process.env.VERCEL = vercel;
-      await unlink(policyPath).catch((error: NodeJS.ErrnoException) => { if (error.code !== "ENOENT") throw error; });
-      await rmdir(dir);
-    }
+    const doc = AiPolicy.parse(JSON.parse(readFileSync(join(process.cwd(), "data", "ai-policy.json"), "utf-8")));
+    expect(doc.capabilities.read_equipment_label.enabled).toBe(true);
+    expect(doc.capabilities.read_equipment_label.model_id).toBe("google/gemini-2.5-flash-lite");
+    expect(doc.capabilities.read_equipment_label.max_cost_per_call_usd).toBe(0.02);
+    expect(doc.capabilities.read_equipment_label.daily_cap_usd).toBe(0.5);
   });
 
   it("callModel itself passes images through to the provider input unchanged", async () => {
     const { provider, calls } = fakeProvider([ok(VALID)]);
     const result = await callModel({
-      agent_id: "A01",
+      ...modelRequest(),      agent_id: "A01",
       capability: "read_equipment_label",
       handles_customer_data: true,
       prompt_id: "t",

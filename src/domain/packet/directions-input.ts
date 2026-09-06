@@ -29,10 +29,12 @@ import type {
   AccessBlock,
   AccessKey,
   DirectionsInput,
+  EvidenceBlock,
   Fact,
   MediaItem,
   OnsetCharacter,
   Provenance,
+  Reading,
   ScriptParts,
   ServiceHistoryAnswer,
   TimelineRow,
@@ -105,6 +107,40 @@ export interface DirectionsBuildOptions {
 /** Track P4's "I cannot reach it" markers, on a step or on a field. */
 export const CANNOT_REACH_STEP = "cannot_reach";
 export const CANNOT_REACH_FIELD = "__cannot_reach__";
+
+// Printed-reader answers are independent observations, not diagnostic checks.
+// Treat the historical Fahrenheit keys as aliases when choosing corrections.
+const PRINTED_READING_GROUPS: Record<string, string> = {
+  thermostat_mode: "thermostat_mode", fan_mode: "fan_mode",
+  thermostat_setpoint: "thermostat_setpoint", thermostat_setpoint_f: "thermostat_setpoint",
+  room_temp: "room_temp", room_temp_f: "room_temp",
+  filter_nominal_dimensions: "filter_nominal_dimensions",
+  printed_cooling_capacity: "printed_cooling_capacity",
+  thermostat_photo: "thermostat_reading", thermostat_reading: "thermostat_reading",
+};
+
+function homeownerAnswer(answer: IntakeAnswer): boolean {
+  return answer.source === "typed" || answer.source === "confirmed";
+}
+
+function printedReading(answer: IntakeAnswer, value: string): Reading {
+  return {
+    value,
+    provenance: answer.source === "photo" || answer.source === "auto_detected" ? "inference"
+      : answer.source === "confirmed" ? "confirmed_by_homeowner" : "reported",
+    source_media: answer.evidence_id,
+    ...(answer.source === "confirmed" ? { confirmed_by_homeowner: true } : {}),
+  };
+}
+
+function temperatureUnit(value: string, key: string, source: IntakeAnswer["source"]): "F" | "C" | null {
+  const match = /^-?\d+(?:\.\d+)?\s*°?\s*([FC])?$/i.exec(value);
+  if (!match) return null;
+  if (match[1]) return match[1].toUpperCase() as "F" | "C";
+  // Preserve the historical typed compound-display contract. An OCR value
+  // without a printed unit can never acquire Fahrenheit through this fallback.
+  return key.endsWith("_f") || ((key === "thermostat_photo" || key === "thermostat_reading") && source !== "photo" && source !== "auto_detected") ? "F" : null;
+}
 
 // ---------------------------------------------------------------------------
 // Small parsers
@@ -260,9 +296,22 @@ export function buildDirectionsInput(ctx: DirectionsBuildContext, opts: Directio
   const latest = new Map<string, IntakeAnswer>();
   const photoValues = new Map<string, string>();
   const confirmed = new Set<string>();
+  const printedLatest = new Map<string, IntakeAnswer>();
   for (const a of ordered) {
     if (a.value_text === CANNOT_REACH_FIELD) {
       cannotReach.add(a.field_key);
+      continue;
+    }
+    const printedGroup = PRINTED_READING_GROUPS[a.field_key];
+    if (printedGroup) {
+      const previous = printedLatest.get(printedGroup);
+      // A later reader pass cannot replace a homeowner's correction, including
+      // when it uses a different temperature alias. A blank OCR field cannot
+      // erase a partial reading that was successfully retained earlier.
+      if (previous && (homeownerAnswer(previous) && !homeownerAnswer(a) || a.value_text === null && !homeownerAnswer(a))) continue;
+      printedLatest.set(printedGroup, a);
+      if (previous) latest.delete(previous.field_key);
+      latest.set(a.field_key, a);
       continue;
     }
     if (a.value_text === null) {
@@ -284,7 +333,7 @@ export function buildDirectionsInput(ctx: DirectionsBuildContext, opts: Directio
   }
   // A01's SUPPLIED claims are the same auto-detected values, kept as fallback.
   for (const c of ctx.claims) {
-    if (c.claim_class === "SUPPLIED" && c.predicate && !latest.has(c.predicate)) {
+    if (c.claim_class === "SUPPLIED" && c.predicate && !latest.has(c.predicate) && !printedLatest.has(PRINTED_READING_GROUPS[c.predicate])) {
       latest.set(c.predicate, {
         request_id: requestId,
         field_key: c.predicate,
@@ -393,19 +442,94 @@ export function buildDirectionsInput(ctx: DirectionsBuildContext, opts: Directio
   const finsRaw = stepAnswer("fins_blocked")?.toLowerCase() ?? null;
   // The walkthrough also accepts one compound typed display reading. Extract
   // only explicitly labeled values; never infer a cool mode from this cluster.
-  const thermostatReading = text("thermostat_photo") ?? text("thermostat_reading");
-  const explicitMode = text("thermostat_mode")?.toLowerCase() ??
-    thermostatReading?.match(/\b(?:set\s+to|mode\s*[:=]?)\s*(cool|heat|off|auto)\b/i)?.[1]?.toLowerCase();
-  const thermostatMode = explicitMode && /^(cool|heat|off|auto)$/.test(explicitMode) ? explicitMode : null;
-  const setpoint = text("thermostat_setpoint_f") ?? text("thermostat_setpoint") ??
-    thermostatReading?.match(/\b(?:set(?:point)?(?:\s+to)?(?:\s+(?:cool|heat|auto))?(?:\s+(?:at|to))?|target)\s*[:=]?\s*(\d{2})\b/i)?.[1] ?? null;
-  const roomTemp = text("room_temp_f") ?? text("room_temp") ??
-    thermostatReading?.match(/\b(?:reads?|room(?:\s+temperature)?(?:\s+(?:is|at))?)\s*[:=]?\s*(\d{2})\b/i)?.[1] ?? null;
+  const readingKey = text("thermostat_photo") ? "thermostat_photo" : text("thermostat_reading") ? "thermostat_reading" : null;
+  const thermostatReading = readingKey ? text(readingKey) : null;
+  const readings: NonNullable<EvidenceBlock["readings"]> = {};
+  const readingFields = new Map<string, string>();
+  const recordReading = (outputKey: keyof typeof readings, keys: string[], fallback?: RegExp) => {
+    // Presence, rather than a truthy value, matters: a homeowner can clear an
+    // old reading, and the stale compound photo must not resurrect it.
+    const explicitKey = keys.find(key => latest.has(key));
+    const explicitAnswer = explicitKey ? latest.get(explicitKey) : null;
+    const compoundAnswer = readingKey ? latest.get(readingKey) : null;
+    const compoundValue = fallback ? thermostatReading?.match(fallback)?.[1]?.trim() : null;
+    // The authored manual control also accepts a compound display answer.
+    // Respect corrections made there as well as corrections to split fields.
+    const useManualCompound = compoundValue && compoundAnswer?.source === "typed" &&
+      (!explicitAnswer || !homeownerAnswer(explicitAnswer) || Date.parse(compoundAnswer.answered_at) > Date.parse(explicitAnswer.answered_at) ||
+        (explicitAnswer.value_text === null && explicitAnswer.evidence_id === compoundAnswer.evidence_id && explicitAnswer.answered_at === compoundAnswer.answered_at));
+    const key = useManualCompound ? readingKey : explicitKey ?? readingKey;
+    const value = useManualCompound ? compoundValue : explicitKey ? text(explicitKey) : compoundValue;
+    const answer = key ? latest.get(key) : null;
+    if (!key || !answer || !value) return;
+    let reading = printedReading(answer, value);
+    if (answer.source === "auto_detected") {
+      const suppliedText = ctx.allEvidence.find(evidence =>
+        (evidence.kind === "customer_text" || evidence.kind === "voice_transcript") &&
+        (evidence.evidence_id === answer.evidence_id || (!answer.evidence_id && answer.value_text && evidence.content.includes(answer.value_text))));
+      if (suppliedText) reading = { ...reading, provenance: "reported", source_media: suppliedText.evidence_id };
+    }
+    if (key === readingKey && answer.source === "confirmed") {
+      // The answer route expands a confirmed summary only after checking its
+      // trusted extraction and each held component. Do not bypass that check
+      // here by promoting parsed parts that have no component confirmation.
+      const originalPhoto = ordered.findLast(item => item.source === "photo" &&
+        PRINTED_READING_GROUPS[item.field_key] === "thermostat_reading" && item.value_text === answer.value_text);
+      reading = { value, provenance: "inference", source_media: originalPhoto?.evidence_id ?? null };
+    }
+    if (outputKey === "thermostat_setpoint" || outputKey === "room_temp") {
+      const unit = temperatureUnit(value, key, answer.source);
+      if (unit) reading.unit = unit;
+      if (unit === "F") {
+        const legacyKey = outputKey === "thermostat_setpoint" ? "thermostat_setpoint_f" : "room_temp_f";
+        readings[legacyKey] = { ...reading, value: Number.parseFloat(value) };
+      }
+    }
+    readings[outputKey] = reading;
+    readingFields.set(outputKey, key);
+  };
+  recordReading("thermostat_mode", ["thermostat_mode"], /\b(?:set\s+to|mode\s*[:=]?)\s*(cool|heat|off|auto)\b/i);
+  recordReading("fan_mode", ["fan_mode"], /\bfan\s*[:=]?\s*(auto|on|circulate)\b/i);
+  recordReading("thermostat_setpoint", ["thermostat_setpoint_f", "thermostat_setpoint"], /\b(?:set(?:point)?(?:\s+to)?(?:\s+(?:cool|heat|auto))?(?:\s+(?:at|to))?|target)\s*[:=]?\s*(-?\d+(?:\.\d+)?(?:\s*°?\s*[FC])?)\b/i);
+  recordReading("room_temp", ["room_temp_f", "room_temp"], /\b(?:reads?|room(?:\s+temperature)?(?:\s+(?:is|at))?)\s*[:=]?\s*(-?\d+(?:\.\d+)?(?:\s*°?\s*[FC])?)\b/i);
+  recordReading("filter_nominal_dimensions", ["filter_nominal_dimensions"]);
+  recordReading("printed_cooling_capacity", ["printed_cooling_capacity"]);
+
+  const thermostatKeys = ["thermostat_mode", "thermostat_setpoint", "room_temp"].map(key => readingFields.get(key) ?? null);
+  const thermostatReadings = [readings.thermostat_mode, readings.fan_mode, readings.thermostat_setpoint, readings.room_temp].filter((r): r is Reading => Boolean(r));
+  const thermostatProvenance: Provenance | null = thermostatReadings.length === 0 ? null
+    : thermostatReadings.some(r => r.provenance === "inference") ? "inference"
+    : thermostatReadings.every(r => r.confirmed_by_homeowner) ? "confirmed_by_homeowner" : "reported";
+  const explicitMode = String(readings.thermostat_mode?.value ?? "").toLowerCase();
+  const thermostatMode = /^(cool|heat|off|auto)$/.test(explicitMode) && readings.thermostat_mode?.provenance !== "inference" ? explicitMode : null;
+  const knownFahrenheit = (reading: Reading | undefined): number | null =>
+    reading?.unit === "F" && reading.provenance !== "inference" && typeof reading.value === "number" ? reading.value : null;
+  const displayTemperature = (reading: Reading) => /^-?\d+(?:\.\d+)?$/.test(String(reading.value)) && reading.unit
+    ? `${reading.value}°${reading.unit}` : String(reading.value);
+  const thermostatDisplay = [
+    readings.thermostat_mode ? String(readings.thermostat_mode.value) : null,
+    readings.fan_mode ? `fan ${readings.fan_mode.value}` : null,
+    readings.thermostat_setpoint ? `set ${displayTemperature(readings.thermostat_setpoint)}` : null,
+    readings.room_temp ? `room ${displayTemperature(readings.room_temp)}` : null,
+  ].filter(Boolean).join(", ");
   const safetyRaw = (text("safety_signals") ?? stepAnswer("safety_signals") ?? stepAnswer("safety_check"))?.toLowerCase() ?? null;
   const ventRaw = (text("vent_airflow") ?? stepAnswer("vent_airflow"))?.toLowerCase() ?? null;
   const filterAge = text("filter_age_weeks");
 
   const view: HvacCoolingView = {
+    fact_sources: {
+      homeowner: ["user_language"],
+      fan: ["check:fan_moving", ...(yesNo(stepAnswer("fan_moving")) === "yes" && yesNo(stepAnswer("compressor_audible")) === "yes" ? ["check:compressor_audible"] : [])],
+      thermostat: [...new Set(thermostatKeys.filter((key): key is string => key !== null))],
+      vent: [text("vent_airflow") ? "vent_airflow" : "check:vent_airflow"],
+      ice: [stepAnswer("ice_check") ? "check:ice_check" : "check:ice_on_line"],
+      filter: ["check:filter", ...(filterRating !== null && filterAge && /^\d{1,3}$/.test(filterAge) ? ["filter_age_weeks"] : [])],
+      fins: ["check:fins_blocked"],
+      onset: [timingText ? "symptom_timing" : "user_language"],
+      safety: [text("safety_signals") ? "safety_signals" : stepAnswer("safety_signals") ? "check:safety_signals" : "check:safety_check"],
+      power: mediaSource.filter(e => e.kind === "photo" && (e.evidence_id === steps.get("power_check")?.evidence_id || /\/step_power_check\//.test(e.content)))
+        .map(e => `evidence:${e.evidence_id}`),
+    },
     homeowner_words: firstSentence(homeownerWords),
     filter_rating: filterRating,
     filter_reported_clean: filterRatingRaw === "reported_clean",
@@ -421,15 +545,10 @@ export function buildDirectionsInput(ctx: DirectionsBuildContext, opts: Directio
     ice_reported: stepWasReported("ice_check") || stepWasReported("ice_on_line"),
     compressor_audible: yesNo(stepAnswer("compressor_audible")),
     vent_airflow: ventRaw ? (/^(no airflow|none)$/.test(ventRaw) ? "none" : /normal|strong|fine|usual/.test(ventRaw) ? "normal" : /weak|low|barely|less/.test(ventRaw) ? "weak" : null) : null,
-    thermostat_setpoint_f: setpoint && /^\d{2}$/.test(setpoint) ? Number(setpoint) : null,
-    room_temp_f: roomTemp && /^\d{2}$/.test(roomTemp) ? Number(roomTemp) : null,
+    thermostat_setpoint_f: knownFahrenheit(readings.thermostat_setpoint_f),
+    room_temp_f: knownFahrenheit(readings.room_temp_f),
     thermostat_mode: thermostatMode,
-    thermostat_reading_provenance:
-      source("thermostat_setpoint_f") === "photo" || source("thermostat_setpoint") === "photo" || source("thermostat_photo") === "photo" || source("thermostat_reading") === "photo"
-        ? "seen_in_photo_or_video"
-        : setpoint
-          ? "reported"
-          : null,
+    thermostat_reading_provenance: thermostatProvenance,
     safety_negative: safetyRaw === null || safetyRaw === "not sure" ? null : /^(no|none|nothing|none of these|no to all)$/.test(safetyRaw),
     onset_character: onsetCharacter,
     onset_weekday: onsetWeekday,
@@ -496,7 +615,23 @@ export function buildDirectionsInput(ctx: DirectionsBuildContext, opts: Directio
   }
   if (ageParsed.age_years !== null && !ageConflict) scriptParts.age_spoken = ageSpoken(ageParsed.age_years);
   if (brandConflict) scriptParts.equipment_brand_type = equipmentType?.value ?? null;
-  facts.push(...conflicts.map(conflict => ({ text: fieldConflictText(conflict), provenance: "reported" as const })));
+  facts.push(...conflicts.map(conflict => ({ text: fieldConflictText(conflict), provenance: "reported" as const,
+    source_fields: [conflict.field_key, ...conflict.evidence_ids.map(id => `evidence:${id}`)] })));
+  if (thermostatDisplay && thermostatProvenance !== "inference" && !facts.some(fact => fact.text.startsWith("Thermostat:"))) {
+    const unitless = [readings.thermostat_setpoint, readings.room_temp].some(reading => reading && !reading.unit);
+    facts.push({ text: `Thermostat: ${thermostatDisplay}${unitless ? " (temperature units not supplied)" : ""}`,
+      provenance: thermostatProvenance ?? "reported", kind: "reading",
+      source_fields: [...new Set([...readingFields.entries()].filter(([key]) => !["filter_nominal_dimensions", "printed_cooling_capacity"].includes(key)).map(([, field]) => field))],
+    });
+  }
+  const printedLabels = { filter_nominal_dimensions: "Printed filter dimensions", printed_cooling_capacity: "Printed cooling capacity" } as const;
+  for (const key of Object.keys(printedLabels) as (keyof typeof printedLabels)[]) {
+    const reading = readings[key];
+    if (reading && reading.provenance !== "inference") facts.push({
+      text: `${printedLabels[key]}: ${reading.value}`, provenance: reading.provenance, kind: "reading",
+      source_fields: [key, ...(reading.source_media ? [`evidence:${reading.source_media}`] : [])],
+    });
+  }
 
   // Timeline
   const timeline: TimelineRow[] = [];
@@ -546,6 +681,21 @@ export function buildDirectionsInput(ctx: DirectionsBuildContext, opts: Directio
   // --- provider -------------------------------------------------------------------
   const checks = isHvacCooling ? hvacCoolingChecks(view) : [];
   const unknowns = isHvacCooling ? hvacCoolingUnknowns(view) : [];
+  const thermostatUnknown = unknowns.find(unknown => unknown.item === "Thermostat setpoint and room temperature");
+  if (thermostatUnknown && thermostatDisplay) {
+    const celsiusPair = readings.thermostat_setpoint?.unit === "C" && readings.room_temp?.unit === "C";
+    if (celsiusPair && thermostatProvenance !== "inference") thermostatUnknown.item = "Thermostat temperature comparison";
+    thermostatUnknown.reason = `Recorded display values: ${thermostatDisplay}. ${thermostatProvenance === "inference"
+      ? "Unconfirmed reading; compare with the display before relying on it."
+      : celsiusPair ? "Celsius values are preserved as supplied; no Fahrenheit comparison was made."
+      : "The remaining values or compatible temperature units were not established; no Fahrenheit comparison was made."}`;
+  }
+  for (const key of Object.keys(printedLabels) as (keyof typeof printedLabels)[]) {
+    const reading = readings[key];
+    if (reading?.provenance === "inference") unknowns.push({
+      item: printedLabels[key], reason: `${reading.value} — unconfirmed photo reading; compare with the printed label before relying on it.`,
+    });
+  }
   unknowns.push(...conflicts.map(conflict => ({ item: `${conflict.label} needs confirmation`, reason: fieldConflictText(conflict) })));
   const technicianOnly = isHvacCooling ? [...HVAC_COOLING_TECHNICIAN_ONLY] : [];
   const ranked = isHvacCooling ? hvacCoolingBranches(view) : { branches: [], top: null };
@@ -615,6 +765,7 @@ export function buildDirectionsInput(ctx: DirectionsBuildContext, opts: Directio
     property: {
       street: address?.street ?? "",
       city_state_zip: address?.city_state_zip ?? "",
+      unknown_reason: !address && ctx.journey.packet.intake_snapshot ? "Not provided before this packet was prepared." : null,
       type: address?.property_type ?? null,
       storeys: address?.storeys ?? null,
     },
@@ -648,20 +799,14 @@ export function buildDirectionsInput(ctx: DirectionsBuildContext, opts: Directio
       outdoor_unit_location: valued("outdoor_unit_location"),
       air_handler_location: valued("air_handler_location"),
       thermostat: valued("thermostat_model") ?? valued("thermostat") ??
-        (view.thermostat_setpoint_f !== null && view.room_temp_f !== null
-          ? { value: `${thermostatMode ? `${thermostatMode}, ` : ""}set ${view.thermostat_setpoint_f}°F, room ${view.room_temp_f}°F`, provenance: view.thermostat_reading_provenance ?? "reported" }
+        (thermostatDisplay
+          ? { value: `${thermostatDisplay}${thermostatProvenance === "inference" ? " (unconfirmed reading)" : ""}`, provenance: thermostatProvenance ?? "reported",
+              ...(thermostatReadings.every(r => r.confirmed_by_homeowner) ? { confirmed_by_homeowner: true } : {}) }
           : null),
     },
     evidence: {
       media,
-      readings:
-        view.thermostat_setpoint_f !== null && view.room_temp_f !== null
-          ? {
-              ...(thermostatMode ? { thermostat_mode: { value: thermostatMode, provenance: view.thermostat_reading_provenance ?? "reported" } } : {}),
-              thermostat_setpoint_f: { value: view.thermostat_setpoint_f, provenance: view.thermostat_reading_provenance ?? "reported" },
-              room_temp_f: { value: view.room_temp_f, provenance: view.thermostat_reading_provenance ?? "reported" },
-            }
-          : {},
+      readings,
     },
     narrative: { facts, summary_observations: summary, timeline, script_parts: scriptParts },
     provider: {
