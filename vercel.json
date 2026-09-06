@@ -1,8 +1,17 @@
 {
   "git": {
-    "deploymentEnabled": false
+    "deploymentEnabled": {
+      "main": true,
+      "*": false
+    }
   },
   "headers": [
+    {
+      "source": "/:path*",
+      "headers": [
+        { "key": "X-Robots-Tag", "value": "noindex, nofollow" }
+      ]
+    },
     {
       "source": "/feature/:path*",
       "headers": [
