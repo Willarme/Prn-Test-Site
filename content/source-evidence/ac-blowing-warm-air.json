@@ -2,8 +2,8 @@
   "schema_version": 1,
   "page_id": "ac-blowing-warm-air",
   "binding_sha256": "3f14222350a5ae401381ab37b31b7b66c83dd05416a4fd2631b533db417518ea",
-  "reviewed_at": "2026-09-06T16:08:10.766Z",
-  "expires_at": "2026-12-05T16:08:10.766Z",
+  "reviewed_at": "2026-09-06T16:44:31.932Z",
+  "expires_at": "2026-12-05T16:44:31.932Z",
   "reviewer": "Codex source_support_review agent",
   "sources": [
     {
@@ -161,6 +161,50 @@
       "summary": "Lists common central-AC repairs $150-$650 and evaporator replacement $700-$2,500+. There is no literal frozen-coil $150-$2,500 row. Figures derive from Angi and Home Depot; this is a compilation."
     }
   ],
+  "supplemental_sources": [
+    {
+      "source_id": "sup-trane-frozen-causes",
+      "url": "https://www.trane.com/residential/en/resources/blog/frozen-evaporator-coil-causes/",
+      "final_url": "https://www.trane.com/residential/en/resources/blog/frozen-evaporator-coil-causes/",
+      "http_status": 200,
+      "captured_at": "2026-09-06T16:40:11.458Z",
+      "content_sha256": "9cecca766f13e3007a8d1b82a5716d16f52b4066904efc3ed6594efec94811b9",
+      "content_bytes": 302004,
+      "evidence_class": "MANUFACTURER_GUIDANCE",
+      "published_at": "2024-09-03",
+      "modified_at": null,
+      "date_basis": "VISIBLE_PUBLICATION_DATE",
+      "summary": "Trane explicitly recommends COOL to OFF and fan ON instead of AUTO while a frozen evaporator thaws; continued frozen operation can harm the compressor. This separate article supplies the fan-ON attribution missing from src-7. Only these reviewed assertions are used; unrelated thawing suggestions are not imported."
+    },
+    {
+      "source_id": "sup-carrier-troubleshoot",
+      "url": "https://www.carrier.com/us/en/residential/hvac-resources/air-conditioners/troubleshoot-an-ac-not-working/",
+      "final_url": "https://www.carrier.com/us/en/residential/hvac-resources/air-conditioners/troubleshoot-an-ac-not-working/",
+      "http_status": 200,
+      "captured_at": "2026-09-06T16:40:11.490Z",
+      "content_sha256": "11a879c8a114e450573c40d4cfbb36de3670df7b12b9679d42ace2428fd85ecb",
+      "content_bytes": 149690,
+      "evidence_class": "MANUFACTURER_CONSUMER_GUIDANCE",
+      "published_at": null,
+      "modified_at": null,
+      "date_basis": "NO_VISIBLE_DATE",
+      "summary": "Carrier describes fan ON circulating room-temperature air between compressor cycles. It also permits a breaker reset for a comfortable homeowner and says not to repeat a reset after immediate retripping. The consumer reset advice does not override equipment-specific safety instructions; this capture supplies conflict evidence, not approval of cause-1 or cause-3."
+    },
+    {
+      "source_id": "sup-copeland-safety",
+      "url": "https://webapps.copeland.com/online-product-information/Publication/LaunchPDF?Index=AEB&PDF=1434",
+      "final_url": "https://webapps.copeland.com/online-product-information/Publication/LaunchPDF?Index=AEB&PDF=1434",
+      "http_status": 200,
+      "captured_at": "2026-09-06T16:40:12.240Z",
+      "content_sha256": "09391d605138a2549b66fe89c87167f250ee4417bf5c69ec234813956c7b8a97",
+      "content_bytes": 711421,
+      "evidence_class": "MANUFACTURER_EQUIPMENT_SAFETY_BULLETIN",
+      "published_at": "2024-09",
+      "modified_at": null,
+      "date_basis": "BULLETIN_REVISION_DATE_AE4_1434_R2",
+      "summary": "AE4-1434 R2, printed page 5, requires appropriate electrical testing before breaker reset or fuse replacement because a compressor fault can cause terminal venting. The bulletin covers the stated 1.5-2 ton ZP*KB R410A AC/heat-pump compressor family. Its equipment-specific restriction prevents certifying blanket one-reset advice for unknown equipment; it is not a homeowner service procedure."
+    }
+  ],
   "claims": [
     {
       "claim_id": "stat-1",
@@ -215,16 +259,17 @@
         {
           "source_id": "src-6",
           "content_sha256": "30fc1895f1d06d064edb39e964bf569f375850a99431f05332726ff5ea27ec9e"
+        },
+        {
+          "source_id": "sup-trane-frozen-causes",
+          "content_sha256": "9cecca766f13e3007a8d1b82a5716d16f52b4066904efc3ed6594efec94811b9"
         }
       ],
-      "reviewed_at": "2026-09-06T16:08:10.766Z",
-      "expires_at": "2027-03-05T16:08:10.766Z",
-      "status": "PARTIALLY_SUPPORTED",
-      "reason": "Carrier supports the action and damage warning. Zero minutes is a reasonable editorial rendering of immediately, not a measured statistic. The second manufacturer is omitted from the binding and does not state fan ON on its cited page.",
-      "gaps": [
-        "Trane fan-ON attribution not found",
-        "src-7 absent from claim binding"
-      ]
+      "reviewed_at": "2026-09-06T16:44:31.932Z",
+      "expires_at": "2027-03-05T16:44:31.932Z",
+      "status": "SUPPORTED",
+      "reason": "Carrier src-6 and the separately captured Trane frozen-coil article both support cooling OFF, fan ON during thawing, and compressor-damage risk. Zero extra minutes faithfully renders immediate shutdown as an action instruction, not a measured duration. The supplemental Trane URL is explicit in public provenance; the different frozen src-7 URL and base binding are unchanged.",
+      "gaps": []
     },
     {
       "claim_id": "cause-1",
@@ -259,10 +304,10 @@
       "reviewed_at": "2026-09-06T16:08:10.766Z",
       "expires_at": "2026-12-05T16:08:10.766Z",
       "status": "UNBOUND",
-      "reason": "No source_ids exist. src-5 supports the outdoor-power/indoor-blower mechanism. Practitioner pages mention one reset, but a manufacturer safety reference and exact binding remain necessary for the full guidance.",
+      "reason": "No source_ids exist in the frozen binding. The outdoor-power/indoor-blower mechanism is supported, but general Carrier consumer reset advice conflicts with the Copeland compressor-family safety requirement for electrical testing first. Unknown equipment cannot be cleared for a generic one-reset instruction; cost wording also remains unverified.",
       "gaps": [
         "Missing explicit source binding",
-        "Reset guidance needs a primary safety reference",
+        "Equipment-specific electrical safety conflict blocks generic reset guidance",
         "Free/service-call wording is not a cost measurement"
       ]
     },
@@ -314,9 +359,9 @@
       "reviewed_at": "2026-09-06T16:08:10.766Z",
       "expires_at": "2026-12-05T16:08:10.766Z",
       "status": "PARTIALLY_SUPPORTED",
-      "reason": "The endpoints are present across distinct cleaning methods. The frozen typical span hides that difference. Primary manufacturer guidance can support exterior-debris clearance, but it is not bound to this claim.",
+      "reason": "The visible ledger distinguishes lower-cost cleaning from higher-cost acid washing, but the combined typical span is still an editorial envelope across service categories. Supplemental manufacturer guidance could support exterior-debris clearance; it is not bound to this claim. No positive price-envelope certification is issued.",
       "gaps": [
-        "Combined service categories need explicit context",
+        "Combined service categories remain an uncertified price-envelope interpretation",
         "Technical guidance lacks primary binding"
       ]
     },
@@ -364,7 +409,25 @@
         "FAQ"
       ],
       "reason": "General damage risk is supported; the exact flood mechanism and paired repair-cost comparison are not demonstrated by the bound source set."
+    },
+    {
+      "finding_id": "unknown-equipment-breaker-reset-conflict",
+      "severity": "RELEASE_BLOCKING_SOURCE_CONFLICT",
+      "sections": [
+        "COMMON_POSSIBILITIES"
+      ],
+      "reason": "Cause-3 gives generic one-reset advice for unknown equipment. Carrier consumer guidance permits a reset, while Copeland AE4-1434 R2 printed page 5 requires appropriate electrical testing first for its compressor family because of terminal-venting risk. Do not let general consumer guidance override equipment-specific safety instructions; narrower wording or a qualified equipment-specific review is required.",
+      "source_captures": [
+        {
+          "source_id": "sup-carrier-troubleshoot",
+          "content_sha256": "11a879c8a114e450573c40d4cfbb36de3670df7b12b9679d42ace2428fd85ecb"
+        },
+        {
+          "source_id": "sup-copeland-safety",
+          "content_sha256": "09391d605138a2549b66fe89c87167f250ee4417bf5c69ec234813956c7b8a97"
+        }
+      ]
     }
   ],
-  "bundle_sha256": "d8d123a8e8e3172205ad5b5619723ae46fda58f0177fd2d8c29d6ba74a473340"
+  "bundle_sha256": "3d45e6b07326e3fb6661c6f3d8983de6a0cf01b018ba4a6d8e47c05f95c666e6"
 }

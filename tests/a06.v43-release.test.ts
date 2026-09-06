@@ -47,8 +47,9 @@ describe("independent v43 release checks", () => {
     expect(findings.some((finding) => finding.check === "door_template.claim_binding" && finding.where === "cause-2" && finding.message.includes("$15 to $40"))).toBe(true);
     expect(findings.filter((finding) => finding.check === "door_template.capability_runtime")).toHaveLength(9);
     expect(findings.some((finding) => finding.check === "door_template.source_verification")).toBe(true);
-    expect(findings.filter((finding) => finding.where.startsWith("review:"))).toHaveLength(3);
+    expect(findings.filter((finding) => finding.where.startsWith("review:"))).toHaveLength(4);
     expect(findings.some((finding) => finding.where === "stat-2:src-5")).toBe(false);
+    expect(findings.some((finding) => finding.where === "stat-3:src-6")).toBe(false);
     expect(findings.some((finding) => finding.check === "door_template.production_release")).toBe(true);
     expect(spec.door_template?.source_bindings.every((source) => source.verified_at === null && source.evidence_status === "INHERITED_UNVERIFIED")).toBe(true);
   });

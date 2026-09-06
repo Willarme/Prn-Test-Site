@@ -101,7 +101,8 @@ const VALID = JSON.stringify({
   model: "24ABC636A003",
   serial: "4021E19845",
   manufacture_year: 2018,
-  confidence: { equipment_type: "high", brand: "high", model: "medium", serial: "medium", manufacture_year: "high" },
+  capacity: null,
+  confidence: { equipment_type: "high", brand: "high", model: "medium", serial: "medium", manufacture_year: "high", capacity: "low" },
   notes: "Clear plate, slight glare on the serial.",
 });
 
@@ -196,7 +197,8 @@ describe("the label reader — every failure is readable:false, never a throw", 
       model: null,
       serial: null,
       manufacture_year: null,
-      confidence: { equipment_type: "low", brand: "low", model: "low", serial: "low", manufacture_year: "low" },
+      capacity: null,
+      confidence: { equipment_type: "low", brand: "low", model: "low", serial: "low", manufacture_year: "low", capacity: "low" },
       notes: "A thermostat on a wall; no rating plate visible.",
     });
     const { provider } = fakeProvider([ok(notALabel)]);
@@ -220,7 +222,8 @@ describe("the label reader — every failure is readable:false, never a throw", 
       model: null,
       serial: null,
       manufacture_year: null,
-      confidence: { equipment_type: "low", brand: "low", model: "low", serial: "low", manufacture_year: "low" },
+      capacity: null,
+      confidence: { equipment_type: "low", brand: "low", model: "low", serial: "low", manufacture_year: "low", capacity: "low" },
       notes: "",
     });
     const { provider } = fakeProvider([ok(empty)]);
