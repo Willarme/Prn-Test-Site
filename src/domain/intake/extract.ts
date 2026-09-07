@@ -132,6 +132,8 @@ function detectOnset(text: string): string | null {
 /** Field-key extractors that run BEFORE the playbook's regexes, by name. */
 const BUILT_IN: Record<string, (text: string) => string | null> = {
   brand: detectBrand,
+  // An explicitly named system type is supplied text, not a model-code inference.
+  equipment_type: text => /\b(?:outdoor\s+)?central\s+(?:AC|A\/C|air conditioner|air conditioning)\b/i.exec(literalFieldText(text))?.[0] ?? null,
   system_age: detectAge,
   symptom_timing: detectOnset,
   // Keep the resident's actual reading, not a generated paraphrase or photo claim.

@@ -4,9 +4,9 @@
   "binding_sha256": "fd85de29c6ac6c7b70bce416c59e974b305575b1a85ef2fc53e80a3f36b55f25",
   "base_binding_sha256": "3f14222350a5ae401381ab37b31b7b66c83dd05416a4fd2631b533db417518ea",
   "amendment_sha256": "d3c0334191addd6b4f6394701ba59cbfb224b8905aba8f8c9f756c037eaa0601",
-  "reviewed_at": "2026-09-06T17:33:43.875Z",
-  "expires_at": "2026-12-05T17:33:43.875Z",
-  "reviewer": "Codex source_support_review agent",
+  "reviewed_at": "2026-09-07T00:12:42.759Z",
+  "expires_at": "2026-12-06T00:12:42.759Z",
+  "reviewer": "Codex remaining_source_evidence agent",
   "sources": [
     {
       "source_id": "src-1",
@@ -219,6 +219,20 @@
       "modified_at": null,
       "date_basis": "NO_VISIBLE_DATE",
       "summary": "Trane explains that duct leakage also harms summer air conditioning and may be most noticeable in one room, while evaluation can require the whole duct system. This directly supports overlap between room and whole-house causes; the article title addresses a furnace, but the reviewed passage explicitly covers AC."
+    },
+    {
+      "source_id": "sup-trane-continuous-running",
+      "url": "https://www.trane.com/residential/en/resources/troubleshooting/air-conditioners/ac-wont-turn-off/",
+      "final_url": "https://www.trane.com/residential/en/resources/troubleshooting/air-conditioners/ac-wont-turn-off/",
+      "http_status": 200,
+      "captured_at": "2026-09-07T00:09:53.027Z",
+      "content_sha256": "ca23c7ddb9a3c1a3c3a692d2fe0efbe1623ed464ce45a64078a2b258f9f96175",
+      "content_bytes": 264715,
+      "evidence_class": "MANUFACTURER_GUIDANCE",
+      "published_at": null,
+      "modified_at": null,
+      "date_basis": "NO_VISIBLE_DATE",
+      "summary": "Trane lists dirty filters among causes of constant AC operation and explains that restricted filters extend cooling cycles. This supplies the running-duration symptom in cause-2; it is a possible cause, not a diagnostic certainty or measured prevalence."
     }
   ],
   "claims": [
@@ -302,14 +316,25 @@
     {
       "claim_id": "cause-2",
       "claim_sha256": "8b6d1134e4a53a44cd928a03cc7f0eda32eb5788cc2c64273dc03f7327d177d2",
-      "source_captures": [],
-      "reviewed_at": "2026-09-06T17:33:43.875Z",
-      "expires_at": "2026-12-05T17:33:43.875Z",
-      "status": "UNBOUND",
-      "reason": "The generic filter price has been removed by the reviewed amendment. Manufacturer captures support restricted airflow and freezing, but the frozen source_ids remain empty and the complete guidance still needs an explicit reviewed binding.",
-      "gaps": [
-        "Missing explicit primary source binding for the exact amended guidance"
-      ]
+      "source_captures": [
+        {
+          "source_id": "src-7",
+          "content_sha256": "9a9ff69d9f186cb9e67548199a54aa040be92d43425a81fcae6ad0db6f237b07"
+        },
+        {
+          "source_id": "sup-carrier-troubleshoot",
+          "content_sha256": "11a879c8a114e450573c40d4cfbb36de3670df7b12b9679d42ace2428fd85ecb"
+        },
+        {
+          "source_id": "sup-trane-continuous-running",
+          "content_sha256": "ca23c7ddb9a3c1a3c3a692d2fe0efbe1623ed464ce45a64078a2b258f9f96175"
+        }
+      ],
+      "reviewed_at": "2026-09-07T00:12:42.759Z",
+      "expires_at": "2026-12-06T00:12:42.759Z",
+      "status": "SUPPORTED",
+      "reason": "The exact unchanged row now has explicit reviewed manufacturer bindings: Carrier identifies weak airflow with dirty filters; Trane connects clogged filters to frozen coils/lines and permits homeowner filter replacement; the additional Trane article links dirty filters to constant or extended operation. These are possible symptoms in the Common Possibilities context, not a unique diagnosis. The final sentence asks for the actual filter price and asserts no numeric cost.",
+      "gaps": []
     },
     {
       "claim_id": "cause-3",
@@ -331,15 +356,21 @@
         {
           "source_id": "src-11",
           "content_sha256": "f5d4ed60a5f8bff4cde21bc4738a5b65a9f64a255f526ee7e72b629b5ec9bdbd"
+        },
+        {
+          "source_id": "src-6",
+          "content_sha256": "30fc1895f1d06d064edb39e964bf569f375850a99431f05332726ff5ea27ec9e"
+        },
+        {
+          "source_id": "src-7",
+          "content_sha256": "9a9ff69d9f186cb9e67548199a54aa040be92d43425a81fcae6ad0db6f237b07"
         }
       ],
-      "reviewed_at": "2026-09-06T17:33:43.875Z",
-      "expires_at": "2026-12-05T17:33:43.875Z",
-      "status": "PARTIALLY_SUPPORTED",
-      "reason": "The approved amendment now states the actual This Old House central-AC repair and evaporator-replacement categories with the open upper qualifier. The exact row also contains mechanism and thaw guidance that has not been bound to primary manufacturer captures.",
-      "gaps": [
-        "Mechanism/action still requires an explicit primary source binding"
-      ]
+      "reviewed_at": "2026-09-07T00:12:42.759Z",
+      "expires_at": "2026-12-06T00:12:42.759Z",
+      "status": "SUPPORTED",
+      "reason": "The exact amended row binds This Old House to its separate published central-AC repair and evaporator-replacement categories, not one measured frozen-coil price distribution. Carrier and Trane cover visible ice, airflow/refrigerant causes, thawing and professional follow-up; Trane explicitly says repair cost varies with the underlying cause. Thaw then call preserves the page-wide cooling-OFF instruction and does not authorize continued cooling or a guaranteed filter-only fix.",
+      "gaps": []
     },
     {
       "claim_id": "cause-5",
@@ -383,12 +414,12 @@
           "content_sha256": "b93542470c69c890ba8ce785d6f103795d093c1edbbdd66c53c84d4bf0cd91c7"
         }
       ],
-      "reviewed_at": "2026-09-06T17:33:43.875Z",
-      "expires_at": "2026-12-05T17:33:43.875Z",
+      "reviewed_at": "2026-09-07T00:12:42.759Z",
+      "expires_at": "2026-12-06T00:12:42.759Z",
       "status": "PARTIALLY_SUPPORTED",
-      "reason": "The approved amendment removes the unsupported weeks-long onset. The current Carrier capture supports the symptoms, sealed-system guidance and base $250-$1,600 range; the plus qualifier still requires a complete explicit cost-chain binding.",
+      "reason": "Carrier supports the symptoms, nonconsumed refrigerant and professional handling, and explicitly footnotes its published $250-$1,600 range to Angi. The research tool can read Angi listing evaporator leak repairs/replacement above $1,600, matching the visible ledger qualifier. Direct retrieval again returned a 403 challenge, so no article-byte capture satisfies the current evidence contract. The challenge hash is excluded from positive support.",
       "gaps": [
-        "Open-ended range requires explicit cost-chain/context binding"
+        "Full Carrier-to-Angi cost-chain review lacks a usable dated article-byte capture for the explicit evaporator-leak upper qualifier; research-tool text alone is not admitted by the current HTTP-capture contract"
       ]
     }
   ],
@@ -479,5 +510,5 @@
       }
     }
   ],
-  "bundle_sha256": "1271af9bb41b0a92cc77a20c375f19258d438ec02fce22686490c76a13b27ba4"
+  "bundle_sha256": "dea6b38d33beb0773af659e8bb13281595788c77ec2d89a99a50a2e002b0af97"
 }

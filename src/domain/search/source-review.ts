@@ -66,9 +66,17 @@ export const REVIEWED_SUPPLEMENTAL_SOURCES = [
     url: "https://www.trane.com/residential/en/resources/troubleshooting/gas-furnaces/furnace-not-blowing-not-air/",
     content_sha256: "341a1a52f8bcc1875e50407f555fb58fa8a846f4d855740b7ab23675a28440dd",
     captured_at: "2026-09-06T16:40:12.239Z", content_bytes: 313657 },
+  { source_id: "sup-trane-continuous-running", publisher: "Trane", title: "AC Won't Turn Off? Find Out Why and What to Do",
+    url: "https://www.trane.com/residential/en/resources/troubleshooting/air-conditioners/ac-wont-turn-off/",
+    content_sha256: "ca23c7ddb9a3c1a3c3a692d2fe0efbe1623ed464ce45a64078a2b258f9f96175",
+    captured_at: "2026-09-07T00:09:53.027Z", content_bytes: 264715 },
 ] as const;
+// Exact additional evidence for an unchanged claim. Existing frozen sources
+// may support another claim, but only through these explicitly reviewed edges.
 const SUPPLEMENTAL_CLAIM_SOURCES: Record<string, readonly string[]> = {
   "stat-3": ["sup-trane-frozen-causes"],
+  "cause-2": ["src-7", "sup-carrier-troubleshoot", "sup-trane-continuous-running"],
+  "cause-4": ["src-6", "src-7"],
 };
 const APPROVED_CLAIMS: Record<string, { claim_sha256: string; captures: Record<string, string> }> = {
   "stat-2": { claim_sha256: "cb6f820e001f77da127e65509088f5d130b2998237cd7069f5fe272ccff5596b", captures: {
@@ -80,6 +88,16 @@ const APPROVED_CLAIMS: Record<string, { claim_sha256: string; captures: Record<s
   } },
   "cause-5": { claim_sha256: "ba4a1a5538393e3147d6e53531e3abc9a1a4d1da8d4448297a5e87c54668b32e", captures: {
     "src-8": "3b1ea2cb7e08833dac2ab15d948c7e8abd75f2ab705e40f28a41dd1d014e1807",
+  } },
+  "cause-2": { claim_sha256: "8b6d1134e4a53a44cd928a03cc7f0eda32eb5788cc2c64273dc03f7327d177d2", captures: {
+    "src-7": "9a9ff69d9f186cb9e67548199a54aa040be92d43425a81fcae6ad0db6f237b07",
+    "sup-carrier-troubleshoot": REVIEWED_SUPPLEMENTAL_SOURCES[1].content_sha256,
+    "sup-trane-continuous-running": REVIEWED_SUPPLEMENTAL_SOURCES[4].content_sha256,
+  } },
+  "cause-4": { claim_sha256: "c9a3fae1bdf4f4d62351512215a21d9484c09b92c2af59b2a74631482983c19e", captures: {
+    "src-11": "f5d4ed60a5f8bff4cde21bc4738a5b65a9f64a255f526ee7e72b629b5ec9bdbd",
+    "src-6": "30fc1895f1d06d064edb39e964bf569f375850a99431f05332726ff5ea27ec9e",
+    "src-7": "9a9ff69d9f186cb9e67548199a54aa040be92d43425a81fcae6ad0db6f237b07",
   } },
 };
 const REQUIRED_FINDINGS = [

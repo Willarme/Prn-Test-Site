@@ -1,4 +1,5 @@
 import type { HazardFlag, SafetyState, UrgencyLevel } from "@/domain/packet/types";
+import { affirmedSafetyPatterns } from "@/domain/problem/safety-match";
 
 /**
  * THE URGENCY TAG (Directions §6) AND THE HARD-STOP FLAGS (Directions §9.1).
@@ -99,8 +100,9 @@ export const SAFETY_RULE_TO_FLAG: Record<string, HazardFlag> = {
 
 export function detectHazardFlags(words: string, explicit: readonly HazardFlag[] = []): HazardFlag[] {
   const out = new Set<HazardFlag>(explicit);
+  const matches = affirmedSafetyPatterns(words, HAZARD_PATTERNS.map(({ pattern }) => pattern));
   for (const { flag, pattern } of HAZARD_PATTERNS) {
-    if (pattern.test(words)) out.add(flag);
+    if (matches.has(pattern)) out.add(flag);
   }
   return [...out];
 }

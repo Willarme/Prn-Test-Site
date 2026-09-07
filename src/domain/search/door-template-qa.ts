@@ -24,6 +24,23 @@ export const V43_QA_AMENDMENT_PINS = {
   asset_receipt: "d0aba512c373092063f2abb0b29d7b384090e52b8a79ef7b2d00379fcb40a7b8",
 } as const;
 const reviewed = getAmendedV43Binding();
+// Independently reviewed additions to the immutable citation edges. A06 checks
+// every component of these composite claims even if the collector supplies a
+// plausible-looking receipt for only one source. No PageSpec can add an edge.
+const V43_ADDITIONAL_CLAIM_EVIDENCE: Readonly<Record<string, {
+  claim_sha256: string; sources: ReadonlyArray<{ source_id: string; url: string; content_sha256: string }>;
+}>> = {
+  "cause-2": { claim_sha256: "8b6d1134e4a53a44cd928a03cc7f0eda32eb5788cc2c64273dc03f7327d177d2", sources: [
+    { source_id: "src-7", url: "https://www.trane.com/residential/en/resources/troubleshooting/air-conditioners/evaporator-coil-is-frozen/", content_sha256: "9a9ff69d9f186cb9e67548199a54aa040be92d43425a81fcae6ad0db6f237b07" },
+    { source_id: "sup-carrier-troubleshoot", url: "https://www.carrier.com/us/en/residential/hvac-resources/air-conditioners/troubleshoot-an-ac-not-working/", content_sha256: "11a879c8a114e450573c40d4cfbb36de3670df7b12b9679d42ace2428fd85ecb" },
+    { source_id: "sup-trane-continuous-running", url: "https://www.trane.com/residential/en/resources/troubleshooting/air-conditioners/ac-wont-turn-off/", content_sha256: "ca23c7ddb9a3c1a3c3a692d2fe0efbe1623ed464ce45a64078a2b258f9f96175" },
+  ] },
+  "cause-4": { claim_sha256: "c9a3fae1bdf4f4d62351512215a21d9484c09b92c2af59b2a74631482983c19e", sources: [
+    { source_id: "src-11", url: "https://www.thisoldhouse.com/heating-cooling/air-conditioner-repair-cost", content_sha256: "f5d4ed60a5f8bff4cde21bc4738a5b65a9f64a255f526ee7e72b629b5ec9bdbd" },
+    { source_id: "src-6", url: "https://www.carrier.com/us/en/residential/hvac-resources/air-conditioners/will-frozen-ac-fix-itself/", content_sha256: "30fc1895f1d06d064edb39e964bf569f375850a99431f05332726ff5ea27ec9e" },
+    { source_id: "src-7", url: "https://www.trane.com/residential/en/resources/troubleshooting/air-conditioners/evaporator-coil-is-frozen/", content_sha256: "9a9ff69d9f186cb9e67548199a54aa040be92d43425a81fcae6ad0db6f237b07" },
+  ] },
+};
 export const V43_QA_RENDER_ORIGIN = "https://v43-preview.invalid";
 
 /** Actual existing files measured 2026-09-06; this is local fidelity, not HTTP proof. */
@@ -279,10 +296,25 @@ export function runV43DoorChecks(spec: PageSpec, evidence?: DoorTemplateEvidence
     }
   }
   for (const claim of reviewed.claim_bindings.filter((row) => row.claim_type !== "capability")) {
-    if (claim.source_ids.length === 0) {
+    const additional = V43_ADDITIONAL_CLAIM_EVIDENCE[claim.claim_id];
+    const matchingAdditional = additional?.claim_sha256 === sha(claim.text) ? additional : undefined;
+    if (claim.source_ids.length === 0 && !matchingAdditional) {
       fail("door_template.claim_binding", claim.claim_id,
         `Approved visible claim lacks a supporting source binding: ${claim.text}`,
         "Obtain claim-specific evidence and a reviewed binding revision. Preserve frozen copy while this release remains blocked.");
+    }
+    for (const source of matchingAdditional?.sources ?? []) {
+      const receipt = collected?.sources.find(row => row.source_id === source.source_id);
+      // These unchanged rows contain price/cost guidance: use the stricter
+      // 90-day evidence window for every source in their composite support.
+      if (!receipt || receipt.url !== source.url || receipt.content_sha256 !== source.content_sha256 ||
+          !validHash(receipt.receipt_sha256) || !receipt.verifier.trim() ||
+          !isCurrent(receipt.verified_at, receipt.expires_at, now, 90) ||
+          !receipt.supported_claim_sha256.includes(additional.claim_sha256)) {
+        fail("door_template.source_verification", `${claim.claim_id}:${source.source_id}`,
+          `The independently reviewed additional source evidence for ${claim.claim_id} is absent, changed or expired.`,
+          "Restore the exact reviewed source capture and full claim support; do not modify the frozen page to bypass this evidence gate.");
+      }
     }
     for (const sourceId of claim.source_ids) {
       const source = reviewed.source_bindings.find((row) => row.source_id === sourceId);

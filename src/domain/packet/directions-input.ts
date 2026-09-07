@@ -169,16 +169,24 @@ export function tradeFor(serviceCategory: string | null): Trade {
   }
 }
 
-const MODEL_RE = /\bmodel\s*(?:no\.?|number|#)?\s*[:#-]?\s*([A-Z0-9][A-Z0-9\-/]{3,})/i;
-const SERIAL_RE = /\bserial\s*(?:no\.?|number|#)?\s*[:#-]?\s*([A-Z0-9][A-Z0-9\-/]{3,})/i;
+const MODEL_RE = /\bmodel\b\s*(?:number\b|no\b\.?|#)?\s*[:#-]?\s*(?:is\s+)?([A-Z0-9][A-Z0-9\-/]{3,})/gi;
+const SERIAL_RE = /\bserial\b\s*(?:number\b|no\b\.?|#)?\s*[:#-]?\s*(?:is\s+)?([A-Z0-9][A-Z0-9\-/]{3,})/gi;
 const CODE_RE = /\b(?=[A-Z0-9\-/]*\d)(?=[A-Z0-9\-/]*[A-Z])[A-Z0-9][A-Z0-9\-/]{4,}\b/g;
 
 export function parseModelSerial(text: string): { model: string | null; serial: string | null } {
-  const model = MODEL_RE.exec(text)?.[1] ?? null;
-  const serial = SERIAL_RE.exec(text)?.[1] ?? null;
-  if (model || serial) return { model, serial };
-  const codes = text.toUpperCase().match(CODE_RE) ?? [];
-  return { model: codes[0] ?? null, serial: codes[1] ?? null };
+  const models = [...text.matchAll(MODEL_RE)].map(m => m[1]);
+  const serials = [...text.matchAll(SERIAL_RE)].map(m => m[1]);
+  const unique = (values: string[]) => [...new Map(values.map(value => [value.toUpperCase(), value])).values()];
+  const namedCode = (values: string[]) => values.length && values.every(value => /\d/.test(value)) && unique(values).length === 1 ? values[0] : null;
+  // A serial comes only from an explicit serial label. It must never become the
+  // model fallback, nor can a second unlabelled token be invented as a serial.
+  const named = new Set([...models, ...serials].map(value => value.toUpperCase()));
+  // Remove the whole serial clause, including an uncertain or malformed one.
+  const unlabelledText = text.replace(/\bserial\b(?:\s+no\.?)?[^;,\n.]*/gi, " ").replace(MODEL_RE, " ");
+  const unlabelled = unique((unlabelledText.toUpperCase().match(CODE_RE) ?? [])
+    .filter(value => !named.has(value)));
+  const model = models.length ? namedCode(models) : unlabelled.length === 1 ? unlabelled[0] : null;
+  return { model, serial: namedCode(serials) };
 }
 
 export function parseAge(text: string, nowYear: number): { age_years: number | null; manufacture_year: number | null } {
@@ -396,14 +404,14 @@ export function buildDirectionsInput(ctx: DirectionsBuildContext, opts: Directio
       let subject: string;
       let location: string | null = null;
       if (e.kind === "voice_note") subject = "Voice note (not transcribed)";
-      else if (readLabel || target === "unit_model_serial") subject = "Equipment label";
       else if (target === "thermostat_photo") subject = "Thermostat display";
+      else if (target === "step_filter" || target === "filter_photo") subject = "Filter";
+      // A completed printed-text read does not turn its known photo role into
+      // a rating plate, or establish that a filter was photographed in place.
+      else if (readLabel || target === "unit_model_serial") subject = "Equipment label";
       else if (target === "step_outdoor_unit") subject = "Outdoor unit";
       else if (target === "step_power_check") {
         subject = "Outdoor disconnect";
-      } else if (target === "step_filter" || target === "filter_photo") {
-        subject = "Filter";
-        location = "in situ";
       } else if (target === "problem_photo") subject = "Problem area";
       else if (target === "door_photo") {
         subject = "Unit";
@@ -556,6 +564,8 @@ export function buildDirectionsInput(ctx: DirectionsBuildContext, opts: Directio
     brand: brandConflict ? null : brand?.value ?? null,
     equipment_type: equipmentType?.value ?? null,
     model: modelSerial.model,
+    serial: modelSerial.serial,
+    equipment_identity_supplied: !!modelSerialText,
     age_years: ageConflict ? null : ageParsed.age_years,
     air_handler_location: text("air_handler_location"),
     cannot_reach: cannotReach,
@@ -595,7 +605,10 @@ export function buildDirectionsInput(ctx: DirectionsBuildContext, opts: Directio
   if (isHvacCooling) {
     title = HVAC_COOLING_TITLE;
     facts = hvacCoolingFacts(view);
-    summary = hvacCoolingSummary(view);
+    // The concise headline and spoken script may use the first sentence.
+    // Keep the full printable opening in the provider summary so supplied
+    // details which were not normalized into fields do not disappear.
+    summary = hvacCoolingSummary({ ...view, homeowner_words: homeownerWords.replace(/\s+/g, " ").trim() });
     scriptParts = hvacCoolingScriptParts(view);
   } else {
     title =

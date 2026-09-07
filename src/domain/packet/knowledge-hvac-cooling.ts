@@ -78,6 +78,8 @@ export interface HvacCoolingView {
   brand: string | null;
   equipment_type: string | null;
   model: string | null;
+  serial?: string | null;
+  equipment_identity_supplied?: boolean;
   age_years: number | null;
   air_handler_location: string | null;
   /** Fields or steps the homeowner marked as unreachable (track P4's marker). */
@@ -461,10 +463,11 @@ export function hvacCoolingUnknowns(v: HvacCoolingView): Unknown[] {
   const reach = (key: string, what: string) =>
     v.cannot_reach.has(key) ? `homeowner could not reach the ${what}` : null;
 
-  if (!v.model) {
+  if (!v.model || v.serial === null) {
     out.push({
-      item: "Model and serial",
-      reason: reach("unit_model_serial", "label") ?? reach("outdoor_unit", "outdoor unit") ?? "not photographed or typed at intake",
+      item: v.model ? "Serial number" : v.serial ? "Model number" : "Model and serial",
+      reason: reach("unit_model_serial", "label") ?? reach("outdoor_unit", "outdoor unit") ??
+        (v.equipment_identity_supplied || v.model || v.serial ? "not identified in the supplied equipment details" : "not photographed or typed at intake"),
     });
   }
   if (v.thermostat_setpoint_f === null || v.room_temp_f === null) {
@@ -510,26 +513,33 @@ interface Candidate {
   against: string[];
   /** How much recorded evidence the branch accounts for. */
   weight: number;
+  /** Actual recorded observations, excluding a cannot-be-excluded gap. */
+  recorded_support: number;
 }
 
 export function hvacCoolingBranches(v: HvacCoolingView): { branches: Branch[]; top: string | null } {
-  const filterClean = v.filter_rating !== null && v.filter_rating <= 5;
+  const filterNotDirty = v.filter_rating !== null && v.filter_rating <= 5;
   const filterDirty = v.filter_rating !== null && v.filter_rating >= 6;
+  // Keep the branch evidence identical to the recorded assessment. A rating
+  // of 5 is lightly dusty, not clean; attaching a photo does not verify it.
+  const filterAssessment = v.filter_rating !== null
+    ? `filter ${filterWord(v.filter_rating)}, rated ${v.filter_rating}/10 by the homeowner`
+    : null;
   const candidates: Candidate[] = [];
 
   // Low refrigerant charge / leak
   {
     const f: string[] = [];
     if (v.onset_character === "gradual") f.push("gradual onset over days");
-    if (v.fan_moving === "yes") f.push("unit running normally");
+    if (v.fan_moving === "yes") f.push("outdoor fan turning");
     if (v.vent_airflow === "normal") f.push("airflow normal");
-    if (filterClean) f.push("filter clean");
+    if (filterNotDirty) f.push(filterAssessment!);
     if (v.ice === "no") f.push(v.ice_reported ? "homeowner reports no visible ice" : "no ice at the accessible section");
     const a: string[] = [];
     if (v.ice === "yes") a.push(v.ice_reported ? "homeowner reports visible ice, which fits a freeze-up" : "ice at the accessible section fits a freeze-up first");
     if (v.onset_character === "sudden") a.push("a sudden stop fits a part failure better than a slow leak");
     if (a.length === 0) a.push("the line-set was not inspected for oil staining at intake");
-    candidates.push({ name: "Low refrigerant charge / leak", for: f, against: a, weight: f.length });
+    candidates.push({ name: "Low refrigerant charge / leak", for: f, against: a, weight: f.length, recorded_support: f.length });
   }
 
   // Failing capacitor / compressor not staging
@@ -550,7 +560,7 @@ export function hvacCoolingBranches(v: HvacCoolingView): { branches: Branch[]; t
       weight = 2;
       a.push("a tripped breaker or a blown disconnect fuse would look the same from outside");
     }
-    if (f.length > 0) candidates.push({ name: "Failing capacitor / compressor not staging", for: f, against: a, weight });
+    if (f.length > 0) candidates.push({ name: "Failing capacitor / compressor not staging", for: f, against: a, weight, recorded_support: f.length });
   }
 
   // Airflow restriction downstream of the filter
@@ -565,13 +575,14 @@ export function hvacCoolingBranches(v: HvacCoolingView): { branches: Branch[]; t
       f.push("air at the vents reported weak");
       weight += 1;
     }
+    const recordedSupport = f.length;
     f.push("cannot be excluded without inspecting the coil");
     const a: string[] = [];
-    if (filterClean && v.vent_airflow === "normal") a.push("filter clean and vent airflow reported normal");
-    else if (filterClean) a.push("filter clean");
+    if (filterNotDirty && v.vent_airflow === "normal") a.push(`${filterAssessment} and vent airflow reported normal`);
+    else if (filterNotDirty) a.push(filterAssessment!);
     else if (v.vent_airflow === "normal") a.push("vent airflow reported normal");
     else a.push("nothing recorded at intake points at the ducts or the blower");
-    candidates.push({ name: "Airflow restriction downstream of the filter", for: f, against: a, weight });
+    candidates.push({ name: "Airflow restriction downstream of the filter", for: f, against: a, weight, recorded_support: recordedSupport });
   }
 
   // Blocked condenser coil — only when the fins were seen clogged
@@ -581,6 +592,7 @@ export function hvacCoolingBranches(v: HvacCoolingView): { branches: Branch[]; t
       for: ["outdoor fins packed with debris"],
       against: v.fan_moving === "yes" ? ["the unit is still running with the fan turning"] : ["the homeowner's visual assessment alone does not show whether clearing the fins would restore cooling"],
       weight: 2,
+      recorded_support: 1,
     });
   }
 
@@ -591,6 +603,7 @@ export function hvacCoolingBranches(v: HvacCoolingView): { branches: Branch[]; t
       for: v.power_photo ? ["outdoor fan not turning, disconnect photographed"] : ["outdoor fan not turning"],
       against: ["the disconnect's fuses were not tested at intake"],
       weight: v.power_photo ? 2.5 : 2,
+      recorded_support: 1,
     });
   }
 
@@ -603,7 +616,12 @@ export function hvacCoolingBranches(v: HvacCoolingView): { branches: Branch[]; t
     .sort((a, b) => b.weight - a.weight)
     .slice(0, 4);
 
-  if (usable.length < 2) return { branches: [], top: null };
+  // Directions §7.4 allows an honest untested gap, but it is not an observed
+  // competing explanation. A filter rating alone must not win a ranking
+  // against a placeholder. Use §7.5's existing insufficient-evidence text.
+  if (usable.length < 2 || usable.filter(c => c.recorded_support > 0).length < 2) {
+    return { branches: [], top: null };
+  }
 
   const branches: Branch[] = usable.map((c, i) => {
     let confidence: Branch["confidence"];

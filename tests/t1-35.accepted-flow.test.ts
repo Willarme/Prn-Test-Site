@@ -373,11 +373,11 @@ describe("T1-35 ordinary accepted intake paths", () => {
     __setLabelReaderForTests(reader);
     const first = await accepted(await photo(id)); const second = await accepted(await photo(id));
     expect(reader).toHaveBeenCalledTimes(2);
-    expect(readLabelReadings(id)).toEqual([
+    expect((await readLabelReadings(id))).toEqual([
       expect.objectContaining({ evidence_id: first.evidence_id, extraction_status: "unreadable", confidence: {}, reason: expect.stringMatching(/did not yield a readable/i) }),
       expect.objectContaining({ evidence_id: second.evidence_id, extraction_status: "unreadable", confidence: {}, reason: expect.stringMatching(/did not yield a readable/i) }),
     ]);
-    expect(readLabelConfidence(id)).toBeNull();
+    expect((await readLabelConfidence(id))).toBeNull();
     expect((await readIntakeEffort({ request_id: id, tenant_id: "prn" })).effort_spent).toBe(11);
     const current = await state(id);
     expect(current.facts.fields.unit_model_serial?.value).toBeNull();
@@ -403,8 +403,8 @@ describe("T1-35 ordinary accepted intake paths", () => {
     expect(current.facts.fields.unit_model_serial.status).not.toBe("UNREADABLE");
     expect(current.facts.fields.brand.value).toMatch(/trane/i);
     expect(current.screen.questions.some(q => q.fills_fields.includes("unit_model_serial"))).toBe(false);
-    expect(readLabelReadings(id)?.map(record => record.extraction_status)).toEqual(["unreadable", "readable"]);
-    expect(readLabelConfidence(id)?.map(record => record.evidence_id)).toEqual([second.evidence_id]);
+    expect((await readLabelReadings(id))?.map(record => record.extraction_status)).toEqual(["unreadable", "readable"]);
+    expect((await readLabelConfidence(id))?.map(record => record.evidence_id)).toEqual([second.evidence_id]);
     const ledger = await readIntakeEffort({ request_id: id, tenant_id: "prn" });
     expect(ledger.effort_spent).toBe(11);
     expect(ledger.attempts.filter(attempt => attempt.operation.kind === "media").map(attempt => attempt.charged_units)).toEqual([3, 3]);
@@ -426,8 +426,8 @@ describe("T1-35 ordinary accepted intake paths", () => {
     const current = await state(id);
     expect(current.facts.fields.unit_model_serial).toMatchObject({ value: "Model 24ABC636A003, Serial 4021E19845", evidence_ids: [readable.evidence_id] });
     expect((await savedPacket(id)).intake_snapshot?.handoff.equipment.model).toBe("24ABC636A003");
-    expect(readLabelReadings(id)?.find(record => record.evidence_id === unreadable.evidence_id)?.extraction_status).toBe("unreadable");
-    expect(readLabelConfidence(id)?.map(record => record.evidence_id)).toEqual([readable.evidence_id]);
+    expect((await readLabelReadings(id))?.find(record => record.evidence_id === unreadable.evidence_id)?.extraction_status).toBe("unreadable");
+    expect((await readLabelConfidence(id))?.map(record => record.evidence_id)).toEqual([readable.evidence_id]);
     expect(reader).toHaveBeenCalledTimes(2); expect(current.ledger.effort_spent).toBe(11);
   }, 15_000);
 
@@ -439,8 +439,8 @@ describe("T1-35 ordinary accepted intake paths", () => {
       return { ok: false, reason: "synthetic refusal" };
     });
     const result = await accepted(await photo(id));
-    expect(readLabelReadings(id)).toEqual([expect.objectContaining({ evidence_id: result.evidence_id, extraction_status: "failed", confidence: {}, reason: expect.any(String) })]);
-    expect(readLabelConfidence(id)).toBeNull();
+    expect((await readLabelReadings(id))).toEqual([expect.objectContaining({ evidence_id: result.evidence_id, extraction_status: "failed", confidence: {}, reason: expect.any(String) })]);
+    expect((await readLabelConfidence(id))).toBeNull();
     expect((await state(id)).facts.fields.unit_model_serial).toMatchObject({ value: null, status: "UNKNOWN_AFTER_REASONABLE_ATTEMPT", evidence_ids: [result.evidence_id] });
     expect((await runtimeStore().listIntakeAnswers(id)).every(a => a.value_text === null)).toBe(true);
     expect((await readIntakeEffort({ request_id: id, tenant_id: "prn" })).effort_spent).toBe(8);

@@ -27,7 +27,7 @@ export async function loadJourneyContext(requestId: string): Promise<{
   address: JobAddress | null;
   /**
    * Latest label-read confidence word per field key ("high" | "medium" |
-   * "low"), from the file store's sidecar (platform/intake/media.ts). Empty
+   * "low"), from validated extraction completion storage. Empty
    * when nothing was read or the environment records none.
    */
   labelConfidence: Record<string, "high" | "medium" | "low">;
@@ -53,7 +53,7 @@ export async function loadJourneyContext(requestId: string): Promise<{
     // Dynamic: media.ts imports this module, and the sidecar reader is the
     // only thing needed from it here.
     const { readLabelReadings } = await import("@/platform/intake/media");
-    for (const record of readLabelReadings(requestId) ?? []) {
+    for (const record of await readLabelReadings(requestId) ?? []) {
       if (!allEvidence.some(evidence => evidence.kind === "photo" && evidence.evidence_id === record.evidence_id)) continue;
       labelReadings.push(record);
       for (const [key, word] of Object.entries(record.confidence)) labelConfidence[key] = word;

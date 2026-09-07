@@ -54,7 +54,8 @@ describe("independent v43 release checks", () => {
     expect(evidence.errors).toEqual([]);
     const findings = runV43DoorChecks(spec, evidence);
     expect(findings.filter((finding) => ["door_template.integrity", "door_template.asset_receipt"].includes(finding.check))).toEqual([]);
-    expect(findings.some((finding) => finding.check === "door_template.claim_binding" && finding.where === "cause-2" && finding.message.includes("Check the price for your filter size and type."))).toBe(true);
+    expect(findings.filter(finding => finding.where === "cause-2" || /^(cause-2|cause-4):/.test(finding.where))).toEqual([]);
+    expect(findings.filter(finding => finding.check === "door_template.claim_binding").map(finding => finding.where)).toEqual(["cause-1", "cause-3"]);
     expect(findings.filter((finding) => finding.check === "door_template.capability_runtime")).toHaveLength(9);
     expect(findings.some((finding) => finding.check === "door_template.source_verification")).toBe(true);
     expect(findings.filter((finding) => finding.where.startsWith("review:"))).toHaveLength(0);
@@ -141,14 +142,12 @@ describe("independent v43 release checks", () => {
     // This test synthesizes claim coverage only. Actual collected review gaps
     // remain independently blocking in the real-evidence tests.
     evidence.source_review_findings = [];
-    const trane = evidence.sources.find(row => row.source_id === "sup-trane-frozen-causes")!;
     const now = Date.parse(evidence.collected_at);
-    evidence.sources = spec.door_template!.source_bindings.map((source) => ({ source_id: source.source_id, url: source.url,
-      content_sha256: "b".repeat(64), receipt_sha256: "c".repeat(64), verifier: "synthetic-unit-fixture",
+    evidence.sources = evidence.sources.map((source) => ({ ...source, receipt_sha256: "c".repeat(64), verifier: "synthetic-unit-fixture",
       verified_at: new Date(now - 86400000).toISOString(), expires_at: new Date(now + 86400000).toISOString(),
-      supported_claim_sha256: spec.door_template!.claim_bindings.filter((claim) => claim.source_ids.includes(source.source_id)).map((claim) => hash(claim.text)),
+      supported_claim_sha256: [...new Set([...source.supported_claim_sha256,
+        ...spec.door_template!.claim_bindings.filter((claim) => claim.source_ids.includes(source.source_id)).map((claim) => hash(claim.text))])],
     }));
-    evidence.sources.push(trane);
     expect(checks(spec, evidence)).not.toContain("door_template.source_verification");
     const carrier = evidence.sources.find((source) => source.source_id === "src-5")!;
     carrier.expires_at = new Date(now - 1).toISOString();
@@ -183,6 +182,27 @@ describe("independent v43 release checks", () => {
     const style = join(dir, "content/door-template/v43/template/styles.css");
     writeFileSync(style, readFileSync(style, "utf8") + "\nbody { color: red; }\n");
     expect(checks(spec, evidenceFor(spec))).toContain("door_template.integrity");
+  });
+
+  it.each([
+    ["cause-2", "src-7"], ["cause-2", "sup-carrier-troubleshoot"], ["cause-2", "sup-trane-continuous-running"],
+    ["cause-4", "src-11"], ["cause-4", "src-6"], ["cause-4", "src-7"],
+  ])("independently requires the whole %s composite, including %s", (claimId, sourceId) => {
+    const spec = fixture();
+    const original = evidenceFor(spec);
+    expect(runV43DoorChecks(spec, original).some(finding => finding.where === `${claimId}:${sourceId}`)).toBe(false);
+    for (const mutation of ["missing", "url", "hash", "claim", "expired", "future", "ttl"]) {
+      const evidence = structuredClone(original);
+      const source = evidence.sources.find(row => row.source_id === sourceId)!;
+      if (mutation === "missing") evidence.sources = evidence.sources.filter(row => row !== source);
+      if (mutation === "url") source.url += "?unreviewed=1";
+      if (mutation === "hash") source.content_sha256 = "b".repeat(64);
+      if (mutation === "claim") source.supported_claim_sha256 = [];
+      if (mutation === "expired") source.expires_at = "2026-09-01T00:00:00Z";
+      if (mutation === "future") source.verified_at = "2099-01-01T00:00:00Z";
+      if (mutation === "ttl") source.expires_at = "2099-01-01T00:00:00Z";
+      expect(runV43DoorChecks(spec, evidence).some(finding => finding.where === `${claimId}:${sourceId}`), mutation).toBe(true);
+    }
   });
 
   it.each(["missing_amendment", "amendment_wording", "amendment_date", "rehashed_amendment", "base_binding", "base_render", "asset_receipt"])("rejects raw %s evidence even when collector scalar claims are left intact", mutation => {

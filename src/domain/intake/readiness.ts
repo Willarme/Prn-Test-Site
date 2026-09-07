@@ -230,9 +230,9 @@ function fact(key: string, value: string | null, at: string, patch: Partial<Curr
     reason: value === null ? "No value was obtained" : null, source: "answer", claim_class: "SUPPLIED", evidence_ids: [], captured_at: at, confidence: null, confirmed: false, ...patch });
 }
 function strength(f: CurrentFact): number { return f.confirmed ? 5 : f.claim_class === "INFERRED" ? 1 : f.value === null ? 0 : 4; }
-function install(state: CurrentFactState, incoming: CurrentFact): void {
+function install(state: CurrentFactState, incoming: CurrentFact, explicitCorrection = true): void {
   const previous = state.fields[incoming.field_key];
-  const laterHomeownerCorrection = previous && incoming.source === "answer" && incoming.claim_class === "SUPPLIED" &&
+  const laterHomeownerCorrection = explicitCorrection && previous && incoming.source === "answer" && incoming.claim_class === "SUPPLIED" &&
     Date.parse(incoming.captured_at) > Date.parse(previous.captured_at);
   const photoOverManual = previous?.source === "answer" && previous.claim_class === "SUPPLIED" &&
     incoming.source === "evidence" && incoming.claim_class !== "SUPPLIED";
@@ -264,11 +264,17 @@ export function buildCurrentFactState(input: BuildFactStateInput): CurrentFactSt
     install(state, fact("symptom_detail", initial, problem.created_at, { source: "opening_text", evidence_ids: openingEvidence ? [openingEvidence.evidence_id] : [] }));
   }
   if (problem.service_category) install(state, fact("normalized_class", problem.service_category, problem.updated_at ?? problem.created_at, { source: "claim", claim_class: "INFERRED", confidence: problem.service_category_confidence ?? "low" }));
-  function extract(text: string, at: string, evidence_ids: string[], source: CurrentFact["source"]) {
-    for (const f of detectFields(text, playbook.required_fields)) install(state, fact(f.field_key, f.value_text, at, { source, evidence_ids }));
-    for (const f of detectDiagnosis(text, playbook)) install(state, fact(`check:${f.step_id}`, f.answer, at, { source, evidence_ids }));
+  function extract(text: string, at: string, evidence_ids: string[], source: CurrentFact["source"], namedField?: string) {
+    // Preserve the full answer to its named field. Cross-field extraction can
+    // still collect other literal facts, but must not replace it with a token
+    // or treat an incidental mention as a correction of a confirmed sibling.
+    // The original answer/evidence retains that mention for later review.
+    for (const f of detectFields(text, playbook.required_fields)) {
+      if (f.field_key !== namedField) install(state, fact(f.field_key, f.value_text, at, { source, evidence_ids }), false);
+    }
+    for (const f of detectDiagnosis(text, playbook)) install(state, fact(`check:${f.step_id}`, f.answer, at, { source, evidence_ids }), false);
     const shape = /\b(gradually|gradual|suddenly|sudden|all at once|comes and goes|intermittent)\b/i.exec(text)?.[0];
-    if (shape) install(state, fact("onset_character", shape, at, { source, evidence_ids }));
+    if (shape) install(state, fact("onset_character", shape, at, { source, evidence_ids }), false);
   }
   if (initial) extract(initial, problem.created_at, openingEvidence ? [openingEvidence.evidence_id] : [], "opening_text");
   for (const e of textEvidence) extract(e.content, e.captured_at, [e.evidence_id], "evidence");
@@ -302,7 +308,7 @@ export function buildCurrentFactState(input: BuildFactStateInput): CurrentFactSt
       ...(gap ? gap : {}), ...(photoPending ? { status: "PHOTO_PENDING_EXTRACTION" as const, reason: "Photo supplied; the requested value has not been extracted" } : {}),
       ...(completionGap ?? {}),
       ...(!gap && answer.source === "confirmed" ? { status: "CONFIRMED" as const, confirmed: true } : {}) }));
-    if (answer.value_text && !gap && answer.source === "typed") extract(answer.value_text, answer.answered_at, answer.evidence_id ? [answer.evidence_id] : [], "answer");
+    if (answer.value_text && !gap && answer.source === "typed") extract(answer.value_text, answer.answered_at, answer.evidence_id ? [answer.evidence_id] : [], "answer", answer.field_key);
   }
   for (const answer of input.diagnosisAnswers ?? []) {
     if (answer.request_id !== input.request_id) continue;

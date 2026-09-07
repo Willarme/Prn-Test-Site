@@ -173,7 +173,12 @@ describe("the reserved tenant is populated on the real write path", () => {
           'if (ledger.request_id !== identity.request_id || ledger.tenant_id !== identity.tenant_id || ledger.problem_id !== problemId ||',
           '.eq("request_id", identity.request_id).eq("tenant_id", identity.tenant_id).maybeSingle();',
         ].includes(line.trim());
-        if (((namedTenant && !reviewedScope) || crossRecord || filtered) && !reviewedEffort) {
+        // T6 completion isolation uses the same request/tenant boundary. This
+        // exact read is covered by SQL/RLS and foreign-row rejection tests;
+        // it does not enable tenant-specific product behavior.
+        const reviewedCompletion = file.path === "src/platform/intake/label-completions.ts" &&
+          line.trim() === '.eq("request_id", requestId).eq("tenant_id", ctx.tenantId).not("record", "is", null).order("read_at", { ascending: true });';
+        if (((namedTenant && !reviewedScope) || crossRecord || filtered) && !reviewedEffort && !reviewedCompletion) {
           offenders.push(`${file.path}:${i + 1}  ${line.trim()}`);
         }
       }

@@ -110,7 +110,7 @@ describe("T1-14 shared model guard joined to T1-35 accepted media", () => {
     expect(calls.map(call => call.schemaName)).toEqual(["A01LabelRead_v2", "A01LabelRead_v2"]);
     expect(calls.every(call => call.maxAttempts === 1)).toBe(true);
     expect(results.at(-1)).toMatchObject({ capability: "read_equipment_label", request_id: id, tenant_id: "prn", ok: false, reason: "over_budget" });
-    expect((readLabelReadings(id) ?? []).map(reading => reading.extraction_status)).toEqual(["unreadable", "unreadable", "failed"]);
+    expect(((await readLabelReadings(id)) ?? []).map(reading => reading.extraction_status)).toEqual(["unreadable", "unreadable", "failed"]);
     expect(reservations().map(reservation => reservation.used)).toEqual([1, 2]);
     expect((await readIntakeEffort({ request_id: id, tenant_id: "prn" })).effort_spent).toBe(14);
     expect((await runtimeStore().getJourney(id))!.packet.intake_snapshot!.handoff.equipment.model).toBeNull();
@@ -122,7 +122,7 @@ describe("T1-14 shared model guard joined to T1-35 accepted media", () => {
     await photo(id); const refusedRead = await photo(id);
     expect(calls.map(call => call.schemaName)).toEqual(["A01Classification", "A01LabelRead_v2"]);
     expect(results.at(-1)).toMatchObject({ request_id: id, tenant_id: "prn", ok: false, reason: "over_budget" });
-    expect((readLabelReadings(id) ?? []).find(reading => reading.evidence_id === refusedRead.evidence_id)).toMatchObject({ extraction_status: "failed" });
+    expect(((await readLabelReadings(id)) ?? []).find(reading => reading.evidence_id === refusedRead.evidence_id)).toMatchObject({ extraction_status: "failed" });
     expect(reservations().map(reservation => reservation.capability)).toEqual(["classify_home_problem", "read_equipment_label"]);
     expect((await readIntakeEffort({ request_id: id, tenant_id: "prn" })).effort_spent).toBe(11);
   });

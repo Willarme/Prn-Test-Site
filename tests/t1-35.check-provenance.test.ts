@@ -60,7 +60,9 @@ describe("diagnostic assessment provenance is not attachment presence", () => {
   });
 
   it("does not invent a photo assessment in the clogged-fins branch rationale", () => {
-    const before = view({ fins: "pretty clogged" });
+    // Two observed candidate supports make this a ranking case; the photo
+    // still supplies no additional assessment or provenance.
+    const before = view({ fins: "pretty clogged", fan_moving: "no" });
     const withoutPhoto = hvacCoolingBranches(before);
     const withPhoto = hvacCoolingBranches({ ...before, outdoor_photo: true });
     expect(withPhoto).toEqual(withoutPhoto);

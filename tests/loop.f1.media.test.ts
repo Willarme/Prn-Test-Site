@@ -98,7 +98,7 @@ describe("attachMedia — what a photo is allowed to answer", () => {
 
     // Confidence in WORDS, kept beside the data, out of the value the packet
     // prints. Nothing about a confidence level reaches homeowner-facing copy.
-    const recorded = media.readLabelConfidence(requestId)!;
+    const recorded = (await media.readLabelConfidence(requestId))!;
     expect(recorded.length).toBe(1);
     expect(recorded[0]!.confidence).toEqual({ brand: "high", model: "medium", serial: "low" });
     expect(recorded[0]!.run_id).toBe("ar_label_1");
@@ -145,7 +145,7 @@ describe("attachMedia — what a photo is allowed to answer", () => {
     });
     expect(result.ok).toBe(true);
     expect(answersFor(requestId).length).toBe(before);
-    expect(media.readLabelConfidence(requestId)).toBeNull();
+    expect((await media.readLabelConfidence(requestId))).toBeNull();
   });
 
   it("a door photo answers no named field on its own", async () => {

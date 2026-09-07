@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ACTIVE_DISCLOSURE } from "@/domain/privacy/disclosures";
-import { validateHandoffTrace } from "@/domain/intake/readiness";
+import { buildCurrentFactState, selectQuestionScreen, validateHandoffTrace } from "@/domain/intake/readiness";
 import { renderPacketHtml } from "@/domain/packet/render";
 import { MemoryAiPolicyStore, setAiPolicyStoreForTests } from "@/platform/ai/policy-store";
 import { MemorySpendLedger, setSpendLedgerForTests } from "@/platform/ai/spend";
@@ -62,6 +62,106 @@ function printedHeadlines(html: string) {
 }
 
 describe("T1-35 handoff slots trace to the generated packet", () => {
+  it("keeps an accepted mixed equipment answer consistent from named fact through packet rendering", async () => {
+    const typed = "Synthetic test equipment: Carrier 24ABC630A003; serial TEST000123; outdoor central AC.";
+    const id = await start("My AC is not cooling");
+    await answer(id, [{ field_key: "unit_model_serial", value: typed }]);
+    const state = await intakeReadiness((await loadJourneyContext(id))!);
+    expect(state.facts.fields.unit_model_serial).toMatchObject({ value: typed, source: "answer", claim_class: "SUPPLIED", confidence: null, confirmed: false });
+    expect(state.facts.fields.brand.value).toBe("Carrier");
+    expect(state.facts.fields.equipment_type.value).toBe("outdoor central AC");
+    expect(state.screen.questions.some(q => q.source_key === "unit_model_serial")).toBe(false);
+    expect(selectQuestionScreen(state.registry, state.facts, { effort_used: 0, eligible_question_ids: ["field:unit_model_serial:short_text"] }).questions).toEqual([]);
+    const packet = await finish(id); const handoff = packet.intake_snapshot!.handoff;
+    expect(handoff.equipment).toMatchObject({ model: "24ABC630A003", serial: "TEST000123", brand: "Carrier", type: "outdoor central AC", confirmed_by_homeowner: false });
+    const saved = (await runtimeStore().listIntakeAnswers(id)).find(a => a.field_key === "unit_model_serial");
+    expect(saved?.value_text).toBe(typed); expect(saved?.source).toBe("typed");
+    const loaded = await loadPacket(id, { owner: true, link_base: "https://example.test", now: packet.generated_at });
+    expect(loaded!.input!.equipment).toMatchObject({ model: { value: "24ABC630A003", provenance: "reported" }, serial: { value: "TEST000123", provenance: "reported" }, type: { value: "outdoor central AC", provenance: "reported" } });
+    const html = renderPacketHtml(loaded!.input!).html;
+    expect(html).toContain("24ABC630A003"); expect(html).toContain("TEST000123");
+    expect(html).not.toContain("not photographed or typed at intake");
+  });
+
+  it("keeps serial-only supplied text out of the model slot and describes the remaining model gap honestly", async () => {
+    const id = await start("My AC is not cooling");
+    await answer(id, [{ field_key: "unit_model_serial", value: "Serial TEST000123" }]);
+    const packet = await finish(id); const handoff = packet.intake_snapshot!.handoff;
+    expect(handoff.equipment).toMatchObject({ model: null, serial: "TEST000123" });
+    const loaded = await loadPacket(id, { owner: true, link_base: "https://example.test", now: packet.generated_at });
+    expect(loaded!.input!.equipment.model).toBeNull();
+    expect(loaded!.input!.equipment.serial?.value).toBe("TEST000123");
+    expect(loaded!.input!.provider.unknowns).toContainEqual({ item: "Model number", reason: "not identified in the supplied equipment details" });
+    expect(renderPacketHtml(loaded!.input!).html).not.toContain("not photographed or typed at intake");
+  });
+
+  it("accepts a later direct identity correction while preserving independently confirmed brand", async () => {
+    const id = await start("My AC is not cooling"); const ctx = (await loadJourneyContext(id))!;
+    const at = "2026-09-06T17:01:00Z", later = "2026-09-06T17:02:00Z";
+    const facts = buildCurrentFactState({ request_id: id, playbook: ctx.playbook, problem: ctx.journey.problem,
+      answers: [
+        { request_id: id, field_key: "unit_model_serial", value_text: "Model OLD123; Serial OLD456", source: "confirmed", answered_at: at, evidence_id: "confirmed-label" },
+        { request_id: id, field_key: "brand", value_text: "Carrier", source: "confirmed", answered_at: at, evidence_id: "confirmed-label" },
+        { request_id: id, field_key: "unit_model_serial", value_text: "Trane NEW123; serial NEW456; outdoor central AC. The outdoor fan is running.", source: "typed", answered_at: later, evidence_id: "typed-details" },
+      ] });
+    expect(facts.fields.unit_model_serial).toMatchObject({ value: "Trane NEW123; serial NEW456; outdoor central AC. The outdoor fan is running.",
+      source: "answer", claim_class: "SUPPLIED", confidence: null, confirmed: false, evidence_ids: ["typed-details"] });
+    expect(facts.fields.brand).toMatchObject({ value: "Carrier", confirmed: true, evidence_ids: ["confirmed-label"] });
+    expect(facts.fields.equipment_type).toMatchObject({ value: "outdoor central AC", claim_class: "SUPPLIED", confidence: null, confirmed: false, evidence_ids: ["typed-details"] });
+    expect(facts.fields["check:fan_moving"]).toMatchObject({ value: "yes", claim_class: "SUPPLIED", evidence_ids: ["typed-details"] });
+  });
+
+  it("keeps confirmed identity when a later answer to another field mentions different equipment", async () => {
+    const id = await start("My AC is not cooling"); const ctx = (await loadJourneyContext(id))!;
+    const details = "Trane model NEW123; serial NEW456; outdoor central AC. The outdoor fan is running.";
+    const answers = [
+      { request_id: id, field_key: "unit_model_serial", value_text: "Model OLD123; Serial OLD456", source: "confirmed" as const, answered_at: "2026-09-06T17:01:00Z", evidence_id: "confirmed-label" },
+      { request_id: id, field_key: "brand", value_text: "Carrier", source: "confirmed" as const, answered_at: "2026-09-06T17:01:00Z", evidence_id: "confirmed-label" },
+      { request_id: id, field_key: "sh_recent_service", value_text: details, source: "typed" as const, answered_at: "2026-09-06T17:02:00Z", evidence_id: "typed-history" },
+    ];
+    const facts = buildCurrentFactState({ request_id: id, playbook: ctx.playbook, problem: ctx.journey.problem, answers });
+    const withoutConfirmation = buildCurrentFactState({ request_id: id, playbook: ctx.playbook, problem: ctx.journey.problem, answers: answers.slice(-1) });
+    expect(withoutConfirmation.fields.unit_model_serial.value).toContain("NEW123");
+    expect(withoutConfirmation.fields.brand.value).toBe("Trane");
+    expect(facts.fields.unit_model_serial).toMatchObject({ value: "Model OLD123; Serial OLD456", confirmed: true, evidence_ids: ["confirmed-label"] });
+    expect(facts.fields.brand).toMatchObject({ value: "Carrier", confirmed: true, evidence_ids: ["confirmed-label"] });
+    expect(facts.fields.sh_recent_service).toMatchObject({ value: details, confirmed: false, evidence_ids: ["typed-history"] });
+    expect(facts.fields.equipment_type).toMatchObject({ value: "outdoor central AC", claim_class: "SUPPLIED", confirmed: false, evidence_ids: ["typed-history"] });
+    expect(facts.fields["check:fan_moving"]).toMatchObject({ value: "yes", claim_class: "SUPPLIED", evidence_ids: ["typed-history"] });
+    expect(answers.at(-1)?.value_text).toBe(details);
+  });
+
+  it.each(["2026-09-06T17:01:00Z", "2026-09-06T17:00:00Z"])("does not replace confirmed identity with a tied or older direct answer at %s", async answered_at => {
+    const id = await start("My AC is not cooling"); const ctx = (await loadJourneyContext(id))!;
+    const facts = buildCurrentFactState({ request_id: id, playbook: ctx.playbook, problem: ctx.journey.problem, answers: [
+      { request_id: id, field_key: "unit_model_serial", value_text: "Model OLD123; Serial OLD456", source: "confirmed", answered_at: "2026-09-06T17:01:00Z", evidence_id: "confirmed-label" },
+      { request_id: id, field_key: "unit_model_serial", value_text: "Model NEW123; Serial NEW456", source: "typed", answered_at, evidence_id: "ambiguous-correction" },
+    ] });
+    expect(facts.fields.unit_model_serial).toMatchObject({ value: "Model OLD123; Serial OLD456", confirmed: true, evidence_ids: ["confirmed-label"] });
+  });
+
+  it("keeps later OCR from overwriting direct manual corrections or confirmed sibling facts", async () => {
+    const id = await start("My AC is not cooling"); const ctx = (await loadJourneyContext(id))!;
+    const facts = buildCurrentFactState({ request_id: id, playbook: ctx.playbook, problem: ctx.journey.problem,
+      labelConfidence: { model: "low", serial: "low", brand: "low" }, answers: [
+        { request_id: id, field_key: "unit_model_serial", value_text: "Model OLD123; Serial OLD456", source: "confirmed", answered_at: "2026-09-06T17:01:00Z", evidence_id: "confirmed-label" },
+        { request_id: id, field_key: "brand", value_text: "Carrier", source: "confirmed", answered_at: "2026-09-06T17:01:00Z", evidence_id: "confirmed-label" },
+        { request_id: id, field_key: "unit_model_serial", value_text: "Model NEW123; Serial NEW456", source: "typed", answered_at: "2026-09-06T17:02:00Z", evidence_id: "manual-correction" },
+        { request_id: id, field_key: "unit_model_serial", value_text: "Model OCR123; Serial OCR456", source: "photo", answered_at: "2026-09-06T17:03:00Z", evidence_id: "later-photo" },
+        { request_id: id, field_key: "brand", value_text: "Trane", source: "photo", answered_at: "2026-09-06T17:03:00Z", evidence_id: "later-photo" },
+        { request_id: id, field_key: "printed_cooling_capacity", value_text: "Cooling capacity: 36,000 BTU/h", source: "photo", answered_at: "2026-09-06T17:03:00Z", evidence_id: "later-photo" },
+      ] });
+    expect(facts.fields.unit_model_serial).toMatchObject({ value: "Model NEW123; Serial NEW456", claim_class: "SUPPLIED", confirmed: false, evidence_ids: ["manual-correction"] });
+    expect(facts.fields.brand).toMatchObject({ value: "Carrier", confirmed: true, evidence_ids: ["confirmed-label"] });
+    expect(facts.fields.printed_cooling_capacity).toMatchObject({ claim_class: "INFERRED", confidence: "low", confirmed: false, evidence_ids: ["later-photo"] });
+  });
+
+  it.each(["Maybe an outdoor central AC.", "It is not an outdoor central AC.", "Is it an outdoor central AC?", "It used to be an outdoor central AC."])("leaves an uncertain, negated or historical equipment type unknown: %s", async typed => {
+    const id = await start("My AC is not cooling");
+    await answer(id, [{ field_key: "unit_model_serial", value: `Serial TEST000123. ${typed}` }]);
+    const packet = await finish(id);
+    expect(packet.intake_snapshot!.handoff.equipment).toMatchObject({ model: null, serial: "TEST000123", type: null });
+  });
   it("records an uncollected approved outcome as an explicit handoff gap", async () => {
     const id = await start("My AC is not cooling"); const packet = await finish(id);
     const state = await intakeReadiness((await loadJourneyContext(id))!);

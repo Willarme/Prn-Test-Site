@@ -1,5 +1,22 @@
 # Service-key audit — T1-33 (request-scoped RLS seam)
 
+## September 6, 2026: reader-completion addendum
+
+`src/platform/intake/label-completions.ts` adds three bounded call sites to
+the historical inventory below. These are source-level controls; migration
+00023 and the actual hosted request-scoped configuration remain unverified.
+
+| Operation | Class | Boundary and justification |
+| --- | --- | --- |
+| `reserveLabelAttempt` → `reserve_label_extraction` RPC | Customer request, server-controlled write | The service role reserves an attempt only after the application loads the journey and its owned photo. The RPC independently checks tenant/request/problem/photo ownership and locks the request row. Client roles have no execution grant. |
+| `writeLabelConfidence` → `complete_label_extraction` RPC | Customer request, server-controlled write | Extracted metadata must be authored by the reader, not forgeable by a homeowner. The RPC rechecks the saved photo's ownership and creates or completes its admission row, validates bounded typed fields and projections, and preserves an immutable result. Direct table writes are revoked, including from the service role. |
+| `readLabelReadings` → `label_extraction_completion` SELECT | Customer-facing read | Uses `requestScopedClient(requestId)` by default. The existing service fallback is limited by explicit request and tenant predicates, followed by schema, owner/photo and duplicate checks; invalid results throw. RLS independently joins the request, problem and actual relational photo ownership. |
+
+Hosted runtimes reject file-backed completion storage and never fall back
+to local disk after a shared-store failure. Eleven local SQL/client/fresh
+process tests and six independent adversarial SQL cases pass. These checks
+do not establish remote migration state or concurrent hosted execution.
+
 **Historical scope, reviewed for source delivery on 2026-09-06.** This note
 records T1-33's isolated implementation checks. Its environment observations
 describe that audit session, not current hosted configuration. The delivery

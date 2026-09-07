@@ -1,7 +1,4 @@
 import { randomUUID } from "node:crypto";
-import { existsSync, readFileSync, readdirSync } from "node:fs";
-import { withFileLock, writeFileAtomic } from "@/platform/stores/atomic-file";
-import { basename, dirname, join } from "node:path";
 import {
   projectWalkthroughView,
   resolveWalkthroughPosition,
@@ -21,7 +18,7 @@ import { runtimeStore } from "@/platform/stores/runtime";
 import { appendIntakeEffort } from "@/platform/intake/effort";
 import { intakeReadiness } from "@/platform/intake/readiness";
 import { readPrintedEvidence } from "@/platform/problem/printed-evidence";
-import { emptyPrintedEvidence, StoredPrintedEvidence, type PrintedEvidenceResult } from "@/domain/problem/printed-evidence";
+import { emptyPrintedEvidence, type PrintedEvidenceResult } from "@/domain/problem/printed-evidence";
 import { printedAnswers, printedKeysForTarget } from "@/domain/intake/printed-readings";
 
 /**
@@ -146,142 +143,10 @@ export function __setLabelReaderForTests(reader: LabelReader | null | undefined)
   labelReader = reader;
 }
 
-// ---------------------------------------------------------------------------
-// The confidence and extraction-completion sidecar.
-// ---------------------------------------------------------------------------
-
-/**
- * WHERE THE LABEL-READ CONFIDENCE LIVES, AND WHY IT IS NOT IN `value_text`.
- *
- * The brief allowed either a `value_text` suffix or a sidecar. The suffix was
- * rejected: `value_text` is rendered to the homeowner on the walkthrough AND
- * printed into the packet's collected details, so a suffix would put
- * "(read from your photo, medium confidence)" into provider-facing copy that
- * Melissa has never reviewed, and would do it inside a field whose `source`
- * column already carries the provenance. `value_text` therefore holds the value
- * and nothing else.
- *
- * The confidence is written beside the runtime data as
- * `data/runtime/label-reads/<request_id>.json` and read back with
- * `readLabelConfidence(request_id)` — which is what the walkthrough's confirm
- * ladder needs ("is this right?" asked harder when the read was weak).
- *
- * HONEST LIMIT: completion persistence is currently local-file based. A failed
- * aggregate write uses a separate atomic completion file; failure of both
- * returns503 before extracted answers are saved. This is not shared/serverless
- * durability. A shared completion adapter is required for hosted verification.
- */
-export interface LabelConfidenceRecord {
-  request_id: string;
-  evidence_id: string;
-  read_at: string;
-  run_id: string | null;
-  /** field_key -> the word. Confidence in words only (routine decision 5). */
-  confidence: Record<string, "high" | "medium" | "low">;
-  /** Completion belongs to this evidence, never in a printable answer value. */
-  extraction_status?: "readable" | "unreadable" | "failed";
-  reason?: string;
-  /** No raw OCR transcript or source image. Exact bounded typed fields and gaps. */
-  printed_evidence?: PrintedEvidenceResult;
-  target?: string;
-}
-
-function labelSidecarPath(requestId: string): string {
-  const safe = requestId.replace(/[^a-z0-9_-]/gi, "_");
-  return join(process.env.PRN_DEV_DB_PATH ? dirname(process.env.PRN_DEV_DB_PATH) : join(process.cwd(), "data", "runtime"), "label-reads", `${safe}.json`);
-}
-
-function reserveLabelAttempt(requestId: string, evidenceId: string): boolean {
-  // One attempt for these bytes. A new accepted capture may retry, subject to
-  // the cumulative effort ledger and callModel's shared request/spend ceiling.
-  const file = labelSidecarPath(requestId) + `.${evidenceId}.attempt`;
-  try { return withFileLock(file, () => {
-    if (existsSync(file)) return false;
-    writeFileAtomic(file, new Date().toISOString());
-    return true;
-  }); } catch { return false; }
-}
-
-const LABEL_ID = /^[a-z0-9_-]+$/i;
-
-function completedLabelRecord(value: unknown, requestId: string): value is LabelConfidenceRecord {
-  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
-  const record = value as Partial<LabelConfidenceRecord>;
-  return record.request_id === requestId && typeof record.evidence_id === "string" && LABEL_ID.test(record.evidence_id)
-    && typeof record.read_at === "string" && Number.isFinite(Date.parse(record.read_at))
-    && (record.run_id === null || typeof record.run_id === "string")
-    && !!record.confidence && typeof record.confidence === "object" && !Array.isArray(record.confidence)
-    && Object.values(record.confidence).every(word => ["high", "medium", "low"].includes(word))
-    && (record.extraction_status === undefined || ["readable", "unreadable", "failed"].includes(record.extraction_status))
-    && (record.reason === undefined || typeof record.reason === "string")
-    && (record.printed_evidence === undefined || (StoredPrintedEvidence.safeParse(record.printed_evidence).success
-      && record.printed_evidence.evidence_id === record.evidence_id && typeof record.target === "string" && printedKeysForTarget(record.target).length > 0));
-}
-
-/** A real completed result, not the earlier reservation, survives an aggregate
- * sidecar failure in its own atomic file. Neither location holds photo bytes. */
-function writeLabelConfidence(record: LabelConfidenceRecord): boolean {
-  if (!LABEL_ID.test(record.request_id) || !completedLabelRecord(record, record.request_id)) return false;
-  const path = labelSidecarPath(record.request_id);
-  try {
-    withFileLock(path, () => {
-      const existing = readLabelReadings(record.request_id);
-      writeFileAtomic(path, JSON.stringify([...(existing ?? []), record]));
-    });
-    return true;
-  } catch {
-    const fallback = `${path}.${record.evidence_id}.completion.json`;
-    try {
-      withFileLock(fallback, () => writeFileAtomic(fallback, JSON.stringify(record)));
-      return true;
-    } catch {
-      // The photo is already stored. The caller reports this narrower failure
-      // instead of claiming the completed extraction result was persisted.
-      return false;
-    }
-  }
-}
-
-/** Every completed label attempt, including explicit gaps, oldest first. */
-export function readLabelReadings(requestId: string): LabelConfidenceRecord[] | null {
-  if (!LABEL_ID.test(requestId)) return null;
-  const path = labelSidecarPath(requestId);
-  const records: LabelConfidenceRecord[] = [];
-  try {
-    const parsed: unknown = JSON.parse(readFileSync(path, "utf-8"));
-    if (Array.isArray(parsed)) records.push(...parsed.filter(record => completedLabelRecord(record, requestId)));
-  } catch { /* Independent per-evidence completions may still be available. */ }
-  try {
-    const prefix = `${basename(path)}.`;
-    const suffix = ".completion.json";
-    for (const entry of readdirSync(dirname(path), { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
-      if (!entry.isFile() || !entry.name.startsWith(prefix) || !entry.name.endsWith(suffix)) continue;
-      const evidenceId = entry.name.slice(prefix.length, -suffix.length);
-      if (!LABEL_ID.test(evidenceId)) continue;
-      try {
-        const record: unknown = JSON.parse(readFileSync(join(dirname(path), entry.name), "utf-8"));
-        if (completedLabelRecord(record, requestId) && record.evidence_id === evidenceId && record.extraction_status !== undefined) records.push(record);
-      } catch { /* Corrupt/unavailable files establish no completed result. */ }
-    }
-  } catch { /* Missing directory establishes no completed result either. */ }
-  const latest = new Map<string, LabelConfidenceRecord>();
-  for (const record of records) {
-    const held = latest.get(record.evidence_id);
-    // On equal timestamps prefer the aggregate copy; recovery copies the same
-    // result there. Stable insertion order preserves legacy chronological ties.
-    if (!held || Date.parse(record.read_at) > Date.parse(held.read_at)) latest.set(record.evidence_id, record);
-  }
-  const completed = [...latest.values()].sort((a, b) => Date.parse(a.read_at) - Date.parse(b.read_at));
-  return completed.length ? completed : null;
-}
-
-/** Legacy packet callers use these ids as read-from-label provenance. An
- * unreadable/failed attempt must never enter that successful-read view. */
-export function readLabelConfidence(requestId: string): LabelConfidenceRecord[] | null {
-  const readable = readLabelReadings(requestId)?.filter(record =>
-    record.extraction_status === undefined || record.extraction_status === "readable");
-  return readable?.length ? readable : null;
-}
+// Confidence/completion persistence is shared on hosted runtimes and local only
+// on a development file store. Public names stay here for existing callers.
+export { readLabelConfidence, readLabelReadings, type LabelConfidenceRecord } from "@/platform/intake/label-completions";
+import { reserveLabelAttempt, writeLabelConfidence, type LabelConfidenceRecord } from "@/platform/intake/label-completions";
 
 // ---------------------------------------------------------------------------
 // attachMedia
@@ -540,7 +405,7 @@ export async function attachMedia(input: AttachMediaInput): Promise<AttachMediaR
      */
     if (kind === "photo" && printedKeysForTarget(target).length) {
       try {
-        printedRead = reserveLabelAttempt(requestId, evidenceId)
+        printedRead = await reserveLabelAttempt(requestId, evidenceId)
           ? await readPrintedEvidence({ evidence_id: evidenceId, image: data })
           : emptyPrintedEvidence(evidenceId, null, "unavailable");
       } catch { printedRead = emptyPrintedEvidence(evidenceId, null, "unavailable"); }
@@ -553,7 +418,7 @@ export async function attachMedia(input: AttachMediaInput): Promise<AttachMediaR
       };
       // Complete provenance first. A saved answer must never outlive a missing
       // confidence record and be promoted to an observed/confirmed fact.
-      if (!writeLabelConfidence(completion)) return { ok: false, status: 503,
+      if (!await writeLabelConfidence(completion)) return { ok: false, status: 503,
         error: "Your photo was saved, but its reading result could not be saved. You can keep your existing packet or add the details you can read." };
       const existing = await store.listIntakeAnswers(requestId);
       const answered = new Set(existing.filter(answer => answer.value_text !== null).map(answer => answer.field_key));
@@ -567,7 +432,7 @@ export async function attachMedia(input: AttachMediaInput): Promise<AttachMediaR
       };
       try {
         const reader = await loadLabelReader();
-        if (reader && reserveLabelAttempt(requestId, evidenceId)) {
+        if (reader && await reserveLabelAttempt(requestId, evidenceId)) {
           labelRead = await reader({ bytes: data, mime: file.type, request_id: requestId, tenant_id: ctx.journey.problem.tenant_id ?? DEFAULT_TENANT_ID, evidence_id: evidenceId });
           const extracted = labelRead.ok && labelRead.readable && labelRead.extraction_status !== "failed"
             ? answersFromLabel(labelRead, now) : [];
@@ -593,7 +458,7 @@ export async function attachMedia(input: AttachMediaInput): Promise<AttachMediaR
       } catch {
         completion = { extraction_status: "failed", reason: "The label-reading attempt failed before a usable value was saved." };
       }
-      const completionSaved = writeLabelConfidence({
+      const completionSaved = await writeLabelConfidence({
         request_id: requestId, evidence_id: evidenceId, read_at: new Date().toISOString(),
         run_id: labelRead?.ok ? labelRead.run_id : null,
         confidence: completion.extraction_status === "readable" && labelRead?.ok ? labelRead.confidence : {},

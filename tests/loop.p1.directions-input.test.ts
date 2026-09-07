@@ -351,6 +351,18 @@ describe("P1 · buildDirectionsInput", () => {
   it("small parsers: model/serial, age, onset", () => {
     expect(builder.parseModelSerial("Model 24ABC636A003, Serial 4021E19845")).toEqual({ model: "24ABC636A003", serial: "4021E19845" });
     expect(builder.parseModelSerial("carrier 24abc636a003")).toEqual({ model: "24ABC636A003", serial: null });
+    expect(builder.parseModelSerial("Carrier 24ABC630A003; serial TEST000123; outdoor central AC.")).toEqual({ model: "24ABC630A003", serial: "TEST000123" });
+    expect(builder.parseModelSerial("Serial TEST000123")).toEqual({ model: null, serial: "TEST000123" });
+    expect(builder.parseModelSerial("Model 24ABC630A003; serial unknown")).toEqual({ model: "24ABC630A003", serial: null });
+    expect(builder.parseModelSerial("Serial TEST000123; candidate 24ABC630A003 or 24ABC640A003")).toEqual({ model: null, serial: "TEST000123" });
+    expect(builder.parseModelSerial("Model 24ABC630A003; other code X123456")).toEqual({ model: "24ABC630A003", serial: null });
+    expect(builder.parseModelSerial("Model number 24ABC630A003; Serial no. 123456789")).toEqual({ model: "24ABC630A003", serial: "123456789" });
+    expect(builder.parseModelSerial("Serial number is TEST000123")).toEqual({ model: null, serial: "TEST000123" });
+    expect(builder.parseModelSerial("Serial might be TEST000123")).toEqual({ model: null, serial: null });
+    expect(builder.parseModelSerial("Carrier 24ABC630A003; serial unknown")).toEqual({ model: "24ABC630A003", serial: null });
+    expect(builder.parseModelSerial("24ABC630A003 / TEST000123")).toEqual({ model: null, serial: null });
+    expect(builder.parseModelSerial("Serial TEST000123; serial TEST000456")).toEqual({ model: null, serial: null });
+    expect(builder.parseModelSerial("Model 24ABC630A003; model 24ABC640A003")).toEqual({ model: null, serial: null });
     expect(builder.parseAge("about 8 years", 2026)).toEqual({ age_years: 8, manufacture_year: null });
     expect(builder.parseAge("installed 2018", 2026)).toEqual({ age_years: 8, manufacture_year: 2018 });
     expect(builder.parseOnsetCharacter("it just stopped all of a sudden")).toBe("sudden");

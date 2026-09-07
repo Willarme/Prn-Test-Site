@@ -1,4 +1,5 @@
 import { ACTIVE_SAFETY_PACKAGE, type SafetyPackage } from "@/domain/problem/safety-package";
+import { affirmedSafetyPatterns } from "@/domain/problem/safety-match";
 
 /**
  * SafetyRule registry lite (#14A §14): a deterministic policy layer that runs
@@ -49,8 +50,9 @@ export const SAFETY_RULES: readonly SafetyRule[] = compileSafetyPackage(ACTIVE_S
 export const SAFETY_PACKAGE_VERSION = `${ACTIVE_SAFETY_PACKAGE.safety_package_id}@${ACTIVE_SAFETY_PACKAGE.version}`;
 
 export function checkSafety(text: string, rules: readonly SafetyRule[] = SAFETY_RULES): SafetyRule | null {
+  const matches = affirmedSafetyPatterns(text, rules.flatMap((rule) => rule.patterns));
   for (const rule of rules) {
-    if (rule.patterns.some((p) => p.test(text))) return rule;
+    if (rule.patterns.some((p) => matches.has(p))) return rule;
   }
   return null;
 }

@@ -18,10 +18,12 @@ const sourceStyles = (html: string) => [...html.matchAll(/<style\b(?![^>]*data-p
 const notice = (html: string) => html.match(/<aside\b[^>]*data-preview-scope[^>]*>([\s\S]*?)<\/aside>/)?.[1];
 const stripNoticePresentation = (html: string) => html.replace(/<aside\b[^>]*data-preview-scope[^>]*>/, "<aside data-preview-scope>");
 const stripNavigationAnnotations = (html: string) => html.replace(/\sdata-preview-original-(?:nav(?:-bar|-links)?|ribbon)(?=\s|>)/g, "");
+const stripLayoutAnnotations = (html: string) => html.replace(/\sdata-preview-grid="(?:stack|tiles)"(?=\s|>)/g, "")
+  .replace(/\sdata-preview-fluid-copy(?=\s|>)/g, "");
 
 describe("feature preview chrome leaves the approved document intact", () => {
   for (const [slug, file, label] of PAGES) {
-    it(`${slug}: preserves original styles and bytes except the scope opening tag and exact navigation annotations`, () => {
+    it(`${slug}: preserves original styles and bytes except the scope opening tag and exact navigation/layout annotations`, () => {
       const source = readFileSync(join(process.cwd(), "public/feature", file), "utf8").replace(/\r\n/g, "\n");
       const wired = wirePreviewFeedback(source, file);
       const html = addPreviewChrome(wired, slug);
@@ -30,7 +32,7 @@ describe("feature preview chrome leaves the approved document intact", () => {
       expect(html).toContain(`aria-current="page"><i class="prn-preview-mark" aria-hidden="true"></i>${label}</span>`);
       const unwrapped = html.replace(/<style data-preview-chrome-style>[\s\S]*?<\/style>/, "")
         .replace(/<nav data-preview-chrome="navigation"[\s\S]*?<\/nav>/, "");
-      expect(stripNoticePresentation(stripNavigationAnnotations(unwrapped))).toBe(stripNoticePresentation(wired));
+      expect(stripNoticePresentation(stripNavigationAnnotations(stripLayoutAnnotations(unwrapped)))).toBe(stripNoticePresentation(wired));
       expect(addPreviewChrome(html, slug)).toBe(html);
     });
 

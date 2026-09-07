@@ -52,7 +52,7 @@ describe('actual printed pixels through authenticated intake, persistence and re
   it('reads mode, fan and temperatures from the actual uploaded image and retains unconfirmed provenance after reload', async () => {
     const id = await start(); const evidence = await photo(id, 'thermostat_photo', await pixels(['SYSTEM: COOL', 'FAN: AUTO', 'SETPOINT: 72 F', 'ROOM: 81 F']));
     expect(label).not.toHaveBeenCalled();
-    const record = readLabelReadings(id)![0];
+    const record = (await readLabelReadings(id))![0];
     expect(record).toMatchObject({ evidence_id: evidence, extraction_status: 'readable', target: 'thermostat_photo', run_id: null });
     expect(record.printed_evidence).toMatchObject({ image_sha256: expect.stringMatching(/^[a-f0-9]{64}$/), fields: {
       thermostat_mode: { value: 'cool', source_media: [evidence] }, fan_mode: { value: 'auto' }, setpoint: { value: '72', unit: 'F' }, room_temperature: { value: '81', unit: 'F' } } });
@@ -85,12 +85,17 @@ describe('actual printed pixels through authenticated intake, persistence and re
     expect(packet.evidence.readings?.thermostat_setpoint).toMatchObject({ value: '23 C', unit: 'C', provenance: 'reported' });
     expect(packet.evidence.readings?.room_temp_f).toBeUndefined();
     expect(packet.evidence.readings?.fan_mode).toMatchObject({ value: 'on', provenance: 'reported' });
+    const { loadPacket } = await import('@/platform/packet/load');
+    const loaded = await loadPacket(id, { link_base: 'http://localhost', owner: false });
+    expect(loaded?.input?.evidence.media).toContainEqual(expect.objectContaining({ id: evidence, subject: 'Thermostat display', location: null }));
+    expect(loaded?.input?.narrative.timeline.map(row => row.text)).toContain('Thermostat display photographed.');
+    expect(loaded?.input?.narrative.timeline.map(row => row.text)).not.toContain('Equipment label photographed.');
   }, 30000);
 
   it('preserves partial Celsius readings and makes missing fields explicit gaps', async () => {
     const id = await start(); await photo(id, 'thermostat_photo', await pixels(['SETPOINT: 24 C', 'ROOM: 28 C']));
     const current = await state(id);
-    expect(current.facts.fields.thermostat_setpoint, JSON.stringify(readLabelReadings(id))).toMatchObject({ value: '24 C', confirmed: false });
+    expect(current.facts.fields.thermostat_setpoint, JSON.stringify((await readLabelReadings(id)))).toMatchObject({ value: '24 C', confirmed: false });
     expect(current.facts.fields.room_temp).toMatchObject({ value: '28 C', confirmed: false });
     for (const key of ['fan_mode', 'thermostat_mode']) expect(current.facts.fields[key]).toMatchObject({ value: null, status: 'UNREADABLE', reason: expect.any(String) });
   }, 30000);
@@ -102,6 +107,10 @@ describe('actual printed pixels through authenticated intake, persistence and re
     expect(current.facts.fields.thermostat_mode).toBeUndefined();
     expect((await runtimeStore().listDiagnosisAnswers(id)).find(answer => answer.step_id === 'filter')?.answer).toBeNull();
     expect(label).not.toHaveBeenCalled();
+    const { loadPacket } = await import('@/platform/packet/load');
+    const loaded = await loadPacket(id, { link_base: 'http://localhost', owner: false });
+    expect(loaded?.input?.evidence.media).toContainEqual(expect.objectContaining({ id: evidence, subject: 'Filter', location: null }));
+    expect(loaded?.input?.narrative.timeline.map(row => row.text)).toContain('Filter photographed.');
   }, 30000);
 
   it('preserves a homeowner reading instead of overwriting it with a later image', async () => {
@@ -113,7 +122,7 @@ describe('actual printed pixels through authenticated intake, persistence and re
 
   it('retains corrupt image failure as unknown while keeping the original upload', async () => {
     const id = await start(); const evidence = await photo(id, 'thermostat_photo', Buffer.from('synthetic corrupt PNG'));
-    expect(readLabelReadings(id)?.[0]).toMatchObject({ extraction_status: 'failed', printed_evidence: { outcome: 'unavailable' } });
+    expect((await readLabelReadings(id))?.[0]).toMatchObject({ extraction_status: 'failed', printed_evidence: { outcome: 'unavailable' } });
     expect((await state(id)).facts.fields.thermostat_photo).toMatchObject({ value: null, status: 'UNKNOWN_AFTER_REASONABLE_ATTEMPT' });
     expect((await loadJourneyContext(id))?.allEvidence.some(item => item.evidence_id === evidence)).toBe(true);
   }, 30000);
@@ -122,6 +131,6 @@ describe('actual printed pixels through authenticated intake, persistence and re
     const id = await start(); await photo(id, 'door_photo', await pixels(['SYSTEM: COOL', 'SETPOINT: 72 F']));
     expect(label).toHaveBeenCalledTimes(1);
     expect((await state(id)).facts.fields.thermostat_mode).toBeUndefined();
-    expect(readLabelReadings(id)?.[0].printed_evidence).toBeUndefined();
+    expect((await readLabelReadings(id))?.[0].printed_evidence).toBeUndefined();
   });
 });

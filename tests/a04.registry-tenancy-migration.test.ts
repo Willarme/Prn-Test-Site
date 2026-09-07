@@ -150,10 +150,12 @@ describe("migration 00011 — applied 2026-08-25, and parseable", () => {
     // inherited operation grants without renumbering any existing migration.
     // 00021 hardens loop grants; 00022 persists T1-35 effort. Both must exist,
     // as must 00020: only the existing 00016-00018 reservation is excepted.
-    expect(numbers).toEqual([...Array.from({ length: 15 }, (_, i) => i + 1), 19, 20, 21, 22]);
+    // T6 adds 00023 for shared reader completion; the reserved gap is unchanged.
+    expect(numbers).toEqual([...Array.from({ length: 15 }, (_, i) => i + 1), 19, 20, 21, 22, 23]);
     expect(migrations).toContain("00020_loop_surfaces.sql");
     expect(migrations).toContain("00021_loop_grant_hardening.sql");
     expect(migrations).toContain("00022_intake_effort.sql");
+    expect(migrations).toContain("00023_label_extraction_completion.sql");
     expect(numbers).toContain(11);
   });
 

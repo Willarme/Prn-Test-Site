@@ -64,8 +64,8 @@ describe("T1-35 label completion persistence failures", () => {
     const reader = vi.fn(async () => unreadable); __setLabelReaderForTests(reader);
     const result = await photo(id); expect(result.ok).toBe(true); if (!result.ok) throw new Error(result.error);
     expect(reader).toHaveBeenCalledTimes(1);
-    expect(readLabelReadings(id)).toEqual([expect.objectContaining({ evidence_id: result.evidence_id, extraction_status: "unreadable", confidence: {} })]);
-    expect(readLabelConfidence(id)).toBeNull();
+    expect((await readLabelReadings(id))).toEqual([expect.objectContaining({ evidence_id: result.evidence_id, extraction_status: "unreadable", confidence: {} })]);
+    expect((await readLabelConfidence(id))).toBeNull();
     const current = await state(id);
     expect(current.facts.fields.unit_model_serial).toMatchObject({ value: null, status: "UNREADABLE", evidence_ids: [result.evidence_id], reason: expect.any(String) });
     expect(current.screen.questions.some(q => q.source_key === "unit_model_serial")).toBe(false);
@@ -78,9 +78,9 @@ describe("T1-35 label completion persistence failures", () => {
   it("retains a failed attempt as an explicit unknown, without relabeling it unreadable", async () => {
     const id = await start(); blockAggregate(id); __setLabelReaderForTests(async () => { throw new Error("synthetic reader failure"); });
     const result = await photo(id); expect(result.ok).toBe(true);
-    expect(readLabelReadings(id)?.[0]).toMatchObject({ extraction_status: "failed", confidence: {}, reason: expect.any(String) });
+    expect((await readLabelReadings(id))?.[0]).toMatchObject({ extraction_status: "failed", confidence: {}, reason: expect.any(String) });
     expect((await state(id)).facts.fields.unit_model_serial).toMatchObject({ value: null, status: "UNKNOWN_AFTER_REASONABLE_ATTEMPT" });
-    expect(readLabelConfidence(id)).toBeNull();
+    expect((await readLabelConfidence(id))).toBeNull();
   });
 
   it("retains weak readable confidence and actual completion time without promoting a guess", async () => {
@@ -90,7 +90,7 @@ describe("T1-35 label completion persistence failures", () => {
       return { ok: true, readable: true, fields: { model: "SYNTHETIC-MODEL" }, confidence: { model: "low" }, run_id: "synthetic-readable" };
     });
     const result = await photo(id); expect(result.ok).toBe(true); if (!result.ok) throw new Error(result.error);
-    const record = readLabelConfidence(id)?.[0];
+    const record = (await readLabelConfidence(id))?.[0];
     expect(record).toMatchObject({ evidence_id: result.evidence_id, extraction_status: "readable", confidence: { model: "low" } });
     expect(Date.parse(record!.read_at)).toBeGreaterThanOrEqual(completedAfter);
     const current = await state(id);
@@ -101,20 +101,20 @@ describe("T1-35 label completion persistence failures", () => {
   it("merges a recovered aggregate and its fallback deterministically without dropping other evidence", async () => {
     const id = await start(); blockAggregate(id);
     const first = await photo(id); expect(first.ok).toBe(true); if (!first.ok) throw new Error(first.error);
-    const fallback = readLabelReadings(id); expect(fallback).toHaveLength(1);
+    const fallback = (await readLabelReadings(id)); expect(fallback).toHaveLength(1);
     // Restore the aggregate location; the following accepted capture copies the recovered history into it.
     rmSync(aggregate(id), { recursive: true });
     const second = await photo(id); expect(second.ok).toBe(true); if (!second.ok) throw new Error(second.error);
     expect(JSON.parse(readFileSync(aggregate(id), "utf8"))).toHaveLength(2);
-    const combined = readLabelReadings(id)!;
+    const combined = (await readLabelReadings(id))!;
     expect(combined).toHaveLength(2); expect(new Set(combined.map(r => r.evidence_id))).toEqual(new Set([first.evidence_id, second.evidence_id]));
-    expect(readLabelReadings(id)).toEqual(combined);
+    expect((await readLabelReadings(id))).toEqual(combined);
     expect(readdirSync(join(dir, "label-reads")).some(name => name.endsWith(".completion.json"))).toBe(true);
     // A stale aggregate copy cannot replace the later actual per-evidence result.
     const stale = (JSON.parse(readFileSync(aggregate(id), "utf8")) as LabelConfidenceRecord[]).map(record => record.evidence_id === first.evidence_id
       ? { ...record, read_at: new Date(Date.parse(record.read_at) - 1_000).toISOString(), reason: "stale aggregate copy" } : record);
     writeFileSync(aggregate(id), JSON.stringify(stale));
-    expect(readLabelReadings(id)?.find(record => record.evidence_id === first.evidence_id)).toEqual(fallback![0]);
+    expect((await readLabelReadings(id))?.find(record => record.evidence_id === first.evidence_id)).toEqual(fallback![0]);
   });
 
   it("ignores reservation files and malformed or foreign completion data", async () => {
@@ -123,15 +123,15 @@ describe("T1-35 label completion persistence failures", () => {
     const completionFile = `${aggregate(id)}.${result.evidence_id}.completion.json`;
     const record = JSON.parse(readFileSync(completionFile, "utf8"));
     writeFileSync(completionFile, JSON.stringify({ ...record, request_id: other }));
-    expect(readLabelReadings(id)).toBeNull(); expect(readLabelReadings(other)).toBeNull();
+    expect((await readLabelReadings(id))).toBeNull(); expect((await readLabelReadings(other))).toBeNull();
     writeFileSync(completionFile, JSON.stringify({ ...record, evidence_id: "ev_foreign" }));
-    expect(readLabelReadings(id)).toBeNull();
+    expect((await readLabelReadings(id))).toBeNull();
     writeFileSync(completionFile, JSON.stringify({ ...record, confidence: { model: "certain" } }));
-    expect(readLabelReadings(id)).toBeNull();
-    writeFileSync(completionFile, "{"); expect(readLabelReadings(id)).toBeNull();
+    expect((await readLabelReadings(id))).toBeNull();
+    writeFileSync(completionFile, "{"); expect((await readLabelReadings(id))).toBeNull();
     expect(readdirSync(join(dir, "label-reads")).some(name => name.endsWith(".attempt"))).toBe(true);
     expect((await state(id)).facts.fields.unit_model_serial.status).toBe("PHOTO_PENDING_EXTRACTION");
-    expect(readLabelReadings("../outside")).toBeNull();
+    expect((await readLabelReadings("../outside"))).toBeNull();
   });
 
   it.each([unreadable, { ok: true, readable: true, fields: { model: "SYNTHETIC-MODEL" }, confidence: { model: "low" }, run_id: "synthetic-readable" } as LabelReadResult])("both completion writes failing keeps the photo and charge without persisting orphaned label values %#", async (result) => {
@@ -147,7 +147,7 @@ describe("T1-35 label completion persistence failures", () => {
     form.set("target", "unit_model_serial"); form.set("file", file());
     const response = await mediaPost(new Request("http://localhost/api/intake/media", { method: "POST", body: form }));
     expect(response.status).toBe(503); expect(await response.json()).toMatchObject({ error: expect.stringMatching(/photo was saved.*label-reading result could not be saved/i) });
-    expect(reader).toHaveBeenCalledTimes(1); expect(readLabelReadings(id)).toBeNull();
+    expect(reader).toHaveBeenCalledTimes(1); expect((await readLabelReadings(id))).toBeNull();
     const ctx = (await loadJourneyContext(id))!; const evidence = ctx.allEvidence.find(e => e.kind === "photo")!;
     expect(evidence.privacy).toBe("private"); expect(localMediaFile(evidence.content)).toEqual(png);
     expect((await state(id)).ledger.effort_spent).toBe(8);

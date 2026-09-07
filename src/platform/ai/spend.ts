@@ -195,7 +195,12 @@ export class FileSpendLedger implements SpendLedger {
     // Marker-write faults must propagate; they are never a first-use read.
     if (!existsSync(marker)) writeFileAtomic(marker, "spend-ledger-v1\n");
     const parsed = JSON.parse(raw) as SpendFile;
-    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) throw new Error("invalid spend ledger");
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed) || Object.keys(parsed).length === 0) {
+      // A fresh store has no file. Every successful write persists at least
+      // one day's accounting or reservation; an existing empty object cannot
+      // be a legitimate initialized state and must not reset the allowance.
+      throw new Error("invalid spend ledger");
+    }
     for (const row of Object.values(parsed)) {
       if (!row || !Number.isFinite(row.total_usd) || row.total_usd < 0 || !Number.isSafeInteger(row.calls) || row.calls < 0 ||
           !row.by_capability || typeof row.by_capability !== "object" || Object.values(row.by_capability).some(n => !Number.isFinite(n) || n < 0)) {

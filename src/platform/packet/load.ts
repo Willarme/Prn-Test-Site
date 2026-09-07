@@ -113,7 +113,7 @@ export async function loadPacket(
     const uri = await thumbnail(bytes);
     if (uri) thumbnails[e.evidence_id] = uri;
   }
-  const labelReads: LabelReadRow[] = (readLabelConfidence(requestId) ?? []).map((r) => ({
+  const labelReads: LabelReadRow[] = ((await readLabelConfidence(requestId)) ?? []).map((r) => ({
     evidence_id: r.evidence_id,
     confidence: r.confidence,
   }));

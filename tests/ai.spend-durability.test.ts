@@ -73,6 +73,36 @@ describe("file spend durability", () => {
     expect(existsSync(file)).toBe(false);
   });
 
+  it("an exhausted initialized ledger cannot restart its allowance from an empty JSON object", async () => {
+    const admission = { day, capability: "fixture", usd: 0.01, global_cap_usd: 0.02, capability_cap_usd: 0.02 };
+    const ledger = new FileSpendLedger(file);
+    await ledger.record(day, "fixture", 0.02);
+    expect(await ledger.reserve(admission)).toBeNull();
+    expect(existsSync(`${file}.initialized`)).toBe(true);
+    writeFileSync(file, "{}\n");
+    await expect(new FileSpendLedger(file).read(day)).rejects.toThrow(/invalid spend ledger/);
+    await expect(new FileSpendLedger(file).reserve(admission)).rejects.toThrow(/invalid spend ledger/);
+    await expect(new FileSpendLedger(file).record(day, "fixture", 0.001)).rejects.toThrow(/invalid spend ledger/);
+    expect(readFileSync(file, "utf8")).toBe("{}\n");
+  });
+
+  it("a new store and a later unrecorded day still admit normal bounded reservations", async () => {
+    const admission = { day, capability: "fixture", usd: 0.01, global_cap_usd: 0.02, capability_cap_usd: 0.02 };
+    const ledger = new FileSpendLedger(file);
+    expect(await ledger.read(day)).toMatchObject({ calls: 0, total_usd: 0 });
+    expect(existsSync(file)).toBe(false);
+    const first = await ledger.reserve(admission);
+    expect(first).not.toBeNull();
+    await ledger.settle(first!, 0.01, 0);
+    const nextDay = "2026-09-06";
+    const restarted = new FileSpendLedger(file);
+    expect(await restarted.read(nextDay)).toMatchObject({ calls: 0, total_usd: 0 });
+    const next = await restarted.reserve({ ...admission, day: nextDay });
+    expect(next).not.toBeNull();
+    expect(next?.day).toBe(nextDay);
+    expect(await restarted.read(day)).toMatchObject({ calls: 1, total_usd: 0.01 });
+  });
+
   it("adopts pre-marker history on its first read without changing the ledger bytes", async () => {
     const prior = JSON.stringify({ [day]: { calls: 4, total_usd: 0.04, by_capability: { fixture: 0.04 } } });
     writeFileSync(file, prior);

@@ -56,6 +56,6 @@ export function wirePreviewFeedback(source: string, page: string): string {
 ${marker}`);
   html = html.replace(/onClick="{{ (voteYes|voteNo|submit|sendReasons) }}"/g, 'onClick="{{ $1 }}" disabled="{{ saving }}"');
   // Functional scope sits outside the frozen concept artwork and its claims.
-  html = html.replace(/<body\b[^>]*>/i, `$&<aside role="note" data-preview-scope style="position:relative;z-index:10;padding:14px 24px;border-bottom:1px solid currentColor;background:#fff4d6;color:#242320;font:14px/1.5 system-ui,sans-serif"><strong>Interactive concept preview.</strong> The illustrated product states, including any “REAL NOW” labels, are examples. The working demo covers intake, Job Packets and this page’s feedback controls.</aside>`);
+  html = html.replace(/<body\b[^>]*>/i, `$&<aside role="note" data-preview-scope style="position:relative;z-index:10;padding:14px 24px;border-bottom:1px solid currentColor;background:#fff4d6;color:#242320;font:14px/1.5 system-ui,sans-serif"><strong>Interactive concept preview.</strong> The illustrated product states, including any “REAL NOW” labels, are examples. The demonstration includes prepared Job Packets and preview controls. Amounts shown are TEST examples.</aside>`);
   return html;
 }

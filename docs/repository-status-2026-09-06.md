@@ -3,6 +3,36 @@
 This repository contains the completed local demo and verified v43 integration
 checkpoint. It is a source delivery with automatic hosting paused.
 
+## Latest reader and source-evidence continuation
+
+The September 6 evening continuation adds shared reader-completion storage,
+async intake/readiness/packet consumers, actual thermostat and filter photo-role
+corrections, and the saved trial quality fixes for safety negation, equipment,
+packet context, spending durability and concept-preview overflow. Direct later
+manual corrections update their named field; incidental extraction preserves
+independently confirmed sibling fields.
+
+Migration `00023_label_extraction_completion.sql` supplies the reviewed storage
+controls. It has not been applied to a hosted database by this delivery. Eleven
+local SQL/client/fresh-process tests and six independent adversarial SQL probes
+pass. The preceding intake checkpoint also passed native Linux OCR packaging
+and five synthetic printed-field cases with network access blocked. These are
+local checks; hosted reader execution and multi-instance durability remain open.
+
+Exact source review now contains five supported claims, three partially supported
+claims and two unbound claims. Original v43 inputs, the narrow wording amendment,
+all fifteen sections and Order B are preserved. All nine capability statuses
+remain pending, the generated SEO draft remains rejected, and the illustrated
+services remain concept previews. The frozen door document passed 301 browser
+checks across 21 viewport/fallback scenarios; full production acceptance remains
+separate.
+
+The shared vault's `Project/08 Audit/SEO Hosted Readiness 2026-09-06` retains
+the source manifest, exact parent/tree delivery and scoped verification receipts.
+The earlier baseline sections below are historical. The hosted intake failure,
+target environment/migrations and actual request-to-PDF proof still need the
+coordinated hosting repair. This branch does not activate live AI or deploy.
+
 ## Included source
 
 - `/demo` introduces the AC walkthrough; `/demo/all` lists the demonstration routes.
