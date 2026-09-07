@@ -188,7 +188,11 @@ describe("T1-35 handoff slots trace to the generated packet", () => {
     const id = await start("My Carrier AC is 8 years old and blowing warm air since Tuesday."); const packet = await finish(id);
     const loaded = await loadPacket(id, { owner: true, link_base: "https://example.test", now: packet.generated_at });
     expect(packet.intake_snapshot!.handoff.counts.facts).toBe(loaded!.input!.counts.facts_captured);
-    expect(packet.intake_snapshot!.handoff.counts.facts).toBe(1);
+    expect(packet.intake_snapshot!.handoff.counts.facts).toBe(4);
+    const handoff = packet.intake_snapshot!.handoff;
+    expect(handoff.schema_version).toBe("1.1.0");
+    if (handoff.schema_version !== "1.1.0") throw new Error("Expected versioned whole-record basis");
+    expect(handoff.fact_count_basis.observations.map(o => o.id)).toEqual(["equipment.primary.age_basis", "equipment.primary.brand", "problem.onset", "problem.report"]);
     expect(packet.intake_snapshot!.handoff.facts.filter(f => f.source_fields?.includes("user_language"))).toHaveLength(2);
   });
 

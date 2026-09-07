@@ -80,7 +80,7 @@ export default async function LinksPage({
   }
 
   const store = runtimeStore();
-  const issued = listIssuedLinks(request_id).filter((l) => l.scope !== "magic");
+  const issued = (await listIssuedLinks(request_id)).filter((l) => l.scope !== "magic");
   const now = Date.now();
   const rows = await Promise.all(
     issued.map(async (l) => {

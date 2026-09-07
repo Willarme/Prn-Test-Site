@@ -84,6 +84,12 @@ describe("playbook routing", () => {
     expect(selectPlaybook("the furnace won't turn on at all", "hvac").playbook_id).toBe("pb_hvac_no_power_v1");
   });
 
+  it.each(["My furnace won’t turn on since last night.", "My AC won’t start today."])(
+    "routes typographic no-power input to the actual no-power walkthrough: %s", description => {
+      expect(selectPlaybook(description, "hvac").playbook_id).toBe("pb_hvac_no_power_v1");
+    }
+  );
+
   it("routes leaks to plumbing and unknowns to the generic playbook", () => {
     expect(selectPlaybook("water dripping from the ceiling", "plumbing").playbook_id).toBe("pb_plumbing_leak_v1");
     expect(selectPlaybook("the thing in the garage is weird", null).playbook_id).toBe("pb_generic_home_problem_v1");

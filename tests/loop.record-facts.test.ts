@@ -28,4 +28,29 @@ describe("Home Memory fact projection", () => {
     expect(result[2]).toMatchObject({ label: "Additional detail", value: "Observed detail" });
     expect(JSON.stringify(result)).not.toContain("internal_fixture_field");
   });
+  it("maps printed field aliases once and uses the latest homeowner correction before packet regeneration", () => {
+    const old = { ...answer("thermostat_setpoint_f", "72"), source: "photo" as const };
+    const corrected = { ...answer("thermostat_setpoint", "22 C"), answered_at: "2026-09-06T00:00:00Z" };
+    const reread = { ...old, value_text: "70", answered_at: "2026-09-07T00:00:00Z" };
+    expect(recordFacts([{ label: "thermostat_setpoint_f", value: "72", source: "photo" }], [reread, corrected, old], HVAC_COOLING_PLAYBOOK.playbook_id)).toEqual([
+      { label: "Set temperature", value: "22 C", source: "you typed it" },
+    ]);
+  });
+  it("updates a non-thermostat field without changing an unrelated saved fact", () => {
+    const old = { ...answer("brand", "Old brand"), source: "photo" as const };
+    const corrected = { ...answer("brand", "Corrected brand"), answered_at: "2026-09-06T00:00:00Z" };
+    expect(recordFacts([{ label: "Brand", value: "Old brand", source: "photo" }, { label: "Age", value: "8 years", source: "typed" }], [old, corrected], HVAC_COOLING_PLAYBOOK.playbook_id)).toEqual([
+      { label: "Brand", value: "Corrected brand", source: "you typed it" }, { label: "Age", value: "8 years", source: "you typed it" },
+    ]);
+  });
+  it("retains a historical packet-only reading when there is no answer history to replace it", () => {
+    expect(recordFacts([{ label: "thermostat_setpoint", value: "72 F", source: "typed" }], [], HVAC_COOLING_PLAYBOOK.playbook_id, {})).toEqual([
+      { label: "Set temperature", value: "72 F", source: "you typed it" },
+    ]);
+  });
+  it("does not assign temperature units to a unitless projected display", () => {
+    expect(recordFacts([], [], HVAC_COOLING_PLAYBOOK.playbook_id, { thermostat_setpoint: { value: "22", provenance: "reported" } })).toEqual([
+      { label: "Set temperature", value: "22 (unit not supplied)", source: "you reported it" },
+    ]);
+  });
 });

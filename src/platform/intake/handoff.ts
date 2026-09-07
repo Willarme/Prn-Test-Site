@@ -1,5 +1,6 @@
 import { ProblemRecordHandoff, validateHandoffTrace, buildIntakeRegistry, buildCurrentFactState,
-  finalizeFactState, computeProviderReadiness, selectQuestionScreen, countHandoffFacts, QUESTION_COSTS, READINESS_POLICY_VERSION } from "@/domain/intake/readiness";
+  finalizeFactState, computeProviderReadiness, selectQuestionScreen, QUESTION_COSTS, READINESS_POLICY_VERSION } from "@/domain/intake/readiness";
+import { buildFactCountBasis, projectFactCountComponents } from "@/domain/intake/fact-count";
 import { buildDirectionsInput, parseModelSerial } from "@/domain/packet/directions-input";
 import { selectFacts } from "@/domain/packet/render";
 import type { JobPacket } from "@/domain/problem/contracts";
@@ -76,8 +77,10 @@ export function buildIntakeHandoff(ctx: Context, snapshot: Snapshot, packet: Job
     fact: f.field_key, status: f.status, reason: f.reason!, blocked_by: f.status === "TECHNICIAN_ONLY" ? "technician" : null,
   }));
   const tech_only = input.provider.technician_only.map(test => ({ test }));
+  const fact_count_basis = buildFactCountBasis({ state: finalFacts, registry, input,
+    tenant_id: ctx.journey.problem.tenant_id ?? "prn", playbook: ctx.playbook.playbook_id });
   const h = ProblemRecordHandoff.parse({
-    schema_version: "1.0.0", request_id: ctx.journey.session.request_id,
+    schema_version: "1.1.0", fact_count_basis, normalized_observations: projectFactCountComponents(input), request_id: ctx.journey.session.request_id,
     normalized_class: ctx.playbook.playbook_id, problem_title: input.problem.title, user_language: literal,
     readiness_state: snapshot.readiness.readiness_state, facts,
     equipment: { type: value("equipment_type"), brand: value("brand"),
@@ -104,11 +107,11 @@ export function buildIntakeHandoff(ctx: Context, snapshot: Snapshot, packet: Job
     hypotheses: input.provider.branches.map((b, i) => ({ label: b.name, rank: i + 1, rank_word: b.confidence,
       evidence_for: [b.for], evidence_against: [b.against] })), unknowns, tech_only,
     scope_factors: input.provider.scope_factors.map(text => ({ text })), evidence: media,
-    counts: { facts: countHandoffFacts(facts), photos: media.length, checks: checks.length,
+    counts: { facts: fact_count_basis.observations.length, photos: media.length, checks: checks.length,
       made_less_likely: input.provider.checks.filter(c => ["rules_out", "unlikely", "less_likely"].includes(c.certainty)).length,
       tech_only: tech_only.length }, fact_state: finalFacts,
   });
-  const issues = validateHandoffTrace(h, registry);
+  const issues = validateHandoffTrace(h, registry, ctx.journey.problem.tenant_id ?? "prn");
   if (issues.length) throw new Error(`Invalid intake handoff: ${issues.join("; ")}`);
   return h;
 }

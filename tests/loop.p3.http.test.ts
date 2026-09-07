@@ -136,7 +136,7 @@ describe("the keep flow, end to end", () => {
     "sign → GET /keep 200 pre-loaded → POST claim → /mail preview → /claim consumed → redirect → second visit refused → kept state → /links",
     async () => {
       const requestId = await createRequest("The AC runs but the air out of the vents is warm since yesterday afternoon");
-      const keep = ledger.issueLink({ scope: "keep", request_id: requestId });
+      const keep = (await ledger.issueLink({ scope: "keep", request_id: requestId }));
 
       // The record, pre-loaded, with the one field.
       const page = await get(`/keep/${keep.token}`);
@@ -158,7 +158,7 @@ describe("the keep flow, end to end", () => {
       expect(mail.html).toContain("jo@example.com");
       const mailPath = new URL(claim.location!, BASE).pathname;
       expect((await get(mailPath)).status).toBe(404);
-      const packetProof = ledger.issueLink({ scope: "packet", request_id: requestId });
+      const packetProof = (await ledger.issueLink({ scope: "packet", request_id: requestId }));
       expect((await get(`${mailPath}?k=${encodeURIComponent(packetProof.token)}`)).status).toBe(404);
       const magicToken = mail.html.match(/\/claim\/([A-Za-z0-9_.-]+)/)![1]!;
       // link_base is the request origin (routine decision 9); Next reports it as localhost or 127.0.0.1.
@@ -187,7 +187,7 @@ describe("the keep flow, end to end", () => {
       expect(kept.html).toContain("Your AC&#x27;s record is kept.");
       expect(kept.html).toContain("Linked to j***@example.com");
       expect(kept.html).toContain(`/links/${requestId}?k=`);
-      expect(ledger.readKeepState(requestId)?.confirmed_at).not.toBeNull();
+      expect((await ledger.readKeepState(requestId))?.confirmed_at).not.toBeNull();
 
       // /links: gated without proof, listing with the keep token.
       const gated = await get(`/links/${requestId}`);
@@ -206,7 +206,7 @@ describe("the keep flow, end to end", () => {
 describe("the ask page", () => {
   it("shows the friend one sentence and one question; the answer lands and the thank-you renders", async () => {
     const requestId = await createRequest("Warm air from every vent since this morning, the outdoor fan runs");
-    const ask = ledger.issueLink({ scope: "ask", request_id: requestId });
+    const ask = (await ledger.issueLink({ scope: "ask", request_id: requestId }));
     const page = await get(`/ask/${ask.token}`);
     expect(page.status).toBe(200);
     expect(page.html).toContain("A friend of yours has this problem:");
@@ -229,13 +229,13 @@ describe("the ask page", () => {
 describe("the provider media link, /p, and a switched-off link", () => {
   it("the gallery renders for a media token; a revoked token and a wrong-scope token get the plain switched-off page; /p redirects", async () => {
     const requestId = await createRequest("Air is barely cool and the unit outside is loud since last week");
-    const media = ledger.issueLink({ scope: "media", request_id: requestId });
+    const media = (await ledger.issueLink({ scope: "media", request_id: requestId }));
     const gallery = await get(`/media/${media.token}`);
     expect(gallery.status).toBe(200);
     expect(gallery.html).toContain("Photos and video for this job");
     expect(gallery.html).toContain("barely cool");
 
-    const keep = ledger.issueLink({ scope: "keep", request_id: requestId });
+    const keep = (await ledger.issueLink({ scope: "keep", request_id: requestId }));
     const wrongScope = await get(`/media/${keep.token}`);
     expect(wrongScope.status).toBe(200);
     expect(wrongScope.html).toContain("This link has been switched off.");
@@ -244,7 +244,7 @@ describe("the provider media link, /p, and a switched-off link", () => {
     const revoked = await get(`/media/${media.token}`);
     expect(revoked.html).toContain("This link has been switched off.");
 
-    const share = ledger.issueLink({ scope: "packet", request_id: requestId });
+    const share = (await ledger.issueLink({ scope: "packet", request_id: requestId }));
     const p = await get(`/p/${share.token}`);
     expect(p.status).toBe(303);
     expect(p.location).toBe(`/packet/${requestId}?share=${encodeURIComponent(share.token)}`);

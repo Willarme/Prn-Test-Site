@@ -2,7 +2,7 @@ import { mkdtemp } from "node:fs/promises";
 import { readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { ACTIVE_DISCLOSURE } from "@/domain/privacy/disclosures";
 import { readDevDb } from "@/platform/stores/dev-db";
 import { engageKillSwitch, resetKillSwitchForTests } from "@/platform/killswitch";
@@ -46,6 +46,10 @@ afterAll(() => {
   delete process.env.PRN_DEV_DB_PATH;
   resetKillSwitchForTests();
 });
+
+// A failed assertion must not leave a global kill switch active in the next
+// route fixture and hide that fixture's independent result.
+afterEach(() => resetKillSwitchForTests());
 
 function intakeRequest(description: string) {
   return new Request("http://localhost/api/intake", {
@@ -121,7 +125,9 @@ describe("A02 — call site 1: the intake route", () => {
     expect(res.status).toBe(503);
     const body = await res.json();
     expect(body.error).toMatch(/Your text is still here/);
-    expect(body.detail).toMatch(/kill switch/i);
+    // The public response exposes only a diagnostic reference. Internal
+    // refusal and kill-switch reasons are retained behind the server boundary.
+    expect(body.detail).toMatch(/^isd_[0-9a-f-]{36}$/);
     // No packet was built around the gate.
     expect(readDevDb().packets.length).toBe(packetsBefore);
     resetKillSwitchForTests();

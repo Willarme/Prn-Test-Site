@@ -45,6 +45,22 @@ import { decideUrgency } from "@/domain/packet/urgency";
 import { redactSharedText } from "@/domain/privacy/share-text";
 import { fieldConflictText, heldFieldConflicts } from "@/domain/intake/field-conflicts";
 
+/** A fan setting is a literal control observation, never an inference about
+ * fan motion. Keep ambiguous reports in their original source text only. */
+function compoundFanMode(text: string | null): string | null {
+  if (!text || text.includes("?")) return null;
+  const clauses = text.split(/[;,\n!]+|(?<!\d)\.|\.(?!\d)/).map(part => part.trim()).filter(Boolean);
+  const fanClauses = clauses.filter(part => /\bfan\b/i.test(part));
+  if (!fanClauses.length) return null;
+  // Accept only the authored compound display's other labeled values. Unknown
+  // continuations ("or ON", "I cannot tell") may qualify the preceding fan
+  // clause; dropping them would turn uncertainty into a positive observation.
+  const otherReading = /^(?:(?:the\s+)?thermostat\s+)?(?:(?:mode\s*[:=]?|set\s+to)\s*(?:cool|heat|off|auto)|(?:set(?:point)?(?:\s+to)?(?:\s+(?:cool|heat|auto))?(?:\s+(?:at|to))?|target|reads?|room(?:\s+temperature)?(?:\s+(?:is|at))?)\s*[:=]?\s*-?\d+(?:\.\d+)?(?:\s*°?\s*[FC])?)$/i;
+  if (clauses.some(part => !/\bfan\b/i.test(part) && !otherReading.test(part))) return null;
+  const values = fanClauses.map(part => /^(?:the\s+)?(?:thermostat\s+)?fan(?:\s+mode)?\s*(?::|=|(?:is\s+)?set\s+to|is)?\s*(auto|on|circulate)$/i.exec(part)?.[1]?.toLowerCase() ?? null);
+  return values.every(value => value !== null && value === values[0]) ? values[0] : null;
+}
+
 /**
  * JOURNEY → DIRECTIONS INPUT (campaign track P1, 2026-09-05).
  *
@@ -460,16 +476,18 @@ export function buildDirectionsInput(ctx: DirectionsBuildContext, opts: Directio
     const explicitKey = keys.find(key => latest.has(key));
     const explicitAnswer = explicitKey ? latest.get(explicitKey) : null;
     const compoundAnswer = readingKey ? latest.get(readingKey) : null;
-    const compoundValue = fallback ? thermostatReading?.match(fallback)?.[1]?.trim() : null;
+    const compoundValue = outputKey === "fan_mode" ? compoundFanMode(thermostatReading) : fallback ? thermostatReading?.match(fallback)?.[1]?.trim() : null;
+    const compoundFanSupplied = outputKey === "fan_mode" && /\bfan\b/i.test(thermostatReading ?? "");
     // The authored manual control also accepts a compound display answer.
     // Respect corrections made there as well as corrections to split fields.
-    const useManualCompound = compoundValue && compoundAnswer?.source === "typed" &&
+    const useManualCompound = (compoundValue || compoundFanSupplied) && compoundAnswer?.source === "typed" &&
       (!explicitAnswer || !homeownerAnswer(explicitAnswer) || Date.parse(compoundAnswer.answered_at) > Date.parse(explicitAnswer.answered_at) ||
         (explicitAnswer.value_text === null && explicitAnswer.evidence_id === compoundAnswer.evidence_id && explicitAnswer.answered_at === compoundAnswer.answered_at));
     const key = useManualCompound ? readingKey : explicitKey ?? readingKey;
     const value = useManualCompound ? compoundValue : explicitKey ? text(explicitKey) : compoundValue;
     const answer = key ? latest.get(key) : null;
     if (!key || !answer || !value) return;
+    if (outputKey === "fan_mode" && !/^(auto|on|circulate)$/i.test(value.trim())) return;
     let reading = printedReading(answer, value);
     if (answer.source === "auto_detected") {
       const suppliedText = ctx.allEvidence.find(evidence =>
@@ -497,7 +515,7 @@ export function buildDirectionsInput(ctx: DirectionsBuildContext, opts: Directio
     readingFields.set(outputKey, key);
   };
   recordReading("thermostat_mode", ["thermostat_mode"], /\b(?:set\s+to|mode\s*[:=]?)\s*(cool|heat|off|auto)\b/i);
-  recordReading("fan_mode", ["fan_mode"], /\bfan\s*[:=]?\s*(auto|on|circulate)\b/i);
+  recordReading("fan_mode", ["fan_mode"]);
   recordReading("thermostat_setpoint", ["thermostat_setpoint_f", "thermostat_setpoint"], /\b(?:set(?:point)?(?:\s+to)?(?:\s+(?:cool|heat|auto))?(?:\s+(?:at|to))?|target)\s*[:=]?\s*(-?\d+(?:\.\d+)?(?:\s*°?\s*[FC])?)\b/i);
   recordReading("room_temp", ["room_temp_f", "room_temp"], /\b(?:reads?|room(?:\s+temperature)?(?:\s+(?:is|at))?)\s*[:=]?\s*(-?\d+(?:\.\d+)?(?:\s*°?\s*[FC])?)\b/i);
   recordReading("filter_nominal_dimensions", ["filter_nominal_dimensions"]);
@@ -820,6 +838,7 @@ export function buildDirectionsInput(ctx: DirectionsBuildContext, opts: Directio
     evidence: {
       media,
       readings,
+      reading_fields: Object.fromEntries(readingFields),
     },
     narrative: { facts, summary_observations: summary, timeline, script_parts: scriptParts },
     provider: {

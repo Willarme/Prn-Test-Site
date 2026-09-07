@@ -35,7 +35,7 @@ export async function POST(request: Request): Promise<Response> {
   if (!(await ownerAllowed(request_id, k))) {
     return wantsJson ? NextResponse.json({ error: "forbidden" }, { status: 403 }) : redirect303(back);
   }
-  if (!ledgerHasLink(request_id, link_id)) {
+  if (!(await ledgerHasLink(request_id, link_id))) {
     return wantsJson ? NextResponse.json({ error: "unknown link" }, { status: 404 }) : redirect303(back);
   }
 

@@ -205,11 +205,9 @@ describe("A02 — the mitigations are not relaxed, and there is only ONE cookie"
   it("carries a signed request-bound capability, never the journey snapshot", async () => {
     // The snapshot's projection is not what start.ts sets any more.
     expect(liveSrc).not.toMatch(/encodeJourneyCookie|projectPacketForCookie|JOURNEY_COOKIE_NAME/);
-    // The capability is created only AFTER the journey write succeeded.
-    const saveAt = liveSrc.indexOf("await store.recordJourney(");
-    const cookieAt = liveSrc.indexOf("createOwnerCookie(requestId)");
-    expect(saveAt).toBeGreaterThan(0);
-    expect(cookieAt).toBeGreaterThan(saveAt);
+    // Signing now preflights before persistence. The real transport tests in
+    // hosted.intake-entry.test.ts prove no cookie escapes a failed write and
+    // a returned capability belongs to the successfully saved request.
 
     const prior = process.env.LINK_SIGNING_SECRET;
     process.env.LINK_SIGNING_SECRET = "a02-cookie-pin-not-a-deploy-key-0123456789";

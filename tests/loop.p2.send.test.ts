@@ -77,7 +77,7 @@ describe("buildShareMessage", () => {
     expect(msg.share_url).toMatch(/^http:\/\/localhost:3112\/p\/[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/);
     expect(msg.text).toBe(`Here is my Job Packet: ${msg.share_url}`);
     const { listIssuedLinks } = await import("@/platform/links/ledger");
-    expect(listIssuedLinks(requestId).some(link => msg.share_url.endsWith(link.token))).toBe(true);
+    expect((await listIssuedLinks(requestId)).some(link => msg.share_url.endsWith(link.token))).toBe(true);
 
     const token = msg.share_url.split("/p/")[1]!;
     const decoded = tokens.decodeLink(token);

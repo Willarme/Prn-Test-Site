@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { LinkOff, linkOffReason } from "@/components/links/LinkOff";
-import { issueLink, markKeepConfirmed } from "@/platform/links/ledger";
+import { consumeKeepLink } from "@/platform/links/ledger";
 import { verifyLinkForRoute as verifyLink } from "@/platform/links/tokens";
-import { runtimeStore } from "@/platform/stores/runtime";
 
 /**
  * /claim/<magic> — THE MAGIC LINK, CONSUMED (track P3).
@@ -42,13 +41,9 @@ export default async function ClaimPage({ params }: { params: Promise<{ magic: s
   if (!magicId) return <LinkOff reason="off" />;
 
   const now = new Date().toISOString();
-  const currentClaim = await runtimeStore().getKeepClaim(link.request_id);
-  if (currentClaim?.magic_link_id !== magicId) return <LinkOff reason="used" />;
-  const consumed = await runtimeStore().consumeMagicLink(magicId, now, link.request_id);
-  if (!consumed || consumed.request_id !== link.request_id) {
-    return <LinkOff reason="used" resultsHref={`/results/${link.request_id}`} />;
-  }
-  if (!markKeepConfirmed(link.request_id, now, magicId)) return <LinkOff reason="used" />;
-  const owner = issueLink({ scope: "keep", request_id: link.request_id });
+  let owner;
+  try { owner = await consumeKeepLink(link.request_id, magicId, now); }
+  catch { return <LinkOff reason="unavailable" />; }
+  if (!owner) return <LinkOff reason="used" resultsHref={`/results/${link.request_id}`} />;
   redirect(`/results/${link.request_id}?kept=1&k=${encodeURIComponent(owner.token)}`);
 }

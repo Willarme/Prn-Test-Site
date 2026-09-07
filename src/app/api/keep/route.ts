@@ -42,9 +42,12 @@ export async function POST(request: Request): Promise<Response> {
       : redirect303(`${back}?error=contact`);
   }
 
+  try {
   const store = runtimeStore();
   const now = new Date().toISOString();
   const magic_id = `mg_${randomBytes(24).toString("base64url")}`;
+  const magicToken = signLink({ scope: "magic", request_id: link.request_id,
+    ttl_days: MAGIC_TTL_DAYS, extra: { magic_id } });
   await store.saveMagicLink({
     magic_id,
     request_id: link.request_id,
@@ -60,12 +63,9 @@ export async function POST(request: Request): Promise<Response> {
     magic_link_id: magic_id,
   });
 
-  const magicToken = signLink({
-    scope: "magic",
-    request_id: link.request_id,
-    ttl_days: MAGIC_TTL_DAYS,
-    extra: { magic_id },
-  });
+  // Establish shared receipt storage before any message leaves the outbox.
+  // If its later email-ID attachment fails, the magic link can still confirm.
+  await recordKeepRequested(link.request_id, { email_id: null, magic_id });
   const base = linkBase(request);
   const claimUrl = `${base}/claim/${magicToken}`;
   const resultsUrl = `${base}/results/${link.request_id}?k=${encodeURIComponent(token)}`;
@@ -98,11 +98,14 @@ export async function POST(request: Request): Promise<Response> {
     });
     email_id = result.email_id;
   }
-  recordKeepRequested(link.request_id, { email_id, magic_id });
+  (await recordKeepRequested(link.request_id, { email_id, magic_id }));
 
   if (wantsJson) {
     return NextResponse.json({ ok: true, email_id, mode, sent, request_id: link.request_id });
   }
   if (mode === "preview") return redirect303(`/mail/${email_id}?k=${encodeURIComponent(token)}`);
   return redirect303(`${back}?sent=${sent ? "1" : "failed"}`);
+  } catch {
+    return wantsJson ? NextResponse.json({ error: "unavailable" }, { status: 503 }) : redirect303(`${back}?sent=failed`);
+  }
 }

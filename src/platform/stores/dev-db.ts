@@ -166,7 +166,7 @@ function dbPath(): string {
   return join(process.cwd(), "data", "runtime", "dev-db.json");
 }
 
-export function readDevDb(options: { strictRevocationLedger?: boolean } = {}): DevDb {
+export function readDevDb(options: { strictRevocationLedger?: boolean; requiredCollections?: ReadonlyArray<keyof DevDb> } = {}): DevDb {
   const path = dbPath();
   let raw: string;
   try {
@@ -184,6 +184,11 @@ export function readDevDb(options: { strictRevocationLedger?: boolean } = {}): D
     if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) throw new Error("invalid store");
     for (const key of Object.keys(emptyDb()) as Array<keyof DevDb>) {
       if (parsed[key] !== undefined && !Array.isArray(parsed[key])) throw new Error("invalid collection");
+    }
+    // Admin observations cannot turn absent collections in an existing file
+    // into measured zeroes. Other legacy readers retain their migration seam.
+    for (const key of options.requiredCollections ?? []) {
+      if (!Array.isArray(parsed[key])) throw new Error("missing required collection");
     }
     if (options.strictRevocationLedger && !Array.isArray(parsed.link_revocations)) throw new Error("missing revocation ledger");
     if (parsed.link_revocations && !parsed.link_revocations.every(row => row &&

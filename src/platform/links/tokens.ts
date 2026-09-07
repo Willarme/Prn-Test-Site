@@ -34,8 +34,8 @@ import { withFileLock, writeFileAtomic } from "@/platform/stores/atomic-file";
  * versioned (`v: 1`) so a future change to the shape can be told apart from a
  * forgery. Signature comparison is constant-time.
  *
- * THE SECRET. `LINK_SIGNING_SECRET` when set (deploys). Otherwise a random
- * 32-byte dev secret is generated ONCE into data/runtime/link-secret.txt
+ * THE SECRET. `LINK_SIGNING_SECRET` is required in production or on Vercel.
+ * In local development, a random 32-byte dev secret is generated ONCE into data/runtime/link-secret.txt
  * (gitignored with the rest of data/runtime/) and reused, so a link minted by
  * one local dev server still opens after a restart. Rotating the secret
  * invalidates every link signed under the old one — that is the intended
@@ -83,12 +83,16 @@ function secretPath(): string {
 let cachedDevSecret: Buffer | null = null;
 
 /**
- * The signing key. Env first; else the once-generated dev secret. Tests that
- * need a fresh key set LINK_SIGNING_SECRET themselves.
+ * The signing key. Production must use an explicitly configured stable key;
+ * it must never depend on a writable deployment directory or a cached dev key.
+ * Only local development may use the once-generated dev secret.
  */
 function signingSecret(): Buffer {
   const fromEnv = process.env.LINK_SIGNING_SECRET;
   if (fromEnv && fromEnv.length > 0) return Buffer.from(fromEnv, "utf-8");
+  if (process.env.NODE_ENV === "production" || process.env.VERCEL) {
+    throw Object.assign(new Error("Link signing is not configured."), { code: "LINK_SIGNING_NOT_CONFIGURED" });
+  }
   if (cachedDevSecret) return cachedDevSecret;
   const path = secretPath();
   cachedDevSecret = withFileLock(path, () => {

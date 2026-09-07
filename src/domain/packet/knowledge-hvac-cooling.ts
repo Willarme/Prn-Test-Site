@@ -245,7 +245,7 @@ export function hvacCoolingFacts(v: HvacCoolingView): Fact[] {
 
 export function hvacCoolingSummary(v: HvacCoolingView): string[] {
   const out: string[] = [];
-  if (v.homeowner_words) out.push(`The homeowner describes it as: “${v.homeowner_words}”.`);
+  if (v.homeowner_words) out.push(`The homeowner describes it as: “${v.homeowner_words}”${/[.!?…]$/.test(v.homeowner_words) ? "" : "."}`);
   if (v.vent_airflow) out.push(`Airflow at the vents is reported as ${v.vent_airflow}.`);
   if (v.onset_character || v.onset_weekday || v.onset_span_days !== null) {
     const when = v.onset_weekday

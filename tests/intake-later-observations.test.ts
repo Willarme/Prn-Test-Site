@@ -150,12 +150,12 @@ describe("hazards first reported after entry", () => {
     for (const page of [SendPacketPage, EmailPacketPage]) {
       await expect(page({ params: Promise.resolve({ request_id: id }), searchParams: Promise.resolve({ k }) })).rejects.toThrow("NEXT_REDIRECT");
     }
-    const linkCount = readLinkLedger(id).links.length;
+    const linkCount = (await readLinkLedger(id)).links.length;
     expect(await buildShareMessage({ request_id: id, origin: "http://localhost", contact: "fixture@example.com" })).toBeNull();
     const shareForm = new FormData();
     shareForm.set("request_id", id); shareForm.set("k", k);
     await expect(makeShareLink({ status: "idle" }, shareForm)).rejects.toThrow("NEXT_REDIRECT");
-    expect(readLinkLedger(id).links).toHaveLength(linkCount);
+    expect((await readLinkLedger(id)).links).toHaveLength(linkCount);
     const outboxCount = readDevDb().email_outbox.length;
     const emailForm = new FormData();
     emailForm.set("request_id", id); emailForm.set("k", k); emailForm.set("email", "fixture@example.com");

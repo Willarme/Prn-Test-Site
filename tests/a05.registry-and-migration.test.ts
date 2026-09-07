@@ -111,11 +111,13 @@ describe("migration 00012 — applied 2026-08-25, and structurally sound", () =>
     // Existing 00021 hardens loop grants; T1-35 adds 00022 effort. Neither
     // extends the old 00016-00018 reservation or permits a missing migration.
     // T6 adds 00023 for shared reader completion; the reserved gap is unchanged.
-    expect(numbers).toEqual([...Array.from({ length: 15 }, (_, i) => i + 1), 19, 20, 21, 22, 23]);
+    // T8-39 adds 00024 for durable link/Keep receipts without widening that gap.
+    expect(numbers).toEqual([...Array.from({ length: 15 }, (_, i) => i + 1), 19, 20, 21, 22, 23, 24]);
     expect(migrations).toContain("00020_loop_surfaces.sql");
     expect(migrations).toContain("00021_loop_grant_hardening.sql");
     expect(migrations).toContain("00022_intake_effort.sql");
     expect(migrations).toContain("00023_label_extraction_completion.sql");
+    expect(migrations).toContain("00024_request_link_ledger.sql");
     // Nothing renumbered or rewrote an already-committed migration.
     expect(migrations[10]).toBe("00011_opportunity_decision.sql");
   });

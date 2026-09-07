@@ -14,7 +14,7 @@ process.on("message", async () => {
       for (let i = 0; i < 15; i++) updateDevDb(db => { db.signups.push({ signup_id: `su_${process.pid}_${i}`, page: "fixture", vote: "yes", created_at: new Date().toISOString() }); });
       result = true;
     } else if (mode === "issue") {
-      for (let i = 0; i < 10; i++) issueLink({ scope: "ask", request_id: "rq_race" });
+      for (let i = 0; i < 10; i++) (await issueLink({ scope: "ask", request_id: "rq_race" }));
       result = true;
     } else if (mode === "secret") result = signLink({ scope: "keep", request_id: "rq_race" });
     else if (mode === "verify") result = JSON.parse(readFileSync(process.argv[3], "utf8")).map((token: string) => decodeLink(token).ok);

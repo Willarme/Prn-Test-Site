@@ -19,10 +19,11 @@ if (!requestId) {
   process.exit(1);
 }
 
-const keep = issueLink({ scope: "keep", request_id: requestId });
-const ask = issueLink({ scope: "ask", request_id: requestId });
-const media = issueLink({ scope: "media", request_id: requestId });
-const packet = issueLink({ scope: "packet", request_id: requestId });
+async function main() {
+const keep = await issueLink({ scope: "keep", request_id: requestId });
+const ask = await issueLink({ scope: "ask", request_id: requestId });
+const media = await issueLink({ scope: "media", request_id: requestId });
+const packet = await issueLink({ scope: "packet", request_id: requestId });
 
 console.log(
   JSON.stringify(
@@ -38,3 +39,5 @@ console.log(
     2
   )
 );
+}
+void main().catch(() => { console.error("Link issuance is unavailable."); process.exitCode = 1; });

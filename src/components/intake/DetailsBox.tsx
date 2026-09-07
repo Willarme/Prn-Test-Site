@@ -85,6 +85,7 @@ export function DetailsBox({
   const [open, setOpen] = useState<string | null>(null);
   const [typed, setTyped] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState<string | null>(null);
+  const [uploading, setUploading] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [addressOpen, setAddressOpen] = useState<boolean>(address === null);
   const [addr, setAddr] = useState<DetailsAddress>({
@@ -96,8 +97,6 @@ export function DetailsBox({
   const fileInputs = useRef<Record<string, HTMLInputElement | null>>({});
 
   const plannedFields = fields.filter(f => !f.optional_group);
-  const done = plannedFields.filter((f) => !f.conflict && f.have && f.have.value !== CANNOT_REACH_FIELD_VALUE &&
-    !(LABEL_FIELDS.has(f.field_key) && f.have.source === "photo" && f.have.value === null)).length;
 
   async function post(body: Record<string, unknown>, failMessage: string): Promise<boolean> {
     const res = await fetch("/api/intake/answer", {
@@ -190,6 +189,7 @@ export function DetailsBox({
 
   async function upload(fieldKey: string, file: File) {
     setBusy(fieldKey);
+    setUploading(fieldKey);
     setErr(null);
     const form = new FormData();
     form.set("request_id", requestId);
@@ -198,6 +198,7 @@ export function DetailsBox({
     form.set("file", file);
     const res = await fetch("/api/intake/media", { method: "POST", body: form }).catch(() => null);
     setBusy(null);
+    setUploading(null);
     if (!res?.ok) {
       const data = await res?.json().catch(() => ({}));
       setErr(data?.error ?? "Upload failed — try again.");
@@ -225,7 +226,7 @@ export function DetailsBox({
           onKeyDown={(e) => e.key === "Enter" && saveText(f.field_key)}
         />}
         <button className="btn btn-ghost btn-sm" disabled={busy === f.field_key} onClick={() => saveText(f.field_key)}>
-          Save
+          {busy === f.field_key && uploading !== f.field_key ? "Saving…" : "Save"}
         </button>
       </div>
     );
@@ -392,7 +393,7 @@ export function DetailsBox({
                             disabled={busy === f.field_key}
                             onClick={() => fileInputs.current[f.field_key]?.click()}
                           >
-                            {busy === f.field_key ? "Uploading…" : "📷 Snap or upload a photo"}
+                            {uploading === f.field_key ? "Uploading…" : "📷 Snap or upload a photo"}
                           </button>
                         </div>
                       )}
@@ -411,9 +412,9 @@ export function DetailsBox({
         <h2 className="d3" style={{ margin: 0 }}>
           Details a technician will want
         </h2>
-        <span className="pill pill-green">
-          {done}/{plannedFields.length} ready
-        </span>
+        {plannedFields.length > 0 && <span className="pill">
+          {plannedFields.length} optional {plannedFields.length === 1 ? "detail" : "details"}
+        </span>}
       </div>
       <p className="hint" style={{ margin: "6px 0 16px" }}>
         Optional — but every one you add is a question nobody has to ask later. A photo usually

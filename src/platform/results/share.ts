@@ -58,7 +58,7 @@ export async function buildShareMessage(input: {
   const safety = journeySafetyRule(journey.problem);
   if (safety && !safety.intake_may_continue) return null;
 
-  const { token } = issueLink({ scope: "packet", request_id: input.request_id });
+  const { token } = (await issueLink({ scope: "packet", request_id: input.request_id }));
   const share_url = `${input.origin}/p/${token}`;
   const text = `${SHARE_TEXT_PREFIX}${share_url}`;
   const body = encodeURIComponent(text);

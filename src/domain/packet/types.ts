@@ -170,6 +170,8 @@ export interface Reading {
 
 export interface EvidenceBlock {
   media: MediaItem[];
+  /** Internal held-field identity selected by the reading adapter; never printed. */
+  reading_fields?: Partial<Record<keyof NonNullable<EvidenceBlock["readings"]>, string>>;
   readings?: Partial<
     Record<
       "thermostat_mode" | "fan_mode" | "thermostat_setpoint" | "room_temp" |

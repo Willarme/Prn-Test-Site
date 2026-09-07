@@ -15,6 +15,7 @@ import { demoAwareOrigin } from "@/platform/demo-origin";
  * render "emits the same name from the same moment" (api/packet-activity).
  */
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 function redirect(request: Request, path: string): Response {
   return Response.redirect(new URL(path, new URL(request.url).origin), 303);

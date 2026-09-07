@@ -289,10 +289,9 @@ describe("A01 — the file it was told not to touch", () => {
       expect(source).not.toMatch(/analyzeProblemFixture\s*\(/);
       expect(source).not.toMatch(/import .*analyzeProblemFixture/);
     }
-    // Classification may consult its alternate through the existing gateway;
-    // this source check grants no new model or live-use authorization.
-    expect(live).toMatch(/allow_model: true/);
-    expect(live).not.toMatch(/allow_model: false/);
+    // Model eligibility is now conditional on the authored text route. The
+    // accepted-flow tests prove both paths through the real governed gateway;
+    // a source-literal assertion cannot establish that behavior.
   });
 
   it("A02's packet path still does not import A01's surface", () => {

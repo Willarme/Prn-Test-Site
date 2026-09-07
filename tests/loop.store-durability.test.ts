@@ -69,7 +69,7 @@ describe("durable local store", () => {
   }, 30_000);
   it("concurrent link issuance keeps every link available for revocation", async () => {
     await children("issue", 6);
-    const issued = readLinkLedger("rq_race").links;
+    const issued = (await readLinkLedger("rq_race")).links;
     expect(issued).toHaveLength(60);
     expect(new Set(issued.map(row => row.link_id)).size).toBe(60);
   }, 30_000);

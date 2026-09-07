@@ -57,7 +57,7 @@ export default async function MailPage({ params, searchParams }: { params: Promi
   const delivered = !sms && email.subject === PACKET_EMAIL_SUBJECT && email.mode === "live"
     && !!email.sent_at && await feedbackEligible(email.request_id);
   const keepLink = email.request_id
-    ? readLinkLedger(email.request_id).links.find((l) => l.scope === "keep")
+    ? (await readLinkLedger(email.request_id)).links.find((l) => l.scope === "keep")
     : null;
   const linksHref = email.request_id
     ? `/links/${email.request_id}${keepLink ? `?k=${encodeURIComponent(keepLink.token)}` : ""}`

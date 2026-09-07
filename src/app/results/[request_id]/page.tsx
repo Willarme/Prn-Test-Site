@@ -111,7 +111,7 @@ export default async function ResultsPage({
   if (query?.kept === "1") {
     try {
       const claim = await store.getKeepClaim(request_id);
-      const confirmation = readKeepState(request_id);
+      const confirmation = (await readKeepState(request_id));
       kept = !!(claim && confirmation?.confirmed_at && confirmation.magic_id === claim.magic_link_id);
     } catch {
       // An unavailable receipt cannot become a claim of a successful save.
@@ -145,7 +145,7 @@ export default async function ResultsPage({
       : {}),
   });
 
-  const keepHref = `/keep/${issueLink({ scope: "keep", request_id }).token}`;
+  const keepHref = `/keep/${(await issueLink({ scope: "keep", request_id })).token}`;
   const eligible = journey ? await feedbackEligible(request_id) : false;
   return <>
     {kept && eligible && <FeedbackSuccess requestId={request_id} />}
@@ -157,7 +157,7 @@ export default async function ResultsPage({
       ownerKey={k}
       feedbackEligible={eligible}
       keepHref={keepHref}
-      askHref={`/ask/${issueLink({ scope: "ask", request_id }).token}`}
+      askHref={`/ask/${(await issueLink({ scope: "ask", request_id })).token}`}
       askAnswers={askAnswers}
     />
   </>;

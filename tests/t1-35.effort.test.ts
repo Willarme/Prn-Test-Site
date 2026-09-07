@@ -318,6 +318,15 @@ describe("T1-35 actual PostgreSQL effort migration", () => {
     }
   });
   it.each(["spent-reset", "cleared-finish", "changed-finish-time", "changed-finish-reason", "accepted-after-finish", "forged-refusal"] as const)("rejects legacy %s corruption inside RPC before committing anything", async mutation => {
+    // Git materializes this shipped SQL with CRLF on some checkouts. Normalize
+    // fixture parsing only, and verify restoration is possible before any DROP.
+    const ddl = migration("00022_intake_effort.sql").replace(/\r\n/g, "\n");
+    const marker = "constraint intake_effort_identity check (";
+    const markerStart = ddl.indexOf(marker);
+    const end = ddl.indexOf("\n  )\n);", markerStart + marker.length);
+    expect(markerStart).toBeGreaterThanOrEqual(0);
+    expect(end).toBeGreaterThan(markerStart + marker.length);
+    const constraintExpression = ddl.slice(markerStart + marker.length, end);
     const base = await rpc(operation("valid:nineteen", 19));
     let corrupt = structuredClone(base.ledger);
     if (mutation !== "spent-reset") {
@@ -349,10 +358,7 @@ describe("T1-35 actual PostgreSQL effort migration", () => {
     } finally {
       await db.exec("reset role; truncate public.intake_effort_ledger");
       // Reapply the shipped constraint expression, without assuming its shape.
-      const ddl = migration("00022_intake_effort.sql");
-      const start = ddl.indexOf("constraint intake_effort_identity check (") + "constraint intake_effort_identity check (".length;
-      const end = ddl.indexOf("\n  )\n);", start);
-      await db.exec(`alter table public.intake_effort_ledger add constraint intake_effort_identity check (${ddl.slice(start, end)})`);
+      await db.exec(`alter table public.intake_effort_ledger add constraint intake_effort_identity check (${constraintExpression})`);
     }
   });
 });

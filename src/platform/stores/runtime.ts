@@ -513,25 +513,27 @@ class SupabaseRuntimeStore implements RuntimeStore {
       .select("*")
       .order("entered_at", { ascending: false })
       .limit(limit);
-    if (error) throw new Error(`list sessions: ${error.message}`);
+    if (error || !Array.isArray(sessions)) throw new Error("Session records are unavailable");
     const out: Journey[] = [];
-    for (const session of sessions ?? []) {
-      const { data: problem } = await this.db
+    for (const session of sessions) {
+      const { data: problem, error: problemError } = await this.db
         .from("problem_record")
         .select("*")
         .eq("intake_session_id", session.intake_session_id)
         .order("created_at", { ascending: true })
         .limit(1)
         .maybeSingle();
+      if (problemError) throw new Error(`list journey problems: ${problemError.message}`);
       if (!problem) continue;
       // Same packet selection rule as getJourney: newest version wins.
-      const { data: packetRow } = await this.db
+      const { data: packetRow, error: packetError } = await this.db
         .from("job_packet")
         .select("packet")
         .eq("problem_id", problem.problem_id)
         .order("packet_version", { ascending: false })
         .limit(1)
         .maybeSingle();
+      if (packetError) throw new Error(`list journey packets: ${packetError.message}`);
       if (!packetRow) continue;
       out.push({
         session: session as SessionRow,
@@ -547,15 +549,16 @@ class SupabaseRuntimeStore implements RuntimeStore {
       .from("event_envelope")
       .select("event_id", { count: "exact", head: true })
       .eq("event_name", eventName);
-    if (error) throw new Error(`count events: ${error.message}`);
-    return count ?? 0;
+    if (error || !Number.isSafeInteger(count) || (count as number) < 0) throw new Error("Event count is unavailable");
+    return count as number;
   }
 
   async totals(): Promise<{ journeys: number; packets: number; consents: number }> {
     const counts = await Promise.all(
       ["intake_session", "job_packet", "consent_event"].map(async (table) => {
-        const { count } = await this.db.from(table).select("*", { count: "exact", head: true });
-        return count ?? 0;
+        const { count, error } = await this.db.from(table).select("*", { count: "exact", head: true });
+        if (error || !Number.isSafeInteger(count) || (count as number) < 0) throw new Error(`count ${table}: unavailable`);
+        return count as number;
       })
     );
     return { journeys: counts[0], packets: counts[1], consents: counts[2] };
@@ -563,8 +566,8 @@ class SupabaseRuntimeStore implements RuntimeStore {
 
   async getPublishedPageIds(): Promise<Set<string>> {
     const { data, error } = await this.db.from("published_page").select("page_id");
-    if (error) throw new Error(`list published: ${error.message}`);
-    return new Set((data ?? []).map((r) => r.page_id as string));
+    if (error || !Array.isArray(data) || data.some(r => typeof r?.page_id !== "string" || !r.page_id)) throw new Error("Published-page records are unavailable");
+    return new Set(data.map((r) => r.page_id as string));
   }
 
   async setPublished(spec: PageSpec, published: boolean): Promise<void> {
@@ -634,8 +637,8 @@ class SupabaseRuntimeStore implements RuntimeStore {
       .select("at, action, target, detail")
       .order("at", { ascending: false })
       .limit(limit);
-    if (error) throw new Error(`list audit: ${error.message}`);
-    return (data ?? []) as AuditEntry[];
+    if (error || !Array.isArray(data)) throw new Error("Owner audit records are unavailable");
+    return data as AuditEntry[];
   }
 
   async attachEvidence(problemId: string, requestId: string, raw: EvidenceObject): Promise<void> {
@@ -894,6 +897,7 @@ class SupabaseRuntimeStore implements RuntimeStore {
       .select("request_id, contact, contact_kind, claimed_at, magic_link_id")
       .eq("request_id", request_id)
       .order("claimed_at", { ascending: false })
+      .order("id", { ascending: false })
       .limit(1)
       .maybeSingle();
     if (error && missingSchema(error)) {
@@ -1115,7 +1119,7 @@ class FileRuntimeStore implements RuntimeStore {
   }
 
   async listJourneys(limit = 100): Promise<Journey[]> {
-    const db = readDevDb();
+    const db = readDevDb({ requiredCollections: ["intake_sessions", "problems", "packets"] });
     const out: Journey[] = [];
     for (const session of [...db.intake_sessions].reverse().slice(0, limit)) {
       const problem = db.problems.find((p) => p.intake_session_id === session.intake_session_id);
@@ -1134,7 +1138,7 @@ class FileRuntimeStore implements RuntimeStore {
   }
 
   async totals(): Promise<{ journeys: number; packets: number; consents: number }> {
-    const db = readDevDb();
+    const db = readDevDb({ requiredCollections: ["intake_sessions", "packets", "consent_events"] });
     return {
       journeys: db.intake_sessions.length,
       packets: db.packets.length,
@@ -1143,7 +1147,7 @@ class FileRuntimeStore implements RuntimeStore {
   }
 
   async getPublishedPageIds(): Promise<Set<string>> {
-    return new Set(readDevDb().published_page_ids);
+    return new Set(readDevDb({ requiredCollections: ["published_page_ids"] }).published_page_ids);
   }
 
   async setPublished(spec: PageSpec, published: boolean): Promise<void> {
@@ -1166,7 +1170,7 @@ class FileRuntimeStore implements RuntimeStore {
   }
 
   async listAudit(limit = 50): Promise<AuditEntry[]> {
-    return [...readDevDb().admin_audit].reverse().slice(0, limit);
+    return [...readDevDb({ requiredCollections: ["admin_audit"] }).admin_audit].reverse().slice(0, limit);
   }
 
   async attachEvidence(problemId: string, _requestId: string, raw: EvidenceObject): Promise<void> {

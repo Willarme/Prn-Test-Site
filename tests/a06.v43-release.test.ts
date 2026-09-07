@@ -274,7 +274,7 @@ describe("independent v43 release checks", () => {
     expect(gate?.decision.qa.blockers.some((finding) => finding.check === "door_template.source_verification")).toBe(true);
     const queue = (await publishQueueSnapshot(() => null)).find((row) => row.spec.page_spec_id === spec.page_spec_id);
     expect(queue?.decision.release_eligible).toBe(false);
-    const response = await publish(new Request("http://localhost/api/admin/pages/publish", { method: "POST", headers: { "Content-Type": "application/json" },
+    const response = await publish(new Request("http://localhost/api/admin/pages/publish", { method: "POST", headers: { Origin: "http://localhost", "Content-Type": "application/json" },
       body: JSON.stringify({ page_spec_id: spec.page_spec_id, action: "publish" }) }));
     expect(response.status).toBe(409);
     expect((await store.listPages()).find((page) => page.page_id === spec.page_id)?.published_at).toBeNull();

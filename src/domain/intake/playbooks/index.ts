@@ -453,7 +453,10 @@ export const PLAYBOOKS: readonly IntakePlaybook[] = [
 
 /** Route a description + inferred family to the best playbook. */
 export function selectPlaybook(description: string, family: string | null): IntakePlaybook {
-  const text = description.toLowerCase();
+  // Typographic apostrophes are common keyboard input. Normalize only the
+  // matching view so "won’t turn on" reaches the same route as "won't";
+  // retain the homeowner's original text in all evidence and saved records.
+  const text = description.toLowerCase().replace(/[’]/g, "'");
   const candidates = PLAYBOOKS.filter((p) => p.problem_family === family);
   for (const pb of candidates.length > 0 ? candidates : PLAYBOOKS) {
     if (pb.match_patterns.some((src) => new RegExp(src, "i").test(text))) return pb;

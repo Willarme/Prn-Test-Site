@@ -1,10 +1,41 @@
 # Service-key audit — T1-33 (request-scoped RLS seam)
 
+## September 7, 2026: durable scoped-link ledger
+
+`src/platform/links/ledger-shared.ts` adds the following bounded service seam.
+Migration `00024_request_link_ledger.sql` is written and locally tested, **not
+applied**. Hosted execution requires the shared backend and signing configuration;
+it cannot acknowledge issuance into an ephemeral file or silently report a
+missing ledger as empty. This necessary record storage fails closed, rather than
+using the historical telemetry-only fail-soft convention.
+
+| Operation | Class | Boundary and justification |
+| --- | --- | --- |
+| `readSharedLedger` | Customer-facing read | Request JWT/RLS by default; existing service fallback has request and tenant predicates. Every returned row must match the loaded request, problem and tenant. Full signed tokens are private capabilities, never anonymous data. Reads page through the complete history. |
+| `recordSharedLink` → `register_request_link` | Server-controlled issuance | Application verifies the signed token and loads the actual journey. SQL independently resolves request/tenant/problem, locks the intake row, and refuses mutation of an existing link ID's scope/token/expiry. |
+| `requestSharedKeep` → `register_request_keep` | Server-controlled receipt | SQL only accepts the latest claim's magic ID and an outbox ID owned by the same request/tenant. Stale concurrent completions cannot overwrite a replacement claim or clear its confirmation. Pending storage is established before sending a message. |
+| `confirmSharedKeep` → `confirm_request_keep` | Server-controlled consume/confirm transaction | SQL compares the current claim and pending receipt, locks the magic row, and atomically registers the owner capability, consumes once, and confirms. A failed write rolls the transaction back. A receipt-only repair requires an already consumed current magic link. |
+
+Both new tables have RLS immediately. The migration first removes inherited
+default grants, then grants only SELECT to authenticated/service roles. Public and
+anonymous reads and all direct writes (including service-role writes) are denied.
+Only the service role may execute the three fixed-search-path security-definer
+RPCs. No DELETE/TRUNCATE capability is added. Current Keep reads use the same
+`claimed_at DESC, id DESC` tie-breaker as the transaction.
+
+The tests execute the real Supabase HTTP client against a local PGlite SQL/RLS
+adapter, plus actual in-process Keep and claim handlers. This proves local query,
+permission, rollback and retry behavior, not the hosted project's migration,
+PostgREST grants/JWT configuration, cross-instance runtime, or delivered email.
+Development retains file storage; its separate runtime/ledger files do not gain
+database transaction guarantees. Existing Keep/claim/outbox rows remain intact;
+the new ledger starts empty and never fabricates historical issuance receipts.
+
 ## September 6, 2026: reader-completion addendum
 
 `src/platform/intake/label-completions.ts` adds three bounded call sites to
 the historical inventory below. These are source-level controls; migration
-00023 and the actual hosted request-scoped configuration remain unverified.
+00023, 00024 and the actual hosted request-scoped configuration remain unverified.
 
 | Operation | Class | Boundary and justification |
 | --- | --- | --- |

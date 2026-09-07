@@ -156,7 +156,7 @@ export function checkConsistency(html: string, c: ComputedForCheck): string[] {
     const thumbs = (html.match(/class="ph(?:\s|")/g) ?? []).length;
     if (thumbs !== c.count_photos) failures.push(`constraint 4: ${thumbs} thumbnails, count_photos ${c.count_photos}`);
     if (c.count_photos > 0) {
-      const phrase = `All ${spelled(c.count_photos)} item${c.count_photos === 1 ? "" : "s"}`;
+      const phrase = c.count_photos === 1 ? "This item" : `All ${spelled(c.count_photos)} items`;
       if (!text.includes(phrase)) failures.push(`constraint 4: evidence_count_phrase "${phrase}" missing`);
     }
     // 5. checks rows.

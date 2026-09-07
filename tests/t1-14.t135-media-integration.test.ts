@@ -73,9 +73,9 @@ afterEach(() => {
 async function accepted(response: Response) {
   const body = await response.json(); expect(response.status, JSON.stringify(body)).toBe(200); return body;
 }
-async function start() {
+async function start(description = "My AC is not cooling") {
   const result = await accepted(await startPost(new Request("http://localhost/api/intake", { method: "POST", headers: { "content-type": "application/json" },
-    body: JSON.stringify({ description: "My AC is not cooling", disclosure_content_hash: ACTIVE_DISCLOSURE.content_hash,
+    body: JSON.stringify({ description, disclosure_content_hash: ACTIVE_DISCLOSURE.content_hash,
       attribution: { landing_path: "/start", problem_family_hint: "hvac-cooling", page_id: null, intent_cluster_id: null,
         search_opportunity_id: null, experiment_id: null, variant: null, referrer: null } }) })));
   return result.request_id as string;
@@ -118,7 +118,7 @@ describe("T1-14 shared model guard joined to T1-35 accepted media", () => {
 
   it("shares classification plus one label attempt, then preserves the next upload with zero additional provider work", async () => {
     deps.policy!.capabilities.classify_home_problem.enabled = true;
-    const id = await start(); expect(calls.map(call => call.schemaName)).toEqual(["A01Classification"]);
+    const id = await start("My AC is not cooling and the kitchen faucet leaks"); expect(calls.map(call => call.schemaName)).toEqual(["A01Classification"]);
     await photo(id); const refusedRead = await photo(id);
     expect(calls.map(call => call.schemaName)).toEqual(["A01Classification", "A01LabelRead_v2"]);
     expect(results.at(-1)).toMatchObject({ request_id: id, tenant_id: "prn", ok: false, reason: "over_budget" });

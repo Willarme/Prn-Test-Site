@@ -37,7 +37,7 @@ async function start() {
   const response = await POST(new Request("http://localhost/api/intake", {
     method: "POST", headers: { "content-type": "application/json" },
     body: JSON.stringify({
-      description: "The air conditioner stopped cooling and the outside unit is silent",
+      description: "The air conditioner stopped cooling and the kitchen faucet leaks",
       disclosure_content_hash: ACTIVE_DISCLOSURE.content_hash,
       request_id: "rq_forged_client_budget", tenant_id: "tenant_forged_client_budget",
       attribution: { page_id: null, intent_cluster_id: null, search_opportunity_id: null,

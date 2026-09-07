@@ -1,6 +1,8 @@
 import type { EvidenceObject } from "@/domain/problem/contracts";
 import type { IntakeAnswer } from "@/domain/intake/playbook";
 import { findPlaybook } from "@/domain/intake/playbooks";
+import { buildDirectionsInput } from "@/domain/packet/directions-input";
+import type { EvidenceBlock, Reading } from "@/domain/packet/types";
 import { loadJourneyContext } from "@/platform/intake/complete";
 import { readKeepState, type KeepState } from "@/platform/links/ledger";
 import { runtimeStore, type Journey } from "@/platform/stores/runtime";
@@ -51,7 +53,40 @@ const FIELD_LABELS: Record<string, string> = {
   system_age: "Age",
   symptom_timing: "When it started",
   thermostat_photo: "Thermostat",
+  thermostat_mode: "Thermostat mode",
+  fan_mode: "Fan setting",
+  thermostat_setpoint: "Set temperature",
+  room_temp: "Room temperature",
+  filter_nominal_dimensions: "Printed filter size",
+  printed_cooling_capacity: "Printed cooling capacity",
 };
+
+const FIELD_ALIASES: Record<string, string> = {
+  thermostat_reading: "thermostat_photo", thermostat_setpoint_f: "thermostat_setpoint", room_temp_f: "room_temp",
+};
+const THERMOSTAT_FIELDS = ["thermostat_mode", "fan_mode", "thermostat_setpoint", "room_temp"] as const;
+
+/** Only the short labeled display summary duplicates the component rows.
+ * Freeform observations remain visible as the homeowner's literal notes. */
+function readingOnlySummary(value: string | null | undefined, readings: EvidenceBlock["readings"]): boolean {
+  const clauses = value?.split(/[;,\n]+/).map(part => part.trim()).filter(Boolean) ?? [];
+  const seen = new Set<string>();
+  const compact = (text: string) => text.replace(/[\s°]/g, "").toLowerCase();
+  return clauses.length > 0 && clauses.every(part => {
+    const mode = /^(?:thermostat\s+)?mode\s*:?\s*(cool|heat|off|auto)$/i.exec(part);
+    const fan = /^fan(?:\s+mode)?\s*:?\s*(auto|on|circulate)$/i.exec(part);
+    const temperature = /^(setpoint|set|target|room(?:\s+temperature)?)\s*:?\s*(-?\d+(?:\.\d+)?\s*°?\s*[FC]?)$/i.exec(part);
+    const field = mode ? "thermostat_mode" : fan ? "fan_mode" : temperature
+      ? /^room/i.test(temperature[1]) ? "room_temp" : "thermostat_setpoint" : null;
+    if (!field || seen.has(field)) return false;
+    seen.add(field);
+    const reading = readings?.[field];
+    if (!reading) return false;
+    let represented = String(reading.value);
+    if (temperature && reading.unit && /^-?\d+(?:\.\d+)?$/.test(represented)) represented += reading.unit;
+    return compact(mode?.[1] ?? fan?.[1] ?? temperature![2]) === compact(represented);
+  });
+}
 
 const SOURCE_WORDS: Record<string, string> = {
   photo: "from your photo",
@@ -73,31 +108,66 @@ export function thingNoun(journey: Journey): string {
   return "your home";
 }
 
-export function recordFacts(details: Journey["packet"]["collected_details"], answers: IntakeAnswer[], playbookId: string | null): RecordFact[] {
+export function recordFacts(details: Journey["packet"]["collected_details"], answers: IntakeAnswer[], playbookId: string | null,
+  readings?: EvidenceBlock["readings"], evidence: EvidenceObject[] = []): RecordFact[] {
   const facts: RecordFact[] = [];
   const seen = new Set<string>();
   const fields = playbookId ? findPlaybook(playbookId)?.required_fields ?? [] : [];
   const normalize = (label: string) => label.trim().toLowerCase();
+  const canonical = (key: string) => FIELD_ALIASES[key] ?? key;
   const fieldForLabel = (label: string): string | undefined => {
     const normalized = normalize(label);
-    return fields.find(field => normalize(field.label) === normalized || field.field_key === normalized)?.field_key
+    const key = fields.find(field => normalize(field.label) === normalized || field.field_key === normalized)?.field_key
       ?? Object.entries(FIELD_LABELS).find(([key, value]) => key === normalized || normalize(value) === normalized)?.[0];
+    return key ? canonical(key) : FIELD_ALIASES[normalized];
   };
-  const labelForField = (key: string) => FIELD_LABELS[key] ?? fields.find(field => field.field_key === key)?.label ?? "Additional detail";
+  const labelForField = (key: string) => key === "thermostat_photo" && hasReadings ? "Thermostat notes"
+    : FIELD_LABELS[key] ?? fields.find(field => field.field_key === key)?.label ?? "Additional detail";
+  const latest = new Map<string, IntakeAnswer>();
+  const supplied = (answer: IntakeAnswer) => answer.source === "typed" || answer.source === "confirmed";
+  for (const answer of [...answers].sort((a, b) => Date.parse(a.answered_at) - Date.parse(b.answered_at))) {
+    const key = canonical(answer.field_key), previous = latest.get(key);
+    // Stored answers are the current record, even before packet regeneration.
+    // A later automated read cannot replace a homeowner's correction.
+    if (previous && (supplied(previous) && !supplied(answer) || answer.value_text === null && !supplied(answer))) continue;
+    latest.set(key, answer);
+  }
+  const hasReadings = THERMOSTAT_FIELDS.some(key => readings?.[key]);
+  const hasReadingHistory = [...latest.keys()].some(field => field === "thermostat_photo" || THERMOSTAT_FIELDS.some(key => key === field));
+  const projected = (field: string, value?: string | null) => readings !== undefined && (hasReadingHistory || hasReadings) &&
+    (THERMOSTAT_FIELDS.some(key => key === field) || field === "thermostat_photo" && hasReadings &&
+      readingOnlySummary(latest.has(field) ? latest.get(field)!.value_text : value, readings));
   for (const d of details ?? []) {
     const field = fieldForLabel(d.label);
     const key = field ? `field:${field}` : `label:${normalize(d.label)}`;
-    if (!d.value || seen.has(key)) continue;
+    if (seen.has(key) || field && projected(field, d.value)) continue;
     seen.add(key);
-    facts.push({ label: field ? labelForField(field) : d.label, value: d.value, source: sourceWords(d.source) });
+    const answer = field ? latest.get(field) : undefined;
+    const value = answer ? answer.value_text : d.value;
+    if (value) facts.push({ label: field ? labelForField(field) : d.label, value, source: sourceWords(answer?.source ?? d.source) });
   }
   // Answers the packet has not folded in yet (a photo read moments ago).
-  for (const a of answers) {
-    if (!a.value_text) continue;
-    const key = `field:${a.field_key}`;
+  for (const [field, a] of latest) {
+    if (!a.value_text || projected(field, a.value_text)) continue;
+    const key = `field:${field}`;
     if (seen.has(key)) continue;
     seen.add(key);
-    facts.push({ label: labelForField(a.field_key), value: a.value_text, source: sourceWords(a.source) });
+    facts.push({ label: labelForField(field), value: a.value_text, source: sourceWords(a.source) });
+  }
+  // Reuse the packet's current reading projection: it binds split/compound
+  // aliases to their evidence and does not borrow an older value after a correction.
+  for (const field of THERMOSTAT_FIELDS) {
+    const reading: Reading | undefined = readings?.[field];
+    if (!reading) continue;
+    let value = String(reading.value);
+    if (field === "thermostat_setpoint" || field === "room_temp") {
+      if (reading.unit && /^-?\d+(?:\.\d+)?$/.test(value)) value += `°${reading.unit}`;
+      else if (!reading.unit) value += " (unit not supplied)";
+    }
+    const fromPhoto = evidence.some(item => item.evidence_id === reading.source_media && item.kind === "photo");
+    const source = reading.provenance === "inference" ? fromPhoto ? "from your photo; not confirmed" : "not confirmed"
+      : reading.confirmed_by_homeowner ? "you confirmed it" : "you reported it";
+    facts.push({ label: labelForField(field), value, source });
   }
   return facts;
 }
@@ -141,10 +211,12 @@ export async function loadRecordView(requestId: string): Promise<RecordView | nu
     store.getKeepClaim(requestId),
     store.listAskAnswers(requestId),
   ]);
-  const recordedKeep = readKeepState(requestId);
+  const recordedKeep = (await readKeepState(requestId));
   const keepState = recordedKeep && recordedKeep.magic_id === keepClaim?.magic_link_id
     ? recordedKeep : recordedKeep ? { ...recordedKeep, confirmed_at: null } : null;
   const { journey } = ctx;
+  const readings = buildDirectionsInput({ ...ctx, answers, address, askAnswers, diagnosis: [], claims: [], evidence: ctx.allEvidence },
+    { link_base: "", media_link: null, now: journey.packet.generated_at }).evidence.readings;
   const thing = thingNoun(journey);
   const media = ctx.allEvidence.filter((e) => e.kind === "photo" || e.kind === "video");
   const statement =
@@ -155,7 +227,7 @@ export async function loadRecordView(requestId: string): Promise<RecordView | nu
     thing,
     statement,
     summary: journey.packet.summary_plain,
-    facts: recordFacts(journey.packet.collected_details, answers, journey.session.playbook_id ?? null),
+    facts: recordFacts(journey.packet.collected_details, answers, journey.session.playbook_id ?? null, readings, ctx.allEvidence),
     media,
     moments: momentsFrom(journey, ctx.allEvidence, keepClaim, keepState, askAnswers, thing),
     address,

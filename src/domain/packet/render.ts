@@ -297,9 +297,13 @@ export function renderPacketHtml(input: DirectionsInput, options: RenderOptions 
   const askPath = input.config.ask_path ?? "/ask/";
   const homeMemoryUrl = input.config.home_memory_url ?? `${input.config.link_base}${keepPath}${input.packet.id}`;
   const trustNetworkUrl = input.config.trust_network_url ?? `${input.config.link_base}${askPath}${input.packet.id}`;
+  const rawStoreys = input.property.storeys?.trim() ?? "";
+  const storeysLabel = /^(?:[1-9]\d*|3 or more)$/.test(rawStoreys)
+    ? `${rawStoreys} ${rawStoreys === "1" ? "storey" : "storeys"}`
+    : rawStoreys;
   const propertyLine =
     (input.property.street && input.property.city_state_zip ? `${input.property.street} · ${input.property.city_state_zip}` : `Job address still unknown. ${input.property.unknown_reason}`) +
-    (input.property.type ? ` · ${input.property.type}${input.property.storeys ? `, ${input.property.storeys}` : ""}` : input.property.storeys ? ` · ${input.property.storeys}` : "");
+    (input.property.type ? ` · ${input.property.type}${storeysLabel ? `, ${storeysLabel}` : ""}` : storeysLabel ? ` · ${storeysLabel}` : "");
 
   // --- §9: hard stop, from the flags or from the homeowner's own words.
   const flags: HazardFlag[] = detectHazardFlags(input.problem.homeowner_words, input.problem.hazard_flags ?? []);
@@ -728,12 +732,14 @@ function renderPage3(p: {
     if (clocks.length > 0) {
       const sorted = [...clocks].sort((a, b) => a.epoch_ms - b.epoch_ms);
       const range = dateRange(sorted[0], sorted[sorted.length - 1]);
-      const phrase = `All ${spelled(p.media.length)} item${p.media.length === 1 ? "" : "s"}`;
+      const phrase = p.media.length === 1 ? "This item" : `All ${spelled(p.media.length)} items`;
+      const first = sorted[0], last = sorted[sorted.length - 1];
+      const when = first.year === last.year && first.month === last.month && first.day === last.day ? "on" : "between";
       const link = input.config.media_link
         ? " Full-resolution originals available via the provider link on page 2."
         : "";
       if (!input.config.media_link) notes.push("provider media link absent: the page-3 sentence that references it is omitted (decision 7A)");
-      tail = `  <p style="font-size:.76rem;color:var(--ink3);margin:9px 0 0">${phrase} captured by the homeowner between ${range}.${link}</p>`;
+      tail = `  <p style="font-size:.76rem;color:var(--ink3);margin:9px 0 0">${phrase} captured by the homeowner ${when} ${range}.${link}</p>`;
     } else {
       notes.push("no evidence item carries a capture date: the date-range phrase is dropped (§3.3)");
     }

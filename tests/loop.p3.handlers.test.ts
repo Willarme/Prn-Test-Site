@@ -238,7 +238,7 @@ describe("email module: send()", () => {
 describe("POST /api/keep — the one-field claim", () => {
   it("writes the magic link, the claim and the message; the magic link is single use", async () => {
     const requestId = await newRequest();
-    const { token } = ledger.issueLink({ scope: "keep", request_id: requestId });
+    const { token } = (await ledger.issueLink({ scope: "keep", request_id: requestId }));
 
     const res = await keepPost(form({ token, contact: "Jo.Homeowner@example.com" }, "/api/keep"));
     expect(res.status).toBe(303);
@@ -269,13 +269,13 @@ describe("POST /api/keep — the one-field claim", () => {
     const second = await store.consumeMagicLink(magicId, new Date().toISOString());
     expect(second).toBeNull();
 
-    expect(ledger.readKeepState(requestId)?.email_id).toBe(emailId);
-    expect(ledger.readKeepState(requestId)?.confirmed_at).toBeNull();
+    expect((await ledger.readKeepState(requestId))?.email_id).toBe(emailId);
+    expect((await ledger.readKeepState(requestId))?.confirmed_at).toBeNull();
   });
 
   it("a phone number gets an SMS-shaped preview message and the same magic link", async () => {
     const requestId = await newRequest();
-    const { token } = ledger.issueLink({ scope: "keep", request_id: requestId });
+    const { token } = (await ledger.issueLink({ scope: "keep", request_id: requestId }));
     const res = await keepPost(json({ token, contact: "(317) 555-0100" }, "/api/keep"));
     expect(res.status).toBe(200);
     const body = (await res.json()) as { email_id: string; mode: string };
@@ -287,7 +287,7 @@ describe("POST /api/keep — the one-field claim", () => {
 
   it("refuses a contact that is neither email nor phone, and a token of the wrong scope", async () => {
     const requestId = await newRequest();
-    const { token } = ledger.issueLink({ scope: "keep", request_id: requestId });
+    const { token } = (await ledger.issueLink({ scope: "keep", request_id: requestId }));
     const bad = await keepPost(form({ token, contact: "hello there" }, "/api/keep"));
     expect(bad.status).toBe(303);
     expect(bad.headers.get("location")).toBe(`/keep/${encodeURIComponent(token)}?error=contact`);
@@ -305,7 +305,7 @@ describe("POST /api/keep — the one-field claim", () => {
 describe("POST /api/ask — the friend's one name", () => {
   it("writes the answer and sends the friend to the thank-you state", async () => {
     const requestId = await newRequest();
-    const { token } = ledger.issueLink({ scope: "ask", request_id: requestId });
+    const { token } = (await ledger.issueLink({ scope: "ask", request_id: requestId }));
     const res = await askPost(
       form({ token, friend_name: "Renee", provider_name: "Vance Water Heater", provider_contact: "317-555-0199", reason: "used him twice" }, "/api/ask")
     );
@@ -324,7 +324,7 @@ describe("POST /api/ask — the friend's one name", () => {
 
   it("a missing name or provider goes back with the field named; a keep token cannot answer an ask", async () => {
     const requestId = await newRequest();
-    const { token } = ledger.issueLink({ scope: "ask", request_id: requestId });
+    const { token } = (await ledger.issueLink({ scope: "ask", request_id: requestId }));
     const noName = await askPost(form({ token, provider_name: "Somebody" }, "/api/ask"));
     expect(noName.headers.get("location")).toContain("?error=name");
     const noProvider = await askPost(form({ token, friend_name: "Renee" }, "/api/ask"));
@@ -343,7 +343,7 @@ describe("GET /media/<token>/<evidence_id> — the bytes, stripped", () => {
   it("serves a JPEG to a media token with its Exif gone, private and uncached", async () => {
     const requestId = await newRequest();
     const evidenceId = await attachPhoto(requestId);
-    const { token } = ledger.issueLink({ scope: "media", request_id: requestId });
+    const { token } = (await ledger.issueLink({ scope: "media", request_id: requestId }));
     const res = await mediaGet(new Request(`http://localhost/media/${token}/${evidenceId}`), ctx({ token, evidence_id: evidenceId }));
     expect(res.status).toBe(200);
     expect(res.headers.get("content-type")).toBe("image/jpeg");
@@ -357,7 +357,7 @@ describe("GET /media/<token>/<evidence_id> — the bytes, stripped", () => {
   it("the record's own keep token opens the bytes too; an ask token and a packet token do not", async () => {
     const requestId = await newRequest();
     const evidenceId = await attachPhoto(requestId);
-    const keep = ledger.issueLink({ scope: "keep", request_id: requestId }).token;
+    const keep = (await ledger.issueLink({ scope: "keep", request_id: requestId })).token;
     const ok = await mediaGet(new Request("http://localhost/x"), ctx({ token: keep, evidence_id: evidenceId }));
     expect(ok.status).toBe(200);
     for (const scope of ["ask", "packet"] as const) {
@@ -373,12 +373,12 @@ describe("GET /media/<token>/<evidence_id> — the bytes, stripped", () => {
     const other = await newRequest("Warm air from every vent since this morning, fan runs");
     const otherEvidence = await attachPhoto(other);
 
-    const issued = ledger.issueLink({ scope: "media", request_id: requestId });
+    const issued = (await ledger.issueLink({ scope: "media", request_id: requestId }));
     await tokens.revokeLink(issued.link_id, requestId);
     const revoked = await mediaGet(new Request("http://localhost/x"), ctx({ token: issued.token, evidence_id: evidenceId }));
     expect(revoked.status).toBe(404);
 
-    const live = ledger.issueLink({ scope: "media", request_id: requestId }).token;
+    const live = (await ledger.issueLink({ scope: "media", request_id: requestId })).token;
     const forged = `${live.slice(0, -4)}AAAA`;
     expect((await mediaGet(new Request("http://localhost/x"), ctx({ token: forged, evidence_id: evidenceId }))).status).toBe(404);
     expect((await mediaGet(new Request("http://localhost/x"), ctx({ token: live, evidence_id: otherEvidence }))).status).toBe(404);
@@ -390,7 +390,7 @@ describe("GET /media/<token>/<evidence_id> — the bytes, stripped", () => {
 describe("GET /p/<token> — the packet share link", () => {
   it("a packet token redirects to the packet with ?share=; expired and wrong-scope tokens go to the switched-off page", async () => {
     const requestId = await newRequest();
-    const { token } = ledger.issueLink({ scope: "packet", request_id: requestId });
+    const { token } = (await ledger.issueLink({ scope: "packet", request_id: requestId }));
     const ok = await pGet(new Request("http://localhost/x"), ctx({ token }));
     expect(ok.status).toBe(303);
     expect(ok.headers.get("location")).toBe(`/packet/${requestId}?share=${encodeURIComponent(token)}`);
@@ -412,8 +412,8 @@ describe("GET /p/<token> — the packet share link", () => {
 describe("POST /api/links/revoke — the switch", () => {
   it("with the keep token as proof, revoking flips verifyLink; the ledger and the record stay", async () => {
     const requestId = await newRequest();
-    const keep = ledger.issueLink({ scope: "keep", request_id: requestId });
-    const share = ledger.issueLink({ scope: "media", request_id: requestId });
+    const keep = (await ledger.issueLink({ scope: "keep", request_id: requestId }));
+    const share = (await ledger.issueLink({ scope: "media", request_id: requestId }));
     expect((await tokens.verifyLink(share.token, "media")).ok).toBe(true);
 
     const res = await revokePost(json({ link_id: share.link_id, request_id: requestId, k: keep.token }, "/api/links/revoke"));
@@ -422,7 +422,7 @@ describe("POST /api/links/revoke — the switch", () => {
     expect(after.ok).toBe(false);
     expect(!after.ok && after.reason).toBe("revoked");
     // The link is still listed (the record of it lives), the keep link still opens.
-    expect(ledger.listIssuedLinks(requestId).some((l) => l.link_id === share.link_id)).toBe(true);
+    expect((await ledger.listIssuedLinks(requestId)).some((l) => l.link_id === share.link_id)).toBe(true);
     expect((await tokens.verifyLink(keep.token, "keep")).ok).toBe(true);
     expect(await runtime.runtimeStore().getJourney(requestId)).not.toBeNull();
   });
@@ -430,9 +430,9 @@ describe("POST /api/links/revoke — the switch", () => {
   it("no proof: 403 and the link keeps opening; a link from another request: 404", async () => {
     const requestId = await newRequest();
     const other = await newRequest("Warm air from every vent since this morning, fan runs");
-    const share = ledger.issueLink({ scope: "packet", request_id: requestId });
-    const keep = ledger.issueLink({ scope: "keep", request_id: requestId });
-    const otherKeep = ledger.issueLink({ scope: "keep", request_id: other });
+    const share = (await ledger.issueLink({ scope: "packet", request_id: requestId }));
+    const keep = (await ledger.issueLink({ scope: "keep", request_id: requestId }));
+    const otherKeep = (await ledger.issueLink({ scope: "keep", request_id: other }));
 
     const noProof = await revokePost(json({ link_id: share.link_id, request_id: requestId }, "/api/links/revoke"));
     expect(noProof.status).toBe(403);

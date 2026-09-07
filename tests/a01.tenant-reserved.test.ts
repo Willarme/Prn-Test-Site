@@ -140,7 +140,7 @@ describe("the reserved tenant is populated on the real write path", () => {
     expect(await readIntakeEffort(own)).toEqual(before);
   });
 
-  it("runtime tenant product logic stays reserved with exact template and effort isolation seams", () => {
+  it("runtime tenant product logic stays reserved with exact template, effort and shared-record isolation seams", () => {
     /**
      * Runtime tenancy remains reserved. The reviewed PRN-only v43 template
      * has two narrowly allowed scope validations. T1-35 also requires the
@@ -158,9 +158,17 @@ describe("the reserved tenant is populated on the real write path", () => {
      * exist.
      */
     const offenders: string[] = [];
+    const reviewedLinkFilters: string[] = [];
+    const linkReadScopes = new Map([
+      ['.eq("tenant_id", context.tenantId).order("created_at").order("link_id").range(offset, offset + pageSize - 1);',
+        'const page = await db.from("issued_request_links").select("*").eq("request_id", context.requestId)'],
+      ['.eq("tenant_id", context.tenantId).maybeSingle();',
+        'const keep = await db.from("request_keep_state").select("*").eq("request_id", context.requestId)'],
+    ]);
     for (const file of filesUnder("src")) {
       if (file.path === "src/platform/stores/runtime.ts") continue; // withTenant lives here
-      for (const [i, line] of file.text.split(/\r?\n/).entries()) {
+      const lines = file.text.split(/\r?\n/);
+      for (const [i, line] of lines.entries()) {
         if (/^\s*(\/\/|\*|\/\*)/.test(line)) continue; // a comment explaining the rule is not the rule
         const namedTenant = /tenant_id\s*(===|!==|==|!=)\s*["'`]/.test(line);
         const crossRecord = /tenant_id\s*(===|!==|==|!=)\s*[\w.]*\btenant_id\b/.test(line);
@@ -178,11 +186,18 @@ describe("the reserved tenant is populated on the real write path", () => {
         // it does not enable tenant-specific product behavior.
         const reviewedCompletion = file.path === "src/platform/intake/label-completions.ts" &&
           line.trim() === '.eq("request_id", requestId).eq("tenant_id", ctx.tenantId).not("record", "is", null).order("read_at", { ascending: true });';
-        if (((namedTenant && !reviewedScope) || crossRecord || filtered) && !reviewedEffort && !reviewedCompletion) {
+        // 00024's two private ledger reads are integrity scopes, not tenant
+        // product routing. Allow only these exact lines after their request
+        // filter; SQL/RLS tests separately prove foreign-row denial.
+        const reviewedLink = file.path === "src/platform/links/ledger-shared.ts" &&
+          linkReadScopes.has(line.trim()) && linkReadScopes.get(line.trim()) === lines[i - 1]?.trim();
+        if (reviewedLink) reviewedLinkFilters.push(line.trim());
+        if (((namedTenant && !reviewedScope) || crossRecord || filtered) && !reviewedEffort && !reviewedCompletion && !reviewedLink) {
           offenders.push(`${file.path}:${i + 1}  ${line.trim()}`);
         }
       }
     }
     expect(offenders, offenders.join("\n")).toEqual([]);
+    expect(reviewedLinkFilters).toEqual([...linkReadScopes.keys()]);
   });
 });

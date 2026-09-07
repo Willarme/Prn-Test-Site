@@ -154,9 +154,9 @@ describe("GET /results/[request_id] — confirmed keep receipt outside the froze
     const claimed_at = new Date().toISOString();
     const claim = { request_id, contact: "preview@example.com", contact_kind: "email" as const, claimed_at, magic_link_id: "mg_preview_current" };
     await runtimeStore().saveKeepClaim(claim);
-    recordKeepRequested(request_id, { email_id: null, magic_id: claim.magic_link_id });
+    (await recordKeepRequested(request_id, { email_id: null, magic_id: claim.magic_link_id }));
     expect(await render()).not.toContain("data-keep-receipt");
-    expect(markKeepConfirmed(request_id, claimed_at, claim.magic_link_id)).toBe(true);
+    expect((await markKeepConfirmed(request_id, claimed_at, claim.magic_link_id))).toBe(true);
     const confirmed = await render();
     expect(confirmed).toContain("Saved to Home Memory.");
     expect(confirmed).toContain("Open your saved record");

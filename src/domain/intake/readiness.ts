@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { FactCountBasis, FactCountComponents, validateFactCountBasis } from "./fact-count";
 import type { IntakePlaybook, IntakeAnswer, DiagnosisAnswer } from "./playbook";
 import { CANNOT_REACH_FIELD_VALUE, detectDiagnosis, detectFields } from "./extract";
 import type { ProblemRecord, EvidenceObject, FactClaim } from "@/domain/problem/contracts";
@@ -433,7 +434,7 @@ export function countHandoffFacts(facts: Array<z.infer<typeof HandoffFact>>): nu
 }
 /** Higher-authority Directions §8 thin behaviour supersedes Coverage §8.3's
  * unconditional seven-fact invariant. Never pad a real thin handoff to seven. */
-export const ProblemRecordHandoff = z.object({
+const HandoffShape = z.object({
   schema_version: z.literal("1.0.0"), request_id: z.string().min(1), normalized_class: z.string().min(1), problem_title: z.string().min(1), user_language: z.string().min(1),
   readiness_state: z.enum(["ready", "ready_with_known_gaps", "stopped"]), facts: z.array(HandoffFact),
   equipment: z.object({ type: z.string().nullable(), brand: z.string().nullable(), model: z.string().nullable(), serial: z.string().nullable(), age_years: z.number().nullable(), manufacture_year: z.number().nullable(),
@@ -451,11 +452,22 @@ export const ProblemRecordHandoff = z.object({
   evidence: z.array(z.object({ id: z.string().min(1), role: z.string().min(1), kind: z.enum(["photo", "video"]), caption: z.string(), captured_at: z.string().nullable(), duration_s: z.number().optional() })),
   counts: z.object({ facts: z.number().int().nonnegative(), photos: z.number().int().nonnegative(), checks: z.number().int().nonnegative(), made_less_likely: z.number().int().nonnegative(), tech_only: z.number().int().nonnegative() }),
   fact_state: CurrentFactState,
-}).strict().superRefine((h, ctx) => {
+}).strict();
+const VersionedHandoff = z.discriminatedUnion("schema_version", [
+  HandoffShape,
+  HandoffShape.extend({ schema_version: z.literal("1.1.0"), fact_count_basis: FactCountBasis, normalized_observations: FactCountComponents }),
+]);
+/** Legacy 1.0.0 keeps its historical narrative-source count. New snapshots
+ * carry an auditable whole-record basis; loading never rewrites old counts. */
+export const ProblemRecordHandoff = VersionedHandoff.superRefine((h, ctx) => {
   const error = (message: string) => ctx.addIssue({ code: "custom", message });
   const ranks = h.facts.flatMap(f => f.headline_rank === null ? [] : [f.headline_rank]);
   if (new Set(ranks).size !== ranks.length) error("Headline ranks must be distinct");
-  if (h.counts.photos !== h.evidence.length || h.counts.checks !== h.checks.length || h.counts.tech_only !== h.tech_only.length || h.counts.facts !== countHandoffFacts(h.facts)) error("Counters must equal their actual lists and distinct sourced facts");
+  if (h.counts.photos !== h.evidence.length || h.counts.checks !== h.checks.length || h.counts.tech_only !== h.tech_only.length || (h.schema_version === "1.0.0" && h.counts.facts !== countHandoffFacts(h.facts))) error("Counters must equal their actual lists and distinct sourced facts");
+  if (h.schema_version === "1.1.0") {
+    for (const issue of validateFactCountBasis(h.fact_count_basis, h.fact_state, h.normalized_class, h.counts.facts, h.normalized_observations)) error(issue);
+    if (h.normalized_observations.model !== h.equipment.model || h.normalized_observations.serial !== h.equipment.serial) error("Fact count identity components disagree with held equipment");
+  }
   if (!h.facts.some(f => f.text === h.user_language && f.claim_class === "SUPPLIED")) error("One supplied fact must preserve literal homeowner wording");
   if (h.timeline.filter(t => t.is_final).length !== 1 || !h.timeline.at(-1)?.is_final || h.timeline.at(-1)?.text !== "Packet generated.") error("The final generation event must be unique and last");
   if (h.fact_state.request_id !== h.request_id) error("Handoff facts belong to another request");
@@ -463,11 +475,12 @@ export const ProblemRecordHandoff = z.object({
   if (h.access.some(a => /code|lockbox/i.test(a.field) && a.value !== null)) error("Entry codes never enter the packet handoff");
 });
 export type ProblemRecordHandoff = z.infer<typeof ProblemRecordHandoff>;
-export function validateHandoffTrace(value: unknown, registry: IntakeRegistry): string[] {
+export function validateHandoffTrace(value: unknown, registry: IntakeRegistry, trustedTenantId?: string): string[] {
   const parsed = ProblemRecordHandoff.safeParse(value);
   if (!parsed.success) return parsed.error.issues.map(i => `${i.path.join(".")}: ${i.message}`);
   const h = parsed.data;
   const issues: string[] = [];
+  if (h.schema_version === "1.1.0" && trustedTenantId !== undefined && h.fact_count_basis.tenant_id !== (trustedTenantId.trim() || "prn")) issues.push("Fact count basis belongs to another tenant");
   for (const r of registry.requirements.filter(r => r.active && r.required_level === "HARD_REQUIRED")) {
     const f = h.fact_state.fields[r.fact_type];
     if (!isResolved(f)) issues.push(`Required ${r.fact_type} has neither a value nor a terminal gap reason`);

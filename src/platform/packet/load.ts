@@ -3,7 +3,8 @@ import type { DirectionsInput } from "@/domain/packet/types";
 import { localMediaFile } from "@/platform/adapters/media-storage";
 import { loadJourneyContext } from "@/platform/intake/complete";
 import { readLabelConfidence } from "@/platform/intake/media";
-import { signLink, verifyLink } from "@/platform/links/tokens";
+import { verifyLink } from "@/platform/links/tokens";
+import { issueLink } from "@/platform/links/ledger";
 import { ownerAllowed } from "@/platform/links/owner";
 import { runtimeStore, type JobAddress, type Journey } from "@/platform/stores/runtime";
 import { journeySafetyRule } from "@/domain/problem/journey-safety";
@@ -118,9 +119,10 @@ export async function loadPacket(
     confidence: r.confidence,
   }));
 
-  const keep = opts.owner ? signLink({ scope: "keep", request_id: requestId }) : null;
-  const ask = opts.owner ? signLink({ scope: "ask", request_id: requestId }) : null;
-  const media = opts.owner ? signLink({ scope: "media", request_id: requestId }) : null;
+  // Await durable issuance before any owner capability can reach HTML or PDF.
+  const keep = opts.owner ? (await issueLink({ scope: "keep", request_id: requestId })).token : null;
+  const ask = opts.owner ? (await issueLink({ scope: "ask", request_id: requestId })).token : null;
+  const media = opts.owner ? (await issueLink({ scope: "media", request_id: requestId })).token : null;
   const input = buildDirectionsInput(
     {
       ...ctx,
