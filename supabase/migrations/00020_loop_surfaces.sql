@@ -187,7 +187,7 @@ grant select, insert on feedback to service_role;
 grant select, insert, update on email_outbox to service_role;
 grant select, insert on job_addresses to service_role;
 grant select, insert, update on signups to service_role;
-grant usage, select on all sequences in schema public to service_role;
+grant usage, select on sequence public.keep_claims_id_seq, public.job_addresses_id_seq to service_role;
 
 revoke delete on link_revocations, keep_claims, magic_links, ask_answers, feedback, email_outbox, job_addresses, signups from service_role;
 
@@ -204,7 +204,7 @@ grant select, insert on magic_links to authenticated;
 grant select, insert on ask_answers to authenticated;
 grant select, insert on feedback to authenticated;
 grant select, insert on job_addresses to authenticated;
-grant usage, select on all sequences in schema public to authenticated;
+grant usage, select on sequence public.keep_claims_id_seq, public.job_addresses_id_seq to authenticated;
 
 create policy "request-scoped read" on link_revocations
   for select to authenticated
