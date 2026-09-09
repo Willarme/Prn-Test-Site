@@ -76,6 +76,10 @@ it("actual photo and Yes confirmation render four human topics once without chan
   await confirm(id); resetRuntimeStore();
   const answers = await runtimeStore().listIntakeAnswers(id);
   const journey = (await runtimeStore().getJourney(id))!;
+  const confirmedPhotoFacts = journey.packet.intake_snapshot!.handoff.facts.filter(f =>
+    f.verification_status === "confirmed" && f.evidence_ids.includes(photoId));
+  expect(confirmedPhotoFacts.length).toBeGreaterThan(0);
+  expect(confirmedPhotoFacts.every(f => f.evidence_modality === "photo")).toBe(true);
   const evidence = await runtimeStore().listEvidence(journey.problem.problem_id, id);
   const html = await rendered(id);
   const view = (await loadRecordView(id))!;

@@ -7,6 +7,7 @@ import { closePdfRenderer, countPdfPages, pdfRendererAvailable } from "@/domain/
 import { MemoryAiPolicyStore, setAiPolicyStoreForTests } from "@/platform/ai/policy-store";
 import { MemorySpendLedger, setSpendLedgerForTests } from "@/platform/ai/spend";
 import * as dbClient from "@/platform/db/client";
+import * as mediaAdapter from "@/platform/adapters/media-storage";
 import { listIssuedLinks } from "@/platform/links/ledger";
 import { decodeLink, signLink, verifyLink, type LinkScope } from "@/platform/links/tokens";
 import { loadPacket } from "@/platform/packet/load";
@@ -93,6 +94,26 @@ it("records the actual loader's three owner capabilities before returning and ma
   expect(loaded?.input).toBeTruthy();
   const config = loaded!.input!.config;
   await assertRecordedAndRevocable(id, ownerTokens([config.home_memory_url!, config.trust_network_url!, config.media_link!]));
+});
+
+it("embeds a re-encoded thumbnail from private Supabase evidence instead of a file-only placeholder", async () => {
+  const id = await createPacket();
+  const journey = (await runtime.runtimeStore().getJourney(id))!;
+  const ref = `private-evidence/${id}/thermostat_photo/synthetic.png`;
+  await runtime.runtimeStore().attachEvidence(journey.problem.problem_id, id, {
+    evidence_id: "ev_hosted_thumbnail", kind: "photo", content: ref,
+    captured_at: "2026-09-09T15:50:00+00:00", privacy: "private", field_key: "thermostat_photo",
+  });
+  const sharp = (await import("sharp")).default;
+  const original = await sharp({ create: { width: 30, height: 20, channels: 3, background: "white" } }).png().toBuffer();
+  const read = vi.spyOn(mediaAdapter, "readPrivateMediaBytes").mockResolvedValue(original);
+  const loaded = await loadPacket(id, { owner: true, link_base: origin });
+  expect(read).toHaveBeenCalledWith(ref);
+  const uri = loaded!.input!.evidence.media[0].thumbnail_data_uri!;
+  expect(uri).toMatch(/^data:image\/jpeg;base64,/);
+  const derivative = Buffer.from(uri.split(",")[1], "base64");
+  expect(derivative.equals(original)).toBe(false);
+  expect((await sharp(derivative).metadata()).exif).toBeUndefined();
 });
 
 it("actual owner HTML and real PDF expose only recorded, independently revocable link IDs", async () => {

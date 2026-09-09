@@ -842,7 +842,9 @@ ${checkRows}
 ${shRows}
     </tbody>
   </table>
-  <p style="font-size:.76rem;color:var(--ink3);margin:8px 0 0">Asked at intake so you don't have to. Anything the homeowner didn't know is shown as a recorded gap, never guessed.</p>
+  <p style="font-size:.76rem;color:var(--ink3);margin:8px 0 0">${set.history.length > 0 && set.history.every(({ id }) => answers.has(id))
+    ? "Asked at intake so you don't have to. Anything the homeowner didn't know is shown as a recorded gap, never guessed."
+    : "Any history the homeowner supplied is recorded here. Unanswered questions remain visible gaps."}</p>
   </section>
 
   <section class="detail-section">

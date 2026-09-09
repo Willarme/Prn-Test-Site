@@ -54,8 +54,9 @@ export function buildIntakeHandoff(ctx: Context, snapshot: Snapshot, packet: Job
     const at = [...held.map(f => f.captured_at), ...evidence.map(e => e!.captured_at)].sort().at(-1);
     if (!at) throw new Error("Packet fact has no source capture time");
     const visual = candidate.provenance === "seen_in_photo_or_video" || candidate.provenance === "read_from_label";
-    const modality = candidate.provenance === "read_from_label" ? "label_ocr" : visual
-      ? evidence.some(e => e!.kind === "video") ? "video" : "photo"
+    const modality = candidate.provenance === "read_from_label" ? "label_ocr"
+      : evidence.some(e => e!.kind === "video") ? "video"
+      : evidence.some(e => e!.kind === "photo") ? "photo"
       : evidence.some(e => e!.kind === "customer_text" || e!.kind === "voice_transcript") ? "text" : "none";
     const rank = selected.indexOf(candidate);
     return { text: candidate.text, claim_class: candidate.provenance === "inference" ? "INFERRED" : visual ? "OBSERVED" : "SUPPLIED",

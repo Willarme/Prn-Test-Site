@@ -165,9 +165,10 @@ describe("the keep flow, end to end", () => {
       expect(mail.html).toMatch(new RegExp(`href="http://(127\\.0\\.0\\.1|localhost):${PORT}/claim/${magicToken}"`));
       expect(mail.html).toContain(`/links/${requestId}?k=`);
 
-      // Pending state on the keep page: the link went out, one tap keeps it.
+      // Preview mode keeps the message here without claiming external delivery.
       const pending = await get(`/keep/${keep.token}`);
-      expect(pending.html).toContain("A link went to j***@example.com");
+      expect(pending.html).toContain("Your preview message for j***@example.com is ready.");
+      expect(pending.html).toContain("No email or text will be sent.");
       expect(pending.html).toContain("Open the message");
 
       // The magic link: consumed, then back to the exact results state.

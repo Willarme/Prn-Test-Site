@@ -1,6 +1,6 @@
 import { buildDirectionsInput, type LabelReadRow } from "@/domain/packet/directions-input";
 import type { DirectionsInput } from "@/domain/packet/types";
-import { localMediaFile } from "@/platform/adapters/media-storage";
+import { readPrivateMediaBytes } from "@/platform/adapters/media-storage";
 import { loadJourneyContext } from "@/platform/intake/complete";
 import { readLabelConfidence } from "@/platform/intake/media";
 import { verifyLink } from "@/platform/links/tokens";
@@ -30,7 +30,7 @@ import { journeySafetyRule } from "@/domain/problem/journey-safety";
  * and a known cost for the demo: a printed packet and a later PDF carry
  * different link ids, each independently revocable.
  *
- * THUMBNAILS. Bytes are read from the file media store and downscaled through
+ * THUMBNAILS. Bytes are read from the private media store and downscaled through
  * `sharp` WHEN IT IS PRESENT (it ships as Next's optional dependency; no new
  * dependency is added). If metadata-removing re-encoding fails, the renderer
  * uses a labelled placeholder. Original image bytes are never embedded.
@@ -109,7 +109,7 @@ export async function loadPacket(
   const thumbnails: Record<string, string> = {};
   for (const e of ctx.allEvidence) {
     if (e.kind !== "photo") continue;
-    const bytes = localMediaFile(e.content);
+    const bytes = await readPrivateMediaBytes(e.content);
     if (!bytes) continue;
     const uri = await thumbnail(bytes);
     if (uri) thumbnails[e.evidence_id] = uri;

@@ -29,6 +29,9 @@ const Body = z.object({
 });
 
 export async function GET(): Promise<NextResponse> {
+  if (!(await isAdminUnlocked())) {
+    return NextResponse.json({ error: "Owner sign-in required" }, { status: 403 });
+  }
   return NextResponse.json(await policyStore().getActive());
 }
 

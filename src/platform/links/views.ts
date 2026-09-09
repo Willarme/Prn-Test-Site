@@ -2,6 +2,7 @@ import type { EvidenceObject } from "@/domain/problem/contracts";
 import type { IntakeAnswer } from "@/domain/intake/playbook";
 import { findPlaybook } from "@/domain/intake/playbooks";
 import { buildDirectionsInput } from "@/domain/packet/directions-input";
+import { DEFAULT_TIME_ZONE } from "@/domain/packet/dates";
 import type { EvidenceBlock, Reading } from "@/domain/packet/types";
 import { loadJourneyContext } from "@/platform/intake/complete";
 import { readKeepState, type KeepState } from "@/platform/links/ledger";
@@ -272,6 +273,8 @@ export function formatWhen(iso: string): string {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return iso;
   return d.toLocaleString("en-US", {
+    timeZone: DEFAULT_TIME_ZONE,
+    timeZoneName: "short",
     month: "short",
     day: "numeric",
     hour: "numeric",

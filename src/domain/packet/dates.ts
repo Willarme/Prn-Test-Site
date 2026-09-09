@@ -2,9 +2,9 @@
  * Date display for the packet (Directions §3.4 recipes: `D MMM YYYY`,
  * `D MMM YYYY, HH:mm`, `Weekday D Mon[, HH:mm]`, and the capture date range).
  *
- * A timestamp that carries its own UTC offset (the Directions' reference input
- * uses `-04:00`) is shown in that offset. A `Z` timestamp — what the repo's
- * stores write — is shown in `time_zone` (default America/New_York: the trial
+ * A timestamp that carries a nonzero UTC offset (the Directions' reference input
+ * uses `-04:00`) is shown in that offset. UTC timestamps (`Z` or `+00:00`,
+ * including Supabase serialization) use `time_zone` (default America/New_York: the trial
  * is Allen County, IN. DEFAULT pending Melissa). Nothing here rounds or
  * guesses; an unparseable timestamp returns null and the caller drops the
  * value rather than printing a wrong one.
@@ -33,7 +33,7 @@ export function wallClock(iso: string | null | undefined, timeZone: string = DEF
   const epoch = Date.parse(iso);
   if (Number.isNaN(epoch)) return null;
   const offset = OFFSET_RE.exec(iso);
-  if (offset && /T/.test(iso)) {
+  if (offset && (Number(offset[2]) !== 0 || Number(offset[3]) !== 0) && /T/.test(iso)) {
     const sign = offset[1] === "-" ? -1 : 1;
     const minutes = sign * (Number(offset[2]) * 60 + Number(offset[3]));
     const shifted = new Date(epoch + minutes * 60_000);

@@ -139,3 +139,22 @@ export function localMediaFile(storageRef: string): Buffer | null {
   const store = mediaStore();
   return store instanceof FileMediaStore ? store.read(storageRef) : null;
 }
+
+/** Server-only read after the caller has authorized this request's evidence. */
+export async function readPrivateMediaBytes(storageRef: string): Promise<Buffer | null> {
+  const local = localMediaFile(storageRef);
+  if (local) return local;
+  const store = mediaStore();
+  if (store.kind !== "supabase" || !/^private-evidence\/[a-zA-Z0-9_-]+\/[a-zA-Z0-9_-]+\/[a-zA-Z0-9_-]+\.[a-zA-Z0-9]+$/.test(storageRef)) return null;
+  try {
+    // The short-lived storage URL stays on the server, never in HTML or PDF.
+    const url = await store.signedUrl(storageRef, 60);
+    if (!url || !/^https:\/\//.test(url)) return null;
+    const response = await fetch(url);
+    if (!response.ok) return null;
+    const declaredSize = Number(response.headers.get("content-length"));
+    if (declaredSize > MEDIA_MAX_BYTES) return null;
+    const bytes = Buffer.from(await response.arrayBuffer());
+    return bytes.length <= MEDIA_MAX_BYTES ? bytes : null;
+  } catch { return null; }
+}

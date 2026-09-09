@@ -1,4 +1,4 @@
-import { MEDIA_ALLOWLIST, localMediaFile, mediaStore } from "@/platform/adapters/media-storage";
+import { MEDIA_ALLOWLIST, readPrivateMediaBytes } from "@/platform/adapters/media-storage";
 import { loadJourneyContext } from "@/platform/intake/complete";
 import { stripImageMetadata } from "@/platform/media/exif";
 import { verifyLinkForRoute as verifyLink } from "@/platform/links/tokens";
@@ -33,22 +33,6 @@ function notFound(): Response {
   return new Response("not found", { status: 404, headers: { "Cache-Control": "private, no-store" } });
 }
 
-async function readBytes(storageRef: string): Promise<Buffer | null> {
-  const local = localMediaFile(storageRef);
-  if (local) return local;
-  // Supabase-backed media: a short-lived signed URL, fetched server-side so
-  // the viewer never sees the bucket and the strip still happens here.
-  const url = await mediaStore().signedUrl(storageRef, 60);
-  if (!url || !/^https?:\/\//.test(url)) return null;
-  try {
-    const res = await fetch(url);
-    if (!res.ok) return null;
-    return Buffer.from(await res.arrayBuffer());
-  } catch {
-    return null;
-  }
-}
-
 export async function GET(
   _request: Request,
   { params }: { params: Promise<{ token: string; evidence_id: string }> }
@@ -64,7 +48,7 @@ export async function GET(
   );
   if (!evidence) return notFound();
 
-  const raw = await readBytes(evidence.content);
+  const raw = await readPrivateMediaBytes(evidence.content);
   if (!raw) return notFound();
 
   const ext = evidence.content.split(".").pop()?.toLowerCase() ?? "";

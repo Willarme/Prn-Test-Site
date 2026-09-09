@@ -120,7 +120,11 @@ export function StartRequestForm({ attribution }: StartRequestFormProps) {
           your utility first. We&apos;ll still be here after.
         </p>
       </div>
-      <p className="disclosure">{ACTIVE_DISCLOSURE.content_text}</p>
+      <p className="disclosure">{ACTIVE_DISCLOSURE.content_text.split(/(Terms|Privacy Notice)/).map((part, index) =>
+        part === "Terms" ? <a key={index} href="/terms" target="_blank" rel="noopener noreferrer">{part}</a>
+          : part === "Privacy Notice" ? <a key={index} href="/privacy" target="_blank" rel="noopener noreferrer">{part}</a>
+            : part
+      )}</p>
       {error && (
         <p role="alert" style={{ color: "var(--pink-ink)", marginBottom: 12 }}>
           {error}

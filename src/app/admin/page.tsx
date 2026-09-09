@@ -5,6 +5,7 @@ import { loadOpportunities, allStagedSpecs, publishedPageIds } from "@/platform/
 import { runtimeStore } from "@/platform/stores/runtime";
 import { DEFAULT_FLAGS } from "@/platform/flags";
 import { TRIAL_AGENT_REGISTRY } from "@/platform/agents/registry";
+import { aiPolicyStore } from "@/platform/ai/policy-store";
 import {
   exceptionQueue,
   qualityFilteredJourneyTotals,
@@ -59,7 +60,7 @@ export default async function AdminOverview() {
 
   const opps = loadOpportunities();
   const store = runtimeStore();
-  const [staged, published, totals, safetyTriggers, quality, queue] = await Promise.all([
+  const [staged, published, totals, safetyTriggers, quality, queue, aiPolicy] = await Promise.all([
     allStagedSpecs(),
     publishedPageIds(),
     // A09: the journey counts honour quarantine — a record A09 contained stops
@@ -69,6 +70,7 @@ export default async function AdminOverview() {
     store.countEvents("safety.triggered"),
     qualityKpiSnapshot(),
     exceptionQueue(8),
+    aiPolicyStore().getActive(),
   ]);
   const qaPass = staged.filter((s) => s.qa.state === "PASS").length;
   const qaFail = staged.filter((s) => s.qa.state === "FAIL").length;
@@ -290,7 +292,7 @@ export default async function AdminOverview() {
               </strong>{" "}
               {/* A00 migration: the registry's old `stage` field is now `status`
                   (same values) — this renders the identical string as before. */}
-              <span className="pill pill-green">{a.status}</span>
+              <span className="pill pill-green">Registry: {a.status}</span>
               <br />
               <span style={{ color: "var(--on-dark-mute)", fontSize: ".9rem" }}>{a.mandate}</span>
             </p>
@@ -298,7 +300,7 @@ export default async function AdminOverview() {
         </div>
         <div className="adm-card">
           <div className="adm-card-head">
-            <span className="stat-label">What is NOT live (by design)</span>
+            <span className="stat-label">Runtime controls and remaining setup</span>
             <Link href="/admin/system" className="hint" style={{ color: "var(--pink)" }}>
               Switches →
             </Link>
@@ -309,8 +311,8 @@ export default async function AdminOverview() {
               is your seed workbook, scored by A04)
             </li>
             <li>
-              AI engine — ON in THIS environment by owner directive (runtime policy doc); a fresh
-              deployment still ships all-off until its own owner writes the policy
+              AI engine — master {aiPolicy.enabled ? "ON" : "OFF"}; {Object.values(aiPolicy.capabilities).filter(c => c.enabled).length} of {Object.keys(aiPolicy.capabilities).length} capability switches on.
+              Model calls require both switches and the gateway checks to pass.
             </li>
             <li>Trust Network, provider recommendation, Customer Lite — later waves (code not yet built)</li>
           </ul>

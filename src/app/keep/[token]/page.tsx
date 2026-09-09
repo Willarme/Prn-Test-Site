@@ -170,9 +170,14 @@ export default async function KeepPage({
             <HomeMemoryBlock />
 
             <section className="card-light" style={{ padding: 24 }}>
+              {emailMode() === "preview" && (
+                <p className="disclosure">Trial preview: your sign-in link opens here. No email or text will be sent.</p>
+              )}
               {pending && (
                 <p className="disclosure">
-                  {`A link went to ${masked}. One tap on it keeps this record.`}
+                  {emailMode() === "preview"
+                    ? `Your preview message for ${masked} is ready. One tap on its link keeps this record.`
+                    : `A link went to ${masked}. One tap on it keeps this record.`}
                   {emailMode() === "preview" && view.keepState?.email_id && (
                     <>
                       {" "}
