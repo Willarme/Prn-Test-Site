@@ -1,4 +1,5 @@
 import { ownerTokenFrom } from "./helpers/journey-auth";
+import { readFileSync } from "node:fs";
 import { mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -167,23 +168,24 @@ describe("A01 — injection changes nothing about the CAPS", () => {
     );
     const requestId = (await res.json()).request_id as string;
     const ownerKey = ownerTokenFrom(res);
-    const upload = async (i: number) => {
+    const upload = async (i: number, kind: "photo" | "video" | "voice" = "photo") => {
       const form = new FormData();
       form.set("request_id", requestId);
       form.set("k", ownerKey);
-      form.set("target", "door_photo");
-      form.set("file", new File([new Uint8Array(PNG)], `p${i}.png`, { type: "image/png" }));
+      form.set("target", kind === "photo" ? "door_photo" : kind === "video" ? "door_video" : "voice_note");
+      form.set("file", kind === "video" ? new File([new Uint8Array(readFileSync("tests/fixtures/video/synthetic-2s.mp4"))], "clip.mp4", { type: "video/mp4" }) : kind === "voice" ? new File(["synthetic audio"], "note.m4a", { type: "audio/mp4" }) : new File([new Uint8Array(PNG)], `p${i}.png`, { type: "image/png" }));
       return mediaPost(
         new Request("http://localhost/api/intake/media", { method: "POST", body: form })
       );
     };
     const max = Math.floor((MAX_INTAKE_EFFORT - QUESTION_COSTS.free_text) / QUESTION_COSTS.media);
     expect(max).toBe(5);
-    for (let i = 1; i <= max; i += 1) expect((await upload(i)).status).toBe(200);
+    for (let i = 1; i <= max - 1; i += 1) expect((await upload(i)).status).toBe(200);
+    expect((await upload(max, "video")).status).toBe(200);
     const store = runtimeStore();
     const journey = (await store.getJourney(requestId))!;
     const before = await store.listEvidence(journey.problem.problem_id);
-    const refused = await upload(max + 1);
+    const refused = await upload(max + 1, "voice");
     expect(refused.status).toBe(409);
     expect((await refused.json()).error).toMatch(/intake limit/i);
     expect(await store.listEvidence(journey.problem.problem_id)).toEqual(before);

@@ -191,8 +191,10 @@ describe("the reserved tenant is populated on the real write path", () => {
         // filter; SQL/RLS tests separately prove foreign-row denial.
         const reviewedLink = file.path === "src/platform/links/ledger-shared.ts" &&
           linkReadScopes.has(line.trim()) && linkReadScopes.get(line.trim()) === lines[i - 1]?.trim();
+        const reviewedMedia = file.path === "src/platform/intake/media-budget.ts" &&
+          line.trim() === 'if (held.request_id !== input.request_id || held.tenant_id !== input.tenant_id || held.problem_id !== journey.problem.problem_id) throw new Error("Media ledger identity mismatch");';
         if (reviewedLink) reviewedLinkFilters.push(line.trim());
-        if (((namedTenant && !reviewedScope) || crossRecord || filtered) && !reviewedEffort && !reviewedCompletion && !reviewedLink) {
+        if (((namedTenant && !reviewedScope) || crossRecord || filtered) && !reviewedEffort && !reviewedCompletion && !reviewedLink && !reviewedMedia) {
           offenders.push(`${file.path}:${i + 1}  ${line.trim()}`);
         }
       }

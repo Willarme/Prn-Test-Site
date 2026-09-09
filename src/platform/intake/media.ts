@@ -17,6 +17,8 @@ import { journeySafetyRule } from "@/domain/problem/journey-safety";
 import { runtimeStore } from "@/platform/stores/runtime";
 import { appendIntakeEffort } from "@/platform/intake/effort";
 import { intakeReadiness } from "@/platform/intake/readiness";
+import { mediaPolicy, reserveMedia } from "@/platform/intake/media-budget";
+import { videoDuration } from "@/platform/intake/video-duration";
 import { readPrintedEvidence } from "@/platform/problem/printed-evidence";
 import { emptyPrintedEvidence, type PrintedEvidenceResult } from "@/domain/problem/printed-evidence";
 import { printedAnswers, printedKeysForTarget } from "@/domain/intake/printed-readings";
@@ -286,10 +288,27 @@ export async function attachMedia(input: AttachMediaInput): Promise<AttachMediaR
     }
   }
 
+  const data = Buffer.from(await file.arrayBuffer());
+  const kind: "photo" | "video" | "voice_note" = isVoice ? "voice_note" : file.type.startsWith("video/") ? "video" : "photo";
+  const duration = kind === "video" ? videoDuration(data) : null;
+  if (kind === "video" && duration === null) return { ok: false, status: 422,
+    error: "We could not verify this video's length. Try a complete MP4 or MOV clip, or add a photo instead." };
+  if (duration !== null && duration > mediaPolicy().seconds.value) return { ok: false, status: 413,
+    error: `Please keep the video to ${mediaPolicy().seconds.value} seconds or less, or add a photo instead.` };
+  const evidenceId = `ev_${randomUUID()}`;
+  if (kind !== "voice_note") {
+    try {
+      const mediaAdmission = await reserveMedia({ request_id: requestId, tenant_id: ctx.journey.problem.tenant_id ?? DEFAULT_TENANT_ID,
+        operation_id: `media:${evidenceId}`, kind, duration_seconds: duration });
+      if (!mediaAdmission.accepted) return { ok: false, status: 409,
+        error: kind === "photo" ? `This request has reached its ${mediaAdmission.max}-photo limit. Your saved packet is still available.` : "This request already has its one video. Your saved packet is still available.",
+        ...(kind === "photo" ? { photos: mediaAdmission.used, max_photos: mediaAdmission.max } : {}) };
+    } catch { return { ok: false, status: 503, error: "We could not safely check this request's upload limit. Your existing packet is still available; try again later." }; }
+  }
   const selected = await intakeReadiness(ctx);
   const admission = await appendIntakeEffort({
     request_id: requestId, tenant_id: ctx.journey.problem.tenant_id ?? "prn",
-    operation_id: `media:${randomUUID()}`, kind: "media", question_id: target,
+    operation_id: `media:${evidenceId}`, kind: "media", question_id: target,
     question_type: "media", decision_reason: "One media capture attempt costs three effort units.",
     selection_decisions: selected.screen.decisions,
   });
@@ -299,21 +318,14 @@ export async function attachMedia(input: AttachMediaInput): Promise<AttachMediaR
   };
 
   const now = nowIso();
-  const evidenceId = `ev_${randomUUID()}`;
   // No ":" in the key — a colon in a path segment is invalid on Windows, and
   // FileMediaStore joins the key straight onto the filesystem. "step:x" targets
   // become "step_x" here; step detection reads the target, never the key.
   const key = `${requestId}/${target.replace(/[^a-z0-9_-]/gi, "_")}/${evidenceId}.${ext}`;
-  const data = Buffer.from(await file.arrayBuffer());
   let view: WalkthroughView | undefined;
   let labelRead: LabelReadResult | undefined;
   let printedRead: PrintedEvidenceResult | undefined;
   let photoSaved = false;
-  const kind: "photo" | "video" | "voice_note" = isVoice
-    ? "voice_note"
-    : file.type.startsWith("video/")
-      ? "video"
-      : "photo";
   try {
     const stored = await mediaStore().put(key, data, file.type);
     await store.attachEvidence(ctx.journey.problem.problem_id, requestId, {
@@ -330,6 +342,7 @@ export async function attachMedia(input: AttachMediaInput): Promise<AttachMediaR
       captured_at: now,
       mime: stored.mime,
       bytes: stored.bytes,
+      duration_seconds: duration,
       /**
        * A door upload satisfies no named playbook field — it is "here is my
        * unit", before any question has been asked. The walkthrough's own

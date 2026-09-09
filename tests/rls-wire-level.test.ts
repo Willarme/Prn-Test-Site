@@ -401,10 +401,12 @@ beforeAll(async () => {
   // path has real table grants, same as production, not just BYPASSRLS.
   await harness.db.exec(migration("00003_service_role_grants.sql"));
   await harness.db.exec(migration("00005_intake_details.sql"));
+  await harness.db.exec(migration("00015_core_record_tenancy.sql"));
   await harness.db.exec(migration("00019_request_scoped_read_seam.sql"));
   // Track F2b's loop surfaces — same request-scoped idiom, proven through the
   // store's own methods below.
   await harness.db.exec(migration("00020_loop_surfaces.sql"));
+  await harness.db.exec(migration("00026_request_media_budget.sql"));
 
   resetRuntimeStore();
   const store = runtimeStore();
@@ -518,7 +520,7 @@ describe("wire-level: migration 00020 loop surfaces through SupabaseRuntimeStore
 });
 
 describe("later safety evidence through the real Supabase store", () => {
-  it("retains a hazard after concurrent attachments overwrite its denormalized evidence id", async () => {
+  it("atomically retains concurrent evidence and also reads a hazard from legacy missing-id rows", async () => {
     const store = runtimeStore();
     await store.recordJourney(journeyInput("rq_race_wire", "race"));
     const waiting: Array<() => void> = [];
@@ -542,7 +544,9 @@ describe("later safety evidence through the real Supabase store", () => {
       ]);
     } finally { harness.afterEvidenceRead = null; }
     const saved = await harness.db!.query<{ evidence_ids: string[] }>("select evidence_ids from problem_record where problem_id = 'pr_race'");
-    expect(saved.rows[0].evidence_ids).toEqual(["ev_race", "ev_race_photo"]);
+    expect(saved.rows[0].evidence_ids).toEqual(["ev_race", "ev_race_gas", "ev_race_photo"]);
+    // Historical rows may already have lost an ID before the atomic trigger.
+    await harness.db!.exec("update problem_record set evidence_ids = ARRAY['ev_race','ev_race_photo'] where problem_id = 'pr_race'");
     const evidence = await store.listEvidence("pr_race", "rq_race_wire");
     expect(evidence.map(e => e.evidence_id)).toEqual(["ev_race", "ev_race_gas", "ev_race_photo"]);
     expect(evidence.every(e => e.privacy === "private")).toBe(true);

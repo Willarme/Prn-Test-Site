@@ -440,7 +440,7 @@ export function buildDirectionsInput(ctx: DirectionsBuildContext, opts: Directio
         subject,
         location,
         captured_at: e.captured_at,
-        duration_seconds: null,
+        duration_seconds: e.duration_seconds ?? null,
         provenance: readLabel ? "read_from_label" : "seen_in_photo_or_video",
         thumbnail_data_uri: ctx.thumbnails?.[e.evidence_id] ?? null,
       };

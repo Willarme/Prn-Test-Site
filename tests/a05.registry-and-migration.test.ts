@@ -112,7 +112,7 @@ describe("migration 00012 — applied 2026-08-25, and structurally sound", () =>
     // extends the old 00016-00018 reservation or permits a missing migration.
     // T6 adds 00023 for shared reader completion; the reserved gap is unchanged.
     // T8-39 adds 00024 for durable link/Keep receipts without widening that gap.
-    expect(numbers).toEqual([...Array.from({ length: 15 }, (_, i) => i + 1), 19, 20, 21, 22, 23, 24, 25]);
+    expect(numbers).toEqual([...Array.from({ length: 15 }, (_, i) => i + 1), 19, 20, 21, 22, 23, 24, 25, 26]);
     expect(migrations).toContain("00025_confirmed_intake_provenance.sql");
     expect(migrations).toContain("00020_loop_surfaces.sql");
     expect(migrations).toContain("00021_loop_grant_hardening.sql");

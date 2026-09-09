@@ -641,7 +641,7 @@ class SupabaseRuntimeStore implements RuntimeStore {
     return data as AuditEntry[];
   }
 
-  async attachEvidence(problemId: string, requestId: string, raw: EvidenceObject): Promise<void> {
+  async attachEvidence(_problemId: string, requestId: string, raw: EvidenceObject): Promise<void> {
     const evidence = withTenant(raw);
     const db = this.scopedClient(requestId);
     await this.insertWithOptionalTenant(
@@ -656,27 +656,14 @@ class SupabaseRuntimeStore implements RuntimeStore {
         captured_at: evidence.captured_at,
         mime: evidence.mime ?? null,
         bytes: evidence.bytes ?? null,
+        duration_seconds: evidence.duration_seconds ?? null,
         field_key: evidence.field_key ?? null,
         request_id: requestId,
       },
       "insert evidence"
     );
-    const { data: problem, error } = await db
-      .from("problem_record")
-      .select("evidence_ids")
-      .eq("problem_id", problemId)
-      .maybeSingle();
-    if (error) throw new Error(`load problem: ${error.message}`);
-    const ids = Array.from(new Set([...(problem?.evidence_ids ?? []), evidence.evidence_id]));
-    throwOn(
-      (
-        await db
-          .from("problem_record")
-          .update({ evidence_ids: ids, updated_at: evidence.captured_at })
-          .eq("problem_id", problemId)
-      ).error,
-      "update problem evidence"
-    );
+    // Migration 00026 joins this evidence to the matching problem atomically;
+    // a read/replace array here loses IDs when two admitted uploads finish.
   }
 
   async saveIntakeAnswers(answers: IntakeAnswer[]): Promise<void> {

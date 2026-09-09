@@ -900,7 +900,7 @@ export const PACKET_CSS = `
 .x-qr svg{display:block;width:100%;height:100%;color:var(--ink)}
 .x-safety::before{background:var(--pinkd)}
 .x-safety .x-quote::before{background:var(--pinkl)}
-.ph.has-thumb{background-size:cover;background-position:center;position:relative;color:var(--white)}
+.ph.has-thumb{background-size:contain;background-repeat:no-repeat;background-position:center;position:relative;color:var(--white)}
 .ph.has-thumb .cap{background:rgba(15,17,20,.72);border-radius:3px;padding:3px 5px;max-width:100%}
 .provider-link{font:500 .69rem/1.5 var(--mono);color:var(--ink3);margin:-12px 0 18px;overflow-wrap:anywhere;word-break:break-all}
 .provider-link .pl-label{margin-right:6px;letter-spacing:.06em;text-transform:uppercase}

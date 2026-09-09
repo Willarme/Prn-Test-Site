@@ -1,4 +1,5 @@
 import { mkdtemp } from "node:fs/promises";
+import { readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
@@ -19,6 +20,7 @@ import { ACTIVE_DISCLOSURE } from "@/domain/privacy/disclosures";
 import { MAX_INTAKE_EFFORT, readIntakeEffort } from "@/platform/intake/effort";
 import { getPolicySetting, requirePolicyNumber } from "@/platform/policy/store";
 import { runtimeStore } from "@/platform/stores/runtime";
+import { reserveMedia } from "@/platform/intake/media-budget";
 import { rememberOwner, ownerTokenFor } from "./helpers/journey-auth";
 
 /**
@@ -87,14 +89,21 @@ async function uploadPhoto(requestId: string, target: string, index: number): Pr
 }
 
 describe("A01 — the photo cap", () => {
+  it("concurrent reservations cannot each claim the last slots, and retries keep their existing charge", async () => {
+    const requestId = await startJourney();
+    const reserve = (n:number) => reserveMedia({ request_id:requestId,tenant_id:"prn",operation_id:`concurrent-${n}`,kind:"photo",duration_seconds:null });
+    const attempts = await Promise.all(Array.from({length:8},(_,n)=>reserve(n)));
+    expect(attempts.filter(a=>a.accepted)).toHaveLength(4);
+    expect((await reserve(0)).duplicate).toBe(true);
+    expect((await reserve(20)).accepted).toBe(false);
+  });
   it("reads its number from the policy store, and the number is the decided one", () => {
     const setting = getPolicySetting<number>("intake.max_photos_per_request");
     expect(setting).not.toBeNull();
     expect(setting?.level).toBe("COMPANY");
-    // The stored photo policy is six, independently of the T1-35 combined
-    // effort ceiling. Six admitted media actions plus opening would cost 23.
-    expect(maxPhotosPerRequest()).toBe(6);
-    expect(setting?.version).toBe(2);
+    // Four photos plus one video fit the existing twenty-unit effort ceiling.
+    expect(maxPhotosPerRequest()).toBe(4);
+    expect(setting?.version).toBe(3);
     expect(maxPhotosPerRequest()).toBe(requirePolicyNumber("intake.max_photos_per_request"));
   });
 
@@ -120,7 +129,7 @@ describe("A01 — the photo cap", () => {
     expect(photoCapDecision(9, 6).allowed).toBe(false);
   });
 
-  it("refuses a photo at the stored six-photo cap without writing evidence", async () => {
+  it("refuses a photo at the stored four-photo cap without writing evidence", async () => {
     const requestId = await startJourney();
     const target = "door_photo";
     const max = maxPhotosPerRequest();
@@ -151,10 +160,10 @@ describe("A01 — the photo cap", () => {
     expect((await readIntakeEffort({ request_id: requestId, tenant_id: "prn" })).effort_spent).toBe(QUESTION_COSTS.free_text);
   });
 
-  it("admits five photos after opening, then refuses more work at 20 effort without storing it", async () => {
+  it("admits four photos and one real video, refuses a fifth photo and a second video, and stays at twenty effort", async () => {
     const requestId = await startJourney();
-    const maxAdmitted = Math.floor((MAX_INTAKE_EFFORT - QUESTION_COSTS.free_text) / QUESTION_COSTS.media);
-    expect(maxAdmitted).toBe(5);
+    const maxAdmitted = maxPhotosPerRequest();
+    expect(maxAdmitted).toBe(4);
     for (let i = 1; i <= maxAdmitted; i += 1) {
       expect((await uploadPhoto(requestId, "door_photo", i)).status, `photo ${i}`).toBe(200);
     }
@@ -165,12 +174,21 @@ describe("A01 — the photo cap", () => {
       const refused = await uploadPhoto(requestId, "door_photo", i);
       expect(refused.status).toBe(409);
       const body = await refused.json();
-      expect(body.error).toMatch(/intake limit/i);
+      expect(body.error).toMatch(/most we ask for/i);
       expect(body.evidence_id).toBeUndefined();
     }
     expect(await store.listEvidence(journey.problem.problem_id)).toEqual(evidenceBefore);
+    const uploadVideo = async (filename:string) => {
+      const form = new FormData(); form.set("request_id",requestId); form.set("k",ownerTokenFor(requestId)); form.set("target","door_video");
+      form.set("file",new File([new Uint8Array(readFileSync(`tests/fixtures/video/${filename}`))],filename,{type:"video/mp4"}));
+      return mediaPost(new Request("http://localhost/api/intake/media",{method:"POST",body:form}));
+    };
+    const overlong=await uploadVideo("synthetic-31s.mp4"); expect(overlong.status).toBe(413); expect((await overlong.json()).error).toContain("30 seconds");
+    expect((await uploadVideo("synthetic-2s.mp4")).status).toBe(200);
+    expect((await uploadVideo("synthetic-2s.mp4")).status).toBe(409);
+    expect((await store.listEvidence(journey.problem.problem_id)).find(e=>e.kind === "video")?.duration_seconds).toBe(2);
     const ledger = await readIntakeEffort({ request_id: requestId, tenant_id: "prn" });
-    expect(ledger.effort_spent).toBe(20);
+    expect(ledger.effort_spent).toBe(MAX_INTAKE_EFFORT);
     expect(ledger.attempts.filter(a => a.accepted && a.operation.kind === "media")).toHaveLength(5);
     expect(ledger.attempts.filter(a => !a.accepted).every(a => a.charged_units === 0 && a.rejection_reason === "effort_limit")).toBe(true);
     expect(countPhotos(evidenceBefore)).toBe(maxAdmitted);

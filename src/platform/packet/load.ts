@@ -60,7 +60,7 @@ async function thumbnail(bytes: Buffer): Promise<string | null> {
     const mod = (await import("sharp")) as unknown as { default?: (input: Buffer) => SharpLike } | ((input: Buffer) => SharpLike);
     const sharp = typeof mod === "function" ? mod : mod.default;
     if (sharp) {
-      const out = await sharp(bytes).rotate().resize({ width: 480, height: 360, fit: "cover" }).jpeg({ quality: 72 }).toBuffer();
+      const out = await sharp(bytes).rotate().resize({ width: 480, height: 360, fit: "inside" }).jpeg({ quality: 72 }).toBuffer();
       return `data:image/jpeg;base64,${out.toString("base64")}`;
     }
   } catch {

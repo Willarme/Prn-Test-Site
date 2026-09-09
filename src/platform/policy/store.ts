@@ -59,6 +59,8 @@ export type PolicySetting<T = unknown> = Omit<z.infer<typeof PolicySetting>, "va
  *    photo/video evidence). Same value, now versioned here.
  */
 export const PLATFORM_POLICY_SETTINGS: readonly PolicySetting[] = [
+  { key: "intake.max_videos_per_request", level: "COMPANY", value: 1, version: 1 },
+  { key: "intake.max_video_seconds", level: "COMPANY", value: 30, version: 1 },
   {
     key: "intake.max_ai_calls_per_request",
     level: "COMPANY",
@@ -107,38 +109,14 @@ export const PLATFORM_POLICY_SETTINGS: readonly PolicySetting[] = [
   {
     key: "intake.max_photos_per_request",
     level: "COMPANY",
-    /**
-     * THE 4-PHOTO CAP — the one hard cap in A01's set that IS decided, and the
-     * only number in this block that is not a placeholder.
-     *
-     * WHY IT IS A REAL DECISION AND NOT A GUESS. The standing decision of 20 Aug
-     * (crew log) is that hard caps must exist, and it names this one: max 4
-     * pictures per request. A01's spec repeats it in §3, §10 and §11's HARD
-     * CONSTRAINTS as though it were in force. It was not: before this commit no
-     * photo-count cap existed anywhere in src/, so an unbounded number of
-     * uploads was accepted per request. Loop Spec Audit condition 13 exists
-     * precisely because a decided cap nobody built is a decision that did not
-     * happen.
-     *
-     * HISTORICAL HOLD: the original audit left video LENGTH and AI-call counts
-     * undetermined. T1-14 now reads the operative merged-spec §14.4 ceiling from
-     * intake.max_ai_calls_per_request above. The video-length setting remains
-     * absent; its verification and the four-versus-six photo policy conflict
-     * are separate unfinished parts of T1-14.
-     *
-     * Remaining media policy: maximum video length and whether the photo cap
-     * counts videos too (it does not today —
-     * this cap is about pictures, which is what was decided).
-     *
-     * RAISED 4 -> 6 ON 2026-09-05. // DEFAULT pending Melissa: decision 2
-     * (recommendation B, "six"). The approved packet renders five evidence
-     * items and could not be built to its own mockup under a cap of four; the
-     * brief's amendment moved this from her decision list to a built default
-     * she judges live in the walkthrough (test C-series). Video still does not
-     * count against it (decision 3, recommendation B: one video, separate).
-     */
-    value: 6,
-    version: 2,
+    /** Four photos plus one optional 30-second video complete the five media
+     * positions. Crew 451b88 reconciles the temporary six-photo default with
+     * the current acceptance checklist under delegated routine decisions.
+     * Values remain versioned defaults for firsthand pilot review. */
+    // 2026-09-09, crew 451b88: current acceptance requires four photos
+    // plus one video; replaces the temporary September 5 six-photo default.
+    value: 4,
+    version: 3,
   },
   /**
    * A08 dictionary tunables (A08 §10 requires these be configuration, not

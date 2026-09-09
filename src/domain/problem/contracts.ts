@@ -95,6 +95,7 @@ export const EvidenceObject = z.object({
   captured_at: IsoDateTime,
   mime: z.string().nullable().optional(),
   bytes: z.number().int().min(0).nullable().optional(),
+  duration_seconds: z.number().positive().nullable().optional(),
   /** Which required field this media satisfies, when applicable. */
   field_key: z.string().nullable().optional(),
 });

@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -145,7 +146,7 @@ describe("POST /api/intake/start — the door adapter", () => {
   });
 
   it("photos, a video and a voice note all land as evidence on the new request", async () => {
-    const video = new File([new Uint8Array(Buffer.from("not really an mp4"))], "unit.mp4", {
+    const video = new File([new Uint8Array(readFileSync("tests/fixtures/video/synthetic-2s.mp4"))], "unit.mp4", {
       type: "video/mp4",
     });
     const voice = new File([new Uint8Array(Buffer.from("not really audio"))], "note.m4a", {
