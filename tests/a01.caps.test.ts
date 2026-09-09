@@ -122,7 +122,8 @@ describe("A01 — the photo cap", () => {
     const refused = photoCapDecision(6, 6);
     expect(refused.allowed).toBe(false);
     // The closing number in the copy tracks the cap, so it can never contradict it.
-    expect(refused.message).toMatch(/6 clear pictures/);
+    expect(refused.message).toMatch(/saved photos and packet are still available/);
+    expect(refused.message).not.toMatch(/remove|swap/i);
     expect(refused.message).toMatch(/most we ask for \(6\)/);
     expect(refused.max).toBe(6);
     // A record that somehow holds more than the cap still refuses.

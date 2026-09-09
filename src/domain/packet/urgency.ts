@@ -133,7 +133,7 @@ export interface UrgencyDecision {
   tag: string;
 }
 
-const VULNERABLE = /\b(infant|newborn|baby|toddler|elderly|grandm|grandf|oxygen|medical (equipment|need|condition)|disabled|dialysis|pregnan|\d{2} years? old (mother|father|mom|dad|parent))\b/i;
+const VULNERABLE = /\b(infant|newborn|baby|toddler|elderly|grandm|grandf|oxygen|medical (equipment|need|condition)|disabled|dialysis|pregnan|\d{2} years? old (mother|father|mom|dad|parent)|(mother|father|mom|dad|parent) is \d{2}(?: years? old)?)\b/i;
 const DAMAGE_ACCRUING = /\b(water (is )?(spreading|coming through|dripping through|pooling)|ceiling (is )?(staining|stained|dripping|bulging)|still leaking|keeps leaking|getting worse by the (hour|minute))\b/i;
 const HABITABILITY_LOST = /\b(no heat\b.{0,60}\b(freez|below zero|\d{1,2} ?°?f outside)|no water at all|no running water|only (bathroom|toilet).{0,40}(not|won'?t) (work|flush)|no power (to|in) (the )?(house|living|bedroom))\b/i;
 const CAN_LIVE_WITH = /\b(no hurry|no rush|not urgent|can wait|whenever (you|is)|not an emergency|live with it|when (it'?s|you'?re) convenient)\b/i;

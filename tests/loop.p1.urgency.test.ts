@@ -6,6 +6,13 @@ import { decideUrgency, detectHazardFlags, safetyBodyFor, urgencyTag } from "@/d
  * the §6.7 worked-example table row by row. Plus §9.1's hard-stop flags.
  */
 describe("P1 · urgency tag (Directions §6)", () => {
+  it("recognizes the same stated parental age in either word order", () => {
+    const forward=decideUrgency({homeowner_words:"My AC is out and my 88 years old mother lives with me"});
+    const reversed=decideUrgency({homeowner_words:"my ac is out and my mother is 88 and lives with me"});
+    expect(forward.urgency_level).toBe("same_day");
+    expect(reversed).toEqual(forward);
+    expect(decideUrgency({homeowner_words:"My AC is out and the temperature is 88"}).urgency_level).toBe("asap");
+  });
   it("§6.7 row 1: AC out, warm air, no hazard signals, safety questions asked", () => {
     const d = decideUrgency({
       homeowner_words: "The air conditioner is on and I can feel air but it's just not cold anymore.",
