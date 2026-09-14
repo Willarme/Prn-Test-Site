@@ -10,6 +10,15 @@ import {
 } from "@/platform/db/client";
 import { pageRegistryStore } from "@/platform/search/page-registry-store";
 import { collectDoorTemplateEvidence } from "@/platform/search/door-template-evidence";
+import { applyLegacyRetirement, isRetiredLegacySpec, LEGACY_DOOR_RETIREMENT } from "@/platform/pages/route-retirement";
+
+function applyRetirementGate(spec: PageSpec, decision: ReleaseDecision): ReleaseDecision {
+  return isRetiredLegacySpec(spec) ? {
+    ...decision,
+    release_eligible: false,
+    reasons: [`Retired legacy specification (${LEGACY_DOOR_RETIREMENT.decision_ref}); history is retained and cannot be published.`, ...decision.reasons],
+  } : decision;
+}
 
 /**
  * THE PUBLISH GATE'S ONE INPUT — condition C10, coherence report issue 6.
@@ -83,7 +92,7 @@ export async function pageRegistrySnapshot(
     }
   }
   for (const row of stored) byId.set(row.page_id, row);
-  return [...byId.values()];
+  return [...byId.values()].map(row => applyLegacyRetirement(row, specs));
 }
 
 /**
@@ -115,7 +124,7 @@ export async function publishGate(input: PublishGateInput): Promise<PublishGateR
     tenant_id: spec.tenant_id,
   });
 
-  return { spec, decision, policy };
+  return { spec, decision: applyRetirementGate(spec, decision), policy };
 }
 
 /**
@@ -141,7 +150,7 @@ export async function publishQueueSnapshot(
 
   return specs.map((spec) => ({
     spec,
-    decision: evaluateReleaseForPublish(spec, {
+    decision: applyRetirementGate(spec, evaluateReleaseForPublish(spec, {
       door_template_evidence: collectDoorTemplateEvidence([spec]),
       existing: specs,
       registry,
@@ -152,7 +161,7 @@ export async function publishQueueSnapshot(
         human_approval_required: policy.human_approval_required,
       },
       tenant_id: spec.tenant_id,
-    }),
+    })),
   }));
 }
 

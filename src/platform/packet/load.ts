@@ -1,3 +1,4 @@
+import { readFeatureSnapshot, featureIsLive } from "@/platform/features/state";
 import { buildDirectionsInput, type LabelReadRow } from "@/domain/packet/directions-input";
 import type { DirectionsInput } from "@/domain/packet/types";
 import { readPrivateMediaBytes } from "@/platform/adapters/media-storage";
@@ -47,6 +48,7 @@ export async function resolvePacketAccess(requestId: string, share: string | nul
       : { ok: false, status: 404 };
   }
   try {
+    if (!featureIsLive(await readFeatureSnapshot(), "shared_links")) return { ok: false, status: 404 };
     const v = await verifyLink(share, "packet");
     if (!v.ok || v.request_id !== requestId) return { ok: false, status: 404 };
     return { ok: true, via: "share_link", link_id: v.link_id, owner: false };
@@ -120,9 +122,14 @@ export async function loadPacket(
   }));
 
   // Await durable issuance before any owner capability can reach HTML or PDF.
-  const keep = opts.owner ? (await issueLink({ scope: "keep", request_id: requestId })).token : null;
-  const ask = opts.owner ? (await issueLink({ scope: "ask", request_id: requestId })).token : null;
-  const media = opts.owner ? (await issueLink({ scope: "media", request_id: requestId })).token : null;
+  const features = await readFeatureSnapshot({ store });
+  const keepQr = featureIsLive(features, "keep") && featureIsLive(features, "pdf_keep_qr");
+  const askQr = featureIsLive(features, "ask") && featureIsLive(features, "pdf_ask_qr");
+  const keep = opts.owner && keepQr ? (await issueLink({ scope: "keep", request_id: requestId })).token : null;
+  const ask = opts.owner && askQr ? (await issueLink({ scope: "ask", request_id: requestId })).token : null;
+  const media = opts.owner && featureIsLive(features, "shared_links") ? (await issueLink({ scope: "media", request_id: requestId })).token : null;
+  const homeMemoryUrl = keep ? `${opts.link_base}/keep/${keep}` : "";
+  const trustNetworkUrl = ask ? `${opts.link_base}/ask/${ask}` : "";
   const input = buildDirectionsInput(
     {
       ...ctx,
@@ -136,13 +143,18 @@ export async function loadPacket(
     },
     {
       link_base: opts.link_base,
-      home_memory_url: keep ? `${opts.link_base}/keep/${keep}` : "",
-      trust_network_url: ask ? `${opts.link_base}/ask/${ask}` : "",
+      home_memory_url: homeMemoryUrl,
+      trust_network_url: trustNetworkUrl,
       media_link: media ? `${opts.link_base}/media/${media}` : null,
       now: opts.now ?? ctx.journey.packet.generated_at,
     }
   );
+  // Preserve explicit empty URLs: the reference builder omits them and would
+  // otherwise allow the renderer's plain-id fallback to compute a hidden target.
+  input.config.home_memory_url = homeMemoryUrl;
+  input.config.trust_network_url = trustNetworkUrl;
   input.config.owner_actions = opts.owner === true;
+  input.config.qr_visibility = { keep: keepQr, ask: askQr };
   if (ctx.journey.packet.intake_snapshot) {
     input.counts = { ...input.counts, facts_captured: ctx.journey.packet.intake_snapshot.handoff.counts.facts };
   }

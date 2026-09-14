@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { isAdminUnlocked } from "@/platform/admin/auth";
+import { readAdminJson } from "@/platform/admin/body";
+import { adminBoundary, guardAdminMutation } from "@/platform/admin/request";
 import { engageKillSwitch, releaseKillSwitch } from "@/platform/killswitch";
 
 /**
@@ -13,34 +14,33 @@ import { engageKillSwitch, releaseKillSwitch } from "@/platform/killswitch";
 const Body = z.object({
   action: z.enum(["engage", "release"]),
   scope: z.enum(["GLOBAL", "AGENT"]),
-  scope_ref: z.string().min(1).optional(),
+  scope_ref: z.string().min(1).max(200).optional(),
   reason: z.string().max(280).optional(),
 });
 
 export async function POST(request: Request): Promise<NextResponse> {
-  if (!(await isAdminUnlocked())) {
-    return NextResponse.json({ error: "Owner sign-in required" }, { status: 403 });
-  }
+  return adminBoundary(async () => {
+    const refusal = await guardAdminMutation(request);
+    if (refusal) return refusal;
 
-  const parsed = Body.safeParse(await request.json().catch(() => null));
-  if (!parsed.success) {
-    return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
-  }
-  const { action, scope, scope_ref, reason } = parsed.data;
-  if (scope === "AGENT" && !scope_ref) {
-    return NextResponse.json({ error: "scope_ref is required for AGENT scope" }, { status: 400 });
-  }
+    const parsed = await readAdminJson(request, Body);
+    if (!parsed.ok) return parsed.response;
+    const { action, scope, scope_ref, reason } = parsed.data;
+    if (scope === "AGENT" && !scope_ref) {
+      return NextResponse.json({ error: "scope_ref is required for AGENT scope" }, { status: 400 });
+    }
 
-  try {
-    const state =
-      action === "engage"
-        ? await engageKillSwitch({ scope, scope_ref, by: "owner-admin", reason })
-        : await releaseKillSwitch({ scope, scope_ref, by: "owner-admin", reason });
-    return NextResponse.json(state);
-  } catch (e) {
-    return NextResponse.json(
-      { error: e instanceof Error ? e.message : "The switch did not move" },
-      { status: 500 }
-    );
-  }
+    try {
+      const state =
+        action === "engage"
+          ? await engageKillSwitch({ scope, scope_ref, by: "owner-admin", reason })
+          : await releaseKillSwitch({ scope, scope_ref, by: "owner-admin", reason });
+      return NextResponse.json(state);
+    } catch {
+      return NextResponse.json(
+        { error: "The switch could not be updated. Try again later." },
+        { status: 500 }
+      );
+    }
+  });
 }

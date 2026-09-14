@@ -317,6 +317,7 @@ export function renderPacketHtml(input: DirectionsInput, options: RenderOptions 
   // --- Page 1 --------------------------------------------------------------------
   const page1 = renderPage1({
     ownerActions: input.config.owner_actions !== false,
+    qrVisibility: input.config.qr_visibility,
     homeMemoryUrl,
     trustNetworkUrl,
     scriptHtml: script.html,
@@ -376,6 +377,7 @@ export function renderPacketHtml(input: DirectionsInput, options: RenderOptions 
       summary_text: computed.summary_text,
       halted,
       owner_actions: input.config.owner_actions !== false,
+      qr_visibility: input.config.qr_visibility,
     })
   );
 
@@ -412,7 +414,7 @@ function linkChip(url: string): string {
   );
 }
 
-function renderPage1(p: { homeMemoryUrl: string; trustNetworkUrl: string; scriptHtml: string; halt: keyof typeof SAFETY_BODY | null; ownerActions: boolean }): string {
+function renderPage1(p: { homeMemoryUrl: string; trustNetworkUrl: string; scriptHtml: string; halt: keyof typeof SAFETY_BODY | null; ownerActions: boolean; qrVisibility?: { keep: boolean; ask: boolean } }): string {
   const scriptOrSafety = p.halt
     ? `<article class="x-script x-safety">
       <p class="x-eyebrow"><span class="x-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3.5 2.8 19.5h18.4z"/><path d="M12 9.5v4.5"/><path d="M12 16.8v.4"/></svg></span>Before anything else</p>
@@ -485,9 +487,9 @@ function renderPage1(p: { homeMemoryUrl: string; trustNetworkUrl: string; script
   </div>
 
   <section class="x-act">
-    ${p.ownerActions ? `<div class="x-grid">
+    ${p.ownerActions && (p.qrVisibility?.keep !== false || p.qrVisibility?.ask !== false) ? `<div class="x-grid"${p.qrVisibility && p.qrVisibility.keep !== p.qrVisibility.ask ? ' style="grid-template-columns:1fr"' : ""}>
 
-      <article class="x-card x-a">
+      ${p.qrVisibility?.keep !== false ? `<article class="x-card x-a">
         <div class="x-scan">
           ${qrBlock(p.homeMemoryUrl)}
         </div>
@@ -507,9 +509,9 @@ function renderPage1(p: { homeMemoryUrl: string; trustNetworkUrl: string; script
         <h3 class="x-h">Your house is an asset with amnesia.</h3>
         <p class="x-p">Scan this and everything in this packet is already saved — the model number, the photos, what was wrong and what fixed it.</p>
         ${linkChip(p.homeMemoryUrl)}
-      </article>
+      </article>` : ""}
 
-      <article class="x-card x-b">
+      ${p.qrVisibility?.ask !== false ? `<article class="x-card x-b">
         <div class="x-scan">
           ${qrBlock(p.trustNetworkUrl)}
         </div>
@@ -531,9 +533,9 @@ function renderPage1(p: { homeMemoryUrl: string; trustNetworkUrl: string; script
         <h3 class="x-h">You already know someone who knows someone.</h3>
         <p class="x-p">Ask your own people who they would send to their sister's house, or send this packet straight to the guy you already trust.</p>
         ${linkChip(p.trustNetworkUrl)}
-      </article>
+      </article>` : ""}
 
-    </div>` : `<p class="shared-note">Shared provider copy. Home Memory and referral actions are available from the homeowner's own link.</p>`}
+    </div>` : p.ownerActions || (p.qrVisibility && !(p.qrVisibility.keep && p.qrVisibility.ask)) ? "" : `<p class="shared-note">Shared provider copy. Home Memory and referral actions are available from the homeowner's own link.</p>`}
 
     ${scriptOrSafety}
   </section>

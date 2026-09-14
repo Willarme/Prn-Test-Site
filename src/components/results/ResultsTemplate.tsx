@@ -35,7 +35,15 @@ import { ResultsShell } from "@/components/results/ResultsShell";
  * `data-feedback-trigger` retains the approved action markers. They do not
  * arm feedback: only verified successful value receipts do that.
  */
+export interface ResultsVisibility {
+  keep?: boolean; ask?: boolean; send?: boolean; find?: boolean;
+  product_dashboard?: boolean; product_trust_network?: boolean;
+  product_smartquote?: boolean; product_home_memory?: boolean;
+}
+
 export interface ResultsTemplateProps {
+  /** Server-resolved feature states; omitted entries are hidden. */
+  visibility?: ResultsVisibility;
   requestId: string;
   /** /keep/<token> — a signed `keep` link minted by the page. */
   keepHref: string;
@@ -49,7 +57,7 @@ export interface ResultsTemplateProps {
   navigation?: Partial<Record<"packet" | "email" | "send" | "find", string>>;
 }
 
-export function ResultsTemplate({ requestId, keepHref, askHref, askAnswers = [], ownerKey, feedbackEligible = false, navigation }: ResultsTemplateProps) {
+export function ResultsTemplate({ requestId, keepHref, askHref, askAnswers = [], ownerKey, feedbackEligible = false, navigation, visibility = {} }: ResultsTemplateProps) {
   const query = ownerKey ? `?k=${encodeURIComponent(ownerKey)}` : "";
   const packetHref = navigation?.packet ?? `/packet/${encodeURIComponent(requestId)}${query}`;
   const emailHref = navigation?.email ?? `/results/${encodeURIComponent(requestId)}/email${query}`;
@@ -102,7 +110,7 @@ export function ResultsTemplate({ requestId, keepHref, askHref, askAnswers = [],
       </div>
 
       {/* ============ HOME MEMORY ============ */}
-      <div className="hm">
+      {visibility.keep && keepHref && <div className="hm">
         <div className="hm-text">
           <p className="hm-eyebrow">Home Memory</p>
           <h2 className="hm-h">Your house is an asset with amnesia.</h2>
@@ -116,7 +124,7 @@ export function ResultsTemplate({ requestId, keepHref, askHref, askAnswers = [],
           </ul>
           <p className="kicker">So it isn&apos;t living inside your head. Wasting the energy you could be using to live.</p>
           <a className="btn fill" href={keepHref} data-feedback-trigger="save_home">Save this to my home</a>
-          <div className="skip"><a href="#trust">Not now</a></div>
+          <div className="skip"><a href={visibility.ask || visibility.send || visibility.find ? "#trust" : "#products"}>Not now</a></div>
         </div>
         <figure className="hm-fig">
           <svg viewBox="-40 0 1020 630" className="fplan" role="img" aria-label="A floor plan of the house with pins on the dishwasher, furnace, water heater, water main, electrical panel and the front oak tree."><g stroke="#2A2622" fill="none"><rect x="60" y="60" width="780" height="450" strokeWidth="4" /><path d="M430 60 V300" strokeWidth="4" /><path d="M60 300 H430" strokeWidth="4" /><path d="M600 300 V510" strokeWidth="4" /><path d="M430 300 H840" strokeWidth="4" /></g><g stroke="#F7F7F5" strokeWidth="7"><path d="M430 165 V215" /><path d="M290 300 H350" /><path d="M600 430 V480" /></g><g stroke="rgba(42,38,34,.26)" strokeWidth="1" strokeDasharray="5 5"><path d="M60 250 H430" /><path d="M600 60 V300" /></g><g fontFamily="JetBrains Mono, monospace" fontSize="27" letterSpacing="2" fill="#8C8073"><text x="88" y="100">KITCHEN</text><text x="458" y="100">LIVING</text><text x="88" y="340">UTILITY</text><text x="628" y="340">GARAGE</text><text x="458" y="340">HALL</text></g><g><circle cx="200" cy="170" r="38" fill="rgba(255,46,126,.14)" /><circle cx="200" cy="170" r="22" fill="#fff" stroke="#C1004F" strokeWidth="2.8" /><circle cx="200" cy="170" r="7" fill="#C1004F" /><text x="200" y="232" fontFamily="JetBrains Mono, monospace" fontSize="24" letterSpacing="1.2" fill="#5A6462" textAnchor="middle">DISHWASHER</text></g><g><circle cx="130" cy="390" r="38" fill="rgba(255,46,126,.14)" /><circle cx="130" cy="390" r="22" fill="#fff" stroke="#C1004F" strokeWidth="2.8" /><circle cx="130" cy="390" r="7" fill="#C1004F" /><text x="130" y="452" fontFamily="JetBrains Mono, monospace" fontSize="24" letterSpacing="1.2" fill="#5A6462" textAnchor="middle">FURNACE</text></g><g><circle cx="300" cy="390" r="38" fill="rgba(255,46,126,.14)" /><circle cx="300" cy="390" r="22" fill="#fff" stroke="#C1004F" strokeWidth="2.8" /><circle cx="300" cy="390" r="7" fill="#C1004F" /><text x="300" y="452" fontFamily="JetBrains Mono, monospace" fontSize="24" letterSpacing="1.2" fill="#5A6462" textAnchor="middle">WATER HEATER</text></g><g><circle cx="515" cy="390" r="38" fill="rgba(255,46,126,.14)" /><circle cx="515" cy="390" r="22" fill="#fff" stroke="#C1004F" strokeWidth="2.8" /><circle cx="515" cy="390" r="7" fill="#C1004F" /><text x="515" y="452" fontFamily="JetBrains Mono, monospace" fontSize="24" letterSpacing="1.2" fill="#5A6462" textAnchor="middle">WATER MAIN</text></g><g><circle cx="700" cy="390" r="38" fill="rgba(255,46,126,.14)" /><circle cx="700" cy="390" r="22" fill="#fff" stroke="#C1004F" strokeWidth="2.8" /><circle cx="700" cy="390" r="7" fill="#C1004F" /><text x="700" y="452" fontFamily="JetBrains Mono, monospace" fontSize="24" letterSpacing="1.2" fill="#5A6462" textAnchor="middle">PANEL</text></g><g><circle cx="450" cy="556" r="38" fill="rgba(255,46,126,.14)" /><circle cx="450" cy="556" r="22" fill="#fff" stroke="#C1004F" strokeWidth="2.8" /><circle cx="450" cy="556" r="7" fill="#C1004F" /><text x="450" y="618" fontFamily="JetBrains Mono, monospace" fontSize="24" letterSpacing="1.2" fill="#5A6462" textAnchor="middle">FRONT OAK</text></g><text x="450" y="38" fontFamily="JetBrains Mono, monospace" fontSize="25" letterSpacing="2" fill="#5A6462" textAnchor="middle">1114 OAKHURST DR · BUILT 1994 · 2,180 SQ FT</text></svg>
@@ -124,8 +132,10 @@ export function ResultsTemplate({ requestId, keepHref, askHref, askAnswers = [],
         </figure>
       </div>
 
+      }
+
       {/* ============ SEND BLOCK ============ */}
-      <div className="trust" id="trust">
+      {(visibility.ask || visibility.send || visibility.find) && <div className="trust" id="trust">
         <div className="trusttop">
           <div>
             <p className="trust-eyebrow">Trust Network</p>
@@ -185,7 +195,7 @@ export function ResultsTemplate({ requestId, keepHref, askHref, askAnswers = [],
           </figure>
         </div>
 
-        {askAnswers.length > 0 && (
+        {visibility.ask && askAnswers.length > 0 && (
           // The friend's answers (P3's /ask writes them; store.listAskAnswers reads
           // them). WORDING 41: one name, the person it came from, the reason, one
           // next action. Renders nothing at all when there are none, so the
@@ -201,45 +211,47 @@ export function ResultsTemplate({ requestId, keepHref, askHref, askAnswers = [],
                 </li>
               ))}
             </ul>
-            <a className="next" href={sendHref}>SEND THEM MY JOB PACKET →</a>
+            {visibility.send && <a className="next" href={sendHref}>SEND THEM MY JOB PACKET →</a>}
           </div>
         )}
 
         <div className="paths">
 
-          <a className="path" href={sendHref} data-feedback-trigger="have_someone">
+          {visibility.send && <a className="path" href={sendHref} data-feedback-trigger="have_someone">
             <div className="ic52 icq"><svg viewBox="0 0 52 52" fill="none" aria-hidden="true"><circle cx="26" cy="26" r="25" stroke="rgba(18,22,26,.15)" /><circle cx="20" cy="22" r="5" stroke="#12161A" strokeWidth="1.6" /><circle cx="33" cy="24" r="4" stroke="#3E6E7A" strokeWidth="1.6" /><path d="M12 37c0-5 4-7 8-7s8 2 8 7M28 37c0-3.5 2.5-5 5-5s5 1.5 5 5" stroke="#12161A" strokeWidth="1.6" /><path d="M40 16l3 3-3 3" stroke="#FF2E7E" strokeWidth="1.8" /></svg></div>
             <b>I already have someone</b>
             <span>Save them to your people, and send this over in one tap.</span>
-          </a>
+          </a>}
 
-          <a className="path lead" href={askHref} data-feedback-trigger="ask_people">
+          {visibility.ask && askHref && <a className="path lead" href={askHref} data-feedback-trigger="ask_people">
             <div className="ic52 icg">
               <svg viewBox="0 0 52 52" fill="none" aria-hidden="true"><circle cx="26" cy="26" r="25" stroke="rgba(18,22,26,.15)" /><path d="M40 27.4c0 5.6-5.7 10.1-12.8 10.1a16 16 0 01-4-.5L15 40l2-5.6a9.6 9.6 0 01-3.9-7.4c0-5.6 5.7-10.1 12.8-10.1S40 21.8 40 27.4z" stroke="#12161A" strokeWidth="1.6" strokeLinejoin="round" /><path d="M20.5 26.6h11" stroke="#12161A" strokeWidth="1.6" strokeLinecap="round" /><path d="M35 13.5l2.4 2.4 4.6-4.8" stroke="#FF2E7E" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
             </div>
             <b>Ask my people</b>
             <span>One private question to friends and neighbours. They answer in a tap.</span>
-          </a>
+          </a>}
 
-          <a className="path" href={findHref}>
+          {visibility.find && <a className="path" href={findHref}>
             <div className="ic52 icq">
               <svg viewBox="0 0 52 52" fill="none" aria-hidden="true"><circle cx="26" cy="26" r="25" stroke="rgba(18,22,26,.15)" /><path d="M24 40.5s10-8 10-15.7A10 10 0 1014 24.8C14 32.5 24 40.5 24 40.5z" stroke="#12161A" strokeWidth="1.6" strokeLinejoin="round" /><circle cx="24" cy="24.4" r="3.8" stroke="#12161A" strokeWidth="1.6" /><path d="M37 14.5h6M40 11.5v6" stroke="#FF2E7E" strokeWidth="1.8" strokeLinecap="round" /></svg>
             </div>
             <b>Find someone for me</b>
             <span>A short, considered shortlist, matched to what is actually wrong.</span>
-          </a>
+          </a>}
 
         </div>
       </div>
 
+      }
+
       {/* ============ PRODUCT CARDS ============ */}
-      <div className="prods">
+      {(visibility.product_dashboard || visibility.product_trust_network || visibility.product_smartquote || visibility.product_home_memory) && <div className="prods" id="products">
         <h2>All four, free to you</h2>
         <p className="sub">Your home starts working like one connected asset instead of twenty unrelated problems.</p>
         <div className="pgrid">
 
           {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- /pages/* is a route handler serving one of Melissa's approved static documents (track F1), not a Next page; a plain anchor is the right element for a document. */}
-          <a className="p" href="/pages/dashboard">
+          {visibility.product_dashboard && <a className="p" href="/pages/dashboard">
             <div className="ic52 icp" data-icon="dashboard"><svg viewBox="0 0 52 52" fill="none" aria-hidden="true"><circle cx="26" cy="26" r="25" stroke="rgba(18,22,26,.15)" /><path d="M14 16h20a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H14a2 2 0 0 1-2-2V18a2 2 0 0 1 2-2z" stroke="#12161A" strokeWidth="1.6" /><path d="M12 22h24M15 19h7" stroke="#12161A" strokeWidth="1.6" /><circle cx="17.5" cy="27" r="2.5" stroke="#12161A" strokeWidth="1.6" /><path d="M13.5 32.5c0-2 1.8-3.2 4-3.2s4 1.2 4 3.2" stroke="#12161A" strokeWidth="1.6" /><circle cx="29.5" cy="28" r="4.5" stroke="#3E6E7A" strokeWidth="1.6" /><path d="M29.5 25.2V28l2 1.5" stroke="#12161A" strokeWidth="1.6" /><path d="M39 24l3 3-3 3" stroke="#FF2E7E" strokeWidth="1.8" /></svg></div>
             <div>
               <div className="num">01 · CUSTOMER DASHBOARD</div>
@@ -247,10 +259,10 @@ export function ResultsTemplate({ requestId, keepHref, askHref, askAnswers = [],
               <span className="d">Uncertainty removed: a named provider, a visible response deadline, the price approved from your desk, and nobody burning a vacation day to unlock a door.</span>
               <div className="arrow">SEE THE DASHBOARD →</div>
             </div>
-          </a>
+          </a>}
 
           {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- /pages/* is a route handler serving one of Melissa's approved static documents (track F1), not a Next page; a plain anchor is the right element for a document. */}
-          <a className="p" href="/pages/trust-network">
+          {visibility.product_trust_network && <a className="p" href="/pages/trust-network">
             <div className="ic52 icp" data-icon="trust"><svg viewBox="0 0 52 52" fill="none" aria-hidden="true"><circle cx="26" cy="26" r="25" stroke="rgba(18,22,26,.15)" /><circle cx="13" cy="31" r="4" stroke="#12161A" strokeWidth="1.6" /><circle cx="26" cy="18" r="4" stroke="#12161A" strokeWidth="1.6" /><circle cx="37" cy="29" r="4" stroke="#3E6E7A" strokeWidth="1.6" /><circle cx="19" cy="41" r="3" stroke="#12161A" strokeWidth="1.6" /><circle cx="39" cy="17" r="3" stroke="#12161A" strokeWidth="1.6" /><path d="M16 28L23 21M29 21L34 26M15 35L17 38M30 18L36 17" stroke="#12161A" strokeWidth="1.6" /><path d="M42 31l3 3-3 3" stroke="#FF2E7E" strokeWidth="1.8" /></svg></div>
             <div>
               <div className="num">02 · TRUST NETWORK</div>
@@ -258,10 +270,10 @@ export function ResultsTemplate({ requestId, keepHref, askHref, askAnswers = [],
               <span className="d">Your neighborhood already has a better network than any search engine. Use the people you already trust, trust — and hand the answer forward when it&apos;s your turn.</span>
               <div className="arrow">SEE THE TRUST MAP →</div>
             </div>
-          </a>
+          </a>}
 
           {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- /pages/* is a route handler serving one of Melissa's approved static documents (track F1), not a Next page; a plain anchor is the right element for a document. */}
-          <a className="p" href="/pages/smartquote">
+          {visibility.product_smartquote && <a className="p" href="/pages/smartquote">
             <div className="ic52 icp" data-icon="smartquote"><svg viewBox="0 0 52 52" fill="none" aria-hidden="true"><circle cx="26" cy="26" r="25" stroke="rgba(18,22,26,.15)" /><path d="M14 14h12l5 5v19H14z" stroke="#12161A" strokeWidth="1.6" /><path d="M26 14v5h5" stroke="#12161A" strokeWidth="1.6" /><path d="M18 21h5M18 25h9M18 29h9M18 33h6" stroke="#12161A" strokeWidth="1.6" /><path d="M36 18v16M34 18h4M34 34h4M33 27h6" stroke="#3E6E7A" strokeWidth="1.6" /><path d="M35 12l3 3 5-6" stroke="#FF2E7E" strokeWidth="1.8" /></svg></div>
             <div>
               <div className="num">03 · SMARTQUOTE ANALYZER</div>
@@ -269,10 +281,10 @@ export function ResultsTemplate({ requestId, keepHref, askHref, askAnswers = [],
               <span className="d">Any quote, from anyone — ours, yours, or your neighbor&apos;s guy. Plain English, local price context, and the questions written for you.</span>
               <div className="arrow">READ A QUOTE WITH US →</div>
             </div>
-          </a>
+          </a>}
 
           {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- /pages/* is a route handler serving one of Melissa's approved static documents (track F1), not a Next page; a plain anchor is the right element for a document. */}
-          <a className="p" href="/pages/home-memory">
+          {visibility.product_home_memory && <a className="p" href="/pages/home-memory">
             <div className="ic52 icp" data-icon="memory"><svg viewBox="0 0 52 52" fill="none" aria-hidden="true"><circle cx="26" cy="26" r="25" stroke="rgba(18,22,26,.15)" /><path d="M12 26L26 15l14 11" stroke="#12161A" strokeWidth="1.6" /><path d="M16 26h20M16 26v12h20V26" stroke="#12161A" strokeWidth="1.6" /><path d="M20 28h12v7.5H20zM23 31h6M23 33.5h3.5" stroke="#3E6E7A" strokeWidth="1.6" /><path d="M41 18s-3.2-3.4-3.2-5.6a3.2 3.2 0 1 1 6.4 0C44.2 14.6 41 18 41 18z" stroke="#FF2E7E" strokeWidth="1.8" /></svg></div>
             <div>
               <div className="num">04 · HOME MEMORY</div>
@@ -280,13 +292,15 @@ export function ResultsTemplate({ requestId, keepHref, askHref, askAnswers = [],
               <span className="d">Model numbers, warranties, who did it, what it cost, where the shutoff is. Stop renting your brain to your house for $0/hr and go live your life.</span>
               <div className="arrow">OPEN THE FLOOR PLAN →</div>
             </div>
-          </a>
+          </a>}
 
         </div>
         <div className="signoff">
           <p className="signoff-line">You stop carrying it in your head.<br /><span className="so-accent">You get your days back.</span></p>
         </div>
       </div>
+
+      }
 
       <p className="legal">This is a preparation record. A qualified technician does their own testing on site, and the price stays theirs to set. What you entered stays with you until you choose to send it.</p>
 

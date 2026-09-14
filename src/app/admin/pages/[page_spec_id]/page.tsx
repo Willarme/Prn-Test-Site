@@ -47,6 +47,7 @@ export default async function AdminEditPage({
   const specs = await allStagedSpecs();
   const spec = specs.find((s) => s.page_spec_id === decodeURIComponent(page_spec_id));
   if (!spec) notFound();
+  const frozen = Boolean(spec.door_template);
 
   const policy = await policyStore().getActive();
   const lint = lintPageBeforeQa(spec, policy.page_factory);
@@ -77,9 +78,10 @@ export default async function AdminEditPage({
       </div>
       <h1 className="d2">{spec.h1}</h1>
       <p className="lede" style={{ margin: "12px 0 8px" }}>
-        Edit your page with the live preview, then save. Saving creates a <strong>new version</strong>{" "}
+        {frozen ? <>This page uses the <strong>frozen v43 source</strong> and is read-only here.
+          Changes require a reviewed source update and fresh QA before release.</> : <>Edit your page with the live preview, then save. Saving creates a <strong>new version</strong>{" "}
         of this page and sends it back to QA. It does not publish anything, and it never changes a
-        version that already exists.
+        version that already exists.</>}
       </p>
       <p className="hint" style={{ color: "var(--on-dark-mute)", marginBottom: 20 }}>
         <Link href={`/staged/${slug}`} className="mono" style={{ color: "var(--pink)" }}>
@@ -89,7 +91,7 @@ export default async function AdminEditPage({
         {spec.generation.model ?? spec.generation.prompt_id ?? "hand"} · QA {spec.qa.state}
       </p>
 
-      {saved && (
+      {saved && !frozen && (
         <div className="cell" style={{ marginBottom: 18 }}>
           <span className="tag">Saved</span>
           <p style={{ margin: 0 }}>{saved}. This page is back at QA PENDING.</p>
@@ -123,11 +125,11 @@ export default async function AdminEditPage({
       )}
 
       <div className="page-editor-grid">
-        <form method="post" action="/api/admin/pages/edit" id="page-edit-form" className="cell">
+        <form method="post" action="/api/admin/pages/edit" id={frozen ? undefined : "page-edit-form"} className="cell">
           <input type="hidden" name="page_spec_id" value={spec.page_spec_id} />
           <label style={{ display: "block", marginBottom: 14 }}>
             <span className="tag">Title (max 70)</span>
-            <input name="title" defaultValue={spec.title} maxLength={70} required style={{ width: "100%" }} />
+            <input name="title" defaultValue={spec.title} maxLength={70} required disabled={frozen} style={{ width: "100%" }} />
           </label>
           <label style={{ display: "block", marginBottom: 14 }}>
             <span className="tag">Meta description (max 170)</span>
@@ -137,47 +139,54 @@ export default async function AdminEditPage({
               maxLength={170}
               rows={3}
               required
+              disabled={frozen}
               style={{ width: "100%" }}
             />
           </label>
           <label style={{ display: "block", marginBottom: 14 }}>
             <span className="tag">H1</span>
-            <input name="h1" defaultValue={spec.h1} required style={{ width: "100%" }} />
+            <input name="h1" defaultValue={spec.h1} required disabled={frozen} style={{ width: "100%" }} />
           </label>
           <label style={{ display: "block", marginBottom: 14 }}>
             <span className="tag">Hero headline</span>
-            <input name="hero_headline" defaultValue={spec.hero.headline} required style={{ width: "100%" }} />
+            <input name="hero_headline" defaultValue={spec.hero.headline} required disabled={frozen} style={{ width: "100%" }} />
           </label>
           <label style={{ display: "block", marginBottom: 18 }}>
             <span className="tag">Hero subheadline (blank to remove)</span>
             <input
               name="hero_subheadline"
               defaultValue={spec.hero.subheadline ?? ""}
+              disabled={frozen}
               style={{ width: "100%" }}
             />
           </label>
-          <button type="submit" className="btn btn-pink btn-sm">
-            Save as a new version
+          <button type="submit" disabled={frozen} className="btn btn-pink btn-sm">
+            {frozen ? "Frozen source · read-only" : "Save as a new version"}
           </button>
           <p className="hint" style={{ color: "var(--on-dark-mute)", marginTop: 14 }}>
-            Editable here: {OWNER_EDITABLE_FIELDS.join(", ")}. Section text comes from the shared
+            {frozen ? "These fields display the reviewed source. Owner edits and AI rewrites cannot change this bound version." : <>Editable here: {OWNER_EDITABLE_FIELDS.join(", ")}. Section text comes from the shared
             content bank and the template — changing it for one page would fork the bank, so those
-            live in Page-creator controls instead.
+            live in Page-creator controls instead.</>}
           </p>
         </form>
 
-        <EditorPreviewPane
+        {frozen ? <div>
+          <p className="mono">REVIEWED SOURCE PREVIEW · frozen v43</p>
+          <iframe src={`/admin/pages/${encodeURIComponent(spec.page_spec_id)}/preview`}
+            title="Reviewed frozen v43 source preview"
+            style={{ width: "100%", height: "78vh", border: "1px solid var(--line-d)", borderRadius: 12, background: "#fff" }} />
+        </div> : <EditorPreviewPane
           previewPath={`/admin/pages/${encodeURIComponent(spec.page_spec_id)}/preview`}
-        />
+        />}
       </div>
 
       {versions.length > 1 && (
         <div className="cell" style={{ marginTop: 26 }}>
           <span className="tag">Version history — {versions.length} versions</span>
           <p className="hint" style={{ color: "var(--on-dark-mute)", margin: "8px 0 4px" }}>
-            Every edit and every regeneration leaves its predecessor here, with the QA verdict it
+            {frozen ? "Recorded versions retain their source and QA verdict. This frozen version cannot be changed or rolled back through the editor." : <>Every edit and every regeneration leaves its predecessor here, with the QA verdict it
             earned. Rolling back restores an older version&apos;s wording as a NEW version — history
-            is never rewritten.
+            is never rewritten.</>}
           </p>
           <div style={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: ".88rem" }}>
@@ -219,7 +228,7 @@ export default async function AdminEditPage({
                       </td>
                       <td style={{ padding: "8px 10px" }}>{v.title}</td>
                       <td style={{ padding: "8px 10px" }}>
-                        {!isViewed && (
+                        {!isViewed && !frozen && (
                           <form method="post" action="/api/admin/pages/rollback">
                             <input type="hidden" name="page_spec_id" value={v.page_spec_id} />
                             <button type="submit" className="btn btn-ghost btn-sm">

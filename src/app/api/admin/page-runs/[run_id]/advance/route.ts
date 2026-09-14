@@ -1,0 +1,12 @@
+import { serveDoorRuns } from "@/platform/admin/door-page-run-http";
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+export const maxDuration = 60;
+const respond = (request: Request, context: { params: Promise<{ run_id: string }> }) => serveDoorRuns(request, "advance", () => context.params);
+export const POST = respond;
+export const GET = respond;
+export const HEAD = respond;
+export const PUT = respond;
+export const PATCH = respond;
+export const DELETE = respond;
+export const OPTIONS = respond;

@@ -1,0 +1,839 @@
+{
+  "$schema": "https://schemas.propertyresponsenetwork.com/doorspec/2.0.0.json",
+  "schema_version": "doorspec/2.0.0",
+  "identity": {
+    "tenant_id": "fixture.tenant",
+    "page_id": "fixture.f04",
+    "page_version": 1,
+    "opportunity_id": "fixture.opportunity.f04",
+    "canonical_intent_id": "fixture.intent.f04",
+    "intent_cluster_id": "fixture.cluster.f04",
+    "family_id": "F04",
+    "locale": "en-US",
+    "geography_scope": "national",
+    "slug": "dishwasher-not-draining",
+    "canonical_path": "/problems/dishwasher-not-draining"
+  },
+  "versions": {
+    "template": "door-v44.0.0",
+    "theme": "door-v44-t01@1.0.0",
+    "taxonomy": "subject-taxonomy/1.0.0",
+    "prompt_identities": [
+      {
+        "capability": "fixture.copy",
+        "name": "fixture",
+        "version": "v1",
+        "hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    ],
+    "source_bundle": "fixture.sources.v1"
+  },
+  "intent": {
+    "primary_decision": "What changes the next step for a dishwasher not draining?",
+    "primary_query": "dishwasher not draining",
+    "query_aliases": [],
+    "sub_intents": [
+      "Urgency",
+      "Evidence to collect",
+      "Limits of remote advice"
+    ],
+    "problem_state": "symptom",
+    "page_eligibility_receipt": "fixture.eligibility.f04"
+  },
+  "subject": {
+    "subject_id": "fixture.subject.dishwasher",
+    "display_label": "dishwasher",
+    "short_label": "dishwasher",
+    "cta_label": "DISHWASHER",
+    "second_person_label": "your dishwasher",
+    "possessive_label": "your dishwasher's",
+    "plural_label": "dishwashers",
+    "subject_kind": "appliance"
+  },
+  "layout": {
+    "order_profile_id": "order-b",
+    "conditional_sections": {
+      "related": false,
+      "nameplate_help": true,
+      "media_controls": false,
+      "prices": false,
+      "local_stats": false,
+      "founders_offer": false
+    }
+  },
+  "head": {
+    "page": {
+      "title": "Dishwasher not draining: what changes the next step?",
+      "meta_description": "Synthetic contract fixture for evidence, safety boundaries and a portable packet.",
+      "og_description": "Synthetic contract fixture for evidence, safety boundaries and a portable packet."
+    },
+    "site": {
+      "name_token": "{{site.name}}",
+      "origin": "https://fixture.example"
+    },
+    "brand": {
+      "a": "#ff0088",
+      "b": "#00aa88",
+      "warn": "#ffaa00",
+      "theme": "door-v44-t01@1.0.0"
+    },
+    "nav": {
+      "category_page_id": "fixture.family.f04",
+      "category_label": "Dishwasher problems",
+      "cta_action": "hero_start"
+    },
+    "crumb": {
+      "family_page_id": "fixture.family.f04",
+      "family_label": "Dishwasher problems",
+      "problem_label": "Dishwasher not draining"
+    },
+    "accents": {
+      "map": []
+    }
+  },
+  "actions": {
+    "hero_start": {
+      "pattern_id": "START_KNOWN_OBJECT",
+      "target": "#intake"
+    },
+    "packet_start": {
+      "pattern_id": "BUILD_KNOWN_OBJECT_PACKET",
+      "target": "#intake"
+    }
+  },
+  "intake": {
+    "heading": [
+      {
+        "type": "text",
+        "value": "Start with your dishwasher"
+      }
+    ],
+    "lede": "Describe the evidence already visible to you.",
+    "field_label": "What did you notice?",
+    "placeholder": "I noticed standing water in my dishwasher.",
+    "help": "Unknown details can remain unknown.",
+    "prompts": [
+      {
+        "id": "f04.prompt.reading",
+        "kind": "known_reading",
+        "evidence_type": "reading",
+        "text": "Record an existing reading if one is already available."
+      },
+      {
+        "id": "f04.prompt.photo",
+        "kind": "photograph_label",
+        "evidence_type": "nameplate",
+        "text": "Describe a readable equipment label if already accessible."
+      },
+      {
+        "id": "f04.prompt.unknown",
+        "kind": "know_nothing",
+        "evidence_type": "description",
+        "text": "Start with what you noticed when details are unknown."
+      }
+    ],
+    "so_far_label": "What you already know",
+    "so_far_items": [
+      "Visible observation",
+      "When it appeared",
+      "What remains unknown"
+    ],
+    "submit_action": "hero_start",
+    "disclosure": {
+      "id": "fixture.disclosure.v1",
+      "content_hash": "fixture_disclosure_hash_v1",
+      "purpose": "Synthetic intake contract validation"
+    },
+    "attribution": {
+      "page_id": "fixture.f04",
+      "intent_cluster_id": "fixture.cluster.f04",
+      "search_opportunity_id": "fixture.opportunity.f04",
+      "problem_family_hint": "F04",
+      "landing_path": "/problems/dishwasher-not-draining"
+    },
+    "media_controls": []
+  },
+  "claims": [
+    {
+      "claim_id": "fixture.claim.observation",
+      "source_ids": [
+        "fixture.source.manual"
+      ],
+      "content_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    }
+  ],
+  "sources": [
+    {
+      "source_id": "fixture.source.manual",
+      "cite": true,
+      "claim_ids": [
+        "fixture.claim.observation"
+      ],
+      "note": "Synthetic source fixture; not practical guidance."
+    }
+  ],
+  "capabilities": [
+    {
+      "capability_id": "fixture.capability.0",
+      "live_status": "VERIFIED_LIVE",
+      "production_receipt": "fixture_capability_0_v1"
+    },
+    {
+      "capability_id": "fixture.capability.1",
+      "live_status": "VERIFIED_LIVE",
+      "production_receipt": "fixture_capability_1_v1"
+    },
+    {
+      "capability_id": "fixture.capability.2",
+      "live_status": "VERIFIED_LIVE",
+      "production_receipt": "fixture_capability_2_v1"
+    },
+    {
+      "capability_id": "fixture.capability.3",
+      "live_status": "VERIFIED_LIVE",
+      "production_receipt": "fixture_capability_3_v1"
+    },
+    {
+      "capability_id": "fixture.capability.4",
+      "live_status": "UNVERIFIED",
+      "production_receipt": null
+    }
+  ],
+  "visuals": [
+    {
+      "id": "f04.visual.0",
+      "asset_id": "fixture.asset.f04.0",
+      "role": "decision_observation",
+      "claim_ids": [
+        "fixture.claim.observation"
+      ],
+      "title": "Synthetic observation diagram 1",
+      "description": "This synthetic diagram describes an observation without supplying homeowner instructions. It distinguishes the visible surface from areas requiring a qualified inspection and records where evidence remains missing. Labels describe the location of an observation, the material involved, and the question an evaluator would ask next. Every mark belongs to a controlled test asset. The caption identifies its purpose while the alternative text describes its meaningful content. This fixture supports contract validation only and must never be published as reviewed practical guidance for a real household problem.",
+      "caption": [
+        {
+          "type": "text",
+          "value": "A synthetic diagram of the evidence boundary."
+        }
+      ],
+      "alt": "Synthetic observation diagram 1",
+      "inline_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "raster_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "width": 1200,
+      "height": 800,
+      "mime": "image/png",
+      "authored_status": "fixture",
+      "review_receipt": null,
+      "plate_class": "plate-1"
+    },
+    {
+      "id": "f04.visual.1",
+      "asset_id": "fixture.asset.f04.1",
+      "role": "safe_vs_sealed",
+      "claim_ids": [
+        "fixture.claim.observation"
+      ],
+      "title": "Synthetic observation diagram 2",
+      "description": "This synthetic diagram describes an observation without supplying homeowner instructions. It distinguishes the visible surface from areas requiring a qualified inspection and records where evidence remains missing. Labels describe the location of an observation, the material involved, and the question an evaluator would ask next. Every mark belongs to a controlled test asset. The caption identifies its purpose while the alternative text describes its meaningful content. This fixture supports contract validation only and must never be published as reviewed practical guidance for a real household problem.",
+      "caption": [
+        {
+          "type": "text",
+          "value": "A synthetic diagram of the evidence boundary."
+        }
+      ],
+      "alt": "Synthetic observation diagram 2",
+      "inline_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "raster_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "width": 1200,
+      "height": 800,
+      "mime": "image/png",
+      "authored_status": "fixture",
+      "review_receipt": null,
+      "plate_class": "plate-2"
+    }
+  ],
+  "sections": {
+    "hero": {
+      "badge_problem": "dishwasher",
+      "badge_tail": "Synthetic evidence fixture",
+      "h1": [
+        {
+          "type": "text",
+          "value": "What changes the next step for a dishwasher not draining?"
+        }
+      ],
+      "answer": [
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "value": "This synthetic page tests a structured account of the observation, its timing, the available context, and the boundary of what remains unknown. It does not provide homeowner instructions. The useful next question depends on evidence already present, rather than a guessed cause. A qualified assessment still needs measurement where the visible evidence cannot distinguish competing explanations. See the controlled source fixture for provenance."
+            },
+            {
+              "type": "source_ref",
+              "source_id": "fixture.source.manual",
+              "label": "Synthetic source"
+            }
+          ]
+        }
+      ],
+      "cap_last": [
+        {
+          "type": "text",
+          "value": "A clear account of your dishwasher"
+        }
+      ],
+      "value_heading": "Start with evidence",
+      "value_claim": "Record what is known",
+      "value_rows": [
+        {
+          "id": "f04.value.0",
+          "generic": "A general observation 1",
+          "ours": [
+            {
+              "type": "text",
+              "value": "A specific evidence question 1"
+            }
+          ]
+        },
+        {
+          "id": "f04.value.1",
+          "generic": "A general observation 2",
+          "ours": [
+            {
+              "type": "text",
+              "value": "A specific evidence question 2"
+            }
+          ]
+        },
+        {
+          "id": "f04.value.2",
+          "generic": "A general observation 3",
+          "ours": [
+            {
+              "type": "text",
+              "value": "A specific evidence question 3"
+            }
+          ]
+        },
+        {
+          "id": "f04.value.3",
+          "generic": "A general observation 4",
+          "ours": [
+            {
+              "type": "text",
+              "value": "A specific evidence question 4"
+            }
+          ]
+        },
+        {
+          "id": "f04.value.4",
+          "generic": "A general observation 5",
+          "ours": [
+            {
+              "type": "text",
+              "value": "A specific evidence question 5"
+            }
+          ]
+        }
+      ],
+      "value_foot": [
+        {
+          "type": "text",
+          "value": "Unknown evidence remains explicit."
+        }
+      ]
+    },
+    "stats": {
+      "heading": [
+        {
+          "type": "text",
+          "value": "Evidence before a decision"
+        }
+      ],
+      "cards": [
+        {
+          "id": "f04.stat.0",
+          "icon_id": "fixture.icon.evidence",
+          "icon_class": "ico-green",
+          "value": [
+            {
+              "type": "fact_ref",
+              "claim_id": "fixture.claim.observation",
+              "label": "Fixture evidence"
+            }
+          ],
+          "statement": "This synthetic claim tests provenance closure.",
+          "note": "Synthetic denominator and window; no public numeric claim.",
+          "source_class": "Synthetic reviewed fixture",
+          "claim_id": "fixture.claim.observation",
+          "question_type": "simple",
+          "metric_family": "fixture.metric.0"
+        },
+        {
+          "id": "f04.stat.1",
+          "icon_id": "fixture.icon.evidence",
+          "icon_class": "ico-blue",
+          "value": [
+            {
+              "type": "fact_ref",
+              "claim_id": "fixture.claim.observation",
+              "label": "Fixture evidence"
+            }
+          ],
+          "statement": "This synthetic claim tests provenance closure.",
+          "note": "Synthetic denominator and window; no public numeric claim.",
+          "source_class": "Synthetic reviewed fixture",
+          "claim_id": "fixture.claim.observation",
+          "question_type": "urgent",
+          "metric_family": "fixture.metric.1"
+        },
+        {
+          "id": "f04.stat.2",
+          "icon_id": "fixture.icon.evidence",
+          "icon_class": "ico-pink",
+          "value": [
+            {
+              "type": "fact_ref",
+              "claim_id": "fixture.claim.observation",
+              "label": "Fixture evidence"
+            }
+          ],
+          "statement": "This synthetic claim tests provenance closure.",
+          "note": "Synthetic denominator and window; no public numeric claim.",
+          "source_class": "Synthetic reviewed fixture",
+          "claim_id": "fixture.claim.observation",
+          "question_type": "cost",
+          "metric_family": "fixture.metric.2"
+        }
+      ],
+      "source_note": [
+        {
+          "type": "source_ref",
+          "source_id": "fixture.source.manual",
+          "label": "Synthetic source"
+        }
+      ],
+      "band": [
+        {
+          "type": "text",
+          "value": "Keep the evidence boundary visible."
+        }
+      ]
+    },
+    "observations": {
+      "heading": [
+        {
+          "type": "text",
+          "value": "What changes the next question"
+        }
+      ],
+      "columns": [
+        {
+          "label": "Evidence column 1",
+          "mw_class": "mw165"
+        },
+        {
+          "label": "Evidence column 2",
+          "mw_class": "mw250"
+        }
+      ],
+      "rows": [
+        {
+          "id": "f04.observation.1",
+          "look": "Existing visible evidence only",
+          "rules_out": "No diagnostic conclusion is supplied by this fixture.",
+          "protocol_check_id": "fixture.check.f04"
+        }
+      ]
+    },
+    "common_causes": {
+      "heading": [
+        {
+          "type": "text",
+          "value": "Possibilities need evidence"
+        }
+      ],
+      "columns": [
+        {
+          "label": "Evidence column 1",
+          "mw_class": "mw165"
+        },
+        {
+          "label": "Evidence column 2",
+          "mw_class": "mw250"
+        },
+        {
+          "label": "Evidence column 3",
+          "mw_class": "mw125"
+        },
+        {
+          "label": "Evidence column 4",
+          "mw_class": "mw145"
+        }
+      ],
+      "rows": [
+        {
+          "id": "f04.cause.1",
+          "cause": "Synthetic competing explanation",
+          "notice": "No real diagnostic claim.",
+          "fix_class": "never",
+          "fix_label": "Requires qualified evidence",
+          "range": null,
+          "omission_reason": "No reviewed cost range exists in this synthetic fixture.",
+          "claim_ids": []
+        }
+      ]
+    },
+    "safe_observations": {
+      "heading": [
+        {
+          "type": "text",
+          "value": "Observation boundaries"
+        }
+      ],
+      "lede": "Synthetic boundary checks; not homeowner instructions.",
+      "checks": [
+        {
+          "id": "f04.check.1",
+          "heading": "Describe existing evidence",
+          "body": "Do not perform a physical test from this fixture.",
+          "protocol_check_id": "fixture.check.f04"
+        }
+      ],
+      "never_items": [
+        {
+          "id": "f04.never.1",
+          "text": "Do not treat this fixture as practical guidance.",
+          "hazard_id": "fixture.hazard.f04"
+        }
+      ],
+      "stop_items": [
+        {
+          "id": "f04.stop.1",
+          "text": "Real hazards require appropriate professional help.",
+          "hazard_id": "fixture.hazard.f04"
+        }
+      ],
+      "cta_action": "hero_start",
+      "protocol_id": "fixture.protocol.f04",
+      "hazard_ids": [
+        "fixture.hazard.f04"
+      ],
+      "eval_receipt_ids": [
+        "fixture.eval.f04"
+      ]
+    },
+    "visuals": {
+      "heading": [
+        {
+          "type": "text",
+          "value": "The evidence boundary"
+        }
+      ]
+    },
+    "flip": {
+      "heading": [
+        {
+          "type": "text",
+          "value": "A clearer account"
+        }
+      ],
+      "columns": [
+        {
+          "id": "f04.flip.0",
+          "heading": "The usual way",
+          "body": "Synthetic evidence comparison 1"
+        },
+        {
+          "id": "f04.flip.1",
+          "heading": "The shift",
+          "body": "Synthetic evidence comparison 2"
+        },
+        {
+          "id": "f04.flip.2",
+          "heading": "With us",
+          "body": "Synthetic evidence comparison 3"
+        }
+      ]
+    },
+    "general_vs_yours": {
+      "heading": [
+        {
+          "type": "text",
+          "value": "General advice and specific evidence"
+        }
+      ],
+      "columns": [
+        {
+          "label": "Evidence column 1",
+          "mw_class": "mw165"
+        },
+        {
+          "label": "Evidence column 2",
+          "mw_class": "mw250"
+        },
+        {
+          "label": "Evidence column 3",
+          "mw_class": "mw125"
+        }
+      ],
+      "rows": [
+        {
+          "id": "f04.comparison.0",
+          "where": "Synthetic source 1",
+          "gives": "General context",
+          "ours": "A question grounded in the recorded observation"
+        },
+        {
+          "id": "f04.comparison.1",
+          "where": "Synthetic source 2",
+          "gives": "General context",
+          "ours": "A question grounded in the recorded observation"
+        },
+        {
+          "id": "f04.comparison.2",
+          "where": "Synthetic source 3",
+          "gives": "General context",
+          "ours": "A question grounded in the recorded observation"
+        },
+        {
+          "id": "f04.comparison.3",
+          "where": "Synthetic source 4",
+          "gives": "General context",
+          "ours": "A question grounded in the recorded observation"
+        }
+      ]
+    },
+    "capability": {
+      "heading": [
+        {
+          "type": "text",
+          "value": "What can this evidence support?"
+        }
+      ],
+      "columns": [
+        {
+          "label": "Evidence column 1",
+          "mw_class": "mw165"
+        },
+        {
+          "label": "Evidence column 2",
+          "mw_class": "mw250"
+        },
+        {
+          "label": "Evidence column 3",
+          "mw_class": "mw125"
+        }
+      ],
+      "rows": [
+        {
+          "id": "f04.capability.0",
+          "capability_id": "fixture.capability.0",
+          "ask": "What can my evidence answer here?",
+          "tells": "Synthetic module injection tests this content boundary only.",
+          "chip_class": "chip-green",
+          "chip_label": "CAN ANSWER"
+        },
+        {
+          "id": "f04.capability.1",
+          "capability_id": "fixture.capability.1",
+          "ask": "What can my evidence answer here?",
+          "tells": "Synthetic module injection tests this content boundary only.",
+          "chip_class": "chip-blue",
+          "chip_label": "CAN OFTEN ANSWER"
+        },
+        {
+          "id": "f04.capability.2",
+          "capability_id": "fixture.capability.2",
+          "ask": "What can my evidence answer here?",
+          "tells": "Synthetic module injection tests this content boundary only.",
+          "chip_class": "chip-pink",
+          "chip_label": "CAN ANSWER WHAT IT CHANGES"
+        },
+        {
+          "id": "f04.capability.3",
+          "capability_id": "fixture.capability.3",
+          "ask": "What can my evidence answer here?",
+          "tells": "Synthetic module injection tests this content boundary only.",
+          "chip_class": "chip-blue",
+          "chip_label": "CAN NARROW"
+        },
+        {
+          "id": "f04.capability.4",
+          "capability_id": "fixture.capability.4",
+          "ask": "What can my evidence answer here?",
+          "tells": "This conclusion still requires testing.",
+          "chip_class": "chip-pink",
+          "chip_label": "STILL NEEDS TESTING"
+        }
+      ],
+      "band_hook": [
+        {
+          "type": "text",
+          "value": "Synthetic module evidence is not a production receipt."
+        }
+      ]
+    },
+    "job_packet": {
+      "heading": [
+        {
+          "type": "text",
+          "value": "A portable account of the evidence"
+        }
+      ],
+      "cta_action": "packet_start",
+      "example_rows": [
+        {
+          "id": "f04.packet.0",
+          "key": "problem",
+          "value": "Synthetic recorded evidence for problem"
+        },
+        {
+          "id": "f04.packet.1",
+          "key": "context",
+          "value": "Synthetic recorded evidence for context"
+        },
+        {
+          "id": "f04.packet.2",
+          "key": "equipment",
+          "value": "Synthetic recorded evidence for equipment"
+        },
+        {
+          "id": "f04.packet.3",
+          "key": "ruled_out",
+          "value": "Synthetic recorded evidence for ruled_out"
+        },
+        {
+          "id": "f04.packet.4",
+          "key": "still_to_test",
+          "value": "Synthetic recorded evidence for still_to_test"
+        }
+      ],
+      "band_hook": "Keep uncertainty visible."
+    },
+    "repair_record": {
+      "heading": [
+        {
+          "type": "text",
+          "value": "Building useful records"
+        }
+      ],
+      "cards": [
+        {
+          "id": "f04.record.0",
+          "color_class": "pink",
+          "icon_id": "fixture.icon.evidence",
+          "scope_chip": "National first",
+          "kicker": "Synthetic record category 1",
+          "value": "Building the repair record",
+          "copy": "No public result is asserted by this fixture.",
+          "public_fact_id": null
+        },
+        {
+          "id": "f04.record.1",
+          "color_class": "green",
+          "icon_id": "fixture.icon.evidence",
+          "scope_chip": "Best available scope",
+          "kicker": "Synthetic record category 2",
+          "value": "Building the repair record",
+          "copy": "No public result is asserted by this fixture.",
+          "public_fact_id": null
+        },
+        {
+          "id": "f04.record.2",
+          "color_class": "blue",
+          "icon_id": "fixture.icon.evidence",
+          "scope_chip": "Where labels are available",
+          "kicker": "Synthetic record category 3",
+          "value": "Building the repair record",
+          "copy": "No public result is asserted by this fixture.",
+          "public_fact_id": null
+        },
+        {
+          "id": "f04.record.3",
+          "color_class": "amber",
+          "icon_id": "fixture.icon.evidence",
+          "scope_chip": "Local as density grows",
+          "kicker": "Synthetic record category 4",
+          "value": "Building the repair record",
+          "copy": "No public result is asserted by this fixture.",
+          "public_fact_id": null
+        }
+      ]
+    },
+    "faq": {
+      "heading": [
+        {
+          "type": "text",
+          "value": "Questions before starting"
+        }
+      ],
+      "questions": [
+        {
+          "id": "f04.faq.0",
+          "kind": "urgent",
+          "question": "What if my situation is urgent?",
+          "answer": [
+            {
+              "type": "text",
+              "value": "This synthetic answer validates the contract and makes no practical or commercial promise."
+            }
+          ]
+        },
+        {
+          "id": "f04.faq.1",
+          "kind": "diy",
+          "question": "Can I do this myself?",
+          "answer": [
+            {
+              "type": "text",
+              "value": "This synthetic answer validates the contract and makes no practical or commercial promise."
+            }
+          ]
+        },
+        {
+          "id": "f04.faq.2",
+          "kind": "cost",
+          "question": "What could this cost?",
+          "answer": [
+            {
+              "type": "text",
+              "value": "This synthetic answer validates the contract and makes no practical or commercial promise."
+            }
+          ]
+        },
+        {
+          "id": "f04.faq.3",
+          "kind": "lead_privacy",
+          "question": "Am I being sold as a lead?",
+          "answer": [
+            {
+              "type": "text",
+              "value": "This synthetic answer validates the contract and makes no practical or commercial promise."
+            }
+          ]
+        }
+      ]
+    },
+    "closer": {
+      "heading": [
+        {
+          "type": "text",
+          "value": "Start with your dishwasher"
+        }
+      ],
+      "body": "Record what you know and leave unknown details explicit.",
+      "cta_action": "hero_start"
+    },
+    "sources": {
+      "intro_tail": "All references here are synthetic test records.",
+      "note_lead": "No real source approval or publication date is asserted."
+    }
+  },
+  "related_page_ids": [],
+  "release": {
+    "index_policy": "staged_noindex",
+    "approved_content_at": null
+  }
+}

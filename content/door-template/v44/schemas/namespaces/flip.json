@@ -1,0 +1,50 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://schemas.propertyresponsenetwork.com/doorspec/namespaces/flip.json",
+  "title": "Door v44 flip",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "heading": {
+      "$ref": "https://schemas.propertyresponsenetwork.com/doorspec/namespaces/richtext.json"
+    },
+    "columns": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^(?!(?:__proto__|prototype|constructor)$)[A-Za-z0-9][A-Za-z0-9._:-]*$"
+          },
+          "heading": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 150,
+            "pattern": "^(?!\\s)(?![\\s\\S]*\\s{2})(?![\\s\\S]*[<>\\u0000-\\u001f\\u007f])(?![\\s\\S]*\\s$)[\\s\\S]+$"
+          },
+          "body": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 700,
+            "pattern": "^(?!\\s)(?![\\s\\S]*\\s{2})(?![\\s\\S]*[<>\\u0000-\\u001f\\u007f])(?![\\s\\S]*\\s$)[\\s\\S]+$"
+          }
+        },
+        "required": [
+          "id",
+          "heading",
+          "body"
+        ]
+      },
+      "minItems": 3,
+      "maxItems": 3
+    }
+  },
+  "required": [
+    "heading",
+    "columns"
+  ]
+}

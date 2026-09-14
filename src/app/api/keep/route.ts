@@ -1,3 +1,4 @@
+import { refuseFeatureRoute } from "@/platform/features/route-guard";
 import { randomBytes } from "node:crypto";
 import { NextResponse } from "next/server";
 import { send, sendSms } from "@/platform/email/send";
@@ -27,6 +28,8 @@ import { runtimeStore } from "@/platform/stores/runtime";
 const MAGIC_TTL_DAYS = 7;
 
 export async function POST(request: Request): Promise<Response> {
+  const refusal = await refuseFeatureRoute("/api/keep", true);
+  if (refusal) return refusal;
   const { data, wantsJson } = await readBody(request);
   const token = data.token ?? "";
   const back = `/keep/${encodeURIComponent(token)}`;

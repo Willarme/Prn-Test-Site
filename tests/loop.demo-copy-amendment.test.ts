@@ -55,7 +55,12 @@ describe("served v43 demo copy derivative", () => {
 
   it.each(["canonical", "alias"])("serves the amended cross-surface copy with honest dates and noindex through %s", async route => {
     const path = route === "canonical" ? "/problems/ac-blowing-warm-air" : "/ac-blowing-warm-air";
-    const response = await (route === "canonical" ? canonical : alias)(new Request("https://preview.invalid" + path));
+    let response = await (route === "canonical" ? canonical : alias)(new Request("https://preview.invalid" + path));
+    if (route === "alias") {
+      expect(response.status).toBe(308);
+      expect(response.headers.get("location")).toBe("https://preview.invalid/problems/ac-blowing-warm-air");
+      response = await canonical(new Request(response.headers.get("location")!));
+    }
     const html = await response.text();
     expect(response.status).toBe(200);
     expect(response.headers.get("x-robots-tag")).toBe("noindex, nofollow");

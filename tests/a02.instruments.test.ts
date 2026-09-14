@@ -2,7 +2,7 @@ import { mkdtemp } from "node:fs/promises";
 import { readFileSync, readdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { ACTIVE_DISCLOSURE } from "@/domain/privacy/disclosures";
 import { readDevDb } from "@/platform/stores/dev-db";
 import { runtimeStore } from "@/platform/stores/runtime";
@@ -185,18 +185,36 @@ describe("A02 — appendAudit carries a duration (A10's Owner Hours)", () => {
     expect(row.duration_ms).toBe(42_000);
   });
 
-  it("the one human gate actually measures it, and bounds the browser's number", () => {
+  it("the one human gate actually measures it, and bounds the browser's number", async () => {
     const route = readFileSync(
       join(process.cwd(), "src/app/api/admin/pages/publish/route.ts"),
       "utf-8"
     );
-    expect(route).toMatch(/owner_ms: z\.number\(\)\.int\(\)\.positive\(\)\.max\(/);
     expect(route).toMatch(/duration_ms: parsed\.data\.owner_ms \?\? null/);
+    const auth = await import("@/platform/admin/auth");
+    const gate = await import("@/platform/search/page-qa-gate");
+    const unlocked = vi.spyOn(auth, "isAdminUnlocked").mockResolvedValue(true);
+    const release = vi.spyOn(gate, "publishGate").mockResolvedValue(null);
+    try {
+      const { POST } = await import("@/app/api/admin/pages/publish/route");
+      // Valid timing reaches the independent page gate (404 for this fixture).
+      // Invalid timing must stop at validation, before even reading that gate.
+      for (const owner_ms of [undefined, 1, 4 * 60 * 60 * 1000, 0, -1, 0.5, 4 * 60 * 60 * 1000 + 1, Number.MAX_SAFE_INTEGER + 1, null, "1000"]) {
+        release.mockClear();
+        const response = await POST(new Request("http://localhost/api/admin/pages/publish", {
+          method: "POST", headers: { "Content-Type": "application/json", Origin: "http://localhost" },
+          body: JSON.stringify({ page_spec_id: "timing_fixture", action: "publish", owner_ms }),
+        }));
+        const valid = owner_ms === undefined || owner_ms === 1 || owner_ms === 4 * 60 * 60 * 1000;
+        expect(response.status).toBe(valid ? 404 : 400);
+        expect(release).toHaveBeenCalledTimes(valid ? 1 : 0);
+      }
+    } finally { unlocked.mockRestore(); release.mockRestore(); }
     const button = readFileSync(
       join(process.cwd(), "src/components/admin/PublishButton.tsx"),
       "utf-8"
     );
-    expect(button).toMatch(/owner_ms: Math\.max\(1, Date\.now\(\) - shownAt\.current\)/);
+    expect(button).toMatch(/owner_ms:\s*Math\.min\(4 \* 60 \* 60 \* 1000,\s*Math\.max\(1, Date\.now\(\) - shownAt\.current\)\)/);
   });
 
   it("absent means NOT MEASURED — the schema never lets a 0 stand in for it", () => {

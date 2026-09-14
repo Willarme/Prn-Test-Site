@@ -1,3 +1,4 @@
+import { readFeatureSnapshot, featureIsLive } from "@/platform/features/state";
 import { MEDIA_ALLOWLIST, readPrivateMediaBytes } from "@/platform/adapters/media-storage";
 import { loadJourneyContext } from "@/platform/intake/complete";
 import { stripImageMetadata } from "@/platform/media/exif";
@@ -40,6 +41,9 @@ export async function GET(
   const { token, evidence_id } = await params;
   const link = await verifyLink(token);
   if (!link.ok || (link.scope !== "media" && link.scope !== "keep")) return notFound();
+
+  const features = await readFeatureSnapshot();
+  if (!featureIsLive(features, link.scope === "media" ? "shared_links" : "keep")) return notFound();
 
   const ctx = await loadJourneyContext(link.request_id);
   if (!ctx) return notFound();

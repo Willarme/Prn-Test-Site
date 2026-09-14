@@ -1,0 +1,85 @@
+{
+  "contract_version": "compatibility/1.0.0",
+  "content_baseline_id": "ac-v43",
+  "template_version": "door-v44.0.0",
+  "schema_version": "doorspec/2.0.0",
+  "root_schema_id": "https://schemas.propertyresponsenetwork.com/doorspec/2.0.0.json",
+  "namespace_count": 22,
+  "namespace_paths": {
+    "page": "/head/page",
+    "site": "/head/site",
+    "brand": "/head/brand",
+    "nav": "/head/nav",
+    "crumb": "/head/crumb",
+    "hero": "/sections/hero",
+    "intake": "/intake",
+    "stats": "/sections/stats",
+    "flip": "/sections/flip",
+    "job_packet": "/sections/job_packet",
+    "general_vs_yours": "/sections/general_vs_yours",
+    "capability": "/sections/capability",
+    "observations": "/sections/observations",
+    "visuals": [
+      "/sections/visuals",
+      "/visuals"
+    ],
+    "common_causes": "/sections/common_causes",
+    "safe_observations": "/sections/safe_observations",
+    "repair_record": "/sections/repair_record",
+    "faq": "/sections/faq",
+    "related": "/sections/related",
+    "closer": "/sections/closer",
+    "sources": [
+      "/sections/sources",
+      "/sources"
+    ],
+    "accents": "/head/accents"
+  },
+  "order_profile_id": "order-b",
+  "order": [
+    "HERO",
+    "INTAKE",
+    "STAT_CARDS",
+    "WHAT_CHANGES_THE_ANSWER",
+    "COMMON_POSSIBILITIES",
+    "SAFE_OBSERVATIONS",
+    "VISUALS",
+    "THE_FLIP",
+    "GENERAL_VS_YOURS",
+    "CAPABILITY_QUESTIONS",
+    "JOB_PACKET",
+    "REPAIR_RECORD",
+    "FAQ",
+    "RELATED",
+    "CLOSER"
+  ],
+  "rules": [
+    "INTAKE is second child within HERO.",
+    "RELATED omitted when empty, directly before CLOSER when present.",
+    "No v43 source/reference rewritten.",
+    "Reject legacy *_html, arbitrary SVG/CSS/JS, model URLs and unnamed attributes."
+  ],
+  "frozen_reference": {
+    "path": "content/door-template/v43/reference/approved-v43.html",
+    "raw_sha256": "cfb4a1b532f06a50040459a6de173e33e96aee8913c3d02884f4a8b85b69044a",
+    "lf_sha256": "756fb95907fd3fb21f7bc9a86e854d0e90f8ef35455776b83a17b4935f8d8843"
+  },
+  "defensive_ceilings": {
+    "unspecified_rows": 20,
+    "richtext_siblings": 40,
+    "short_text": 150,
+    "body_text": 1000,
+    "image_dimension": 8192
+  },
+  "counts_authority": "Guide §3 bounds are editorial contract. Other finite safety ceilings bound input resources and are not copy targets.",
+  "deferred": [
+    "Compiler/constants diff/AC fidelity",
+    "Title/H1/query semantic decision evaluation",
+    "Numeric provenance publisher/geography/window/denominator/date/methodology",
+    "Image asset/hash/rendered/schema parity and licensing",
+    "Cross-page visual uniqueness and anti-template footprint",
+    "A06 wording/quality, accessible renderer and immutable PageVersion",
+    "Creator admin and full H01–H18 acceptance"
+  ],
+  "fixture_scope": "F04/F08 synthetic portability records only; no production approval."
+}

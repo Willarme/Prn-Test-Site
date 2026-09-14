@@ -67,6 +67,8 @@ export interface Valued {
 export interface DirectionsConfig {
   /** False for a packet-only share: never mint or print owner capabilities. */
   owner_actions?: boolean;
+  /** D5: independent visibility, without changing the saved owner/provider design. */
+  qr_visibility?: { keep: boolean; ask: boolean };
   /** Origin for both QR URLs. Required — the renderer halts without it. */
   link_base: string;
   keep_path?: string;

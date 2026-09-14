@@ -1,0 +1,2281 @@
+{
+  "contract_version": "template-constants/1.1.0",
+  "baseline_id": "ac-v43",
+  "authority": "Guide §3; §13–15; §22; Amendment 11.2–11.3. Routine typed compiler labels under c6ff9a.",
+  "strings": {
+    "hero_home": "Home",
+    "hero_answer": "The short answer",
+    "hero_value_eyebrow": "Why this is different",
+    "intake_start": "Start here",
+    "intake_duration": "Takes 1 to 5 minutes",
+    "intake_title": "LIVE Walkthrough Tool",
+    "stats_eyebrow": "Before you call anyone",
+    "stats_sources": "See all sources and review notes",
+    "observations_eyebrow": "The fastest way through",
+    "causes_eyebrow": "The shortlist",
+    "safe_eyebrow": "Ten minutes, no tools",
+    "visuals_eyebrow": "Drawn for your walkthrough",
+    "flip_eyebrow": "The flip",
+    "flip_usual": "The usual way",
+    "flip_shift": "The shift",
+    "flip_us": "With us",
+    "comparison_eyebrow": "What you are actually choosing between",
+    "packet_eyebrow": "What you walk away with",
+    "packet_name": "Job Packet",
+    "record_eyebrow": "LIVE repair record",
+    "record_methodology": "See the calculation rules and data definitions",
+    "record_building": "Building the repair record",
+    "faq_eyebrow": "Before you start",
+    "related_eyebrow": "Not quite your problem?",
+    "related_heading": "Other things people are fixing this week",
+    "closer_free": "Free · No account · Your packet, to send anywhere",
+    "source_heading": "Sources & review notes",
+    "intake_free": "Free. No email to start. We ask for one only if you want the packet emailed to you.",
+    "hero_badge_middle": "Free LIVE walkthrough",
+    "brand_no_account": "No account. No email to start.",
+    "founders_free": "FREE",
+    "founders_audience": "for Founders",
+    "nav_what_tool_can_do": "What this tool can do",
+    "nav_numbers": "How our numbers work",
+    "source_intro": "Technical, cost and reference claims on this page are checked against the sources below. First-party Repair Record statistics use a separate methodology.",
+    "source_view": "View source",
+    "source_date_policy": "Pages without a displayed publication date are recorded as date not shown rather than given an assumed date. Cost guidance is re-checked every 90 days, manufacturer safety guidance every 180 days.",
+    "notice_heading": "Informational and safety notice:",
+    "notice_body_before_links": "This site provides educational guidance and a structured way to collect information about your home problem. It is not a professional diagnosis, engineering opinion, warranty, emergency service, or substitute for an appropriately licensed or qualified technician when one is needed. Do not perform electrical, refrigerant, gas, combustion, structural, or other hazardous work unless you are properly qualified and authorized to do so. Stop and seek appropriate professional, utility, or emergency help for immediate hazards. Costs, causes, outcomes, codes, licensing requirements, equipment configurations, and safe procedures can vary by property, equipment, jurisdiction, and circumstance. See our",
+    "legal_terms": "Terms",
+    "legal_and": "and",
+    "legal_privacy": "Privacy Notice",
+    "footer_country": "United States",
+    "causes_range_note": "Typical published ranges, not a quote and not a local frequency ranking.",
+    "flip_record_heading": "Every walkthrough builds the record.",
+    "flip_record_body": "We turn what people show us into evidence that gets more specific as more of it comes in. National patterns first, then your state, your metro, your street, as soon as there is enough to be worth publishing.",
+    "upload_audio_source": "Talk through it",
+    "upload_video_source": "Add a short video",
+    "media_optional": "Optional",
+    "packet_benefit_time_title": "Shorter billable hour",
+    "packet_benefit_time_body": "Less diagnostic time on the clock may mean less money out of your pocket.",
+    "packet_benefit_context_title": "They arrive with more context",
+    "packet_benefit_quotes_title": "Quotes you can compare",
+    "packet_benefit_quotes_body": "The same facts go to every company, so the numbers finally mean the same thing.",
+    "packet_benefit_keep_title": "Yours to keep",
+    "packet_benefit_keep_body": "Free, and yours to send anywhere. You never have to hire through us.",
+    "packet_example": "example",
+    "record_methodology_heading": "How the numbers are calculated:",
+    "record_methodology_body": "every published metric carries its geography, time window, sample size, source class, calculation version and “reported” or “verified” status. Percentages never publish without a denominator. Small cells are suppressed. A provider-confirmed cause is never inferred from a homeowner guess.",
+    "safe_never_heading": "What we will never ask you to do",
+    "safe_stop_heading": "Stop and call someone now if",
+    "safe_immediate_danger": "If anyone is in immediate danger, call 911 or your utility first.",
+    "table_scroll_label": "Table, scrolls sideways on small screens",
+    "notice_region_label": "Informational and safety notice",
+    "page_index_label": "On this page",
+    "nav_issue_library": "Issue Library",
+    "nav_dashboard": "Dashboard",
+    "nav_trust_network": "Trust Network",
+    "nav_smartquote": "SmartQuote",
+    "nav_home_memory": "Home Memory",
+    "nav_about": "About Us",
+    "nav_faq": "FAQ",
+    "nav_owner": "Owner sign-in",
+    "capability_can_answer": "CAN ANSWER",
+    "capability_can_often_answer": "CAN OFTEN ANSWER",
+    "capability_can_answer_what_it_changes": "CAN ANSWER WHAT IT CHANGES",
+    "capability_can_narrow": "CAN NARROW",
+    "capability_still_needs_testing": "STILL NEEDS TESTING",
+    "upload_photos": "Choose photos",
+    "upload_video": "Choose video",
+    "upload_audio": "Choose audio",
+    "packet_row_problem": "Problem",
+    "packet_row_context": "Context",
+    "packet_row_equipment": "Equipment",
+    "packet_row_location_material": "Location and material",
+    "packet_row_ruled_out": "Ruled out",
+    "packet_row_still_to_test": "Still to test",
+    "source_publisher": "Publisher",
+    "source_geography": "Geography",
+    "source_window": "Window",
+    "source_denominator": "Denominator",
+    "source_sample_size": "Sample size",
+    "source_observed": "Observed",
+    "source_methodology": "Methodology",
+    "review_date_label": "Last reviewed",
+    "review_date_pending": "No approved review date",
+    "nav_statistics": "Statistics library"
+  },
+  "capability_labels": [
+    "CAN ANSWER",
+    "CAN OFTEN ANSWER",
+    "CAN ANSWER WHAT IT CHANGES",
+    "CAN NARROW",
+    "STILL NEEDS TESTING"
+  ],
+  "environment_owned": [
+    "site.origin",
+    "index_policy",
+    "approved_content_at",
+    "active_disclosure",
+    "current_year"
+  ],
+  "reclassified_nonconstants": [
+    "your own system",
+    "on your system",
+    "Show us your unit",
+    "capacitor/eyebrows wording",
+    "before they load the van",
+    "Problem/Thermostat/Equipment packet rows",
+    "label-reading, media and equipment JSON-LD feature claims"
+  ],
+  "limitation": "This manifest inventories source-layer constant copy and explicit reclassifications. The coverage helper checks renderer-supplied constant occurrences, not DOM extraction, legal review, visual fidelity or whole-page release. Conditional copy remains withheld unless its exact matching feature/evidence condition is authorized. Frozen v43 is preserved; system-authored labels have no fabricated human approval.",
+  "original_string_keys": [
+    "hero_home",
+    "hero_answer",
+    "hero_value_eyebrow",
+    "intake_start",
+    "intake_duration",
+    "intake_title",
+    "stats_eyebrow",
+    "stats_sources",
+    "observations_eyebrow",
+    "causes_eyebrow",
+    "safe_eyebrow",
+    "visuals_eyebrow",
+    "flip_eyebrow",
+    "flip_usual",
+    "flip_shift",
+    "flip_us",
+    "comparison_eyebrow",
+    "packet_eyebrow",
+    "packet_name",
+    "record_eyebrow",
+    "record_methodology",
+    "record_building",
+    "faq_eyebrow",
+    "related_eyebrow",
+    "related_heading",
+    "closer_free",
+    "source_heading",
+    "intake_free"
+  ],
+  "metadata": {
+    "hero_home": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "required",
+      "condition": null,
+      "authority": "Guide §3; §13; §22",
+      "reason": "Guide §3 template furniture, retained from the pinned source.",
+      "provenance": {
+        "kind": "source",
+        "path": "content/door-template/v43/template/chrome-top.html",
+        "line": 44,
+        "excerpt": "Home"
+      }
+    },
+    "hero_answer": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "required",
+      "condition": null,
+      "authority": "Guide §3; §13; §22",
+      "reason": "Guide §3 template furniture, retained from the pinned source.",
+      "provenance": {
+        "kind": "source",
+        "path": "content/door-template/v43/template/sections/hero.html",
+        "line": 13,
+        "excerpt": "The short answer"
+      }
+    },
+    "hero_value_eyebrow": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "required",
+      "condition": null,
+      "authority": "Guide §3; §13; §22",
+      "reason": "Guide §3 template furniture, retained from the pinned source.",
+      "provenance": {
+        "kind": "source",
+        "path": "content/door-template/v43/template/sections/hero.html",
+        "line": 21,
+        "excerpt": "Why this is different"
+      }
+    },
+    "intake_start": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "required",
+      "condition": null,
+      "authority": "Guide §3; §13; §22",
+      "reason": "Guide §3 template furniture, retained from the pinned source.",
+      "provenance": {
+        "kind": "source",
+        "path": "content/door-template/v43/template/sections/hero.html",
+        "line": 37,
+        "excerpt": "Start here"
+      }
+    },
+    "intake_duration": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "required",
+      "condition": null,
+      "authority": "Guide §3; §13; §22",
+      "reason": "Guide §3 template furniture, retained from the pinned source.",
+      "provenance": {
+        "kind": "source",
+        "path": "content/door-template/v43/template/sections/hero.html",
+        "line": 37,
+        "excerpt": "Takes 1 to 5 minutes"
+      }
+    },
+    "intake_title": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "conditional",
+      "condition": "verified_walkthrough",
+      "authority": "Guide §3; §13; §22",
+      "reason": "Guide §3 template furniture, retained from the pinned source. Emission requires explicit matching evidence/state; retained wording is not activation authority.",
+      "provenance": {
+        "kind": "source",
+        "path": "content/door-template/v43/template/sections/hero.html",
+        "line": 41,
+        "excerpt": "LIVE Walkthrough Tool"
+      }
+    },
+    "stats_eyebrow": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "required",
+      "condition": null,
+      "authority": "Guide §3; §13; §22",
+      "reason": "Guide §3 template furniture, retained from the pinned source.",
+      "provenance": {
+        "kind": "source",
+        "path": "content/door-template/v43/template/sections/stats.html",
+        "line": 4,
+        "excerpt": "Before you call anyone"
+      }
+    },
+    "stats_sources": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "required",
+      "condition": null,
+      "authority": "Guide §3; §13; §22",
+      "reason": "Guide §3 template furniture, retained from the pinned source.",
+      "provenance": {
+        "kind": "source",
+        "path": "content/door-template/v43/template/sections/stats.html",
+        "line": 9,
+        "excerpt": "See all sources and review notes"
+      }
+    },
+    "observations_eyebrow": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "required",
+      "condition": null,
+      "authority": "Guide §3; §13; §22",
+      "reason": "Guide §3 template furniture, retained from the pinned source.",
+      "provenance": {
+        "kind": "source",
+        "path": "content/door-template/v43/template/sections/observations.html",
+        "line": 4,
+        "excerpt": "The fastest way through"
+      }
+    },
+    "causes_eyebrow": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "required",
+      "condition": null,
+      "authority": "Guide §3; §13; §22",
+      "reason": "Guide §3 template furniture, retained from the pinned source.",
+      "provenance": {
+        "kind": "source",
+        "path": "content/door-template/v43/template/sections/common-causes.html",
+        "line": 4,
+        "excerpt": "The shortlist"
+      }
+    },
+    "safe_eyebrow": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "conditional",
+      "condition": "reviewed_duration_claim",
+      "authority": "Guide §3; §13; §22",
+      "reason": "Guide §3 template furniture, retained from the pinned source. Emission requires explicit matching evidence/state; retained wording is not activation authority.",
+      "provenance": {
+        "kind": "source",
+        "path": "content/door-template/v43/template/sections/what-to-check.html",
+        "line": 4,
+        "excerpt": "Ten minutes, no tools"
+      }
+    },
+    "visuals_eyebrow": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "required",
+      "condition": null,
+      "authority": "Guide §3; §13; §22",
+      "reason": "Guide §3 template furniture, retained from the pinned source.",
+      "provenance": {
+        "kind": "source",
+        "path": "content/door-template/v43/template/sections/visuals.html",
+        "line": 5,
+        "excerpt": "Drawn for your walkthrough"
+      }
+    },
+    "flip_eyebrow": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "required",
+      "condition": null,
+      "authority": "Guide §3; §13; §22",
+      "reason": "Guide §3 template furniture, retained from the pinned source.",
+      "provenance": {
+        "kind": "source",
+        "path": "content/door-template/v43/template/sections/flip.html",
+        "line": 4,
+        "excerpt": "The flip"
+      }
+    },
+    "flip_usual": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "required",
+      "condition": null,
+      "authority": "Guide §3; §13; §22",
+      "reason": "Guide §3 template furniture, retained from the pinned source.",
+      "provenance": {
+        "kind": "source",
+        "path": "content/door-template/v43/template/sections/flip.html",
+        "line": 9,
+        "excerpt": "The usual way"
+      }
+    },
+    "flip_shift": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "required",
+      "condition": null,
+      "authority": "Guide §3; §13; §22",
+      "reason": "Guide §3 template furniture, retained from the pinned source.",
+      "provenance": {
+        "kind": "source",
+        "path": "content/door-template/v43/template/sections/flip.html",
+        "line": 14,
+        "excerpt": "The shift"
+      }
+    },
+    "flip_us": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "required",
+      "condition": null,
+      "authority": "Guide §3; §13; §22",
+      "reason": "Guide §3 template furniture, retained from the pinned source.",
+      "provenance": {
+        "kind": "source",
+        "path": "content/door-template/v43/template/sections/flip.html",
+        "line": 19,
+        "excerpt": "With us"
+      }
+    },
+    "comparison_eyebrow": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "required",
+      "condition": null,
+      "authority": "Guide §3; §13; §22",
+      "reason": "Guide §3 template furniture, retained from the pinned source.",
+      "provenance": {
+        "kind": "source",
+        "path": "content/door-template/v43/template/sections/general-vs-yours.html",
+        "line": 4,
+        "excerpt": "What you are actually choosing between"
+      }
+    },
+    "packet_eyebrow": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "required",
+      "condition": null,
+      "authority": "Guide §3; §13; §22",
+      "reason": "Guide §3 template furniture, retained from the pinned source.",
+      "provenance": {
+        "kind": "source",
+        "path": "content/door-template/v43/template/sections/job-packet.html",
+        "line": 4,
+        "excerpt": "What you walk away with"
+      }
+    },
+    "packet_name": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "required",
+      "condition": null,
+      "authority": "Guide §3; §13; §22",
+      "reason": "Guide §3 template furniture, retained from the pinned source.",
+      "provenance": {
+        "kind": "source",
+        "path": "content/door-template/v43/template/sections/job-packet.html",
+        "line": 18,
+        "excerpt": "Job Packet"
+      }
+    },
+    "record_eyebrow": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "conditional",
+      "condition": "statistics_loop",
+      "authority": "Guide §3; §13; §22",
+      "reason": "Guide §3 template furniture, retained from the pinned source. Emission requires explicit matching evidence/state; retained wording is not activation authority.",
+      "provenance": {
+        "kind": "source",
+        "path": "content/door-template/v43/template/sections/repair-record.html",
+        "line": 4,
+        "excerpt": "LIVE repair record"
+      }
+    },
+    "record_methodology": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "required",
+      "condition": null,
+      "authority": "Guide §3; §13; §22",
+      "reason": "Guide §3 template furniture, retained from the pinned source.",
+      "provenance": {
+        "kind": "source",
+        "path": "content/door-template/v43/template/sections/repair-record.html",
+        "line": 6,
+        "excerpt": "See the calculation rules and data definitions &rarr;"
+      }
+    },
+    "record_building": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "required",
+      "condition": null,
+      "authority": "Guide §3; §13; §22",
+      "reason": "Guide §3 template furniture, retained from the pinned source.",
+      "provenance": {
+        "kind": "source",
+        "path": "content/door-template/v43/spec/ac-blowing-warm-air/repair_record.json",
+        "line": 10,
+        "excerpt": "Building the repair record"
+      }
+    },
+    "faq_eyebrow": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "required",
+      "condition": null,
+      "authority": "Guide §3; §13; §22",
+      "reason": "Guide §3 template furniture, retained from the pinned source.",
+      "provenance": {
+        "kind": "source",
+        "path": "content/door-template/v43/template/sections/faq.html",
+        "line": 4,
+        "excerpt": "Before you start"
+      }
+    },
+    "related_eyebrow": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "conditional",
+      "condition": "related_targets_live",
+      "authority": "Guide §3; §13; §22",
+      "reason": "Guide §3 template furniture, retained from the pinned source. Emission requires explicit matching evidence/state; retained wording is not activation authority.",
+      "provenance": {
+        "kind": "source",
+        "path": "content/door-template/v43/template/sections/related.html",
+        "line": 4,
+        "excerpt": "Not quite your problem?"
+      }
+    },
+    "related_heading": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "conditional",
+      "condition": "related_targets_live",
+      "authority": "Guide §3; §13; §22",
+      "reason": "Guide §3 template furniture, retained from the pinned source. Emission requires explicit matching evidence/state; retained wording is not activation authority.",
+      "provenance": {
+        "kind": "source",
+        "path": "content/door-template/v43/template/sections/related.html",
+        "line": 5,
+        "excerpt": "Other things people are fixing this week"
+      }
+    },
+    "closer_free": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "conditional",
+      "condition": "sending_copy_authorized",
+      "authority": "Guide §3; §13; §22",
+      "reason": "Guide §3 template furniture, retained from the pinned source. Emission requires explicit matching evidence/state; retained wording is not activation authority.",
+      "provenance": {
+        "kind": "source",
+        "path": "content/door-template/v43/template/sections/closer.html",
+        "line": 8,
+        "excerpt": "Free &nbsp;&middot;&nbsp; No account &nbsp;&middot;&nbsp; Your packet, to send anywhere"
+      }
+    },
+    "source_heading": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "required",
+      "condition": null,
+      "authority": "Guide §3; §13; §22",
+      "reason": "Guide §3 template furniture, retained from the pinned source.",
+      "provenance": {
+        "kind": "source",
+        "path": "content/door-template/v43/template/colophon.html",
+        "line": 5,
+        "excerpt": "Sources &amp; review notes"
+      }
+    },
+    "intake_free": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "conditional",
+      "condition": "email_copy_authorized",
+      "authority": "Guide §3; §13; §22",
+      "reason": "Guide §3 template furniture, retained from the pinned source. Emission requires explicit matching evidence/state; retained wording is not activation authority.",
+      "provenance": {
+        "kind": "source",
+        "path": "content/door-template/v43/template/sections/hero.html",
+        "line": 97,
+        "excerpt": "Free. No email to start. We ask for one only if you want the packet emailed to you."
+      }
+    },
+    "hero_badge_middle": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "conditional",
+      "condition": "verified_walkthrough",
+      "authority": "Guide §3; §13; §22",
+      "reason": "Guide §3 template furniture, retained from the pinned source.",
+      "provenance": {
+        "kind": "source",
+        "path": "content/door-template/v43/template/sections/hero.html",
+        "line": 9,
+        "excerpt": "{%hero.badge_problem%} &nbsp;&middot;&nbsp; Free LIVE walkthrough"
+      }
+    },
+    "brand_no_account": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "required",
+      "condition": null,
+      "authority": "Guide §3; §13; §22",
+      "reason": "Guide §3 template furniture, retained from the pinned source.",
+      "provenance": {
+        "kind": "source",
+        "path": "content/door-template/v43/template/chrome-top.html",
+        "line": 35,
+        "excerpt": "No account. No email to start."
+      }
+    },
+    "founders_free": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "conditional",
+      "condition": "founders_offer",
+      "authority": "Guide §3; §13; §22",
+      "reason": "Guide §3 template furniture, retained from the pinned source.",
+      "provenance": {
+        "kind": "source",
+        "path": "content/door-template/v43/template/chrome-top.html",
+        "line": 29,
+        "excerpt": "FREE"
+      }
+    },
+    "founders_audience": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "conditional",
+      "condition": "founders_offer",
+      "authority": "Guide §3; §13; §22",
+      "reason": "Guide §3 template furniture, retained from the pinned source.",
+      "provenance": {
+        "kind": "source",
+        "path": "content/door-template/v43/template/chrome-top.html",
+        "line": 29,
+        "excerpt": "for Founders"
+      }
+    },
+    "nav_what_tool_can_do": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "conditional",
+      "condition": "explainers_live",
+      "authority": "Guide §3; §13; §22",
+      "reason": "Guide §3 template furniture, retained from the pinned source.",
+      "provenance": {
+        "kind": "source",
+        "path": "content/door-template/v43/template/chrome-top.html",
+        "line": 47,
+        "excerpt": "What this tool can do"
+      }
+    },
+    "nav_numbers": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "conditional",
+      "condition": "methodology_live",
+      "authority": "Guide §3; §13; §22",
+      "reason": "Guide §3 template furniture, retained from the pinned source.",
+      "provenance": {
+        "kind": "source",
+        "path": "content/door-template/v43/template/chrome-top.html",
+        "line": 49,
+        "excerpt": "How our numbers work"
+      }
+    },
+    "source_intro": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "required",
+      "condition": null,
+      "authority": "Guide §3; §13; §22",
+      "reason": "Guide §3 template furniture, retained from the pinned source.",
+      "provenance": {
+        "kind": "source",
+        "path": "content/door-template/v43/template/colophon.html",
+        "line": 7,
+        "excerpt": "Technical, cost and reference claims on this page are checked against the sources below. First-party Repair Record statistics use a separate methodology. {%sources.intro_tail%}"
+      }
+    },
+    "source_view": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "required",
+      "condition": null,
+      "authority": "Guide §3; §13; §22",
+      "reason": "Guide §3 template furniture, retained from the pinned source.",
+      "provenance": {
+        "kind": "source",
+        "path": "content/door-template/v43/template/colophon.html",
+        "line": 9,
+        "excerpt": "View source"
+      }
+    },
+    "source_date_policy": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "required",
+      "condition": null,
+      "authority": "Guide §3; §13; §22",
+      "reason": "Guide §3 template furniture, retained from the pinned source.",
+      "provenance": {
+        "kind": "source",
+        "path": "content/door-template/v43/template/colophon.html",
+        "line": 10,
+        "excerpt": "{%sources.note_lead%} Pages without a displayed publication date are recorded as date not shown rather than given an assumed date. Cost guidance is re-checked every 90 days, manufacturer safety guidance every 180 days."
+      }
+    },
+    "notice_heading": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "required",
+      "condition": null,
+      "authority": "Guide §3; §13; §22",
+      "reason": "Guide §3 template furniture, retained from the pinned source.",
+      "provenance": {
+        "kind": "source",
+        "path": "content/door-template/v43/template/colophon.html",
+        "line": 19,
+        "excerpt": "Informational and safety notice:"
+      }
+    },
+    "notice_body_before_links": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "required",
+      "condition": null,
+      "authority": "Guide §3; §13; §22",
+      "reason": "Guide §3 template furniture, retained from the pinned source.",
+      "provenance": {
+        "kind": "source",
+        "path": "content/door-template/v43/template/colophon.html",
+        "line": 19,
+        "excerpt": " This site provides educational guidance and a structured way to collect information about your home problem. It is not a professional diagnosis, engineering opinion, warranty, emergency service, or substitute for an appropriately licensed or qualified technician when one is needed. Do not perform electrical, refrigerant, gas, combustion, structural, or other hazardous work unless you are properly qualified and authorized to do so. Stop and seek appropriate professional, utility, or emergency help for immediate hazards. Costs, causes, outcomes, codes, licensing requirements, equipment configurations, and safe procedures can vary by property, equipment, jurisdiction, and circumstance. See our "
+      }
+    },
+    "legal_terms": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "required",
+      "condition": null,
+      "authority": "Guide §3; §13; §22",
+      "reason": "Guide §3 template furniture, retained from the pinned source.",
+      "provenance": {
+        "kind": "source",
+        "path": "content/door-template/v43/template/colophon.html",
+        "line": 19,
+        "excerpt": "Terms"
+      }
+    },
+    "legal_and": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "required",
+      "condition": null,
+      "authority": "Guide §3; §13; §22",
+      "reason": "Guide §3 template furniture, retained from the pinned source.",
+      "provenance": {
+        "kind": "source",
+        "path": "content/door-template/v43/template/colophon.html",
+        "line": 7,
+        "excerpt": " and "
+      }
+    },
+    "legal_privacy": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "required",
+      "condition": null,
+      "authority": "Guide §3; §13; §22",
+      "reason": "Guide §3 template furniture, retained from the pinned source.",
+      "provenance": {
+        "kind": "source",
+        "path": "content/door-template/v43/template/colophon.html",
+        "line": 19,
+        "excerpt": "Privacy Notice"
+      }
+    },
+    "footer_country": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "conditional",
+      "condition": "national_us_scope",
+      "authority": "Guide §3; §13; §22",
+      "reason": "Guide §3 template furniture, retained from the pinned source.",
+      "provenance": {
+        "kind": "source",
+        "path": "content/door-template/v43/template/colophon.html",
+        "line": 31,
+        "excerpt": "United States"
+      }
+    },
+    "causes_range_note": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "conditional",
+      "condition": "reviewed_price_ranges",
+      "authority": "Guide §3; §13; §22",
+      "reason": "Guide §3 template furniture, retained from the pinned source.",
+      "provenance": {
+        "kind": "source",
+        "path": "content/door-template/v43/template/sections/common-causes.html",
+        "line": 6,
+        "excerpt": "Typical published ranges, not a quote and not a local frequency ranking."
+      }
+    },
+    "flip_record_heading": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "conditional",
+      "condition": "statistics_loop",
+      "authority": "Guide §3; §13; §22",
+      "reason": "Guide §3 template furniture, retained from the pinned source.",
+      "provenance": {
+        "kind": "source",
+        "path": "content/door-template/v43/template/sections/flip.html",
+        "line": 6,
+        "excerpt": "Every walkthrough builds the record."
+      }
+    },
+    "flip_record_body": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "conditional",
+      "condition": "statistics_loop",
+      "authority": "Guide §3; §13; §22",
+      "reason": "Guide §3 template furniture, retained from the pinned source.",
+      "provenance": {
+        "kind": "source",
+        "path": "content/door-template/v43/template/sections/flip.html",
+        "line": 6,
+        "excerpt": " We turn what people show us into evidence that gets more specific as more of it comes in. National patterns first, then your state, your metro, your street, as soon as there is enough to be worth publishing."
+      }
+    },
+    "upload_audio_source": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "conditional",
+      "condition": "verified_audio",
+      "authority": "Guide §3; §13; §22",
+      "reason": "Guide §3 template furniture, retained from the pinned source.",
+      "provenance": {
+        "kind": "source",
+        "path": "content/door-template/v43/template/sections/hero.html",
+        "line": 65,
+        "excerpt": "Talk through it"
+      }
+    },
+    "upload_video_source": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "conditional",
+      "condition": "verified_video",
+      "authority": "Guide §3; §13; §22",
+      "reason": "Guide §3 template furniture, retained from the pinned source.",
+      "provenance": {
+        "kind": "source",
+        "path": "content/door-template/v43/template/sections/hero.html",
+        "line": 75,
+        "excerpt": "Add a short video"
+      }
+    },
+    "media_optional": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "conditional",
+      "condition": "verified_media",
+      "authority": "Guide §3; §13; §22",
+      "reason": "Guide §3 template furniture, retained from the pinned source.",
+      "provenance": {
+        "kind": "source",
+        "path": "content/door-template/v43/template/sections/hero.html",
+        "line": 78,
+        "excerpt": "Optional"
+      }
+    },
+    "packet_benefit_time_title": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "conditional",
+      "condition": "applicable_provider_visit",
+      "authority": "Guide §3; §13; §22",
+      "reason": "Guide §3 template furniture, retained from the pinned source.",
+      "provenance": {
+        "kind": "source",
+        "path": "content/door-template/v43/template/sections/job-packet.html",
+        "line": 10,
+        "excerpt": "Shorter billable hour"
+      }
+    },
+    "packet_benefit_time_body": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "conditional",
+      "condition": "applicable_provider_visit",
+      "authority": "Guide §3; §13; §22",
+      "reason": "Guide §3 template furniture, retained from the pinned source.",
+      "provenance": {
+        "kind": "source",
+        "path": "content/door-template/v43/template/sections/job-packet.html",
+        "line": 10,
+        "excerpt": "Less diagnostic time on the clock may mean less money out of your pocket."
+      }
+    },
+    "packet_benefit_context_title": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "conditional",
+      "condition": "applicable_provider_visit",
+      "authority": "Guide §3; §13; §22",
+      "reason": "Guide §3 template furniture, retained from the pinned source.",
+      "provenance": {
+        "kind": "source",
+        "path": "content/door-template/v43/template/sections/job-packet.html",
+        "line": 11,
+        "excerpt": "They arrive with more context"
+      }
+    },
+    "packet_benefit_quotes_title": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "conditional",
+      "condition": "applicable_provider_quotes",
+      "authority": "Guide §3; §13; §22",
+      "reason": "Guide §3 template furniture, retained from the pinned source.",
+      "provenance": {
+        "kind": "source",
+        "path": "content/door-template/v43/template/sections/job-packet.html",
+        "line": 12,
+        "excerpt": "Quotes you can compare"
+      }
+    },
+    "packet_benefit_quotes_body": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "conditional",
+      "condition": "applicable_provider_quotes",
+      "authority": "Guide §3; §13; §22",
+      "reason": "Guide §3 template furniture, retained from the pinned source.",
+      "provenance": {
+        "kind": "source",
+        "path": "content/door-template/v43/template/sections/job-packet.html",
+        "line": 12,
+        "excerpt": "The same facts go to every company, so the numbers finally mean the same thing."
+      }
+    },
+    "packet_benefit_keep_title": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "conditional",
+      "condition": "download_or_print",
+      "authority": "Guide §3; §13; §22",
+      "reason": "Guide §3 template furniture, retained from the pinned source.",
+      "provenance": {
+        "kind": "source",
+        "path": "content/door-template/v43/template/sections/job-packet.html",
+        "line": 13,
+        "excerpt": "Yours to keep"
+      }
+    },
+    "packet_benefit_keep_body": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "conditional",
+      "condition": "sending_copy_authorized",
+      "authority": "Guide §3; §13; §22",
+      "reason": "Guide §3 template furniture, retained from the pinned source.",
+      "provenance": {
+        "kind": "source",
+        "path": "content/door-template/v43/template/sections/job-packet.html",
+        "line": 13,
+        "excerpt": "Free, and yours to send anywhere. You never have to hire through us."
+      }
+    },
+    "packet_example": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "required",
+      "condition": null,
+      "authority": "Guide §3; §13; §22",
+      "reason": "Guide §3 template furniture, retained from the pinned source.",
+      "provenance": {
+        "kind": "source",
+        "path": "content/door-template/v43/template/sections/job-packet.html",
+        "line": 18,
+        "excerpt": "example"
+      }
+    },
+    "record_methodology_heading": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "required",
+      "condition": null,
+      "authority": "Guide §3; §13; §22",
+      "reason": "Guide §3 template furniture, retained from the pinned source.",
+      "provenance": {
+        "kind": "source",
+        "path": "content/door-template/v43/template/sections/repair-record.html",
+        "line": 6,
+        "excerpt": "How the numbers are calculated:"
+      }
+    },
+    "record_methodology_body": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "required",
+      "condition": null,
+      "authority": "Guide §3; §13; §22",
+      "reason": "Guide §3 template furniture, retained from the pinned source.",
+      "provenance": {
+        "kind": "source",
+        "path": "content/door-template/v43/template/sections/repair-record.html",
+        "line": 6,
+        "excerpt": " every published metric carries its geography, time window, sample size, source class, calculation version and &ldquo;reported&rdquo; or &ldquo;verified&rdquo; status. Percentages never publish without a denominator. Small cells are suppressed. A provider-confirmed cause is never inferred from a homeowner guess."
+      }
+    },
+    "safe_never_heading": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "required",
+      "condition": null,
+      "authority": "Guide §3; §13; §22",
+      "reason": "Guide §3 template furniture, retained from the pinned source.",
+      "provenance": {
+        "kind": "source",
+        "path": "content/door-template/v43/template/sections/what-to-check.html",
+        "line": 12,
+        "excerpt": "What we will never ask you to do"
+      }
+    },
+    "safe_stop_heading": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "required",
+      "condition": null,
+      "authority": "Guide §3; §13; §22",
+      "reason": "Guide §3 template furniture, retained from the pinned source.",
+      "provenance": {
+        "kind": "source",
+        "path": "content/door-template/v43/template/sections/what-to-check.html",
+        "line": 14,
+        "excerpt": "Stop and call someone now if"
+      }
+    },
+    "safe_immediate_danger": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "conditional",
+      "condition": "reviewed_us_safety_module",
+      "authority": "Guide §3; §13; §22",
+      "reason": "Guide §3 template furniture, retained from the pinned source.",
+      "provenance": {
+        "kind": "source",
+        "path": "content/door-template/v43/template/sections/what-to-check.html",
+        "line": 15,
+        "excerpt": "If anyone is in immediate danger, call 911 or your utility first."
+      }
+    },
+    "table_scroll_label": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "conditional",
+      "condition": "matching_semantic_region",
+      "authority": "Guide §3; §13; §22",
+      "reason": "Guide §3 template furniture, retained from the pinned source.",
+      "provenance": {
+        "kind": "source",
+        "path": "content/door-template/v43/template/sections/observations.html",
+        "line": 6,
+        "excerpt": "Table, scrolls sideways on small screens"
+      }
+    },
+    "notice_region_label": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "conditional",
+      "condition": "matching_semantic_region",
+      "authority": "Guide §3; §13; §22",
+      "reason": "Guide §3 template furniture, retained from the pinned source.",
+      "provenance": {
+        "kind": "source",
+        "path": "content/door-template/v43/template/colophon.html",
+        "line": 16,
+        "excerpt": "Informational and safety notice"
+      }
+    },
+    "page_index_label": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "conditional",
+      "condition": "chapter_navigation",
+      "authority": "Guide §3; §13; §22",
+      "reason": "Guide §3 template furniture, retained from the pinned source.",
+      "provenance": {
+        "kind": "source",
+        "path": "content/door-template/v43/template/scripts.html",
+        "line": 69,
+        "excerpt": "On this page"
+      }
+    },
+    "nav_issue_library": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "conditional",
+      "condition": "matching_feature_visible",
+      "authority": "Guide §3; §13; §22",
+      "reason": "Guide Amendment 11.2 lines 826–834 adds this shared directory label; source shell supplies the exact spelling. It does not enable the destination.",
+      "provenance": {
+        "kind": "source",
+        "path": "src/platform/pages/customer-shell.ts",
+        "line": 12,
+        "excerpt": "Issue Library"
+      }
+    },
+    "nav_dashboard": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "conditional",
+      "condition": "matching_feature_visible",
+      "authority": "Guide §3; §13; §22",
+      "reason": "Guide Amendment 11.2 lines 826–834 adds this shared directory label; source shell supplies the exact spelling. It does not enable the destination.",
+      "provenance": {
+        "kind": "source",
+        "path": "src/platform/pages/customer-shell.ts",
+        "line": 5,
+        "excerpt": "Dashboard"
+      }
+    },
+    "nav_trust_network": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "conditional",
+      "condition": "matching_feature_visible",
+      "authority": "Guide §3; §13; §22",
+      "reason": "Guide Amendment 11.2 lines 826–834 adds this shared directory label; source shell supplies the exact spelling. It does not enable the destination.",
+      "provenance": {
+        "kind": "source",
+        "path": "src/platform/pages/customer-shell.ts",
+        "line": 6,
+        "excerpt": "Trust Network"
+      }
+    },
+    "nav_smartquote": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "conditional",
+      "condition": "matching_feature_visible",
+      "authority": "Guide §3; §13; §22",
+      "reason": "Guide Amendment 11.2 lines 826–834 adds this shared directory label; source shell supplies the exact spelling. It does not enable the destination.",
+      "provenance": {
+        "kind": "source",
+        "path": "src/platform/pages/customer-shell.ts",
+        "line": 7,
+        "excerpt": "SmartQuote"
+      }
+    },
+    "nav_home_memory": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "conditional",
+      "condition": "matching_feature_visible",
+      "authority": "Guide §3; §13; §22",
+      "reason": "Guide Amendment 11.2 lines 826–834 adds this shared directory label; source shell supplies the exact spelling. It does not enable the destination.",
+      "provenance": {
+        "kind": "source",
+        "path": "src/platform/pages/customer-shell.ts",
+        "line": 8,
+        "excerpt": "Home Memory"
+      }
+    },
+    "nav_about": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "conditional",
+      "condition": "matching_feature_visible",
+      "authority": "Guide §3; §13; §22",
+      "reason": "Guide Amendment 11.2 lines 826–834 adds this shared directory label; source shell supplies the exact spelling. It does not enable the destination.",
+      "provenance": {
+        "kind": "source",
+        "path": "src/platform/pages/customer-shell.ts",
+        "line": 14,
+        "excerpt": "About Us"
+      }
+    },
+    "nav_faq": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "conditional",
+      "condition": "matching_feature_visible",
+      "authority": "Guide §3; §13; §22",
+      "reason": "Guide Amendment 11.2 lines 826–834 adds this shared directory label; source shell supplies the exact spelling. It does not enable the destination.",
+      "provenance": {
+        "kind": "source",
+        "path": "src/platform/pages/customer-shell.ts",
+        "line": 15,
+        "excerpt": "FAQ"
+      }
+    },
+    "nav_owner": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "conditional",
+      "condition": "footer_last_owner_link",
+      "authority": "Guide §3; §13; §22",
+      "reason": "Guide Amendment 11.2 lines 826–834 adds this shared directory label; source shell supplies the exact spelling. It does not enable the destination.",
+      "provenance": {
+        "kind": "source",
+        "path": "src/platform/pages/customer-shell.ts",
+        "line": 26,
+        "excerpt": "Owner sign-in"
+      }
+    },
+    "capability_can_answer": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "conditional",
+      "condition": "matching_capability_evidence",
+      "authority": "Guide §3; §13; §22",
+      "reason": "Guide §3 closed boundary-label enum; label presence is not verification of a capability.",
+      "provenance": {
+        "kind": "source",
+        "path": "content/door-template/v43/spec/ac-blowing-warm-air/capability.json",
+        "line": 41,
+        "excerpt": "CAN ANSWER"
+      }
+    },
+    "capability_can_often_answer": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "conditional",
+      "condition": "matching_capability_evidence",
+      "authority": "Guide §3; §13; §22",
+      "reason": "Guide §3 closed boundary-label enum; label presence is not verification of a capability.",
+      "provenance": {
+        "kind": "source",
+        "path": "content/door-template/v43/spec/ac-blowing-warm-air/capability.json",
+        "line": 29,
+        "excerpt": "CAN OFTEN ANSWER"
+      }
+    },
+    "capability_can_answer_what_it_changes": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "conditional",
+      "condition": "matching_capability_evidence",
+      "authority": "Guide §3; §13; §22",
+      "reason": "Guide §3 closed boundary-label enum; label presence is not verification of a capability.",
+      "provenance": {
+        "kind": "source",
+        "path": "content/door-template/v43/spec/ac-blowing-warm-air/capability.json",
+        "line": 41,
+        "excerpt": "CAN ANSWER WHAT IT CHANGES"
+      }
+    },
+    "capability_can_narrow": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "conditional",
+      "condition": "matching_capability_evidence",
+      "authority": "Guide §3; §13; §22",
+      "reason": "Guide §3 closed boundary-label enum; label presence is not verification of a capability.",
+      "provenance": {
+        "kind": "source",
+        "path": "content/door-template/v43/spec/ac-blowing-warm-air/capability.json",
+        "line": 23,
+        "excerpt": "CAN NARROW"
+      }
+    },
+    "capability_still_needs_testing": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "conditional",
+      "condition": "matching_capability_evidence",
+      "authority": "Guide §3; §13; §22",
+      "reason": "Guide §3 closed boundary-label enum; label presence is not verification of a capability.",
+      "provenance": {
+        "kind": "source",
+        "path": "content/door-template/v43/spec/ac-blowing-warm-air/capability.json",
+        "line": 59,
+        "excerpt": "STILL NEEDS TESTING"
+      }
+    },
+    "upload_photos": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "conditional",
+      "condition": "matching_verified_media",
+      "authority": "system:c6ff9a",
+      "reason": "Mechanical label for the typed v44 compiler field or control; explicitly system-authored, not a frozen-source quote or human design approval.",
+      "provenance": {
+        "kind": "system_authored",
+        "decision_ref": "c6ff9a",
+        "contract_version": "template-constants/1.1.0"
+      }
+    },
+    "upload_video": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "conditional",
+      "condition": "matching_verified_media",
+      "authority": "system:c6ff9a",
+      "reason": "Mechanical label for the typed v44 compiler field or control; explicitly system-authored, not a frozen-source quote or human design approval.",
+      "provenance": {
+        "kind": "system_authored",
+        "decision_ref": "c6ff9a",
+        "contract_version": "template-constants/1.1.0"
+      }
+    },
+    "upload_audio": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "conditional",
+      "condition": "matching_verified_media",
+      "authority": "system:c6ff9a",
+      "reason": "Mechanical label for the typed v44 compiler field or control; explicitly system-authored, not a frozen-source quote or human design approval.",
+      "provenance": {
+        "kind": "system_authored",
+        "decision_ref": "c6ff9a",
+        "contract_version": "template-constants/1.1.0"
+      }
+    },
+    "packet_row_problem": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "conditional",
+      "condition": "matching_subject_row",
+      "authority": "system:c6ff9a",
+      "reason": "Mechanical label for the typed v44 compiler field or control; explicitly system-authored, not a frozen-source quote or human design approval.",
+      "provenance": {
+        "kind": "system_authored",
+        "decision_ref": "c6ff9a",
+        "contract_version": "template-constants/1.1.0"
+      }
+    },
+    "packet_row_context": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "conditional",
+      "condition": "matching_subject_row",
+      "authority": "system:c6ff9a",
+      "reason": "Mechanical label for the typed v44 compiler field or control; explicitly system-authored, not a frozen-source quote or human design approval.",
+      "provenance": {
+        "kind": "system_authored",
+        "decision_ref": "c6ff9a",
+        "contract_version": "template-constants/1.1.0"
+      }
+    },
+    "packet_row_equipment": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "conditional",
+      "condition": "matching_subject_row",
+      "authority": "system:c6ff9a",
+      "reason": "Mechanical label for the typed v44 compiler field or control; explicitly system-authored, not a frozen-source quote or human design approval.",
+      "provenance": {
+        "kind": "system_authored",
+        "decision_ref": "c6ff9a",
+        "contract_version": "template-constants/1.1.0"
+      }
+    },
+    "packet_row_location_material": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "conditional",
+      "condition": "matching_subject_row",
+      "authority": "system:c6ff9a",
+      "reason": "Mechanical label for the typed v44 compiler field or control; explicitly system-authored, not a frozen-source quote or human design approval.",
+      "provenance": {
+        "kind": "system_authored",
+        "decision_ref": "c6ff9a",
+        "contract_version": "template-constants/1.1.0"
+      }
+    },
+    "packet_row_ruled_out": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "conditional",
+      "condition": "matching_subject_row",
+      "authority": "system:c6ff9a",
+      "reason": "Mechanical label for the typed v44 compiler field or control; explicitly system-authored, not a frozen-source quote or human design approval.",
+      "provenance": {
+        "kind": "system_authored",
+        "decision_ref": "c6ff9a",
+        "contract_version": "template-constants/1.1.0"
+      }
+    },
+    "packet_row_still_to_test": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "conditional",
+      "condition": "matching_subject_row",
+      "authority": "system:c6ff9a",
+      "reason": "Mechanical label for the typed v44 compiler field or control; explicitly system-authored, not a frozen-source quote or human design approval.",
+      "provenance": {
+        "kind": "system_authored",
+        "decision_ref": "c6ff9a",
+        "contract_version": "template-constants/1.1.0"
+      }
+    },
+    "source_publisher": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "conditional",
+      "condition": "matching_controlled_metadata",
+      "authority": "system:c6ff9a",
+      "reason": "Mechanical label for the typed v44 compiler field or control; explicitly system-authored, not a frozen-source quote or human design approval.",
+      "provenance": {
+        "kind": "system_authored",
+        "decision_ref": "c6ff9a",
+        "contract_version": "template-constants/1.1.0"
+      }
+    },
+    "source_geography": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "conditional",
+      "condition": "matching_controlled_metadata",
+      "authority": "system:c6ff9a",
+      "reason": "Mechanical label for the typed v44 compiler field or control; explicitly system-authored, not a frozen-source quote or human design approval.",
+      "provenance": {
+        "kind": "system_authored",
+        "decision_ref": "c6ff9a",
+        "contract_version": "template-constants/1.1.0"
+      }
+    },
+    "source_window": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "conditional",
+      "condition": "matching_controlled_metadata",
+      "authority": "system:c6ff9a",
+      "reason": "Mechanical label for the typed v44 compiler field or control; explicitly system-authored, not a frozen-source quote or human design approval.",
+      "provenance": {
+        "kind": "system_authored",
+        "decision_ref": "c6ff9a",
+        "contract_version": "template-constants/1.1.0"
+      }
+    },
+    "source_denominator": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "conditional",
+      "condition": "matching_controlled_metadata",
+      "authority": "system:c6ff9a",
+      "reason": "Mechanical label for the typed v44 compiler field or control; explicitly system-authored, not a frozen-source quote or human design approval.",
+      "provenance": {
+        "kind": "system_authored",
+        "decision_ref": "c6ff9a",
+        "contract_version": "template-constants/1.1.0"
+      }
+    },
+    "source_sample_size": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "conditional",
+      "condition": "matching_controlled_metadata",
+      "authority": "system:c6ff9a",
+      "reason": "Mechanical label for the typed v44 compiler field or control; explicitly system-authored, not a frozen-source quote or human design approval.",
+      "provenance": {
+        "kind": "system_authored",
+        "decision_ref": "c6ff9a",
+        "contract_version": "template-constants/1.1.0"
+      }
+    },
+    "source_observed": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "conditional",
+      "condition": "matching_controlled_metadata",
+      "authority": "system:c6ff9a",
+      "reason": "Mechanical label for the typed v44 compiler field or control; explicitly system-authored, not a frozen-source quote or human design approval.",
+      "provenance": {
+        "kind": "system_authored",
+        "decision_ref": "c6ff9a",
+        "contract_version": "template-constants/1.1.0"
+      }
+    },
+    "source_methodology": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "conditional",
+      "condition": "matching_controlled_metadata",
+      "authority": "system:c6ff9a",
+      "reason": "Mechanical label for the typed v44 compiler field or control; explicitly system-authored, not a frozen-source quote or human design approval.",
+      "provenance": {
+        "kind": "system_authored",
+        "decision_ref": "c6ff9a",
+        "contract_version": "template-constants/1.1.0"
+      }
+    },
+    "review_date_label": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "conditional",
+      "condition": "matching_controlled_metadata",
+      "authority": "system:c6ff9a",
+      "reason": "Mechanical label for the typed v44 compiler field or control; explicitly system-authored, not a frozen-source quote or human design approval.",
+      "provenance": {
+        "kind": "system_authored",
+        "decision_ref": "c6ff9a",
+        "contract_version": "template-constants/1.1.0"
+      }
+    },
+    "review_date_pending": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "conditional",
+      "condition": "matching_controlled_metadata",
+      "authority": "system:c6ff9a",
+      "reason": "Mechanical label for the typed v44 compiler field or control; explicitly system-authored, not a frozen-source quote or human design approval.",
+      "provenance": {
+        "kind": "system_authored",
+        "decision_ref": "c6ff9a",
+        "contract_version": "template-constants/1.1.0"
+      }
+    },
+    "nav_statistics": {
+      "classification": "TEMPLATE_CONSTANT",
+      "emission": "conditional",
+      "condition": "statistics_library_live",
+      "authority": "system:c6ff9a",
+      "reason": "Mechanical label for the typed v44 compiler field or control; explicitly system-authored, not a frozen-source quote or human design approval.",
+      "provenance": {
+        "kind": "system_authored",
+        "decision_ref": "c6ff9a",
+        "contract_version": "template-constants/1.1.0"
+      }
+    }
+  },
+  "source_files": {
+    "content/door-template/v43/template/chrome-top.html": {
+      "lf_sha256": "780f71dc77d4a1871d6e5ee900d751c3ce96f960161f8cfb0caf29b291ff1d6e"
+    },
+    "content/door-template/v43/template/colophon.html": {
+      "lf_sha256": "9d01dcfc457b2d45d8c7c9037596780c800f13a43ddbc677c1f1d59bfcc5406f"
+    },
+    "content/door-template/v43/template/sections/capability-questions.html": {
+      "lf_sha256": "baa9297221012bffa13701902729082dc590f4e553a7d1663a8275cf9ff0372b"
+    },
+    "content/door-template/v43/template/sections/closer.html": {
+      "lf_sha256": "7f370a1eeb98b99c335c8f4c775edf4750fadb7283e3441e28d33e5978565fab"
+    },
+    "content/door-template/v43/template/sections/common-causes.html": {
+      "lf_sha256": "904423dd5ab7f94f95dd7a97d1b9b781f4d86b939cd1dc1f296bb8376e6ab20d"
+    },
+    "content/door-template/v43/template/sections/faq.html": {
+      "lf_sha256": "cf838ea9c1803f9dd5998a1cda2b203eb6ac5a7adc2f456a44a735ac43f9c967"
+    },
+    "content/door-template/v43/template/sections/flip.html": {
+      "lf_sha256": "de37de6026eb2b52a41fbe1ecdc79f88924fd091d5b718c05049405bebacbfa0"
+    },
+    "content/door-template/v43/template/sections/general-vs-yours.html": {
+      "lf_sha256": "255140bd7752a22373728a888147e910641b48f37df13593970c1cef32619861"
+    },
+    "content/door-template/v43/template/sections/hero.html": {
+      "lf_sha256": "7aab6995409c63908e6c8259e224fc572f123410a5f9651433b13679bead9cd2"
+    },
+    "content/door-template/v43/template/sections/job-packet.html": {
+      "lf_sha256": "de0847170ce944fab118c37e7b4ae0fa9a15e2f1a0df54998759393b9d05088f"
+    },
+    "content/door-template/v43/template/sections/observations.html": {
+      "lf_sha256": "99485f1c892336027a7040808b154bcbefdd60e0cea842e789ed1e8b062dfbfd"
+    },
+    "content/door-template/v43/template/sections/related.html": {
+      "lf_sha256": "8216e3e1752c6e9896ac74b78099ba797387dd993836c05caea307ca46000bd8"
+    },
+    "content/door-template/v43/template/sections/repair-record.html": {
+      "lf_sha256": "e3b880f402790781cc166cfc4074ed2c27cf704cc063d22d2818a93988b52a78"
+    },
+    "content/door-template/v43/template/sections/stats.html": {
+      "lf_sha256": "9810ccf7e8d166179e50723c2040ca7a3488d4a6625fe98899b07b43288bc995"
+    },
+    "content/door-template/v43/template/sections/visuals.html": {
+      "lf_sha256": "132c90e4208f1e8ceed13826847ec54fcd369bce68f52f3aa02121e8eb9adba9"
+    },
+    "content/door-template/v43/template/sections/what-to-check.html": {
+      "lf_sha256": "89bc48a13a1d18be3918b0a16c43502ef6b04c7ea4fbe4fd87e98577b5d0338e"
+    },
+    "content/door-template/v43/spec/ac-blowing-warm-air/repair_record.json": {
+      "lf_sha256": "02b77459742c53b5b8c749dfe7cad0fd04aa9943ae53a438b52383ce20a7dc02"
+    },
+    "content/door-template/v43/template/scripts.html": {
+      "lf_sha256": "901eb88143adde1d31dbc2738b72232036d639cbf78591895cc42dbabe4bf6f2"
+    },
+    "src/platform/pages/customer-shell.ts": {
+      "lf_sha256": "5794e958bca4017e9388a7a6393921273138d14058a9c61452eb5dd9e0f8a8e2"
+    },
+    "content/door-template/v43/spec/ac-blowing-warm-air/capability.json": {
+      "lf_sha256": "fbb1019a884d51950f2af11da23cbd4122edf2743c490f7000c0eaecdadca451"
+    },
+    "content/door-template/v43/template/jsonld.html": {
+      "lf_sha256": "d399d14a7afa505706962c8ace1b299499d1f4f0d3460a515692712d3f7fee22"
+    },
+    "content/door-template/v43/spec/ac-blowing-warm-air/job_packet.json": {
+      "lf_sha256": "a28d84edf42ec3a99f21dcbfeb627c9cc6cf47fd3b82044941a2674f065e14c5"
+    }
+  },
+  "source_census": [
+    {
+      "source": {
+        "path": "content/door-template/v43/template/chrome-top.html",
+        "line": 29,
+        "excerpt": "FREE"
+      },
+      "key": "founders_free",
+      "exclusion_id": null
+    },
+    {
+      "source": {
+        "path": "content/door-template/v43/template/chrome-top.html",
+        "line": 29,
+        "excerpt": "for Founders"
+      },
+      "key": "founders_audience",
+      "exclusion_id": null
+    },
+    {
+      "source": {
+        "path": "content/door-template/v43/template/chrome-top.html",
+        "line": 34,
+        "excerpt": "Free LIVE walkthrough for your own system"
+      },
+      "key": null,
+      "exclusion_id": "equipment_brandbar"
+    },
+    {
+      "source": {
+        "path": "content/door-template/v43/template/chrome-top.html",
+        "line": 35,
+        "excerpt": "No account. No email to start."
+      },
+      "key": "brand_no_account",
+      "exclusion_id": null
+    },
+    {
+      "source": {
+        "path": "content/door-template/v43/template/chrome-top.html",
+        "line": 44,
+        "excerpt": "Home"
+      },
+      "key": "hero_home",
+      "exclusion_id": null
+    },
+    {
+      "source": {
+        "path": "content/door-template/v43/template/chrome-top.html",
+        "line": 47,
+        "excerpt": "What this tool can do"
+      },
+      "key": "nav_what_tool_can_do",
+      "exclusion_id": null
+    },
+    {
+      "source": {
+        "path": "content/door-template/v43/template/chrome-top.html",
+        "line": 49,
+        "excerpt": "How our numbers work"
+      },
+      "key": "nav_numbers",
+      "exclusion_id": null
+    },
+    {
+      "source": {
+        "path": "content/door-template/v43/template/colophon.html",
+        "line": 5,
+        "excerpt": "Sources &amp; review notes"
+      },
+      "key": "source_heading",
+      "exclusion_id": null
+    },
+    {
+      "source": {
+        "path": "content/door-template/v43/template/colophon.html",
+        "line": 7,
+        "excerpt": "Technical, cost and reference claims on this page are checked against the sources below. First-party Repair Record statistics use a separate methodology. {%sources.intro_tail%}"
+      },
+      "key": "source_intro",
+      "exclusion_id": null
+    },
+    {
+      "source": {
+        "path": "content/door-template/v43/template/colophon.html",
+        "line": 9,
+        "excerpt": "View source"
+      },
+      "key": "source_view",
+      "exclusion_id": null
+    },
+    {
+      "source": {
+        "path": "content/door-template/v43/template/colophon.html",
+        "line": 10,
+        "excerpt": "{%sources.note_lead%} Pages without a displayed publication date are recorded as date not shown rather than given an assumed date. Cost guidance is re-checked every 90 days, manufacturer safety guidance every 180 days."
+      },
+      "key": "source_date_policy",
+      "exclusion_id": null
+    },
+    {
+      "source": {
+        "path": "content/door-template/v43/template/colophon.html",
+        "line": 19,
+        "excerpt": "Informational and safety notice:"
+      },
+      "key": "notice_heading",
+      "exclusion_id": null
+    },
+    {
+      "source": {
+        "path": "content/door-template/v43/template/colophon.html",
+        "line": 19,
+        "excerpt": " This site provides educational guidance and a structured way to collect information about your home problem. It is not a professional diagnosis, engineering opinion, warranty, emergency service, or substitute for an appropriately licensed or qualified technician when one is needed. Do not perform electrical, refrigerant, gas, combustion, structural, or other hazardous work unless you are properly qualified and authorized to do so. Stop and seek appropriate professional, utility, or emergency help for immediate hazards. Costs, causes, outcomes, codes, licensing requirements, equipment configurations, and safe procedures can vary by property, equipment, jurisdiction, and circumstance. See our "
+      },
+      "key": "notice_body_before_links",
+      "exclusion_id": null
+    },
+    {
+      "source": {
+        "path": "content/door-template/v43/template/colophon.html",
+        "line": 19,
+        "excerpt": "Terms"
+      },
+      "key": "legal_terms",
+      "exclusion_id": null
+    },
+    {
+      "source": {
+        "path": "content/door-template/v43/template/colophon.html",
+        "line": 7,
+        "excerpt": " and "
+      },
+      "key": "legal_and",
+      "exclusion_id": null
+    },
+    {
+      "source": {
+        "path": "content/door-template/v43/template/colophon.html",
+        "line": 19,
+        "excerpt": "Privacy Notice"
+      },
+      "key": "legal_privacy",
+      "exclusion_id": null
+    },
+    {
+      "source": {
+        "path": "content/door-template/v43/template/colophon.html",
+        "line": 27,
+        "excerpt": "&copy; 2026 {{site.name}}"
+      },
+      "key": null,
+      "exclusion_id": "literal_year"
+    },
+    {
+      "source": {
+        "path": "content/door-template/v43/template/colophon.html",
+        "line": 28,
+        "excerpt": "What this tool can do"
+      },
+      "key": "nav_what_tool_can_do",
+      "exclusion_id": null
+    },
+    {
+      "source": {
+        "path": "content/door-template/v43/template/colophon.html",
+        "line": 30,
+        "excerpt": "How our numbers work"
+      },
+      "key": "nav_numbers",
+      "exclusion_id": null
+    },
+    {
+      "source": {
+        "path": "content/door-template/v43/template/colophon.html",
+        "line": 31,
+        "excerpt": "United States"
+      },
+      "key": "footer_country",
+      "exclusion_id": null
+    },
+    {
+      "source": {
+        "path": "content/door-template/v43/template/sections/capability-questions.html",
+        "line": 4,
+        "excerpt": "LIVE, on your system"
+      },
+      "key": null,
+      "exclusion_id": "equipment_capability_eyebrow"
+    },
+    {
+      "source": {
+        "path": "content/door-template/v43/template/sections/closer.html",
+        "line": 8,
+        "excerpt": "Free &nbsp;&middot;&nbsp; No account &nbsp;&middot;&nbsp; Your packet, to send anywhere"
+      },
+      "key": "closer_free",
+      "exclusion_id": null
+    },
+    {
+      "source": {
+        "path": "content/door-template/v43/template/sections/common-causes.html",
+        "line": 4,
+        "excerpt": "The shortlist"
+      },
+      "key": "causes_eyebrow",
+      "exclusion_id": null
+    },
+    {
+      "source": {
+        "path": "content/door-template/v43/template/sections/common-causes.html",
+        "line": 6,
+        "excerpt": "Typical published ranges, not a quote and not a local frequency ranking."
+      },
+      "key": "causes_range_note",
+      "exclusion_id": null
+    },
+    {
+      "source": {
+        "path": "content/door-template/v43/template/sections/faq.html",
+        "line": 4,
+        "excerpt": "Before you start"
+      },
+      "key": "faq_eyebrow",
+      "exclusion_id": null
+    },
+    {
+      "source": {
+        "path": "content/door-template/v43/template/sections/flip.html",
+        "line": 4,
+        "excerpt": "The flip"
+      },
+      "key": "flip_eyebrow",
+      "exclusion_id": null
+    },
+    {
+      "source": {
+        "path": "content/door-template/v43/template/sections/flip.html",
+        "line": 6,
+        "excerpt": "Every walkthrough builds the record."
+      },
+      "key": "flip_record_heading",
+      "exclusion_id": null
+    },
+    {
+      "source": {
+        "path": "content/door-template/v43/template/sections/flip.html",
+        "line": 6,
+        "excerpt": " We turn what people show us into evidence that gets more specific as more of it comes in. National patterns first, then your state, your metro, your street, as soon as there is enough to be worth publishing."
+      },
+      "key": "flip_record_body",
+      "exclusion_id": null
+    },
+    {
+      "source": {
+        "path": "content/door-template/v43/template/sections/flip.html",
+        "line": 9,
+        "excerpt": "The usual way"
+      },
+      "key": "flip_usual",
+      "exclusion_id": null
+    },
+    {
+      "source": {
+        "path": "content/door-template/v43/template/sections/flip.html",
+        "line": 14,
+        "excerpt": "The shift"
+      },
+      "key": "flip_shift",
+      "exclusion_id": null
+    },
+    {
+      "source": {
+        "path": "content/door-template/v43/template/sections/flip.html",
+        "line": 19,
+        "excerpt": "With us"
+      },
+      "key": "flip_us",
+      "exclusion_id": null
+    },
+    {
+      "source": {
+        "path": "content/door-template/v43/template/sections/general-vs-yours.html",
+        "line": 4,
+        "excerpt": "What you are actually choosing between"
+      },
+      "key": "comparison_eyebrow",
+      "exclusion_id": null
+    },
+    {
+      "source": {
+        "path": "content/door-template/v43/template/sections/hero.html",
+        "line": 6,
+        "excerpt": "Home"
+      },
+      "key": "hero_home",
+      "exclusion_id": null
+    },
+    {
+      "source": {
+        "path": "content/door-template/v43/template/sections/hero.html",
+        "line": 9,
+        "excerpt": "{%hero.badge_problem%} &nbsp;&middot;&nbsp; Free LIVE walkthrough"
+      },
+      "key": "hero_badge_middle",
+      "exclusion_id": null
+    },
+    {
+      "source": {
+        "path": "content/door-template/v43/template/sections/hero.html",
+        "line": 13,
+        "excerpt": "The short answer"
+      },
+      "key": "hero_answer",
+      "exclusion_id": null
+    },
+    {
+      "source": {
+        "path": "content/door-template/v43/template/sections/hero.html",
+        "line": 21,
+        "excerpt": "Why this is different"
+      },
+      "key": "hero_value_eyebrow",
+      "exclusion_id": null
+    },
+    {
+      "source": {
+        "path": "content/door-template/v43/template/sections/hero.html",
+        "line": 37,
+        "excerpt": "Start here"
+      },
+      "key": "intake_start",
+      "exclusion_id": null
+    },
+    {
+      "source": {
+        "path": "content/door-template/v43/template/sections/hero.html",
+        "line": 37,
+        "excerpt": "Takes 1 to 5 minutes"
+      },
+      "key": "intake_duration",
+      "exclusion_id": null
+    },
+    {
+      "source": {
+        "path": "content/door-template/v43/template/sections/hero.html",
+        "line": 41,
+        "excerpt": "LIVE Walkthrough Tool"
+      },
+      "key": "intake_title",
+      "exclusion_id": null
+    },
+    {
+      "source": {
+        "path": "content/door-template/v43/template/sections/hero.html",
+        "line": 65,
+        "excerpt": "Talk through it"
+      },
+      "key": "upload_audio_source",
+      "exclusion_id": null
+    },
+    {
+      "source": {
+        "path": "content/door-template/v43/template/sections/hero.html",
+        "line": 70,
+        "excerpt": "Show us your unit"
+      },
+      "key": null,
+      "exclusion_id": "equipment_upload"
+    },
+    {
+      "source": {
+        "path": "content/door-template/v43/template/sections/hero.html",
+        "line": 75,
+        "excerpt": "Add a short video"
+      },
+      "key": "upload_video_source",
+      "exclusion_id": null
+    },
+    {
+      "source": {
+        "path": "content/door-template/v43/template/sections/hero.html",
+        "line": 78,
+        "excerpt": "Optional"
+      },
+      "key": "media_optional",
+      "exclusion_id": null
+    },
+    {
+      "source": {
+        "path": "content/door-template/v43/template/sections/hero.html",
+        "line": 97,
+        "excerpt": "Free. No email to start. We ask for one only if you want the packet emailed to you."
+      },
+      "key": "intake_free",
+      "exclusion_id": null
+    },
+    {
+      "source": {
+        "path": "content/door-template/v43/template/sections/job-packet.html",
+        "line": 4,
+        "excerpt": "What you walk away with"
+      },
+      "key": "packet_eyebrow",
+      "exclusion_id": null
+    },
+    {
+      "source": {
+        "path": "content/door-template/v43/template/sections/job-packet.html",
+        "line": 10,
+        "excerpt": "Shorter billable hour"
+      },
+      "key": "packet_benefit_time_title",
+      "exclusion_id": null
+    },
+    {
+      "source": {
+        "path": "content/door-template/v43/template/sections/job-packet.html",
+        "line": 10,
+        "excerpt": "Less diagnostic time on the clock may mean less money out of your pocket."
+      },
+      "key": "packet_benefit_time_body",
+      "exclusion_id": null
+    },
+    {
+      "source": {
+        "path": "content/door-template/v43/template/sections/job-packet.html",
+        "line": 11,
+        "excerpt": "They arrive with more context"
+      },
+      "key": "packet_benefit_context_title",
+      "exclusion_id": null
+    },
+    {
+      "source": {
+        "path": "content/door-template/v43/template/sections/job-packet.html",
+        "line": 11,
+        "excerpt": "Your photos, your readings and what you already ruled out, before they load the van."
+      },
+      "key": null,
+      "exclusion_id": "provider_van"
+    },
+    {
+      "source": {
+        "path": "content/door-template/v43/template/sections/job-packet.html",
+        "line": 12,
+        "excerpt": "Quotes you can compare"
+      },
+      "key": "packet_benefit_quotes_title",
+      "exclusion_id": null
+    },
+    {
+      "source": {
+        "path": "content/door-template/v43/template/sections/job-packet.html",
+        "line": 12,
+        "excerpt": "The same facts go to every company, so the numbers finally mean the same thing."
+      },
+      "key": "packet_benefit_quotes_body",
+      "exclusion_id": null
+    },
+    {
+      "source": {
+        "path": "content/door-template/v43/template/sections/job-packet.html",
+        "line": 13,
+        "excerpt": "Yours to keep"
+      },
+      "key": "packet_benefit_keep_title",
+      "exclusion_id": null
+    },
+    {
+      "source": {
+        "path": "content/door-template/v43/template/sections/job-packet.html",
+        "line": 13,
+        "excerpt": "Free, and yours to send anywhere. You never have to hire through us."
+      },
+      "key": "packet_benefit_keep_body",
+      "exclusion_id": null
+    },
+    {
+      "source": {
+        "path": "content/door-template/v43/template/sections/job-packet.html",
+        "line": 18,
+        "excerpt": "Job Packet"
+      },
+      "key": "packet_name",
+      "exclusion_id": null
+    },
+    {
+      "source": {
+        "path": "content/door-template/v43/template/sections/job-packet.html",
+        "line": 18,
+        "excerpt": "example"
+      },
+      "key": "packet_example",
+      "exclusion_id": null
+    },
+    {
+      "source": {
+        "path": "content/door-template/v43/template/sections/observations.html",
+        "line": 4,
+        "excerpt": "The fastest way through"
+      },
+      "key": "observations_eyebrow",
+      "exclusion_id": null
+    },
+    {
+      "source": {
+        "path": "content/door-template/v43/template/sections/related.html",
+        "line": 4,
+        "excerpt": "Not quite your problem?"
+      },
+      "key": "related_eyebrow",
+      "exclusion_id": null
+    },
+    {
+      "source": {
+        "path": "content/door-template/v43/template/sections/related.html",
+        "line": 5,
+        "excerpt": "Other things people are fixing this week"
+      },
+      "key": "related_heading",
+      "exclusion_id": null
+    },
+    {
+      "source": {
+        "path": "content/door-template/v43/template/sections/repair-record.html",
+        "line": 4,
+        "excerpt": "LIVE repair record"
+      },
+      "key": "record_eyebrow",
+      "exclusion_id": null
+    },
+    {
+      "source": {
+        "path": "content/door-template/v43/template/sections/repair-record.html",
+        "line": 6,
+        "excerpt": "How the numbers are calculated:"
+      },
+      "key": "record_methodology_heading",
+      "exclusion_id": null
+    },
+    {
+      "source": {
+        "path": "content/door-template/v43/template/sections/repair-record.html",
+        "line": 6,
+        "excerpt": " every published metric carries its geography, time window, sample size, source class, calculation version and &ldquo;reported&rdquo; or &ldquo;verified&rdquo; status. Percentages never publish without a denominator. Small cells are suppressed. A provider-confirmed cause is never inferred from a homeowner guess."
+      },
+      "key": "record_methodology_body",
+      "exclusion_id": null
+    },
+    {
+      "source": {
+        "path": "content/door-template/v43/template/sections/repair-record.html",
+        "line": 6,
+        "excerpt": "See the calculation rules and data definitions &rarr;"
+      },
+      "key": "record_methodology",
+      "exclusion_id": null
+    },
+    {
+      "source": {
+        "path": "content/door-template/v43/template/sections/stats.html",
+        "line": 4,
+        "excerpt": "Before you call anyone"
+      },
+      "key": "stats_eyebrow",
+      "exclusion_id": null
+    },
+    {
+      "source": {
+        "path": "content/door-template/v43/template/sections/stats.html",
+        "line": 9,
+        "excerpt": "See all sources and review notes"
+      },
+      "key": "stats_sources",
+      "exclusion_id": null
+    },
+    {
+      "source": {
+        "path": "content/door-template/v43/template/sections/visuals.html",
+        "line": 5,
+        "excerpt": "Drawn for your walkthrough"
+      },
+      "key": "visuals_eyebrow",
+      "exclusion_id": null
+    },
+    {
+      "source": {
+        "path": "content/door-template/v43/template/sections/what-to-check.html",
+        "line": 4,
+        "excerpt": "Ten minutes, no tools"
+      },
+      "key": "safe_eyebrow",
+      "exclusion_id": null
+    },
+    {
+      "source": {
+        "path": "content/door-template/v43/template/sections/what-to-check.html",
+        "line": 12,
+        "excerpt": "What we will never ask you to do"
+      },
+      "key": "safe_never_heading",
+      "exclusion_id": null
+    },
+    {
+      "source": {
+        "path": "content/door-template/v43/template/sections/what-to-check.html",
+        "line": 12,
+        "excerpt": "We would rather you finish this evening with the same number of eyebrows you started with."
+      },
+      "key": null,
+      "exclusion_id": "eyebrows_safety"
+    },
+    {
+      "source": {
+        "path": "content/door-template/v43/template/sections/what-to-check.html",
+        "line": 14,
+        "excerpt": "Stop and call someone now if"
+      },
+      "key": "safe_stop_heading",
+      "exclusion_id": null
+    },
+    {
+      "source": {
+        "path": "content/door-template/v43/template/sections/what-to-check.html",
+        "line": 15,
+        "excerpt": "If anyone is in immediate danger, call 911 or your utility first."
+      },
+      "key": "safe_immediate_danger",
+      "exclusion_id": null
+    }
+  ],
+  "source_census_scope": {
+    "files": [
+      "content/door-template/v43/template/chrome-top.html",
+      "content/door-template/v43/template/colophon.html",
+      "content/door-template/v43/template/sections/capability-questions.html",
+      "content/door-template/v43/template/sections/closer.html",
+      "content/door-template/v43/template/sections/common-causes.html",
+      "content/door-template/v43/template/sections/faq.html",
+      "content/door-template/v43/template/sections/flip.html",
+      "content/door-template/v43/template/sections/general-vs-yours.html",
+      "content/door-template/v43/template/sections/hero.html",
+      "content/door-template/v43/template/sections/job-packet.html",
+      "content/door-template/v43/template/sections/observations.html",
+      "content/door-template/v43/template/sections/related.html",
+      "content/door-template/v43/template/sections/repair-record.html",
+      "content/door-template/v43/template/sections/stats.html",
+      "content/door-template/v43/template/sections/visuals.html",
+      "content/door-template/v43/template/sections/what-to-check.html"
+    ],
+    "normalization": "Strip template slots/tags/comments and SVG/script/style bodies; decode HTML entities; collapse presentation whitespace; ignore decorative leading middle-dot/trailing arrow and punctuation-only units.",
+    "includes": "Every lexical fixed text node in chrome, colophon and all fourteen section partials. Additional fixed accessibility labels, capability enum labels and directory labels are individually source-located.",
+    "excludes": "CSS, structural markup, decorative glyphs, generated namespace slots, runtime mechanics and JSON-LD semantics belong to their separate contracts. No arbitrary source markup is copied into the compiler."
+  },
+  "exclusions": [
+    {
+      "id": "equipment_brandbar",
+      "value": "Free LIVE walkthrough for your own system",
+      "classification": "TAXONOMY_TOKEN",
+      "reason": "Guide §13.1: equipment-specific possessive copy must come from reviewed subject grammar.",
+      "provenance": {
+        "kind": "source",
+        "path": "content/door-template/v43/template/chrome-top.html",
+        "line": 34,
+        "excerpt": "Free LIVE walkthrough for your own system"
+      },
+      "emission": "source_only"
+    },
+    {
+      "id": "equipment_capability_eyebrow",
+      "value": "LIVE, on your system",
+      "classification": "TAXONOMY_TOKEN",
+      "reason": "Guide §13.1: subject and VERIFIED_LIVE evidence determine this label; not universal.",
+      "provenance": {
+        "kind": "source",
+        "path": "content/door-template/v43/template/sections/capability-questions.html",
+        "line": 4,
+        "excerpt": "LIVE, on your system"
+      },
+      "emission": "source_only"
+    },
+    {
+      "id": "equipment_upload",
+      "value": "Show us your unit",
+      "classification": "TAXONOMY_TOKEN",
+      "reason": "Guide §13.1: nameplate-free subjects cannot inherit an equipment upload label.",
+      "provenance": {
+        "kind": "source",
+        "path": "content/door-template/v43/template/sections/hero.html",
+        "line": 70,
+        "excerpt": "Show us your unit"
+      },
+      "emission": "source_only"
+    },
+    {
+      "id": "provider_van",
+      "value": "Your photos, your readings and what you already ruled out, before they load the van.",
+      "classification": "INTENT_CONTENT",
+      "reason": "Guide §13.1: media availability and a van/trade visit are not universal.",
+      "provenance": {
+        "kind": "source",
+        "path": "content/door-template/v43/template/sections/job-packet.html",
+        "line": 11,
+        "excerpt": "Your photos, your readings and what you already ruled out, before they load the van."
+      },
+      "emission": "source_only"
+    },
+    {
+      "id": "eyebrows_safety",
+      "value": "We would rather you finish this evening with the same number of eyebrows you started with.",
+      "classification": "INTENT_CONTENT",
+      "reason": "Guide §13.1: family-specific safety wording; reviewed module owns any replacement.",
+      "provenance": {
+        "kind": "source",
+        "path": "content/door-template/v43/template/sections/what-to-check.html",
+        "line": 12,
+        "excerpt": "We would rather you finish this evening with the same number of eyebrows you started with."
+      },
+      "emission": "source_only"
+    },
+    {
+      "id": "literal_year",
+      "value": "© 2026 {{site.name}}",
+      "classification": "ENVIRONMENT_OWNED",
+      "reason": "Guide §13 and §14.1: current year/site name are controlled values; the frozen year is never reused as current.",
+      "provenance": {
+        "kind": "source",
+        "path": "content/door-template/v43/template/colophon.html",
+        "line": 27,
+        "excerpt": "&copy; 2026 {{site.name}}"
+      },
+      "emission": "source_only"
+    },
+    {
+      "id": "equipment_media_jsonld",
+      "value": "A guided walkthrough for a specific home repair problem. It accepts a written or spoken description, photos or video, and the equipment label, reads the model from a label photo, adapts each next question to what has already been provided, and produces a provider-ready Job Packet listing what happened, what has been ruled out and what still needs professional testing.",
+      "classification": "CONDITIONAL_MODULE",
+      "reason": "Guide §13.1: equipment-label reading and media claims require matching subject/capability evidence; compiler generates only supported visible-parity claims.",
+      "provenance": {
+        "kind": "source",
+        "path": "content/door-template/v43/template/jsonld.html",
+        "line": 28,
+        "excerpt": "A guided walkthrough for a specific home repair problem. It accepts a written or spoken description, photos or video, and the equipment label, reads the model from a label photo, adapts each next question to what has already been provided, and produces a provider-ready Job Packet listing what happened, what has been ruled out and what still needs professional testing."
+      },
+      "emission": "source_only"
+    },
+    {
+      "id": "equipment_packet_rows",
+      "value": "Problem/Thermostat/Equipment",
+      "classification": "TAXONOMY_TOKEN",
+      "reason": "Guide §13.1: example row selection and values follow the subject; F08 uses location/material. Typed compiler labels are separately authored above.",
+      "provenance": {
+        "kind": "source",
+        "path": "content/door-template/v43/spec/ac-blowing-warm-air/job_packet.json",
+        "line": 7,
+        "excerpt": "\"Thermostat\""
+      },
+      "emission": "source_only"
+    }
+  ],
+  "navigation": {
+    "menu_keys": [
+      "hero_home",
+      "nav_issue_library",
+      "nav_dashboard",
+      "nav_trust_network",
+      "nav_smartquote",
+      "nav_home_memory",
+      "nav_about",
+      "nav_faq"
+    ],
+    "footer_keys": [
+      "nav_issue_library",
+      "nav_dashboard",
+      "nav_trust_network",
+      "nav_smartquote",
+      "nav_home_memory",
+      "nav_about",
+      "nav_faq",
+      "nav_what_tool_can_do",
+      "nav_numbers",
+      "legal_terms",
+      "legal_privacy",
+      "nav_statistics",
+      "nav_owner"
+    ],
+    "dynamic_slots": [
+      "family_directory",
+      "governed_subject_cta"
+    ],
+    "owner_last_key": "nav_owner",
+    "authority": "Guide Amendment 11.2 lines 826–834; destinations and feature visibility remain controlled compiler context, never inferred from this vocabulary."
+  },
+  "legal": {
+    "body_key": "notice_body_before_links",
+    "heading_key": "notice_heading",
+    "links": [
+      {
+        "key": "legal_terms",
+        "href": "/terms"
+      },
+      {
+        "key": "legal_privacy",
+        "href": "/privacy"
+      }
+    ],
+    "conjunction_key": "legal_and",
+    "trailing_punctuation": ".",
+    "active_disclosure": "Injected id/hash/purpose and source-controlled sentence; this informational notice is not a substitute for intake consent."
+  }
+}

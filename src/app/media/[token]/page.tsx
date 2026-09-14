@@ -1,3 +1,4 @@
+import { readFeatureSnapshot, featureIsLive } from "@/platform/features/state";
 import type { Metadata } from "next";
 import { redactSharedText } from "@/domain/privacy/share-text";
 import { notFound } from "next/navigation";
@@ -29,6 +30,7 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function MediaPage({ params }: { params: Promise<{ token: string }> }) {
+  if (!featureIsLive(await readFeatureSnapshot(), "shared_links")) notFound();
   const { token } = await params;
   const link = await verifyLink(token, "media");
   if (!link.ok) return <LinkOff reason={linkOffReason(link.reason)} />;

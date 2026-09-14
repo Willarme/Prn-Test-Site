@@ -61,7 +61,7 @@ export function QaVerdictPanel({ qa, eligible, reasons }: {
 
       {qa.ai_critic.status !== "PASS" && (
         <p className="hint" style={{ color: "var(--on-dark-mute)", marginBottom: 14 }}>
-          <strong>Nothing has read this page for meaning.</strong> {qa.ai_critic.reason}
+          <strong>{qa.ai_critic.status === "FAIL" ? "The AI critic reviewed this page and rejected it." : "A completed AI review is not available."}</strong> {qa.ai_critic.reason}
         </p>
       )}
 

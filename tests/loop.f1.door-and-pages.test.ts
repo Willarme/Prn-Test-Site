@@ -1,8 +1,17 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { GET as doorRoute } from "@/app/problems/ac-blowing-warm-air/route";
 import { GET as pagesGet } from "@/app/pages/[...path]/route";
 import { ACTIVE_DISCLOSURE } from "@/domain/privacy/disclosures";
 import { SAFETY_RULES } from "@/domain/problem/safety";
+import { featureSnapshot } from "./helpers/feature-snapshot";
+let snapshot = featureSnapshot({}, "LIVE");
+vi.mock("@/platform/features/state", async importOriginal => {
+  const actual = await importOriginal<typeof import("@/platform/features/state")>();
+  return { ...actual, readFeatureSnapshot: vi.fn(async () => snapshot),
+    featureState: vi.fn(async (id: string) => actual.stateIn(snapshot, id)) };
+});
+beforeEach(() => { snapshot = featureSnapshot({}, "LIVE"); });
+afterEach(() => { vi.unstubAllEnvs(); });
 const doorGet = (request = new Request("http://localhost/problems/ac-blowing-warm-air")) => doorRoute(request);
 
 /**
@@ -99,6 +108,17 @@ describe("GET /safety/[rule_id] — the hazard halt screen", () => {
 });
 
 describe("GET /pages/* — Melissa's product previews", () => {
+  it("serves the four recorded PREVIEW products while the provider workspace remains hidden", async () => {
+    snapshot = featureSnapshot();
+    vi.stubEnv("LINK_SIGNING_SECRET", "synthetic-feature-preview-test-secret-0000");
+    for (const slug of ["dashboard", "trust-network", "smartquote", "home-memory"]) {
+      const res = await pagesGet(...pagesRequest(slug));
+      expect(res.status).toBe(200);
+      expect(await res.text()).toContain('id="prn-interest"');
+    }
+    expect((await pagesGet(...pagesRequest("provider-os"))).status).toBe(404);
+  });
+
   /** Every reference has visible feedback controls; all six now persist before confirming. */
   const SLUGS = [
     { slug: "overview", vote: true },

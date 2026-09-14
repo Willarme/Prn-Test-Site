@@ -1,9 +1,13 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { Archivo, JetBrains_Mono, Public_Sans } from "next/font/google";
-import Link from "next/link";
+import { CustomerHeader, CustomerFooter } from "@/components/CustomerShell";
+import { readFeatureSnapshot } from "@/platform/features/state";
 import "./globals.css";
 import "./ecosystem.css";
+
+// Navigation uses the current persisted feature snapshot, never a build-time copy.
+export const dynamic = "force-dynamic";
 
 // Fonts are self-hosted at build time (next/font) — no runtime CDN dependency.
 const display = Archivo({
@@ -25,39 +29,14 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default async function RootLayout({ children }: { children: ReactNode }) {
+  const snapshot = await readFeatureSnapshot();
   return (
     <html lang="en" className={`${display.variable} ${body.variable} ${mono.variable}`}>
       <body>
-        <header className="site-header ecosystem-header no-print">
-          <div className="bar">
-            <Link href="/" className="brand">
-              <span className="brand-mark" aria-hidden />
-              <span className="brand-text">
-                Property Response
-                <small>Network · Trial</small>
-              </span>
-            </Link>
-            <nav className="ecosystem-navigation" aria-label="Preview navigation">
-              <Link className="ecosystem-nav-link" href="/demo">
-                Explore the demo
-              </Link>
-              <Link className="ecosystem-header-cta" href={process.env.VERCEL === "1" ? "/demo/sample/walkthrough" : "/start"}>
-                {process.env.VERCEL === "1" ? "Try the sample" : "Start with what happened"}
-              </Link>
-            </nav>
-          </div>
-        </header>
+        <CustomerHeader snapshot={snapshot} />
         {children}
-        <footer className="site-footer ecosystem-footer no-print">
-          <div className="wrap ecosystem-footer-inner">
-            <div>
-              <p className="ecosystem-footer-brand">Property Response Network</p>
-              <p>Demonstration · use example details. This preview is not indexed.</p>
-            </div>
-            <Link className="ecosystem-nav-link" href="/demo">Explore the demo</Link>
-          </div>
-        </footer>
+        <CustomerFooter snapshot={snapshot} />
       </body>
     </html>
   );

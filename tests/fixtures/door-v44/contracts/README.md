@@ -1,0 +1,9 @@
+# Synthetic contract fixtures
+
+F04 (dishwasher) and F08 (ceiling stain after rain) are non-public, synthetic data for schema and loader boundary tests. They contain no homeowner instructions, customer data, external assets or production approval. Context reviewed flags mean controlled test registry injection only. The fixture F04/F08 identifiers are portability-corpus aliases, not production family identifiers; source_family_id is an explicit synthetic mapping, not authorization to create a production taxonomy.
+
+Capabilities 0–3 deliberately inject VERIFIED_LIVE with fixed fixture_capability_* receipts and dates so the loader can test a complete positive contract. Those receipts prove no deployed capability. Live mode must reject them. Capability 4 is explicitly UNVERIFIED and still needs testing. Media controls are omitted. The staged_noindex index policy and null approved_content_at are mandatory fixture boundaries. schema_bundle is injected from the checked-in local schemas; input hashes are synthetic until the test helper computes actual contract input hashes.
+
+Fixture acceptance is shape and controlled-reference evidence only. It is not H01–H18 acceptance, publication eligibility, source research, rendered fidelity, image review, numeric-claim methodology, accessibility, PageVersion persistence, or a real production capability receipt.
+
+Context is trusted caller injection, never model output. Its prompt identities, eligibility records, protocol check IDs, subject/family aliases and visual asset metadata are explicit synthetic allowlists. Visual assets have no files here: repeated synthetic hashes test reference equality only. Each capability has an empty media_kinds allowlist, so the positive fixture cannot enable media controls. A test must explicitly inject the matching media kind to exercise that conditional boundary.

@@ -1,0 +1,92 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://schemas.propertyresponsenetwork.com/doorspec/namespaces/repair_record.json",
+  "title": "Door v44 repair_record",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "heading": {
+      "$ref": "https://schemas.propertyresponsenetwork.com/doorspec/namespaces/richtext.json"
+    },
+    "cards": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^(?!(?:__proto__|prototype|constructor)$)[A-Za-z0-9][A-Za-z0-9._:-]*$"
+          },
+          "color_class": {
+            "type": "string",
+            "enum": [
+              "pink",
+              "green",
+              "blue",
+              "amber"
+            ],
+            "minLength": 4,
+            "maxLength": 5
+          },
+          "icon_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^(?!(?:__proto__|prototype|constructor)$)[A-Za-z0-9][A-Za-z0-9._:-]*$"
+          },
+          "scope_chip": {
+            "type": "string",
+            "enum": [
+              "National first",
+              "Best available scope",
+              "Where labels are available",
+              "Local as density grows"
+            ],
+            "minLength": 14,
+            "maxLength": 26
+          },
+          "kicker": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120,
+            "pattern": "^(?!\\s)(?![\\s\\S]*\\s{2})(?![\\s\\S]*[<>\\u0000-\\u001f\\u007f])(?![\\s\\S]*\\s$)[\\s\\S]+$"
+          },
+          "value": {
+            "const": "Building the repair record",
+            "type": "string",
+            "minLength": 26,
+            "maxLength": 26
+          },
+          "copy": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 700,
+            "pattern": "^(?!\\s)(?![\\s\\S]*\\s{2})(?![\\s\\S]*[<>\\u0000-\\u001f\\u007f])(?![\\s\\S]*\\s$)[\\s\\S]+$"
+          },
+          "public_fact_id": {
+            "type": "null"
+          }
+        },
+        "required": [
+          "id",
+          "color_class",
+          "icon_id",
+          "scope_chip",
+          "kicker",
+          "value",
+          "copy",
+          "public_fact_id"
+        ]
+      },
+      "minItems": 4,
+      "maxItems": 4
+    }
+  },
+  "required": [
+    "heading",
+    "cards"
+  ]
+}

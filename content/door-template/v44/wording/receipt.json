@@ -1,0 +1,38 @@
+{
+  "scope": "T6-31 S2 mechanical WORDING derivative only",
+  "verification": {
+    "ok": true,
+    "findings": [],
+    "source_sha256": "9ada20852ad5cc7756e96d2cef39d1164dfc9b51f54175141589e0f97ebe7491",
+    "derivative_sha256": "26715ab7b88496d97bf084a2400f222d468aa514f9ff6645493d8fbdd5a4305e",
+    "scope": "mechanical_escape_derivative_only",
+    "semantic_approval": false,
+    "independent_twin": false,
+    "smoke_pass": true
+  },
+  "checks": {
+    "focused_tests": 47,
+    "focused_tests_seconds": 1.852,
+    "scoped_eslint": "PASS",
+    "whole_nonincremental_typecheck": "PASS",
+    "original_pinned_files_unchanged": 69,
+    "original_input_manifest_sha256": "ebf7e00c4524979c0038135decf23faf8d9bdd7bbcd5fd46dc3a201da9ea4a1c",
+    "combined_wording_and_compiler_adversarial_tests": 59,
+    "combined_tests_seconds": 3.35,
+    "reviewed_intent_terms": "Exact compiler-owned reviewed phrases exempt rule 1 only; full-query headings allowed; malformed terms and separate negated clauses rejected",
+    "focused_suite_seconds": 2.34,
+    "metadata_checkout_encodings": "PASS: exact pinned LF and uniform CRLF; mixed, bare CR, extra newline, whitespace, BOM, invalid UTF-8 and semantic mutations rejected",
+    "second_host_run": "NOT PERFORMED: encoding variants checked locally only"
+  },
+  "implementation_hashes": {
+    "src/domain/search/door-v44/wording.ts": "351e536ed23c827419cd3daaf2ceb52a0c519853405389d6b919e89d19faed42",
+    "tools/door-v44/wording.ts": "9168052349a0f54f02c520067e439d3d80a6ed441a5ffb25b3a6a47e434ca28f",
+    "tests/t6-31.v44-wording.test.ts": "5dec82e38de104d3baf2be38e67cc7eb285932f609f3cd954461d2f56be45cd4"
+  },
+  "limitations": [
+    "Not an independent source twin.",
+    "No semantic copy approval.",
+    "Review findings are not hard-fail factual judgments.",
+    "No compiler integration, A06, browser, hosted or release acceptance is claimed by this receipt."
+  ]
+}

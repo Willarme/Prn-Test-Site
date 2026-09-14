@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://schemas.propertyresponsenetwork.com/doorspec/namespaces/accents.json",
+  "title": "Door v44 accents",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "map": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80,
+            "pattern": "^(?!\\s)(?![\\s\\S]*\\s{2})(?![\\s\\S]*[<>\\u0000-\\u001f\\u007f])(?![\\s\\S]*\\s$)[\\s\\S]+$"
+          },
+          "color_class": {
+            "type": "string",
+            "enum": [
+              "pink",
+              "green",
+              "blue",
+              "amber"
+            ],
+            "minLength": 4,
+            "maxLength": 5
+          }
+        },
+        "required": [
+          "text",
+          "color_class"
+        ]
+      },
+      "minItems": 0,
+      "maxItems": 20
+    }
+  },
+  "required": [
+    "map"
+  ]
+}

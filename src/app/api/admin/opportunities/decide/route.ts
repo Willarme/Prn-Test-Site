@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { readAdminJson } from "@/platform/admin/body";
 import { OpportunityDecisionKind } from "@/domain/search/decision";
-import { isAdminUnlocked } from "@/platform/admin/auth";
+import { adminBoundary, guardAdminMutation } from "@/platform/admin/request";
 import { loadOpportunities } from "@/platform/admin/data";
 import { decideOpportunity } from "@/platform/search/opportunity-decisions";
 
@@ -22,53 +23,54 @@ import { decideOpportunity } from "@/platform/search/opportunity-decisions";
  * collapse into one (A04 spec §11 stop-and-ask 6 — and they still do not).
  */
 const Body = z.object({
-  search_opportunity_id: z.string().min(1),
+  search_opportunity_id: z.string().min(1).max(200),
   decision: OpportunityDecisionKind,
   note: z.string().max(500).optional(),
 });
 
 export async function POST(request: Request): Promise<NextResponse> {
-  if (!(await isAdminUnlocked())) {
-    return NextResponse.json({ error: "Owner sign-in required" }, { status: 403 });
-  }
-  const parsed = Body.safeParse(await request.json().catch(() => null));
-  if (!parsed.success) return NextResponse.json({ error: "invalid" }, { status: 400 });
-  const { search_opportunity_id, decision, note } = parsed.data;
+  return adminBoundary(async () => {
+    const refusal = await guardAdminMutation(request);
+    if (refusal) return refusal;
+    const parsed = await readAdminJson(request, Body);
+    if (!parsed.ok) return parsed.response;
+    const { search_opportunity_id, decision, note } = parsed.data;
 
-  const opportunity = loadOpportunities().opportunities.find(
-    (o) => o.search_opportunity_id === search_opportunity_id
-  );
-  if (!opportunity) {
-    return NextResponse.json({ error: "unknown opportunity" }, { status: 404 });
-  }
-
-  try {
-    const result = await decideOpportunity({
-      opportunity,
-      kind: decision,
-      decided_by: "owner",
-      note: note ?? null,
-    });
-    return NextResponse.json({
-      ok: true,
-      status: result.opportunity.status,
-      decision_id: result.decision.decision_id,
-      approval_id: result.approval_id,
-      /**
-       * WHAT THE ACCEPT ACTUALLY BUILT (inspection F3). Accepting an
-       * opportunity triggers A05 directly, and until now the owner was told
-       * nothing about the outcome — including when policy refused the topic as
-       * ineligible for a door. Page ids and reason CODES only: no page copy and
-       * no scoring internals cross the wire, same rule as the generate route.
-       */
-      page_build: result.page_build,
-    });
-  } catch (err) {
-    // The decision write is fail-LOUD by design: if it did not land, the owner
-    // must be told their click did not take rather than shown a green refresh.
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : "could not record decision" },
-      { status: 500 }
+    const opportunity = loadOpportunities().opportunities.find(
+      (o) => o.search_opportunity_id === search_opportunity_id
     );
-  }
+    if (!opportunity) {
+      return NextResponse.json({ error: "unknown opportunity" }, { status: 404 });
+    }
+
+    try {
+      const result = await decideOpportunity({
+        opportunity,
+        kind: decision,
+        decided_by: "owner",
+        note: note ?? null,
+      });
+      return NextResponse.json({
+        ok: true,
+        status: result.opportunity.status,
+        decision_id: result.decision.decision_id,
+        approval_id: result.approval_id,
+        /**
+         * WHAT THE ACCEPT ACTUALLY BUILT (inspection F3). Accepting an
+         * opportunity triggers A05 directly, and until now the owner was told
+         * nothing about the outcome — including when policy refused the topic as
+         * ineligible for a door. Page ids and reason CODES only: no page copy and
+         * no scoring internals cross the wire, same rule as the generate route.
+         */
+        page_build: result.page_build,
+      });
+    } catch {
+      // The decision write is fail-LOUD by design: if it did not land, the owner
+      // must be told their click did not take rather than shown a green refresh.
+      return NextResponse.json(
+        { error: "The admin action could not be completed. Try again later." },
+        { status: 500 }
+      );
+    }
+  });
 }

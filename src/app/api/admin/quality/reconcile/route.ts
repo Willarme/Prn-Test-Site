@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
-import { isAdminUnlocked } from "@/platform/admin/auth";
+import { adminBoundary, guardAdminMutation } from "@/platform/admin/request";
 import { runReconciliation } from "@/platform/quality/reconciliation";
+import { readAdminEmpty } from "@/platform/admin/body";
 
 /**
  * THE RECONCILIATION TRIGGER — the missing half of T1-03 clause 3.
@@ -57,38 +58,41 @@ import { runReconciliation } from "@/platform/quality/reconciliation";
  * verbatim and `ok` is false for anything that is not a completed, verified
  * pass, so no caller can read a lost write as a clean bill of health.
  */
-export async function POST(): Promise<NextResponse> {
-  if (!(await isAdminUnlocked())) {
-    return NextResponse.json({ error: "Owner sign-in required" }, { status: 403 });
-  }
+export async function POST(request: Request): Promise<NextResponse> {
+  return adminBoundary(async () => {
+    const refusal = await guardAdminMutation(request);
+    if (refusal) return refusal;
+    const empty = await readAdminEmpty(request);
+    if (!empty.ok) return empty.response;
 
-  const report = await runReconciliation({ trigger: "admin_action" });
+    const report = await runReconciliation({ trigger: "admin_action" });
 
-  if (report.verdict === "halted_by_kill_switch") {
-    return NextResponse.json(
-      {
-        ok: false,
-        verdict: report.verdict,
-        error: `A09 is paused by the ${report.halted?.scope ?? "GLOBAL"} kill switch${
-          report.halted?.reason ? `: ${report.halted.reason}` : ""
-        }`,
-      },
-      { status: 409 }
-    );
-  }
+    if (report.verdict === "halted_by_kill_switch") {
+      return NextResponse.json(
+        {
+          ok: false,
+          verdict: report.verdict,
+          error: `A09 is paused by the ${report.halted?.scope ?? "GLOBAL"} kill switch${
+            report.halted?.reason ? `: ${report.halted.reason}` : ""
+          }`,
+        },
+        { status: 409 }
+      );
+    }
 
-  return NextResponse.json({
-    // "clean" and "findings_recorded" are both successful passes: one looked
-    // and found nothing, the other looked and found something. Neither
-    // "could_not_verify" nor a skipped duplicate is a verified run.
-    ok: report.verdict === "clean" || report.verdict === "findings_recorded",
-    verdict: report.verdict,
-    run_id: report.run_id,
-    run_key: report.run_key,
-    checks_run: report.checks_run,
-    findings: report.findings,
-    quarantined: report.quarantined,
-    by_check: report.by_check,
-    scan_complete: report.scan_complete,
+    return NextResponse.json({
+      // "clean" and "findings_recorded" are both successful passes: one looked
+      // and found nothing, the other looked and found something. Neither
+      // "could_not_verify" nor a skipped duplicate is a verified run.
+      ok: report.verdict === "clean" || report.verdict === "findings_recorded",
+      verdict: report.verdict,
+      run_id: report.run_id,
+      run_key: report.run_key,
+      checks_run: report.checks_run,
+      findings: report.findings,
+      quarantined: report.quarantined,
+      by_check: report.by_check,
+      scan_complete: report.scan_complete,
+    });
   });
 }

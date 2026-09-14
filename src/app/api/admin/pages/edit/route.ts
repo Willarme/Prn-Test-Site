@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { readAdminForm } from "@/platform/admin/body";
 import { registryRowFor } from "@/domain/search/page-registry";
-import { isAdminUnlocked } from "@/platform/admin/auth";
+import { adminBoundary, guardAdminMutation } from "@/platform/admin/request";
 import { policyStore } from "@/platform/admin/data";
 import { loadPageCorpus } from "@/platform/search/page-corpus";
 import { editStagedPage } from "@/platform/search/page-factory-run";
@@ -19,12 +20,12 @@ import { editStagedPage } from "@/platform/search/page-factory-run";
  * guardrail that only applies to the agent is not a guardrail.
  */
 const Body = z.object({
-  page_spec_id: z.string().min(1),
+  page_spec_id: z.string().min(1).max(200),
   title: z.string().min(1).max(70),
   meta_description: z.string().min(1).max(170),
-  h1: z.string().min(1),
-  hero_headline: z.string().min(1),
-  hero_subheadline: z.string(),
+  h1: z.string().min(1).max(200),
+  hero_headline: z.string().min(1).max(200),
+  hero_subheadline: z.string().max(1000),
 });
 
 /**
@@ -44,58 +45,52 @@ function back(request: Request, pageSpecId: string, params: Record<string, strin
 }
 
 export async function POST(request: Request): Promise<NextResponse> {
-  if (!(await isAdminUnlocked())) {
-    return NextResponse.json({ error: "Owner sign-in required" }, { status: 403 });
-  }
+  return adminBoundary(async () => {
+    const refusal = await guardAdminMutation(request);
+    if (refusal) return refusal;
 
-  const form = await request.formData().catch(() => null);
-  if (!form) return NextResponse.json({ error: "invalid" }, { status: 400 });
-  const parsed = Body.safeParse(Object.fromEntries(form.entries()));
-  if (!parsed.success) {
-    return NextResponse.json(
-      { error: parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; ") },
-      { status: 400 }
-    );
-  }
+    const parsed = await readAdminForm(request, Body);
+    if (!parsed.ok) return parsed.response;
 
-  const corpus = await loadPageCorpus();
-  const spec = corpus.specs.find((s) => s.page_spec_id === parsed.data.page_spec_id);
-  if (!spec) return NextResponse.json({ error: "unknown page" }, { status: 404 });
+    const corpus = await loadPageCorpus();
+    const spec = corpus.specs.find((s) => s.page_spec_id === parsed.data.page_spec_id);
+    if (!spec) return NextResponse.json({ error: "unknown page" }, { status: 404 });
 
-  // The six committed doors and the handcrafted sample predate the registry
-  // table, so an edit to one creates its row rather than failing.
-  const page =
-    corpus.pages.find((p) => p.page_id === spec.page_id) ??
-    registryRowFor(spec, new Date().toISOString().replace(/\.\d+Z$/, "Z"));
+    // The six committed doors and the handcrafted sample predate the registry
+    // table, so an edit to one creates its row rather than failing.
+    const page =
+      corpus.pages.find((p) => p.page_id === spec.page_id) ??
+      registryRowFor(spec, new Date().toISOString().replace(/\.\d+Z$/, "Z"));
 
-  const policy = await policyStore().getActive();
-  try {
-    const result = await editStagedPage({
-      page,
-      previousSpec: spec,
-      edit: {
-        title: parsed.data.title,
-        meta_description: parsed.data.meta_description,
-        h1: parsed.data.h1,
-        hero_headline: parsed.data.hero_headline,
-        hero_subheadline: parsed.data.hero_subheadline.trim() === "" ? null : parsed.data.hero_subheadline,
-      },
-      edited_by: "owner",
-      policy: policy.page_factory,
-    });
-
-    if (result.blocked.length > 0) {
-      return back(request, parsed.data.page_spec_id, {
-        blocked: result.blocked.map((f) => `${f.check} @ ${f.where}: ${f.message}`).join(" | "),
+    const policy = await policyStore().getActive();
+    try {
+      const result = await editStagedPage({
+        page,
+        previousSpec: spec,
+        edit: {
+          title: parsed.data.title,
+          meta_description: parsed.data.meta_description,
+          h1: parsed.data.h1,
+          hero_headline: parsed.data.hero_headline,
+          hero_subheadline: parsed.data.hero_subheadline.trim() === "" ? null : parsed.data.hero_subheadline,
+        },
+        edited_by: "owner",
+        policy: policy.page_factory,
       });
+
+      if (result.blocked.length > 0) {
+        return back(request, parsed.data.page_spec_id, {
+          blocked: result.blocked.map((f) => `${f.check} @ ${f.where}: ${f.message}`).join(" | "),
+        });
+      }
+      return back(request, result.spec!.page_spec_id, {
+        saved: result.edited_fields.join(",") || "nothing changed",
+      });
+    } catch {
+      return NextResponse.json(
+        { error: "The admin action could not be completed. Try again later." },
+        { status: 500 }
+      );
     }
-    return back(request, result.spec!.page_spec_id, {
-      saved: result.edited_fields.join(",") || "nothing changed",
-    });
-  } catch (err) {
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : "could not save the edit" },
-      { status: 500 }
-    );
-  }
+  });
 }

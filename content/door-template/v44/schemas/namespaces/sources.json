@@ -1,0 +1,70 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://schemas.propertyresponsenetwork.com/doorspec/namespaces/sources.json",
+  "title": "Door v44 sources",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "intro_tail": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500,
+      "pattern": "^(?!\\s)(?![\\s\\S]*\\s{2})(?![\\s\\S]*[<>\\u0000-\\u001f\\u007f])(?![\\s\\S]*\\s$)[\\s\\S]+$"
+    },
+    "note_lead": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500,
+      "pattern": "^(?!\\s)(?![\\s\\S]*\\s{2})(?![\\s\\S]*[<>\\u0000-\\u001f\\u007f])(?![\\s\\S]*\\s$)[\\s\\S]+$"
+    },
+    "list": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "source_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^(?!(?:__proto__|prototype|constructor)$)[A-Za-z0-9][A-Za-z0-9._:-]*$"
+          },
+          "cite": {
+            "type": "boolean"
+          },
+          "claim_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^(?!(?:__proto__|prototype|constructor)$)[A-Za-z0-9][A-Za-z0-9._:-]*$"
+            },
+            "minItems": 0,
+            "maxItems": 30,
+            "uniqueItems": true
+          },
+          "note": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500,
+            "pattern": "^(?!\\s)(?![\\s\\S]*\\s{2})(?![\\s\\S]*[<>\\u0000-\\u001f\\u007f])(?![\\s\\S]*\\s$)[\\s\\S]+$"
+          }
+        },
+        "required": [
+          "source_id",
+          "cite",
+          "claim_ids",
+          "note"
+        ]
+      },
+      "minItems": 1,
+      "maxItems": 40
+    }
+  },
+  "required": [
+    "intro_tail",
+    "note_lead",
+    "list"
+  ]
+}

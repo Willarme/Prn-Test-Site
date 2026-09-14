@@ -1,8 +1,10 @@
 import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { flagEnabled } from "@/platform/flags";
 import { runtimeStore, type Signup } from "@/platform/stores/runtime";
+import { readAdminJson } from "@/platform/admin/body";
+import { featureInterestOriginAllowed } from "@/platform/features/interest";
+import { readFeatureSnapshot, stateIn } from "@/platform/features/state";
 
 /**
  * THE VOTE BLOCK'S COLLECTOR.
@@ -40,15 +42,17 @@ const SignupRequest = z.object({
 });
 
 export async function POST(request: Request): Promise<NextResponse> {
-  if (!flagEnabled("feature_lab_enabled")) {
-    return NextResponse.json({ error: "not enabled" }, { status: 404 });
-  }
-  const body = await request.json().catch(() => null);
-  const parsed = SignupRequest.safeParse(body);
-  if (!parsed.success) {
-    return NextResponse.json({ error: "invalid" }, { status: 400 });
-  }
-  const d = parsed.data;
+  if (!featureInterestOriginAllowed(request)) return NextResponse.json({ error: "not allowed" }, { status: 403 });
+  const read = await readAdminJson(request, SignupRequest, 12 * 1024);
+  if (!read.ok) return read.response;
+  const d = read.data;
+  const productIds: Record<string, string> = {
+    "Dashboard v3": "product_dashboard", "Trust Network v3": "product_trust_network",
+    "SmartQuote v3": "product_smartquote", "Home Memory v2": "product_home_memory",
+    "One Connected Home": "explainers", "Provider OS v2": "provider_os",
+  };
+  const featureId = productIds[d.page];
+  if (!featureId || stateIn(await readFeatureSnapshot({ fresh: true }), featureId) === "HIDDEN") return NextResponse.json({ error: "not enabled" }, { status: 404 });
   const created_at = new Date().toISOString().replace(/\.\d+Z$/, "Z");
   const signup_id = `su_${randomUUID()}`;
   const record: Signup = {
@@ -65,8 +69,8 @@ export async function POST(request: Request): Promise<NextResponse> {
     created_at,
   };
 
-  const store = runtimeStore();
   try {
+    const store = runtimeStore();
     await store.saveSignup(record);
     return NextResponse.json({ ok: true, recorded: store.kind });
   } catch {

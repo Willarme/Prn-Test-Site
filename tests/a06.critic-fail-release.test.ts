@@ -108,7 +108,7 @@ describe("explicit critic FAIL survives every release path", () => {
     const queued = (await publishQueueSnapshot(() => null)).find(row => row.spec.page_spec_id === pending.page_spec_id);
     expect(queued?.decision.release_eligible).toBe(false);
     const response = await publish(new Request("http://localhost/api/admin/pages/publish", {
-      method: "POST", headers: { "Content-Type": "application/json" },
+      method: "POST", headers: { Origin: "http://localhost", "Content-Type": "application/json" },
       body: JSON.stringify({ page_spec_id: pending.page_spec_id, action: "publish" }),
     }));
     expect(response.status).toBe(409);

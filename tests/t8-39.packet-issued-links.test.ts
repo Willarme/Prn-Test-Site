@@ -1,3 +1,8 @@
+import { renderToStaticMarkup } from "react-dom/server";
+import MediaPage from "@/app/media/[token]/page";
+import { GET as mediaGet } from "@/app/media/[token]/[evidence_id]/route";
+import { DEFAULT_TENANT_ID } from "@/domain/problem/contracts";
+import { invalidateFeatureStates } from "@/platform/features/state";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -26,13 +31,18 @@ vi.mock("next/headers", () => ({
 const origin = "http://localhost";
 let dir: string;
 const network = vi.fn(() => { throw new Error("No external network in packet-link tests"); });
-beforeEach(() => {
+beforeEach(async () => {
   dir = mkdtempSync(join(tmpdir(), "packet-link-ack-"));
   vi.stubEnv("PRN_DEV_DB_PATH", join(dir, "db.json")); vi.stubEnv("PRN_RUNTIME_STORE", "file");
   vi.stubEnv("LINK_SIGNING_SECRET", "synthetic-packet-link-acknowledgement-test-only");
   vi.stubEnv("VITEST", "1"); vi.stubEnv("PRN_AI_LIVE_TESTS", "0"); vi.stubEnv("PRN_PDF_DISABLED", "");
   network.mockClear(); vi.stubGlobal("fetch", network); cookieJar.clear();
   runtime.resetRuntimeStore(); setAiPolicyStoreForTests(new MemoryAiPolicyStore()); setSpendLedgerForTests(new MemorySpendLedger());
+  // This historical suite exercises restored capabilities; D5 launch coverage is separate.
+  await runtime.runtimeStore().setFeatureStates({ tenant_id: DEFAULT_TENANT_ID,
+    changes: ["intake", "walkthrough", "job_packet", "keep", "ask", "shared_links", "pdf_keep_qr", "pdf_ask_qr"].map(feature_id => ({ feature_id, state: "LIVE" as const, expected_version: 0 })),
+    actor: "synthetic-test", reason: "Exercise restored packet links", decision_ref: "D5-restoration-test", at: "2026-09-13T12:00:00Z" });
+  invalidateFeatureStates();
 });
 afterEach(async () => {
   await closePdfRenderer(); expect(network).not.toHaveBeenCalled();
@@ -134,7 +144,7 @@ it("actual owner HTML and real PDF expose only recorded, independently revocable
   const pdfIds = await assertRecordedAndRevocable(id, ownerTokens(pdfUrls));
   expect(pdfIds.every(value => !htmlIds.includes(value))).toBe(true);
   expect(await listIssuedLinks(id)).toHaveLength(6);
-}, 60_000);
+}, 20_000);
 
 it("provider copies mint no owner links and unauthorized/missing/safety gates stay before issuance", async () => {
   const id = await createPacket();
@@ -185,5 +195,61 @@ it.each(scopes)("shared %s acknowledgement failure refuses loader, HTML and PDF 
   expect(rpc.mock.calls.map(([, input]) => input.p_link.scope)).toEqual([...attempts, ...attempts, ...attempts]);
   for (const [name, input] of rpc.mock.calls) {
     expect(name).toBe("register_request_link"); expect(input.p_request_id).toBe(id);
+  }
+});
+it("D5 hidden state suppresses issuance in the real loader and owner HTML while retaining the packet", async () => {
+  const id = await createPacket();
+  await runtime.runtimeStore().setFeatureStates({ tenant_id: DEFAULT_TENANT_ID,
+    changes: ["keep", "ask", "shared_links", "pdf_keep_qr", "pdf_ask_qr"].map(feature_id => ({ feature_id, state: "HIDDEN" as const, expected_version: 1 })),
+    actor: "synthetic-test", reason: "Verify launch hidden packet", decision_ref: "D5-hidden-test", at: "2026-09-13T12:01:00Z" });
+  invalidateFeatureStates();
+  const loaded = await loadPacket(id, { owner: true, link_base: origin });
+  expect(loaded!.input!.config).toMatchObject({ owner_actions: true, qr_visibility: { keep: false, ask: false }, home_memory_url: "", trust_network_url: "", media_link: null });
+  expect(await listIssuedLinks(id)).toEqual([]);
+  const response = await htmlGet(new Request(origin + "/packet/" + id), params(id));
+  expect(response.status).toBe(200); expect(response.headers.get("x-packet-self-check")).toBe("ok");
+  const html = await response.text();
+  expect(html).not.toMatch(/href="[^"]*\/(keep|ask|media|links|p)\//);
+  expect(html).not.toContain('<article class="x-card');
+  expect(html).not.toContain("Shared provider copy");
+  expect(await listIssuedLinks(id)).toEqual([]);
+});
+
+
+it("held external packet and media tokens stop on HIDDEN and restore on LIVE; owner packet access remains available", async () => {
+  const id = await createPacket();
+  const journey = (await runtime.runtimeStore().getJourney(id))!;
+  const evidenceId = "ev_hidden_media";
+  await runtime.runtimeStore().attachEvidence(journey.problem.problem_id, id, {
+    evidence_id: evidenceId, kind: "photo", content: "synthetic/hidden.png", captured_at: "2026-09-13T12:00:00Z",
+    privacy: "private", field_key: "thermostat_photo",
+  });
+  const sharp = (await import("sharp")).default;
+  const bytes = await sharp({ create: { width: 10, height: 10, channels: 3, background: "white" } }).png().toBuffer();
+  const read = vi.spyOn(mediaAdapter, "readPrivateMediaBytes").mockResolvedValue(bytes);
+  const packet = signLink({ scope: "packet", request_id: id });
+  const media = signLink({ scope: "media", request_id: id });
+  const keep = signLink({ scope: "keep", request_id: id });
+  const mediaParams = (token: string) => ({ params: Promise.resolve({ token, evidence_id: evidenceId }) });
+  for (const [state, expected_version] of [["HIDDEN", 1], ["LIVE", 2]] as const) {
+    await runtime.runtimeStore().setFeatureStates({ tenant_id: DEFAULT_TENANT_ID,
+      changes: [{ feature_id: "shared_links", state, expected_version }], actor: "synthetic-test",
+      reason: "Held capability restoration check", decision_ref: "D5-held-link-test", at: "2026-09-13T12:02:00Z" });
+    invalidateFeatureStates();
+    if (state === "HIDDEN") {
+      await expect(MediaPage({ params: Promise.resolve({ token: media }) })).rejects.toThrow(/404/);
+      expect((await mediaGet(new Request(origin), mediaParams(media))).status).toBe(404);
+      expect(read).not.toHaveBeenCalled();
+      for (const [handler, suffix] of [[htmlGet, ""], [pdfGet, "/pdf"]] as const) {
+        expect((await handler(new Request(origin + "/packet/" + id + suffix + "?share=" + packet), params(id))).status).toBe(404);
+      }
+      expect((await htmlGet(new Request(origin + "/packet/" + id), params(id))).status).toBe(200);
+      // A separately restored keep flow still serves its own saved-record thumbnail.
+      expect((await mediaGet(new Request(origin), mediaParams(keep))).status).toBe(200);
+    } else {
+      expect(renderToStaticMarkup(await MediaPage({ params: Promise.resolve({ token: media }) }))).toContain("Photos and video for this job");
+      expect((await mediaGet(new Request(origin), mediaParams(media))).status).toBe(200);
+      expect((await htmlGet(new Request(origin + "/packet/" + id + "?share=" + packet), params(id))).status).toBe(200);
+    }
   }
 });

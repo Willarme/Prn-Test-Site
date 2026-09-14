@@ -1,0 +1,275 @@
+{
+  "version": "f01-source-pins/1.0.0",
+  "files": [
+    {
+      "path": "content/door-template/v43/reference/approved-v43.html",
+      "raw_sha256": "cfb4a1b532f06a50040459a6de173e33e96aee8913c3d02884f4a8b85b69044a",
+      "lf_sha256": "756fb95907fd3fb21f7bc9a86e854d0e90f8ef35455776b83a17b4935f8d8843",
+      "bytes": 319629,
+      "authority": "existing_v44_input_pin",
+      "prior_raw_sha256": "cfb4a1b532f06a50040459a6de173e33e96aee8913c3d02884f4a8b85b69044a",
+      "binary": false
+    },
+    {
+      "path": "content/door-template/v43/spec/ac-blowing-warm-air/accents.json",
+      "raw_sha256": "9e225a8e47e5aaf54ea09a692e60ab58ac3abe7629b8257976c2ec00d02d40fe",
+      "lf_sha256": "9c9bf0c6e3fcfa4c38c60071ce8de4584859d56f9b3e0f81d3bb2d1b0a7311c7",
+      "bytes": 375,
+      "authority": "existing_v44_input_pin",
+      "prior_raw_sha256": "9e225a8e47e5aaf54ea09a692e60ab58ac3abe7629b8257976c2ec00d02d40fe",
+      "binary": false
+    },
+    {
+      "path": "content/door-template/v43/spec/ac-blowing-warm-air/brand.json",
+      "raw_sha256": "c87048f35d833b487254de5f206c559def48240601d0a0429d518f491d0b92d5",
+      "lf_sha256": "dd7ece4e44391d68bdb5e768f018f1cc5623f4de1ba02d65400c6bdbc3811a3c",
+      "bytes": 307,
+      "authority": "existing_v44_input_pin",
+      "prior_raw_sha256": "c87048f35d833b487254de5f206c559def48240601d0a0429d518f491d0b92d5",
+      "binary": false
+    },
+    {
+      "path": "content/door-template/v43/spec/ac-blowing-warm-air/capability-registry.json",
+      "raw_sha256": "5309578b95cbd9c90cf6c1fbf04f6347602330d6bbecd098e92ff63bb44064d6",
+      "lf_sha256": "3f60eec63df70fe2ab591911fb9af66c11cfe49db3bb4c40d4fbfcab96db12c1",
+      "bytes": 14511,
+      "authority": "existing_v44_input_pin",
+      "prior_raw_sha256": "5309578b95cbd9c90cf6c1fbf04f6347602330d6bbecd098e92ff63bb44064d6",
+      "binary": false
+    },
+    {
+      "path": "content/door-template/v43/spec/ac-blowing-warm-air/capability.json",
+      "raw_sha256": "4c92deea874ca5dc96fe975a6f7035751e179dab86f620251aef45be024a20dd",
+      "lf_sha256": "fbb1019a884d51950f2af11da23cbd4122edf2743c490f7000c0eaecdadca451",
+      "bytes": 2981,
+      "authority": "existing_v44_input_pin",
+      "prior_raw_sha256": "4c92deea874ca5dc96fe975a6f7035751e179dab86f620251aef45be024a20dd",
+      "binary": false
+    },
+    {
+      "path": "content/door-template/v43/spec/ac-blowing-warm-air/closer.json",
+      "raw_sha256": "5a5f4f502d73b3b49a564cce9604b946947d594b2458a5fa2c59867753f513cb",
+      "lf_sha256": "03bee7edd5249f4c9d80f2aed3b237ddf59b4c92d2ffe74beab2f36a9739a849",
+      "bytes": 673,
+      "authority": "existing_v44_input_pin",
+      "prior_raw_sha256": "5a5f4f502d73b3b49a564cce9604b946947d594b2458a5fa2c59867753f513cb",
+      "binary": false
+    },
+    {
+      "path": "content/door-template/v43/spec/ac-blowing-warm-air/common_causes.json",
+      "raw_sha256": "e6dace5d27eddf1492ccd5e051e047a674af8e15aff1fa7dc74ea8b1d17c24ac",
+      "lf_sha256": "d9df76cdfb00089cae2a0b2f0ecc89ad998608ee0ad4f19b6ef6f5b6be32518e",
+      "bytes": 3521,
+      "authority": "existing_v44_input_pin",
+      "prior_raw_sha256": "e6dace5d27eddf1492ccd5e051e047a674af8e15aff1fa7dc74ea8b1d17c24ac",
+      "binary": false
+    },
+    {
+      "path": "content/door-template/v43/spec/ac-blowing-warm-air/crumb.json",
+      "raw_sha256": "38eaff5785a53df4dc49a464ed8fdf926c9f87cd0c85146c79e8bb944899239f",
+      "lf_sha256": "07b4663c0d8905c24a91e34340f028ded8d7fe910a5fce6f5e98c5bfb8cac779",
+      "bytes": 285,
+      "authority": "existing_v44_input_pin",
+      "prior_raw_sha256": "38eaff5785a53df4dc49a464ed8fdf926c9f87cd0c85146c79e8bb944899239f",
+      "binary": false
+    },
+    {
+      "path": "content/door-template/v43/spec/ac-blowing-warm-air/faq.json",
+      "raw_sha256": "1ddbc86adce5db991e61fd4f115a32af734af902f9cd58c7442522626dbec043",
+      "lf_sha256": "f58e09a82ee9734cca744447b10872b7bf2b0d5c294ad9814526d05ab9297057",
+      "bytes": 2125,
+      "authority": "existing_v44_input_pin",
+      "prior_raw_sha256": "1ddbc86adce5db991e61fd4f115a32af734af902f9cd58c7442522626dbec043",
+      "binary": false
+    },
+    {
+      "path": "content/door-template/v43/spec/ac-blowing-warm-air/flip.json",
+      "raw_sha256": "9156424fc15b356ec8236b0d76bdcd42395f0a7f2a73a6de8951389961013251",
+      "lf_sha256": "b2956a1fabc30794e29f1bb1a57cbc4d645c78f9fa9821d85411cb7b7b30ffef",
+      "bytes": 1046,
+      "authority": "existing_v44_input_pin",
+      "prior_raw_sha256": "9156424fc15b356ec8236b0d76bdcd42395f0a7f2a73a6de8951389961013251",
+      "binary": false
+    },
+    {
+      "path": "content/door-template/v43/spec/ac-blowing-warm-air/general_vs_yours.json",
+      "raw_sha256": "4baf6d2b095a6429588db28f16afb28f67d24295bc5f8786e2176c61691b5172",
+      "lf_sha256": "80d772a9c5abba15ebf30124f075efbb171896925a3560cec3b4b0b4643c08c3",
+      "bytes": 2337,
+      "authority": "existing_v44_input_pin",
+      "prior_raw_sha256": "4baf6d2b095a6429588db28f16afb28f67d24295bc5f8786e2176c61691b5172",
+      "binary": false
+    },
+    {
+      "path": "content/door-template/v43/spec/ac-blowing-warm-air/hero.json",
+      "raw_sha256": "3d126489a4087062a18d9479159353e55f1fbf508cdb699ca765e6391435721b",
+      "lf_sha256": "3d4d211e5497d68bf994e8f75cb4ab61346316b0d5ebc56cb8673cada4d58829",
+      "bytes": 2292,
+      "authority": "existing_v44_input_pin",
+      "prior_raw_sha256": "3d126489a4087062a18d9479159353e55f1fbf508cdb699ca765e6391435721b",
+      "binary": false
+    },
+    {
+      "path": "content/door-template/v43/spec/ac-blowing-warm-air/intake.json",
+      "raw_sha256": "60f353d5c8efb07dbae28a7fccab7eed5ee93e8262a1528c4bd34fbd74532b02",
+      "lf_sha256": "95386422a4ae8c2ed4d010ef5f26f97bfd86c625350e55f9e7a7e73cf3a85b40",
+      "bytes": 1863,
+      "authority": "existing_v44_input_pin",
+      "prior_raw_sha256": "60f353d5c8efb07dbae28a7fccab7eed5ee93e8262a1528c4bd34fbd74532b02",
+      "binary": false
+    },
+    {
+      "path": "content/door-template/v43/spec/ac-blowing-warm-air/job_packet.json",
+      "raw_sha256": "d17554a7f2c2e239595eea04571de28c12bbba048113b70004c63e672d2d2948",
+      "lf_sha256": "a28d84edf42ec3a99f21dcbfeb627c9cc6cf47fd3b82044941a2674f065e14c5",
+      "bytes": 1142,
+      "authority": "existing_v44_input_pin",
+      "prior_raw_sha256": "d17554a7f2c2e239595eea04571de28c12bbba048113b70004c63e672d2d2948",
+      "binary": false
+    },
+    {
+      "path": "content/door-template/v43/spec/ac-blowing-warm-air/nav.json",
+      "raw_sha256": "bb5e5209a3af85cf17f5b60507ee98dd77c7143ba7ef0940c8c206b6d3b5cbf3",
+      "lf_sha256": "8427f701e87a41a6e6b1851eaff404e0df804c4f6515dc8619f51984b6b588c0",
+      "bytes": 279,
+      "authority": "existing_v44_input_pin",
+      "prior_raw_sha256": "bb5e5209a3af85cf17f5b60507ee98dd77c7143ba7ef0940c8c206b6d3b5cbf3",
+      "binary": false
+    },
+    {
+      "path": "content/door-template/v43/spec/ac-blowing-warm-air/observations.json",
+      "raw_sha256": "bb52c56e93c8866d334100c132a22128e7b295ab479415921edad458ff108003",
+      "lf_sha256": "d5f7347a498056d3b2b5d2c9e11778bc361e7ec1d0490a1517388e6a4bb5a3c1",
+      "bytes": 1367,
+      "authority": "existing_v44_input_pin",
+      "prior_raw_sha256": "bb52c56e93c8866d334100c132a22128e7b295ab479415921edad458ff108003",
+      "binary": false
+    },
+    {
+      "path": "content/door-template/v43/spec/ac-blowing-warm-air/page.json",
+      "raw_sha256": "e5835420c10bb5078eb3eff11ffd646a2193f94be044ec68fd104628c5fcd74e",
+      "lf_sha256": "743eeefca4fa8049fa52dbb4c9f4104324fb25d9ec70f8684abef6d37cc8800e",
+      "bytes": 1123,
+      "authority": "existing_v44_input_pin",
+      "prior_raw_sha256": "e5835420c10bb5078eb3eff11ffd646a2193f94be044ec68fd104628c5fcd74e",
+      "binary": false
+    },
+    {
+      "path": "content/door-template/v43/spec/ac-blowing-warm-air/plates/behind-the-panel.svg",
+      "raw_sha256": "d5f84531ae0d08217d2c0c10cf64f1daedb3911fd0843eb7a7f038f73ae7b2c6",
+      "lf_sha256": "0bdf2e3d30045bd9c955a45f6ea8c87da4aeee6eaf41191b5d5e0955d40e0a4a",
+      "bytes": 9758,
+      "authority": "existing_v44_input_pin",
+      "prior_raw_sha256": "d5f84531ae0d08217d2c0c10cf64f1daedb3911fd0843eb7a7f038f73ae7b2c6",
+      "binary": false
+    },
+    {
+      "path": "content/door-template/v43/spec/ac-blowing-warm-air/plates/ice-or-clear.svg",
+      "raw_sha256": "27cfa955f5d4760ebc7f5f723a50aa278cd70f8bb2e9580eb2daefa6e5100b22",
+      "lf_sha256": "d1150ca96b6927bf2d83a216cb5fb1d2b97a8917e4826c4fd2da1d9eaf5c650c",
+      "bytes": 5647,
+      "authority": "existing_v44_input_pin",
+      "prior_raw_sha256": "27cfa955f5d4760ebc7f5f723a50aa278cd70f8bb2e9580eb2daefa6e5100b22",
+      "binary": false
+    },
+    {
+      "path": "content/door-template/v43/spec/ac-blowing-warm-air/plates/where-to-look.svg",
+      "raw_sha256": "a72b4486739a60748e81793f00f4fd8d71496dc8363b1910de571457842b3555",
+      "lf_sha256": "8644db26f0b9018b3f4f1ea9fb583b2e96f14383c1a49b9e741848d4b75cd771",
+      "bytes": 10462,
+      "authority": "existing_v44_input_pin",
+      "prior_raw_sha256": "a72b4486739a60748e81793f00f4fd8d71496dc8363b1910de571457842b3555",
+      "binary": false
+    },
+    {
+      "path": "content/door-template/v43/spec/ac-blowing-warm-air/related.json",
+      "raw_sha256": "19cc40b94bd0bc5a10162ac5d437035343e66c8b1e54c75eb8c91aba972b7fc2",
+      "lf_sha256": "4d2b808d66008efb401d962f094449cbd3460580de85440696514f7a091938b5",
+      "bytes": 338,
+      "authority": "existing_v44_input_pin",
+      "prior_raw_sha256": "19cc40b94bd0bc5a10162ac5d437035343e66c8b1e54c75eb8c91aba972b7fc2",
+      "binary": false
+    },
+    {
+      "path": "content/door-template/v43/spec/ac-blowing-warm-air/repair_record.json",
+      "raw_sha256": "6a5f1e23385a5badc6c813864a459615c24b81c7c48f124b3189306490fe0ec0",
+      "lf_sha256": "02b77459742c53b5b8c749dfe7cad0fd04aa9943ae53a438b52383ce20a7dc02",
+      "bytes": 3200,
+      "authority": "existing_v44_input_pin",
+      "prior_raw_sha256": "6a5f1e23385a5badc6c813864a459615c24b81c7c48f124b3189306490fe0ec0",
+      "binary": false
+    },
+    {
+      "path": "content/door-template/v43/spec/ac-blowing-warm-air/safe_observations.json",
+      "raw_sha256": "1e163b4c79db8e2e56bd93148d2fdafb120be98647545cd42f6b07fc2a4991c7",
+      "lf_sha256": "3dedf75fd81af0b1d3b9b152a4ec07dcaf58e70e9a15a331b915ba9774fa1b16",
+      "bytes": 1984,
+      "authority": "existing_v44_input_pin",
+      "prior_raw_sha256": "1e163b4c79db8e2e56bd93148d2fdafb120be98647545cd42f6b07fc2a4991c7",
+      "binary": false
+    },
+    {
+      "path": "content/door-template/v43/spec/ac-blowing-warm-air/site.json",
+      "raw_sha256": "5168391f9499cc4d9a1f95f14519bae1c303b276a1036c503bd9c24e2be37cb1",
+      "lf_sha256": "da0275b952aab2d2bad91eb546f17b13cc93efc7edd618f36843974095a83569",
+      "bytes": 280,
+      "authority": "existing_v44_input_pin",
+      "prior_raw_sha256": "5168391f9499cc4d9a1f95f14519bae1c303b276a1036c503bd9c24e2be37cb1",
+      "binary": false
+    },
+    {
+      "path": "content/door-template/v43/spec/ac-blowing-warm-air/sources.json",
+      "raw_sha256": "9726ea13ccf615008ec24ec373f5b2865af3d2fa76ec8d38d04697698aaff796",
+      "lf_sha256": "7ac7621333095af3ee8f50074e610bf625d45c07a843db061c03add81e91d736",
+      "bytes": 7079,
+      "authority": "existing_v44_input_pin",
+      "prior_raw_sha256": "9726ea13ccf615008ec24ec373f5b2865af3d2fa76ec8d38d04697698aaff796",
+      "binary": false
+    },
+    {
+      "path": "content/door-template/v43/spec/ac-blowing-warm-air/stats.json",
+      "raw_sha256": "dad032eab4a638680b2ea928e47cf069fd1903a7e9b323e48888354dc830b921",
+      "lf_sha256": "afbf857d779f25c0a2cb298fe857df9e956b31109aaefe10aeb8b4e7bf28c11d",
+      "bytes": 3180,
+      "authority": "existing_v44_input_pin",
+      "prior_raw_sha256": "dad032eab4a638680b2ea928e47cf069fd1903a7e9b323e48888354dc830b921",
+      "binary": false
+    },
+    {
+      "path": "content/door-template/v43/spec/ac-blowing-warm-air/visuals.json",
+      "raw_sha256": "5eaf53dedd538008650b7627fc045c8f173c1be22b931996b3675e797422e107",
+      "lf_sha256": "7dfe44526dd23623314dfe6aeb114861993450d717bf6b9160af8690daa92f21",
+      "bytes": 2204,
+      "authority": "existing_v44_input_pin",
+      "prior_raw_sha256": "5eaf53dedd538008650b7627fc045c8f173c1be22b931996b3675e797422e107",
+      "binary": false
+    },
+    {
+      "path": "public/images/how-to-tell-an-iced-refrigerant-line-from-a-normal-one-and-wha.png",
+      "raw_sha256": "965d46e0c22105b693ffe6672e7995a3084245850152b230a9f85ae0e147f535",
+      "lf_sha256": "63877ea0a286e0938497b03c182d4a836804059e9f7fa15b495a17339b1aa19a",
+      "bytes": 44568,
+      "authority": "existing_repository_raster_bytes_not_new_image_or_review",
+      "prior_raw_sha256": null,
+      "binary": true
+    },
+    {
+      "path": "public/images/inside-a-condenser-unit-the-parts-that-fail-and-why-the-panel-.png",
+      "raw_sha256": "dce3de077486dec9e701ef7c0afbfcd42fcd1239dd1f5ef2a4931bd57c9127c5",
+      "lf_sha256": "e3fa6ff04474fb2712a6f79409d0fa54b51508d20881f9a56876d36e599b5ae3",
+      "bytes": 52202,
+      "authority": "existing_repository_raster_bytes_not_new_image_or_review",
+      "prior_raw_sha256": null,
+      "binary": true
+    },
+    {
+      "path": "public/images/where-to-look-on-a-central-air-conditioning-system-and-what-is.png",
+      "raw_sha256": "f90f2d5352e0cd6e6d796a7cfe57a8940532dc0bcc1b5d7ce8944cc0ee9af391",
+      "lf_sha256": "5bc92344cb0aa25a41243f3a4e0e27884a77c5e802db06c9266a7265167b9408",
+      "bytes": 58572,
+      "authority": "existing_repository_raster_bytes_not_new_image_or_review",
+      "prior_raw_sha256": null,
+      "binary": true
+    }
+  ]
+}

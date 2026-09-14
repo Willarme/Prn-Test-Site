@@ -1,0 +1,39 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://schemas.propertyresponsenetwork.com/doorspec/namespaces/related.json",
+  "title": "Door v44 related",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "links": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "page_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^(?!(?:__proto__|prototype|constructor)$)[A-Za-z0-9][A-Za-z0-9._:-]*$"
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 150,
+            "pattern": "^(?!\\s)(?![\\s\\S]*\\s{2})(?![\\s\\S]*[<>\\u0000-\\u001f\\u007f])(?![\\s\\S]*\\s$)[\\s\\S]+$"
+          }
+        },
+        "required": [
+          "page_id",
+          "label"
+        ]
+      },
+      "minItems": 1,
+      "maxItems": 12
+    }
+  },
+  "required": [
+    "links"
+  ]
+}

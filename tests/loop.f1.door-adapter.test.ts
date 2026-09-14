@@ -3,6 +3,9 @@ import { mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import { NativeIntakeForm } from "@/components/intake/NativeIntakeForm";
 import { ACTIVE_DISCLOSURE } from "@/domain/privacy/disclosures";
 import { ownerCookieName } from "@/platform/links/owner";
 import { readDevDb } from "@/platform/stores/dev-db";
@@ -75,6 +78,30 @@ function tinyPng(name = "unit.png"): File {
 }
 
 describe("POST /api/intake/start — the door adapter", () => {
+  it("persists a native general-home submission with the shown consent and null door attribution", async () => {
+    const html = renderToStaticMarkup(createElement(NativeIntakeForm));
+    const form = new FormData();
+    for (const tag of html.match(/<input\b[^>]*type="hidden"[^>]*>/g) ?? []) {
+      form.set(/\bname="([^"]+)"/.exec(tag)![1], /\bvalue="([^"]*)"/.exec(tag)![1]);
+    }
+    form.set(/<textarea[^>]*name="([^"]+)"/.exec(html)![1],
+      "TEST ONLY. The air is coming out but is not cold. Started yesterday afternoon.");
+    const response = await startPost(new Request("http://localhost/api/intake/start", {
+      method: "POST", body: form, headers: { referer: "http://localhost/" },
+    }));
+    expect(response.status).toBe(303);
+    expect(response.headers.get("location")).toMatch(/^\/complete\/rq_/);
+    const requestId = response.headers.get("location")!.slice("/complete/".length);
+    const db = readDevDb();
+    const session = db.intake_sessions.find(row => row.request_id === requestId)!;
+    expect(session.attribution).toMatchObject({ landing_path: "/", referrer: "http://localhost/",
+      page_id: null, intent_cluster_id: null, search_opportunity_id: null, problem_family_hint: null });
+    const consent = db.consent_events.find(row => row.guest_session_id === session.guest_session_id)!;
+    expect(consent.disclosure_version_id).toBe(ACTIVE_DISCLOSURE.disclosure_version_id);
+    expect(db.problems.some(row => row.problem_id === consent.problem_id)).toBe(true);
+    expect(response.headers.get("set-cookie")).toContain(`${ownerCookieName(requestId)}=`);
+  });
+
   it("a filled-in door form starts a request: 303 to the walkthrough, with the journey cookie", async () => {
     const res = await startPost(doorForm());
     expect(res.status).toBe(303);

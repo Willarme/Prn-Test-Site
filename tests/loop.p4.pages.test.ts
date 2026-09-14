@@ -1,3 +1,6 @@
+import { resetRuntimeStore, runtimeStore } from "@/platform/stores/runtime";
+import { DEFAULT_TENANT_ID } from "@/domain/problem/contracts";
+import { invalidateFeatureStates } from "@/platform/features/state";
 import { mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -29,12 +32,20 @@ let jsonPost: (req: Request) => Promise<Response>;
 
 beforeAll(async () => {
   const dir = await mkdtemp(join(tmpdir(), "prn-devdb-p4-pages-"));
-  process.env.PRN_DEV_DB_PATH = join(dir, "dev-db.json");
+  vi.stubEnv("PRN_DEV_DB_PATH", join(dir, "dev-db.json"));
+  vi.stubEnv("PRN_RUNTIME_STORE", "file");
+  resetRuntimeStore();
+  // Synthetic persisted LIVE state tests the preserved honest find view; this
+  // does not mark the unfinished find product eligible for owner-UI activation.
+  await runtimeStore().setFeatureStates({ tenant_id: DEFAULT_TENANT_ID,
+    changes: ["intake", "walkthrough", "job_packet", "keep", "ask", "find"].map(feature_id => ({ feature_id, state: "LIVE" as const, expected_version: 0 })),
+    actor: "synthetic-test", reason: "Exercise preserved P4 page behavior", decision_ref: "D5-preserved-pages-test", at: "2026-09-13T12:00:00Z" });
+  invalidateFeatureStates();
   ({ POST: jsonPost } = await import("@/app/api/intake/route"));
 });
 
 afterAll(() => {
-  delete process.env.PRN_DEV_DB_PATH;
+  resetRuntimeStore(); invalidateFeatureStates(); vi.unstubAllEnvs();
 });
 
 async function startJourney(description: string, hint: string | null = "hvac-cooling"): Promise<string> {
@@ -149,7 +160,6 @@ describe("GET /results/[request_id] — confirmed keep receipt outside the froze
     const Page = (await import("@/app/results/[request_id]/page")).default;
     const render = async () => renderToStaticMarkup(await Page({ params: Promise.resolve({ request_id }), searchParams: Promise.resolve({ kept: "1", k: signLink({ scope: "keep", request_id }) }) }));
     expect(await render()).not.toContain("data-keep-receipt");
-    const { runtimeStore } = await import("@/platform/stores/runtime");
     const { recordKeepRequested, markKeepConfirmed } = await import("@/platform/links/ledger");
     const claimed_at = new Date().toISOString();
     const claim = { request_id, contact: "preview@example.com", contact_kind: "email" as const, claimed_at, magic_link_id: "mg_preview_current" };
@@ -160,6 +170,17 @@ describe("GET /results/[request_id] — confirmed keep receipt outside the froze
     const confirmed = await render();
     expect(confirmed).toContain("Saved to Home Memory.");
     expect(confirmed).toContain("Open your saved record");
+    // A valid confirmation must still disappear while the feature is hidden.
+    await runtimeStore().setFeatureStates({ tenant_id: DEFAULT_TENANT_ID,
+      changes: [{ feature_id: "keep", state: "HIDDEN", expected_version: 1 }], actor: "synthetic-test",
+      reason: "Verify launch receipt suppression", decision_ref: "D5-hidden-receipt-test", at: claimed_at });
+    invalidateFeatureStates();
+    expect(await render()).not.toContain("data-keep-receipt");
+    await runtimeStore().setFeatureStates({ tenant_id: DEFAULT_TENANT_ID,
+      changes: [{ feature_id: "keep", state: "LIVE", expected_version: 2 }], actor: "synthetic-test",
+      reason: "Restore preserved receipt scenario", decision_ref: "D5-preserved-pages-test", at: claimed_at });
+    invalidateFeatureStates();
+    expect(await render()).toContain("data-keep-receipt");
     await runtimeStore().saveKeepClaim({ ...claim, magic_link_id: "mg_preview_replacement" });
     expect(await render()).not.toContain("data-keep-receipt");
   });
@@ -168,7 +189,6 @@ describe("GET /results/[request_id] — confirmed keep receipt outside the froze
 describe("GET /complete/[request_id] — the confirm ladder (C3, C4, F4)", () => {
   it("a value read off a photo is confirmed, never asserted; an unreadable label says so and opens the typed box", async () => {
     const request_id = await startJourney("My AC is blowing warm air, started yesterday afternoon");
-    const { runtimeStore } = await import("@/platform/stores/runtime");
     const now = new Date().toISOString().replace(/\.\d+Z$/, "Z");
     await runtimeStore().saveIntakeAnswers([
       { request_id, field_key: "brand", value_text: "Carrier", evidence_id: "ev_label", source: "photo", answered_at: now },
@@ -186,7 +206,6 @@ describe("GET /complete/[request_id] — the confirm ladder (C3, C4, F4)", () =>
 
   it.each([false, true])("a confirmed value collapses with truthful photo provenance (photo: %s)", async fromPhoto => {
     const request_id = await startJourney("My AC is blowing warm air, started yesterday afternoon");
-    const { runtimeStore } = await import("@/platform/stores/runtime");
     const now = new Date().toISOString().replace(/\.\d+Z$/, "Z");
     await runtimeStore().saveIntakeAnswers([
       ...(fromPhoto ? [{ request_id, field_key: "brand", value_text: "Carrier", evidence_id: "ev_label", source: "photo" as const, answered_at: now }] : []),

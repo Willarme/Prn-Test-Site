@@ -1,3 +1,5 @@
+import { DEFAULT_TENANT_ID } from "@/domain/problem/contracts";
+import { invalidateFeatureStates } from "@/platform/features/state";
 import { mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -7,7 +9,7 @@ import { HVAC_COOLING_PLAYBOOK } from "@/domain/intake/playbooks/hvac-cooling";
 import { ACTIVE_DISCLOSURE } from "@/domain/privacy/disclosures";
 import { checkSafety } from "@/domain/problem/safety";
 import { signLink } from "@/platform/links/tokens";
-import { runtimeStore } from "@/platform/stores/runtime";
+import { runtimeStore, resetRuntimeStore } from "@/platform/stores/runtime";
 import { readDevDb, updateDevDb } from "@/platform/stores/dev-db";
 import { POST as startPost } from "@/app/api/intake/route";
 import { POST as answerPost } from "@/app/api/intake/answer/route";
@@ -32,8 +34,15 @@ beforeAll(async () => {
   vi.stubEnv("PRN_DEV_DB_PATH", join(dir, "dev-db.json"));
   vi.stubEnv("PRN_RUNTIME_STORE", "file");
   vi.stubGlobal("fetch", network);
+  resetRuntimeStore();
+  // Historical safety coverage runs with these actions explicitly restored.
+  // Launch-HIDDEN refusal is tested separately; it must not mask the safety stop.
+  await runtimeStore().setFeatureStates({ tenant_id: DEFAULT_TENANT_ID,
+    changes: ["intake", "walkthrough", "job_packet", "keep", "send", "shared_links"].map(feature_id => ({ feature_id, state: "LIVE" as const, expected_version: 0 })),
+    actor: "synthetic-test", reason: "Exercise restored-route safety behavior", decision_ref: "D5-preserved-safety-test", at: "2026-09-13T12:00:00Z" });
+  invalidateFeatureStates();
 });
-afterAll(() => { vi.unstubAllEnvs(); vi.unstubAllGlobals(); });
+afterAll(() => { resetRuntimeStore(); invalidateFeatureStates(); vi.unstubAllEnvs(); vi.unstubAllGlobals(); });
 
 async function start(description = "My AC is blowing warm air") {
   const res = await startPost(new Request("http://localhost/api/intake", {

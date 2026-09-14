@@ -45,7 +45,7 @@ let POST: (request: Request) => Promise<Response>;
 function resolveRequest(body: unknown): Request {
   return new Request("http://localhost/api/admin/approvals/resolve", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { Origin: "http://localhost", "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
 }

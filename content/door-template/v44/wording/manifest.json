@@ -1,0 +1,59 @@
+{
+  "version": "wording-derivative/1.0.0",
+  "scope": "Mechanical escape repair only; not an independent twin or semantic approval.",
+  "source": {
+    "path": "content/door-template/v44/inputs/sources/vault-WORDING.md",
+    "raw_sha256": "9ada20852ad5cc7756e96d2cef39d1164dfc9b51f54175141589e0f97ebe7491",
+    "lf_sha256": "eb1efb14e0b4e04e85d79712a557ed60665082becd018ff5b58d90c3ebee04f0",
+    "crlf_sha256": "9ada20852ad5cc7756e96d2cef39d1164dfc9b51f54175141589e0f97ebe7491",
+    "raw_bytes": 301563,
+    "lf_bytes": 299060,
+    "crlf_bytes": 301563
+  },
+  "derivative": {
+    "path": "content/door-template/v44/wording/sources/WORDING.mechanical.md",
+    "raw_sha256": "26715ab7b88496d97bf084a2400f222d468aa514f9ff6645493d8fbdd5a4305e",
+    "lf_sha256": "b1f30f646bbc605bbd9422675fd2d4e6a51b37f8eb491c697e478f6851e28372",
+    "crlf_sha256": "26715ab7b88496d97bf084a2400f222d468aa514f9ff6645493d8fbdd5a4305e",
+    "raw_bytes": 301567,
+    "lf_bytes": 299064,
+    "crlf_bytes": 301567
+  },
+  "transformation": {
+    "old_hex": "08",
+    "new_hex": "5c62",
+    "meaning": "Replace the four known U+0008 backspace bytes in regex word-boundary positions with literal backslash+b. Preserve every other byte, including CRLF.",
+    "changes": [
+      {
+        "source_byte_offset": 267675,
+        "source_line": 2034,
+        "rule": 50
+      },
+      {
+        "source_byte_offset": 267839,
+        "source_line": 2034,
+        "rule": 50
+      },
+      {
+        "source_byte_offset": 271662,
+        "source_line": 2094,
+        "rule": 51
+      },
+      {
+        "source_byte_offset": 271702,
+        "source_line": 2094,
+        "rule": 51
+      }
+    ]
+  },
+  "rules": {
+    "path": "content/door-template/v44/wording/rules.json",
+    "sha256": "12142742f49f1002da511152c51e3bca01c4b88c2cabc9e7a0e55b60fa344569"
+  },
+  "limitations": [
+    "No independent workspace WORDING or validator twin has been located.",
+    "Regex candidate finders for relational, evidence and tone judgments remain review findings.",
+    "Semantic copy approval, factual/safety review and H01-H18 release acceptance are not established.",
+    "Role and money-evidence annotations come from trusted compiler orchestration, never writer claims."
+  ]
+}

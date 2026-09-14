@@ -1,46 +1,32 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { notFound } from "next/navigation";
+import { featureIsLive, readFeatureSnapshot } from "@/platform/features/state";
+import { loadIssueLibrary } from "@/platform/search/issue-library";
+import { rootIntakeEnabled } from "@/components/intake/NativeIntakeForm";
 
-/**
- * /cooling — the hub the door links up to. One card per door in the cooling
- * family; the trial has one door, so it has one card. The label is the door's
- * own H1 (content/doors/ac-blowing-warm-air.html), so the words she clicks
- * are the words she lands on.
- */
+export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Cooling",
   robots: { index: false, follow: false },
 };
 
-export default function CoolingPage() {
-  return (
-    <main>
-      <section className="section">
-        <div className="wrap-narrow">
-          <div className="eyebrow">Cooling</div>
-          <h1 className="d1">Your AC, one problem at a time.</h1>
-          <p className="lede" style={{ margin: "18px 0 0" }}>
-            Pick the thing your AC is doing. Each page walks it with you and builds a Job Packet
-            from what you see.
-          </p>
-        </div>
-      </section>
-      <section className="section section-light">
-        <div className="wrap-narrow">
-          <div className="card-light">
-            <span className="pill pill-green">Walkthrough</span>
-            <h2 className="d3" style={{ margin: "10px 0 6px" }}>
-              <Link href="/problems/ac-blowing-warm-air">AC running but blowing warm air?</Link>
-            </h2>
-            <p style={{ marginBottom: 12 }}>
-              Filter, outdoor unit, fan, fins. A few looks narrow it, and the packet keeps every one.
-            </p>
-            <Link href="/problems/ac-blowing-warm-air" className="btn btn-pink btn-sm">
-              Start with what your AC is doing
-            </Link>
-          </div>
-        </div>
-      </section>
-    </main>
-  );
+export default async function CoolingPage() {
+  const snapshot = await readFeatureSnapshot({ fresh: true });
+  if (!featureIsLive(snapshot, "door_pages")) notFound();
+  const library = await loadIssueLibrary(snapshot);
+  const family = library.families.find(row => row.id === "cooling");
+  return <main>
+    <section className="section"><div className="wrap-narrow">
+      <nav aria-label="Breadcrumb"><Link href="/">Home</Link> / <span aria-current="page">Cooling</span></nav>
+      <h1 className="d1">Cooling problems</h1>
+      <p className="lede">Browse available cooling problem pages.</p>
+    </div></section>
+    <section className="section section-light"><div className="wrap-narrow">
+      {family ? <ul className="card-light">{family.doors.map(door => <li key={door.id}><Link href={door.path}>{door.label}</Link></li>)}</ul>
+        : <p>No cooling problem pages are listed right now.</p>}
+      {featureIsLive(snapshot, "issue_library") && <p><Link href="/problems">Issue Library</Link></p>}
+      {rootIntakeEnabled(snapshot) && <p><Link href="/#intake">Describe another problem</Link></p>}
+    </div></section>
+  </main>;
 }

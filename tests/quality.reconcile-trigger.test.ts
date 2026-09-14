@@ -62,7 +62,7 @@ vi.mock("next/navigation", async (importOriginal) => {
   return { ...actual, useRouter: () => ({ refresh: () => {}, push: () => {} }) };
 });
 
-let POST: () => Promise<Response>;
+let POST: (request: Request) => Promise<Response>;
 
 /**
  * Seed the store DIRECTLY, around the ingest guard — that is what makes a bad
@@ -157,7 +157,7 @@ describe("the trigger is owner-gated like every other admin action", () => {
     seedDanglingPacket(1);
     unlocked = false;
 
-    const res = await POST();
+    const res = await POST(new Request("http://localhost/api/admin/quality/reconcile", { method: "POST", headers: { Origin: "http://localhost" } }));
     expect(res.status).toBe(403);
     const body = await res.json();
     expect(body.error).toMatch(/Owner sign-in required/);
@@ -172,7 +172,7 @@ describe("with an owner session it actually runs", () => {
   it("catches a manufactured bad record and reports it", async () => {
     seedDanglingPacket(1);
 
-    const res = await POST();
+    const res = await POST(new Request("http://localhost/api/admin/quality/reconcile", { method: "POST", headers: { Origin: "http://localhost" } }));
     expect(res.status).toBe(200);
     const body = await res.json();
 
@@ -198,14 +198,14 @@ describe("with an owner session it actually runs", () => {
   it("catches a manufactured CROSS-SOURCE mismatch — two counts of one quantity disagreeing", async () => {
     seedEvents("packet.generated", 5); // five events, zero stored packets
 
-    const res = await POST();
+    const res = await POST(new Request("http://localhost/api/admin/quality/reconcile", { method: "POST", headers: { Origin: "http://localhost" } }));
     const body = await res.json();
     expect(body.verdict).toBe("findings_recorded");
     expect(body.by_check["reconcile.packet_count_vs_events"]).toBe(1);
   });
 
   it("reports a clean pass as clean when there is genuinely nothing to find", async () => {
-    const res = await POST();
+    const res = await POST(new Request("http://localhost/api/admin/quality/reconcile", { method: "POST", headers: { Origin: "http://localhost" } }));
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.ok).toBe(true);
@@ -219,7 +219,7 @@ describe("with an owner session it actually runs", () => {
 describe("ONE Agent Run Ledger row per RUN, not per finding", () => {
   it("writes exactly one row for one run", async () => {
     seedDanglingPacket(1);
-    await POST();
+    await POST(new Request("http://localhost/api/admin/quality/reconcile", { method: "POST", headers: { Origin: "http://localhost" } }));
     expect(a09Runs()).toHaveLength(1);
   });
 
@@ -230,7 +230,7 @@ describe("ONE Agent Run Ledger row per RUN, not per finding", () => {
     seedDuplicateProblems();
     seedEvents("packet.generated", 9);
 
-    const res = await POST();
+    const res = await POST(new Request("http://localhost/api/admin/quality/reconcile", { method: "POST", headers: { Origin: "http://localhost" } }));
     const body = await res.json();
     expect(body.findings).toBeGreaterThan(3);
 
@@ -244,7 +244,7 @@ describe("ONE Agent Run Ledger row per RUN, not per finding", () => {
   });
 
   it("records that a HUMAN asked, and that the run cost nothing", async () => {
-    await POST();
+    await POST(new Request("http://localhost/api/admin/quality/reconcile", { method: "POST", headers: { Origin: "http://localhost" } }));
     const run = a09Runs()[0];
     expect(run.trigger).toBe("admin_action");
     expect(run.agent_id).toBe("A09");
@@ -254,8 +254,8 @@ describe("ONE Agent Run Ledger row per RUN, not per finding", () => {
   });
 
   it("two clicks are two runs — an owner asking again is not a retry", async () => {
-    await POST();
-    await POST();
+    await POST(new Request("http://localhost/api/admin/quality/reconcile", { method: "POST", headers: { Origin: "http://localhost" } }));
+    await POST(new Request("http://localhost/api/admin/quality/reconcile", { method: "POST", headers: { Origin: "http://localhost" } }));
     expect(a09Runs()).toHaveLength(2);
   });
 });
@@ -268,7 +268,7 @@ describe("the kill switch is a hard stop on this path", () => {
       () => null
     );
 
-    const res = await POST();
+    const res = await POST(new Request("http://localhost/api/admin/quality/reconcile", { method: "POST", headers: { Origin: "http://localhost" } }));
     expect(res.status).toBe(409);
     const body = await res.json();
     expect(body.ok).toBe(false);
@@ -283,7 +283,7 @@ describe("the kill switch is a hard stop on this path", () => {
 
   it("the GLOBAL switch blocks it too", async () => {
     await engageKillSwitch({ scope: "GLOBAL", by: "owner:test" }, () => null);
-    const res = await POST();
+    const res = await POST(new Request("http://localhost/api/admin/quality/reconcile", { method: "POST", headers: { Origin: "http://localhost" } }));
     expect(res.status).toBe(409);
     const body = await res.json();
     expect(body.error).toMatch(/GLOBAL kill switch/);
@@ -323,7 +323,7 @@ describe("the trigger does not overreach", () => {
       join(process.cwd(), "src/app/api/admin/quality/reconcile/route.ts"),
       "utf-8"
     ).replace(/\/\*[\s\S]*?\*\/|\/\/.*$/gm, "");
-    expect(route.indexOf("isAdminUnlocked")).toBeLessThan(route.indexOf("runReconciliation("));
+    expect(route.indexOf("guardAdminMutation")).toBeLessThan(route.indexOf("runReconciliation("));
   });
 
   it("mints no event name — the route emits nothing at all", () => {
@@ -364,15 +364,15 @@ describe("the control reaches the cockpit HTML", () => {
     unlocked = true;
     const html = await renderCockpit();
     expect(html).toMatch(/Data quality/);
-    expect(html).toMatch(/Run reconciliation now/);
+    expect(html).toMatch(/Run reconciliation/);
     // A button, on the page that already existed — not a link to a new screen.
-    expect(html).toMatch(/<button[^>]*>Run reconciliation now<\/button>/);
+    expect(html).toMatch(/<button[^>]*>Run reconciliation<\/button>/);
     expect(html).not.toMatch(/href="\/admin\/quality/);
   });
 
   it("is not rendered at all without an owner session", async () => {
     unlocked = false;
     const html = await renderCockpit();
-    expect(html).not.toMatch(/Run reconciliation now/);
+    expect(html).not.toMatch(/Run reconciliation/);
   });
 });

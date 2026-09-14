@@ -13,7 +13,8 @@ import { DEFAULT_TENANT_ID } from "@/domain/problem/contracts";
 import type { PageSpec } from "@/domain/search/pages";
 import type { EventEnvelope } from "@/platform/events/envelope";
 import { applyQualityGuard } from "@/platform/quality/ingest";
-import { readDevDb, updateDevDb } from "@/platform/stores/dev-db";
+import { readDevDb, updateDevDb, updateDevDbAtomic } from "@/platform/stores/dev-db";
+import type { FeatureInterestCount, FeatureInterestInput, FeatureStateRow, SetFeatureStatesInput } from "@/domain/features/types";
 import type {
   AskAnswer,
   Email,
@@ -122,6 +123,10 @@ export interface RecordJourneyInput {
 
 export interface RuntimeStore {
   readonly kind: "supabase" | "file";
+  listFeatureStates(tenantId: string): Promise<FeatureStateRow[]>;
+  setFeatureStates(input: SetFeatureStatesInput): Promise<FeatureStateRow[]>;
+  recordFeatureInterest(input: FeatureInterestInput): Promise<{ created: boolean }>;
+  listFeatureInterestCounts(tenantId: string): Promise<FeatureInterestCount[]>;
   recordJourney(input: RecordJourneyInput): Promise<void>;
   /** Persist the exact disclosure text once, so consent can always be reproduced. */
   ensureDisclosure(disclosure: DisclosureVersion): Promise<void>;
@@ -258,10 +263,82 @@ function warnPending(what: string, migration: string): void {
   );
 }
 
+export class FeatureStateConflictError extends Error {
+  readonly code = "FEATURE_STATE_CONFLICT";
+  constructor() { super("Feature state changed; reload before saving."); this.name = "FeatureStateConflictError"; }
+}
+export class FeatureInterestRateLimitError extends Error {
+  readonly code = "FEATURE_INTEREST_RATE_LIMIT";
+  constructor() { super("Feature interest rate limit reached."); this.name = "FeatureInterestRateLimitError"; }
+}
+export class FeatureInterestUnavailableError extends Error {
+  readonly code = "FEATURE_INTEREST_UNAVAILABLE";
+  constructor() { super("Feature preview changed or is unavailable."); this.name = "FeatureInterestUnavailableError"; }
+}
+
+function validateFeatureTenant(tenant: string): void {
+  if (typeof tenant !== "string" || !/^[a-zA-Z0-9_-]{1,128}$/.test(tenant)) throw new Error("Invalid feature tenant");
+}
+function validateFeatureChanges(input: SetFeatureStatesInput): void {
+  validateFeatureTenant(input.tenant_id);
+  if (!Array.isArray(input.changes) || input.changes.length < 1 || input.changes.length > 100 ||
+      new Set(input.changes.map(c => c.feature_id)).size !== input.changes.length ||
+      !input.changes.every(c => /^[a-zA-Z0-9_-]{1,128}$/.test(c.feature_id) &&
+        ["LIVE", "PREVIEW", "HIDDEN"].includes(c.state) && Number.isSafeInteger(c.expected_version) && c.expected_version >= 0 && c.expected_version < 2147483647) ||
+      ![input.actor, input.reason, input.decision_ref].every(s => typeof s === "string" && s.trim().length > 0 && s.length <= 500) ||
+      !Number.isFinite(Date.parse(input.at))) throw new Error("Invalid feature state change");
+}
+function validateFeatureInterest(input: FeatureInterestInput): void {
+  validateFeatureTenant(input.tenant_id);
+  if (!/^[a-zA-Z0-9_-]{1,128}$/.test(input.feature_id) ||
+      !Number.isSafeInteger(input.feature_version) || input.feature_version < 0 || input.feature_version > 2147483647 ||
+      !["yes", "no", "maybe"].includes(input.answer) || !/^\/[a-zA-Z0-9/_-]{0,255}$/.test(input.page) ||
+      !/^[a-f0-9]{64}$/.test(input.visitor_hash) || !/^[a-f0-9]{64}$/.test(input.dedupe_key) ||
+      !Number.isFinite(Date.parse(input.created_at))) throw new Error("Invalid feature interest");
+}
+function requireLocalFeatureStore(): void {
+  if (process.env.NODE_ENV === "production" || process.env.VERCEL) {
+    throw new Error("Shared feature storage is required in hosted environments");
+  }
+}
+
 class SupabaseRuntimeStore implements RuntimeStore {
   readonly kind = "supabase" as const;
   /** Elevated client — internal operations only (writes, admin reads, telemetry). */
   private db = requireServiceClient();
+
+  async listFeatureStates(tenantId: string): Promise<FeatureStateRow[]> {
+    validateFeatureTenant(tenantId);
+    const { data, error } = await this.db.from("feature_state").select("*").eq("tenant_id", tenantId).order("feature_id");
+    if (error) throw new Error("Feature state storage is unavailable");
+    return data as FeatureStateRow[];
+  }
+  async setFeatureStates(input: SetFeatureStatesInput): Promise<FeatureStateRow[]> {
+    validateFeatureChanges(input);
+    const { data, error } = await this.db.rpc("set_feature_states", {
+      p_tenant_id: input.tenant_id, p_changes: input.changes, p_actor: input.actor,
+      p_reason: input.reason, p_decision_ref: input.decision_ref, p_at: input.at,
+    });
+    if (error?.code === "P0002") throw new FeatureStateConflictError();
+    if (error) throw new Error("Feature state update failed");
+    return data as FeatureStateRow[];
+  }
+  async recordFeatureInterest(input: FeatureInterestInput): Promise<{ created: boolean }> {
+    validateFeatureInterest(input);
+    const { data, error } = await this.db.rpc("record_feature_interest", { p_input: input });
+    if (error?.code === "P0003") throw new FeatureInterestRateLimitError();
+    if (error?.code === "P0004") throw new FeatureInterestUnavailableError();
+    if (error) throw new Error("Feature interest storage is unavailable");
+    return { created: data === true };
+  }
+  async listFeatureInterestCounts(tenantId: string): Promise<FeatureInterestCount[]> {
+    validateFeatureTenant(tenantId);
+    const { data, error } = await this.db.rpc("feature_interest_counts", { p_tenant_id: tenantId });
+    if (error) throw new Error("Feature interest counts are unavailable");
+    return (data as FeatureInterestCount[]).map(row => ({ ...row,
+      yes: Number(row.yes), no: Number(row.no), maybe: Number(row.maybe), total: Number(row.total),
+    }));
+  }
 
   /**
    * The DEFAULT path for customer-facing reads AND writes: a client scoped
@@ -1067,6 +1144,57 @@ class SupabaseRuntimeStore implements RuntimeStore {
 // ---------------------------------------------------------------------------
 
 class FileRuntimeStore implements RuntimeStore {
+  async listFeatureStates(tenantId: string): Promise<FeatureStateRow[]> {
+    requireLocalFeatureStore(); validateFeatureTenant(tenantId);
+    return readDevDb().feature_states.filter(row => row.tenant_id === tenantId).sort((a, b) => a.feature_id.localeCompare(b.feature_id));
+  }
+  async setFeatureStates(input: SetFeatureStatesInput): Promise<FeatureStateRow[]> {
+    requireLocalFeatureStore(); validateFeatureChanges(input);
+    return updateDevDbAtomic(db => {
+      const result: FeatureStateRow[] = [];
+      for (const change of input.changes) {
+        const previous = db.feature_states.find(row => row.tenant_id === input.tenant_id && row.feature_id === change.feature_id);
+        if ((previous?.version ?? 0) !== change.expected_version) throw new FeatureStateConflictError();
+        const row: FeatureStateRow = { tenant_id: input.tenant_id, feature_id: change.feature_id, state: change.state,
+          version: change.expected_version + 1, actor: input.actor, reason: input.reason,
+          decision_ref: input.decision_ref, updated_at: input.at };
+        db.feature_states = db.feature_states.filter(r => r.tenant_id !== input.tenant_id || r.feature_id !== change.feature_id);
+        db.feature_states.push(row);
+        db.admin_audit.push({ at: input.at, action: "feature_state_changed", target: change.feature_id,
+          detail: JSON.stringify({ previous_state: previous?.state ?? null,
+            previous_version: previous?.version ?? 0, ...row }) });
+        result.push(row);
+      }
+      return result;
+    });
+  }
+  async recordFeatureInterest(input: FeatureInterestInput): Promise<{ created: boolean }> {
+    requireLocalFeatureStore(); validateFeatureInterest(input);
+    return updateDevDbAtomic(db => {
+      if (db.feature_interest.some(row => row.tenant_id === input.tenant_id && (row.dedupe_key === input.dedupe_key ||
+        (row.feature_id === input.feature_id && row.feature_version === input.feature_version && row.visitor_hash === input.visitor_hash)))) return { created: false };
+      const feature = db.feature_states.find(row => row.tenant_id === input.tenant_id && row.feature_id === input.feature_id);
+      if (feature?.state !== "PREVIEW" || feature.version !== input.feature_version) throw new FeatureInterestUnavailableError();
+      const since = Date.parse(input.created_at) - 60_000;
+      if (db.feature_interest.filter(row => row.tenant_id === input.tenant_id && row.visitor_hash === input.visitor_hash &&
+          Date.parse(row.created_at) >= since).length >= 20) throw new FeatureInterestRateLimitError();
+      // Copy known fields only: caller extras must never become a PII persistence seam.
+      const { tenant_id, feature_id, feature_version, page, answer, visitor_hash, dedupe_key, created_at } = input;
+      db.feature_interest.push({ tenant_id, feature_id, feature_version, page, answer, visitor_hash, dedupe_key, created_at });
+      db.admin_audit.push({ at: created_at, action: "feature_interest_recorded", target: feature_id,
+        detail: JSON.stringify({ tenant_id, feature_id, feature_version, answer }) });
+      return { created: true };
+    });
+  }
+  async listFeatureInterestCounts(tenantId: string): Promise<FeatureInterestCount[]> {
+    requireLocalFeatureStore(); validateFeatureTenant(tenantId);
+    const counts = new Map<string, FeatureInterestCount>();
+    for (const row of readDevDb().feature_interest.filter(r => r.tenant_id === tenantId)) {
+      const count = counts.get(row.feature_id) ?? { feature_id: row.feature_id, yes: 0, no: 0, maybe: 0, total: 0 };
+      count[row.answer]++; count.total++; counts.set(row.feature_id, count);
+    }
+    return [...counts.values()].sort((a, b) => a.feature_id.localeCompare(b.feature_id));
+  }
   readonly kind = "file" as const;
 
   async recordJourney(input: RecordJourneyInput): Promise<void> {

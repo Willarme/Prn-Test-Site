@@ -163,7 +163,7 @@ describe("F1 — the owner can edit every shipped page", () => {
     form.set("hero_subheadline", target.hero.subheadline ?? "");
 
     const response = await editPOST(
-      new Request("http://localhost/api/admin/pages/edit", { method: "POST", body: form })
+      new Request("http://localhost/api/admin/pages/edit", { method: "POST", headers: { Origin: "http://localhost" }, body: form })
     );
 
     expect(response.status).toBe(303);

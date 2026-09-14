@@ -1,3 +1,4 @@
+import { refuseFeatureRoute } from "@/platform/features/route-guard";
 import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import { readBody, redirect303 } from "@/platform/links/body";
@@ -19,6 +20,8 @@ function clip(value: string | undefined, max: number): string | null {
 }
 
 export async function POST(request: Request): Promise<Response> {
+  const refusal = await refuseFeatureRoute("/api/ask", true);
+  if (refusal) return refusal;
   const { data, wantsJson } = await readBody(request);
   const token = data.token ?? "";
   const back = `/ask/${encodeURIComponent(token)}`;

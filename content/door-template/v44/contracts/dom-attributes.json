@@ -1,0 +1,64 @@
+{
+  "contract_version": "dom-attributes/1.0.0",
+  "authority": "Guide §3, §17.2; v43 template/sections/hero.html",
+  "model_authored_attributes": false,
+  "form": {
+    "id": "home-problem-intake",
+    "action": "/api/intake/start",
+    "method": "post",
+    "enctype": "multipart/form-data",
+    "data-capability-id": "home_problem_analyzer",
+    "data-input-schema-version": "1"
+  },
+  "fixed_ids": [
+    "hero",
+    "direct-answer",
+    "vp",
+    "intake",
+    "problem-description",
+    "problem-description-help",
+    "startBtn",
+    "free-note",
+    "sources-and-review"
+  ],
+  "required_field_names": [
+    "problem_description",
+    "page_id",
+    "intent_cluster_id",
+    "search_opportunity_id",
+    "problem_family_hint",
+    "landing_path"
+  ],
+  "conditional_media_fields": {
+    "photos": {
+      "type": "file",
+      "accept": "image/*",
+      "multiple": true,
+      "requires": "verified photo capability"
+    },
+    "video": {
+      "type": "file",
+      "accept": "video/*",
+      "requires": "verified video capability"
+    },
+    "voice_note": {
+      "type": "file",
+      "accept": "audio/*",
+      "requires": "verified audio capability"
+    }
+  },
+  "interaction_attributes": [
+    "aria-expanded",
+    "aria-controls",
+    "aria-label",
+    "aria-live",
+    "role",
+    "tabindex"
+  ],
+  "rules": [
+    "Compiler owns all DOM attributes.",
+    "Disclosure toggles are real buttons with accessible names and governed aria-expanded/aria-controls.",
+    "Status regions use role=status or aria-live.",
+    "This manifest freezes the v43 source form action; actual runtime wiring is separately tested."
+  ]
+}

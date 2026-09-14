@@ -1,10 +1,18 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import sharp from "sharp";
 import { adaptDoorMetadata } from "@/platform/pages/door-metadata";
 import { GET } from "@/app/problems/ac-blowing-warm-air/route";
 import manifest from "../config/ac-door-assets.json";
+import { featureSnapshot } from "./helpers/feature-snapshot";
+
+// This suite checks the enabled document's metadata. Hidden-route refusal is
+// independently exercised by the directory/feature boundary suites.
+vi.mock("@/platform/features/state", async importOriginal => {
+  const actual = await importOriginal<typeof import("@/platform/features/state")>();
+  return { ...actual, featureState: vi.fn(async (id: string) => actual.stateIn(featureSnapshot(), id)) };
+});
 
 const source = readFileSync(join(process.cwd(), manifest.source_path), "utf8");
 const jsonld = (html: string) => JSON.parse(html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)![1]);

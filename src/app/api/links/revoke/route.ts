@@ -1,3 +1,4 @@
+import { refuseFeatureRoute } from "@/platform/features/route-guard";
 import { NextResponse } from "next/server";
 import { readBody, redirect303 } from "@/platform/links/body";
 import { ledgerHasLink } from "@/platform/links/ledger";
@@ -23,6 +24,8 @@ import { revokeLink } from "@/platform/links/tokens";
  * /links page.
  */
 export async function POST(request: Request): Promise<Response> {
+  const refusal = await refuseFeatureRoute("/api/links/revoke", true);
+  if (refusal) return refusal;
   const { data, wantsJson } = await readBody(request);
   const link_id = data.link_id ?? "";
   const request_id = data.request_id ?? "";

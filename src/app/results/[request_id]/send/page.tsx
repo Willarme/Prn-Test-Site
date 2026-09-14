@@ -1,3 +1,4 @@
+import { requireFeaturePage } from "@/platform/features/route-guard";
 import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { FeedbackPopup } from "@/components/results/FeedbackPopup";
@@ -40,6 +41,7 @@ export default async function SendPacketPage({
   params: Promise<{ request_id: string }>;
   searchParams?: Promise<{ k?: string }>;
 }) {
+  await requireFeaturePage("/results/held/send");
   if (!flagEnabled("results_shell_enabled")) notFound();
   const { request_id } = await params;
   const k = (await searchParams)?.k;

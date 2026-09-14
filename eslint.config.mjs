@@ -12,6 +12,9 @@ export default tseslint.config(
       "node_modules/**",
       "out/**",
       "coverage/**",
+      // Local verification receipts and generated fixture bundles. Executable
+      // application code, maintained tools and regression tests live elsewhere.
+      "artifacts/**",
       "next-env.d.ts",
       "data/runtime/**",
       // Local tooling state, git-excluded and never part of a build. It can hold

@@ -134,8 +134,8 @@ describe("TRIGGER 1 — the admin route is owner-gated and cannot publish", () =
   );
 
   it("checks the owner session before anything else", () => {
-    expect(route).toMatch(/isAdminUnlocked\(\)/);
-    expect(route).toMatch(/Owner sign-in required/);
+    expect(route).toMatch(/guardAdminMutation\(request\)/);
+    expect(route.indexOf("await guardAdminMutation(request)")).toBeLessThan(route.indexOf("await readAdminJson(request"));
   });
 
   it("only ever hands the run owner-approved opportunities", () => {
@@ -369,9 +369,9 @@ describe("the staged preview serves the NEWEST version of a page", () => {
     expect(newestByVersion([])).toBeNull();
   });
 
-  it("with one version per path it returns exactly what it always did", async () => {
+  it("does not serve the retired handcrafted sample (T6-29 R3)", async () => {
     const { findStagedByPath } = await import("@/domain/search/page-store");
     const served = await findStagedByPath(SAMPLE_PAGE_SPEC.canonical_path);
-    expect(served?.page_spec_id).toBe(SAMPLE_PAGE_SPEC.page_spec_id);
+    expect(served).toBeNull();
   });
 });

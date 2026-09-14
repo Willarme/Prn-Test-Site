@@ -1,3 +1,4 @@
+import { requireFeaturePage } from "@/platform/features/route-guard";
 import type { Metadata } from "next";
 import { redactSharedText } from "@/domain/privacy/share-text";
 import { notFound } from "next/navigation";
@@ -31,6 +32,7 @@ export default async function AskPage({
   params: Promise<{ token: string }>;
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  await requireFeaturePage("/ask/held");
   const { token } = await params;
   const query = await searchParams;
   const link = await verifyLink(token, "ask");

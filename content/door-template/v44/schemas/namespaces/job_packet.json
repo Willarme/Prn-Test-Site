@@ -1,0 +1,71 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://schemas.propertyresponsenetwork.com/doorspec/namespaces/job_packet.json",
+  "title": "Door v44 job_packet",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "heading": {
+      "$ref": "https://schemas.propertyresponsenetwork.com/doorspec/namespaces/richtext.json"
+    },
+    "cta_action": {
+      "const": "packet_start",
+      "type": "string",
+      "minLength": 12,
+      "maxLength": 12
+    },
+    "example_rows": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^(?!(?:__proto__|prototype|constructor)$)[A-Za-z0-9][A-Za-z0-9._:-]*$"
+          },
+          "key": {
+            "type": "string",
+            "enum": [
+              "problem",
+              "context",
+              "equipment",
+              "location_material",
+              "ruled_out",
+              "still_to_test"
+            ],
+            "minLength": 7,
+            "maxLength": 17
+          },
+          "value": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 700,
+            "pattern": "^(?!\\s)(?![\\s\\S]*\\s{2})(?![\\s\\S]*[<>\\u0000-\\u001f\\u007f])(?![\\s\\S]*\\s$)[\\s\\S]+$"
+          }
+        },
+        "required": [
+          "id",
+          "key",
+          "value"
+        ]
+      },
+      "minItems": 5,
+      "maxItems": 5
+    },
+    "band_hook": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 300,
+      "pattern": "^(?!\\s)(?![\\s\\S]*\\s{2})(?![\\s\\S]*[<>\\u0000-\\u001f\\u007f])(?![\\s\\S]*\\s$)[\\s\\S]+$"
+    }
+  },
+  "required": [
+    "heading",
+    "cta_action",
+    "example_rows",
+    "band_hook"
+  ]
+}

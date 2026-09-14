@@ -1,9 +1,11 @@
 /* global process */
 import { ocrRuntimeTracePlan } from './tools/ocr-runtime-tracing.mjs';
 import { pdfRuntimeTracePlan } from './tools/pdf-runtime-tracing.mjs';
+import { doorFixtureRuntimeTracePlan } from './tools/door-fixture-runtime-tracing.mjs';
 
 const ocrRuntime = ocrRuntimeTracePlan();
 const pdfRuntime = pdfRuntimeTracePlan();
+const doorFixtureRuntime = doorFixtureRuntimeTracePlan();
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -26,6 +28,7 @@ const nextConfig = {
     // follow that process into its worker, traineddata, WASM and native assets.
     ...Object.fromEntries(ocrRuntime.routes.map(route => [route, ocrRuntime.patterns])),
     ...Object.fromEntries(pdfRuntime.routes.map(route => [route, pdfRuntime.patterns])),
+    ...Object.fromEntries(doorFixtureRuntime.routes.map(route => [route, doorFixtureRuntime.patterns])),
   },
 };
 

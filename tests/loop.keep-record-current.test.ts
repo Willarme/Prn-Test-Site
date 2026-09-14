@@ -1,3 +1,5 @@
+import { DEFAULT_TENANT_ID } from "@/domain/problem/contracts";
+import { invalidateFeatureStates } from "@/platform/features/state";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -31,16 +33,21 @@ vi.mock("@/platform/problem/printed-evidence", () => ({
 
 let dir: string; let clock: number;
 const network = vi.fn(() => { throw new Error("No network in Keep record tests"); });
-beforeEach(() => {
+beforeEach(async () => {
   dir = mkdtempSync(join(tmpdir(), "keep-record-current-"));
   vi.stubEnv("PRN_DEV_DB_PATH", join(dir, "db.json")); vi.stubEnv("PRN_RUNTIME_STORE", "file");
   vi.stubEnv("LINK_SIGNING_SECRET", "synthetic-keep-record-test-key");
   vi.stubEnv("VITEST", "1"); vi.stubEnv("PRN_AI_LIVE_TESTS", "0"); vi.stubGlobal("fetch", network);
   vi.useFakeTimers({ toFake: ["Date"] }); clock = Date.parse("2026-09-07T03:00:00Z"); vi.setSystemTime(clock);
   resetRuntimeStore(); setAiPolicyStoreForTests(new MemoryAiPolicyStore()); setSpendLedgerForTests(new MemorySpendLedger());
+  // This suite proves current-record fidelity after restoring the saved keep view.
+  await runtimeStore().setFeatureStates({ tenant_id: DEFAULT_TENANT_ID,
+    changes: ["intake", "walkthrough", "job_packet", "keep"].map(feature_id => ({ feature_id, state: "LIVE" as const, expected_version: 0 })),
+    actor: "synthetic-test", reason: "Exercise restored Keep record fidelity", decision_ref: "D5-preserved-keep-test", at: new Date(clock).toISOString() });
+  invalidateFeatureStates();
 });
 afterEach(() => {
-  expect(network).not.toHaveBeenCalled(); resetRuntimeStore(); setAiPolicyStoreForTests(null); setSpendLedgerForTests(null);
+  expect(network).not.toHaveBeenCalled(); invalidateFeatureStates(); resetRuntimeStore(); setAiPolicyStoreForTests(null); setSpendLedgerForTests(null);
   vi.useRealTimers(); vi.unstubAllEnvs(); vi.unstubAllGlobals(); rmSync(dir, { recursive: true, force: true });
 });
 function tick() { clock += 1000; vi.setSystemTime(clock); }
@@ -152,4 +159,18 @@ it.each([
   expect(view.facts).toContainEqual({ label: "Thermostat notes", value: note, source: "you typed it" });
   expect(view.facts.some(f => f.label === "Thermostat mode")).toBe(true);
   expect(await rendered(id)).toContain(note);
+});
+
+
+it("launch HIDDEN refuses an already-held keep token without deleting current observations", async () => {
+  const id = await start();
+  await answer(id, "Mode COOL; fan AUTO; setpoint 22 C; room temperature 27 C");
+  const before = await runtimeStore().listIntakeAnswers(id);
+  await runtimeStore().setFeatureStates({ tenant_id: DEFAULT_TENANT_ID,
+    changes: [{ feature_id: "keep", state: "HIDDEN", expected_version: 1 }],
+    actor: "synthetic-test", reason: "Verify launch suppression preserves the record", decision_ref: "D5-hidden-keep-test", at: new Date(clock).toISOString() });
+  invalidateFeatureStates();
+  await expect(rendered(id)).rejects.toThrow(/404/);
+  expect(await runtimeStore().listIntakeAnswers(id)).toEqual(before);
+  expect((await loadRecordView(id))!.facts).toContainEqual({ label: "Room temperature", value: "27 C", source: "you reported it" });
 });

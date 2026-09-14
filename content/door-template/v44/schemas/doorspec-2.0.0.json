@@ -1,0 +1,747 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://schemas.propertyresponsenetwork.com/doorspec/2.0.0.json",
+  "title": "DoorSpec 2.0.0",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "const": "https://schemas.propertyresponsenetwork.com/doorspec/2.0.0.json",
+      "type": "string",
+      "minLength": 63,
+      "maxLength": 63
+    },
+    "schema_version": {
+      "const": "doorspec/2.0.0",
+      "type": "string",
+      "minLength": 14,
+      "maxLength": 14
+    },
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "tenant_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^(?!(?:__proto__|prototype|constructor)$)[A-Za-z0-9][A-Za-z0-9._:-]*$"
+        },
+        "page_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^(?!(?:__proto__|prototype|constructor)$)[A-Za-z0-9][A-Za-z0-9._:-]*$"
+        },
+        "page_version": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        },
+        "opportunity_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^(?!(?:__proto__|prototype|constructor)$)[A-Za-z0-9][A-Za-z0-9._:-]*$"
+        },
+        "canonical_intent_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^(?!(?:__proto__|prototype|constructor)$)[A-Za-z0-9][A-Za-z0-9._:-]*$"
+        },
+        "intent_cluster_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^(?!(?:__proto__|prototype|constructor)$)[A-Za-z0-9][A-Za-z0-9._:-]*$"
+        },
+        "family_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^(?!(?:__proto__|prototype|constructor)$)[A-Za-z0-9][A-Za-z0-9._:-]*$"
+        },
+        "locale": {
+          "const": "en-US",
+          "type": "string",
+          "minLength": 5,
+          "maxLength": 5
+        },
+        "geography_scope": {
+          "const": "national",
+          "type": "string",
+          "minLength": 8,
+          "maxLength": 8
+        },
+        "slug": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100,
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
+        "canonical_path": {
+          "type": "string",
+          "maxLength": 200,
+          "pattern": "^/[a-z0-9]+(?:[/-][a-z0-9]+)*$",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "tenant_id",
+        "page_id",
+        "page_version",
+        "opportunity_id",
+        "canonical_intent_id",
+        "intent_cluster_id",
+        "family_id",
+        "locale",
+        "geography_scope",
+        "slug",
+        "canonical_path"
+      ]
+    },
+    "versions": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "template": {
+          "const": "door-v44.0.0",
+          "type": "string",
+          "minLength": 12,
+          "maxLength": 12
+        },
+        "theme": {
+          "type": "string",
+          "pattern": "^door-v44-t(?:0[1-9]|10)@[0-9]+\\.[0-9]+\\.[0-9]+$",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "taxonomy": {
+          "type": "string",
+          "pattern": "^subject-taxonomy/[0-9]+\\.[0-9]+\\.[0-9]+$",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "prompt_identities": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "capability": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128,
+                "pattern": "^(?!(?:__proto__|prototype|constructor)$)[A-Za-z0-9][A-Za-z0-9._:-]*$"
+              },
+              "name": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128,
+                "pattern": "^(?!(?:__proto__|prototype|constructor)$)[A-Za-z0-9][A-Za-z0-9._:-]*$"
+              },
+              "version": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128,
+                "pattern": "^(?!(?:__proto__|prototype|constructor)$)[A-Za-z0-9][A-Za-z0-9._:-]*$"
+              },
+              "hash": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$",
+                "minLength": 1,
+                "maxLength": 128
+              }
+            },
+            "required": [
+              "capability",
+              "name",
+              "version",
+              "hash"
+            ]
+          },
+          "minItems": 1,
+          "maxItems": 20
+        },
+        "source_bundle": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^(?!(?:__proto__|prototype|constructor)$)[A-Za-z0-9][A-Za-z0-9._:-]*$"
+        }
+      },
+      "required": [
+        "template",
+        "theme",
+        "taxonomy",
+        "prompt_identities",
+        "source_bundle"
+      ]
+    },
+    "intent": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "primary_decision": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300,
+          "pattern": "^(?!\\s)(?![\\s\\S]*\\s{2})(?![\\s\\S]*[<>\\u0000-\\u001f\\u007f])(?![\\s\\S]*\\s$)[\\s\\S]+$"
+        },
+        "primary_query": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 150,
+          "pattern": "^(?!\\s)(?![\\s\\S]*\\s{2})(?![\\s\\S]*[<>\\u0000-\\u001f\\u007f])(?![\\s\\S]*\\s$)[\\s\\S]+$"
+        },
+        "query_aliases": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 150,
+            "pattern": "^(?!\\s)(?![\\s\\S]*\\s{2})(?![\\s\\S]*[<>\\u0000-\\u001f\\u007f])(?![\\s\\S]*\\s$)[\\s\\S]+$"
+          },
+          "minItems": 0,
+          "maxItems": 20,
+          "uniqueItems": true
+        },
+        "sub_intents": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "pattern": "^(?!\\s)(?![\\s\\S]*\\s{2})(?![\\s\\S]*[<>\\u0000-\\u001f\\u007f])(?![\\s\\S]*\\s$)[\\s\\S]+$"
+          },
+          "minItems": 1,
+          "maxItems": 20,
+          "uniqueItems": true
+        },
+        "problem_state": {
+          "type": "string",
+          "enum": [
+            "symptom",
+            "known_cause",
+            "comparison",
+            "urgent",
+            "cost",
+            "prevention"
+          ],
+          "minLength": 4,
+          "maxLength": 11
+        },
+        "page_eligibility_receipt": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^(?!(?:__proto__|prototype|constructor)$)[A-Za-z0-9][A-Za-z0-9._:-]*$"
+        }
+      },
+      "required": [
+        "primary_decision",
+        "primary_query",
+        "query_aliases",
+        "sub_intents",
+        "problem_state",
+        "page_eligibility_receipt"
+      ]
+    },
+    "subject": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "subject_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^(?!(?:__proto__|prototype|constructor)$)[A-Za-z0-9][A-Za-z0-9._:-]*$"
+        },
+        "display_label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100,
+          "pattern": "^(?!\\s)(?![\\s\\S]*\\s{2})(?![\\s\\S]*[<>\\u0000-\\u001f\\u007f])(?![\\s\\S]*\\s$)[\\s\\S]+$"
+        },
+        "short_label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80,
+          "pattern": "^(?!\\s)(?![\\s\\S]*\\s{2})(?![\\s\\S]*[<>\\u0000-\\u001f\\u007f])(?![\\s\\S]*\\s$)[\\s\\S]+$"
+        },
+        "cta_label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80,
+          "pattern": "^(?!\\s)(?![\\s\\S]*\\s{2})(?![\\s\\S]*[<>\\u0000-\\u001f\\u007f])(?![\\s\\S]*\\s$)[\\s\\S]+$"
+        },
+        "second_person_label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120,
+          "pattern": "^(?!\\s)(?![\\s\\S]*\\s{2})(?![\\s\\S]*[<>\\u0000-\\u001f\\u007f])(?![\\s\\S]*\\s$)[\\s\\S]+$"
+        },
+        "possessive_label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120,
+          "pattern": "^(?!\\s)(?![\\s\\S]*\\s{2})(?![\\s\\S]*[<>\\u0000-\\u001f\\u007f])(?![\\s\\S]*\\s$)[\\s\\S]+$"
+        },
+        "plural_label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120,
+          "pattern": "^(?!\\s)(?![\\s\\S]*\\s{2})(?![\\s\\S]*[<>\\u0000-\\u001f\\u007f])(?![\\s\\S]*\\s$)[\\s\\S]+$"
+        },
+        "subject_kind": {
+          "type": "string",
+          "enum": [
+            "equipment",
+            "appliance",
+            "fixture",
+            "object",
+            "current_problem"
+          ],
+          "minLength": 6,
+          "maxLength": 15
+        }
+      },
+      "required": [
+        "subject_id",
+        "display_label",
+        "short_label",
+        "cta_label",
+        "second_person_label",
+        "possessive_label",
+        "plural_label",
+        "subject_kind"
+      ]
+    },
+    "layout": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "order_profile_id": {
+          "const": "order-b",
+          "type": "string",
+          "minLength": 7,
+          "maxLength": 7
+        },
+        "conditional_sections": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "related": {
+              "type": "boolean"
+            },
+            "nameplate_help": {
+              "type": "boolean"
+            },
+            "media_controls": {
+              "type": "boolean"
+            },
+            "prices": {
+              "type": "boolean"
+            },
+            "local_stats": {
+              "type": "boolean"
+            },
+            "founders_offer": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "related",
+            "nameplate_help",
+            "media_controls",
+            "prices",
+            "local_stats",
+            "founders_offer"
+          ]
+        }
+      },
+      "required": [
+        "order_profile_id",
+        "conditional_sections"
+      ]
+    },
+    "head": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "page": {
+          "$ref": "https://schemas.propertyresponsenetwork.com/doorspec/namespaces/page.json"
+        },
+        "site": {
+          "$ref": "https://schemas.propertyresponsenetwork.com/doorspec/namespaces/site.json"
+        },
+        "brand": {
+          "$ref": "https://schemas.propertyresponsenetwork.com/doorspec/namespaces/brand.json"
+        },
+        "nav": {
+          "$ref": "https://schemas.propertyresponsenetwork.com/doorspec/namespaces/nav.json"
+        },
+        "crumb": {
+          "$ref": "https://schemas.propertyresponsenetwork.com/doorspec/namespaces/crumb.json"
+        },
+        "accents": {
+          "$ref": "https://schemas.propertyresponsenetwork.com/doorspec/namespaces/accents.json"
+        }
+      },
+      "required": [
+        "page",
+        "site",
+        "brand",
+        "nav",
+        "crumb",
+        "accents"
+      ]
+    },
+    "actions": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "hero_start": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "pattern_id": {
+              "type": "string",
+              "enum": [
+                "START_KNOWN_OBJECT",
+                "START_CURRENT_PROBLEM",
+                "WALK_KNOWN_OBJECT",
+                "WALK_CURRENT_PROBLEM",
+                "BUILD_KNOWN_OBJECT_PACKET",
+                "BUILD_CURRENT_PROBLEM_PACKET"
+              ],
+              "minLength": 17,
+              "maxLength": 28
+            },
+            "target": {
+              "const": "#intake",
+              "type": "string",
+              "minLength": 7,
+              "maxLength": 7
+            }
+          },
+          "required": [
+            "pattern_id",
+            "target"
+          ]
+        },
+        "packet_start": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "pattern_id": {
+              "type": "string",
+              "enum": [
+                "START_KNOWN_OBJECT",
+                "START_CURRENT_PROBLEM",
+                "WALK_KNOWN_OBJECT",
+                "WALK_CURRENT_PROBLEM",
+                "BUILD_KNOWN_OBJECT_PACKET",
+                "BUILD_CURRENT_PROBLEM_PACKET"
+              ],
+              "minLength": 17,
+              "maxLength": 28
+            },
+            "target": {
+              "const": "#intake",
+              "type": "string",
+              "minLength": 7,
+              "maxLength": 7
+            }
+          },
+          "required": [
+            "pattern_id",
+            "target"
+          ]
+        },
+        "walkthrough_start": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "pattern_id": {
+              "type": "string",
+              "enum": [
+                "START_KNOWN_OBJECT",
+                "START_CURRENT_PROBLEM",
+                "WALK_KNOWN_OBJECT",
+                "WALK_CURRENT_PROBLEM",
+                "BUILD_KNOWN_OBJECT_PACKET",
+                "BUILD_CURRENT_PROBLEM_PACKET"
+              ],
+              "minLength": 17,
+              "maxLength": 28
+            },
+            "target": {
+              "const": "#intake",
+              "type": "string",
+              "minLength": 7,
+              "maxLength": 7
+            }
+          },
+          "required": [
+            "pattern_id",
+            "target"
+          ]
+        }
+      },
+      "required": [
+        "hero_start",
+        "packet_start"
+      ]
+    },
+    "intake": {
+      "$ref": "https://schemas.propertyresponsenetwork.com/doorspec/namespaces/intake.json"
+    },
+    "claims": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "claim_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^(?!(?:__proto__|prototype|constructor)$)[A-Za-z0-9][A-Za-z0-9._:-]*$"
+          },
+          "source_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^(?!(?:__proto__|prototype|constructor)$)[A-Za-z0-9][A-Za-z0-9._:-]*$"
+            },
+            "minItems": 1,
+            "maxItems": 30,
+            "uniqueItems": true
+          },
+          "content_hash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "required": [
+          "claim_id",
+          "source_ids",
+          "content_hash"
+        ]
+      },
+      "minItems": 1,
+      "maxItems": 100
+    },
+    "sources": {
+      "$ref": "./namespaces/sources.json#/properties/list"
+    },
+    "capabilities": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "capability_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^(?!(?:__proto__|prototype|constructor)$)[A-Za-z0-9][A-Za-z0-9._:-]*$"
+          },
+          "live_status": {
+            "type": "string",
+            "enum": [
+              "VERIFIED_LIVE",
+              "PREVIEW",
+              "HIDDEN",
+              "UNVERIFIED"
+            ],
+            "minLength": 6,
+            "maxLength": 13
+          },
+          "production_receipt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128,
+                "pattern": "^(?!(?:__proto__|prototype|constructor)$)[A-Za-z0-9][A-Za-z0-9._:-]*$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "capability_id",
+          "live_status",
+          "production_receipt"
+        ]
+      },
+      "minItems": 1,
+      "maxItems": 30
+    },
+    "visuals": {
+      "$ref": "./namespaces/visuals.json#/properties/plates"
+    },
+    "sections": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "hero": {
+          "$ref": "https://schemas.propertyresponsenetwork.com/doorspec/namespaces/hero.json"
+        },
+        "stats": {
+          "$ref": "https://schemas.propertyresponsenetwork.com/doorspec/namespaces/stats.json"
+        },
+        "flip": {
+          "$ref": "https://schemas.propertyresponsenetwork.com/doorspec/namespaces/flip.json"
+        },
+        "job_packet": {
+          "$ref": "https://schemas.propertyresponsenetwork.com/doorspec/namespaces/job_packet.json"
+        },
+        "general_vs_yours": {
+          "$ref": "https://schemas.propertyresponsenetwork.com/doorspec/namespaces/general_vs_yours.json"
+        },
+        "capability": {
+          "$ref": "https://schemas.propertyresponsenetwork.com/doorspec/namespaces/capability.json"
+        },
+        "observations": {
+          "$ref": "https://schemas.propertyresponsenetwork.com/doorspec/namespaces/observations.json"
+        },
+        "common_causes": {
+          "$ref": "https://schemas.propertyresponsenetwork.com/doorspec/namespaces/common_causes.json"
+        },
+        "safe_observations": {
+          "$ref": "https://schemas.propertyresponsenetwork.com/doorspec/namespaces/safe_observations.json"
+        },
+        "repair_record": {
+          "$ref": "https://schemas.propertyresponsenetwork.com/doorspec/namespaces/repair_record.json"
+        },
+        "faq": {
+          "$ref": "https://schemas.propertyresponsenetwork.com/doorspec/namespaces/faq.json"
+        },
+        "related": {
+          "$ref": "https://schemas.propertyresponsenetwork.com/doorspec/namespaces/related.json"
+        },
+        "closer": {
+          "$ref": "https://schemas.propertyresponsenetwork.com/doorspec/namespaces/closer.json"
+        },
+        "visuals": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "heading": {
+              "$ref": "./namespaces/visuals.json#/properties/heading"
+            }
+          },
+          "required": [
+            "heading"
+          ]
+        },
+        "sources": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "intro_tail": {
+              "$ref": "./namespaces/sources.json#/properties/intro_tail"
+            },
+            "note_lead": {
+              "$ref": "./namespaces/sources.json#/properties/note_lead"
+            }
+          },
+          "required": [
+            "intro_tail",
+            "note_lead"
+          ]
+        }
+      },
+      "required": [
+        "hero",
+        "stats",
+        "flip",
+        "job_packet",
+        "general_vs_yours",
+        "capability",
+        "observations",
+        "common_causes",
+        "safe_observations",
+        "repair_record",
+        "faq",
+        "closer",
+        "visuals",
+        "sources"
+      ]
+    },
+    "related_page_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 128,
+        "pattern": "^(?!(?:__proto__|prototype|constructor)$)[A-Za-z0-9][A-Za-z0-9._:-]*$"
+      },
+      "minItems": 0,
+      "maxItems": 12,
+      "uniqueItems": true
+    },
+    "release": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "index_policy": {
+          "type": "string",
+          "enum": [
+            "trial_noindex",
+            "staged_noindex",
+            "public_indexable"
+          ],
+          "minLength": 13,
+          "maxLength": 16
+        },
+        "approved_content_at": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "index_policy",
+        "approved_content_at"
+      ]
+    }
+  },
+  "required": [
+    "$schema",
+    "schema_version",
+    "identity",
+    "versions",
+    "intent",
+    "subject",
+    "layout",
+    "head",
+    "actions",
+    "intake",
+    "claims",
+    "sources",
+    "capabilities",
+    "visuals",
+    "sections",
+    "related_page_ids",
+    "release"
+  ]
+}

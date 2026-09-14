@@ -31,10 +31,10 @@ import { runtimeStore } from "@/platform/stores/runtime";
  *
  * Persistence: the `approval_item` table
  * (supabase/migrations/00007_approval_center.sql — applied 2026-08-25).
- * Writes stay FAIL-SOFT anyway — in-process queue + logged miss when the
- * database is unreachable or unconfigured — so the admin view works either way.
- * That path is now defence-in-depth rather than the expected state
- * (PLATFORM_MIGRATIONS_APPLIED in platform/db/client.ts).
+ * Filing an ask can fall back to the process queue. Resolving a configured
+ * database item cannot: the pending row must atomically change in the database
+ * before a caller receives approval. Otherwise a stale process could authorize
+ * an action that another process already rejected, or lose it on restart.
  * Client injectable per RLS-seam condition (d).
  */
 export const ApprovalStatus = z.enum([
@@ -97,6 +97,13 @@ function now(): string {
   return new Date().toISOString().replace(/\.\d+Z$/, "Z");
 }
 
+function parseStoredItem(row: unknown): ApprovalItem {
+  const clean = Object.fromEntries(
+    Object.entries(row as Record<string, unknown>).filter(([, value]) => value !== null)
+  );
+  return ApprovalItem.parse(clean);
+}
+
 /** Queue one approval ask. Never throws; fail-soft persistence. */
 export async function queueApproval(
   input: ApprovalInput,
@@ -139,10 +146,17 @@ export async function queueApproval(
   return item;
 }
 
-/** List the queue, newest first. ADMIN-GATED readers only — never a public route. */
-export async function listApprovals(
+export interface ApprovalSnapshot {
+  items: ApprovalItem[];
+  source: "database" | "this process";
+  /** False on database read failure; process-only data is explicitly scoped. */
+  verified: boolean;
+}
+
+/** ADMIN-GATED readers only. A failed database read is not an empty queue. */
+export async function readApprovalSnapshot(
   clientProvider: PlatformClientProvider = serviceClientProvider
-): Promise<ApprovalItem[]> {
+): Promise<ApprovalSnapshot> {
   try {
     const client = clientProvider();
     if (client) {
@@ -153,19 +167,23 @@ export async function listApprovals(
         .limit(100);
       if (!error && data) {
         // DB nulls → undefined so optional fields parse.
-        return data.map((row) => {
-          const clean = Object.fromEntries(
-            Object.entries(row as Record<string, unknown>).filter(([, v]) => v !== null)
-          );
-          return ApprovalItem.parse(clean);
-        });
+        return { items: data.map(parseStoredItem), source: "database", verified: true };
       }
       if (error) logMiss(error.message);
+      return { items: [...queue].reverse(), source: "this process", verified: false };
     }
   } catch (err) {
     logMiss(err instanceof Error ? err.message : String(err));
+    return { items: [...queue].reverse(), source: "this process", verified: false };
   }
-  return [...queue].reverse();
+  return { items: [...queue].reverse(), source: "this process", verified: true };
+}
+
+/** Compatibility reader. Cockpits use readApprovalSnapshot for availability. */
+export async function listApprovals(
+  clientProvider: PlatformClientProvider = serviceClientProvider
+): Promise<ApprovalItem[]> {
+  return (await readApprovalSnapshot(clientProvider)).items;
 }
 
 /**
@@ -178,35 +196,53 @@ export async function resolveApproval(
   resolution: { status: Exclude<ApprovalStatus, "PENDING">; resolved_by: string },
   clientProvider: PlatformClientProvider = serviceClientProvider
 ): Promise<ApprovalItem | null> {
-  const item = queue.find((i) => i.approval_id === approvalId);
-  if (!item || item.status !== "PENDING") return null;
-  item.status = resolution.status;
-  item.resolved_by = resolution.resolved_by;
-  item.resolved_at = now();
-
+  const validated = z.object({
+    status: ApprovalStatus.exclude(["PENDING"]),
+    resolved_by: z.string().trim().min(1),
+  }).safeParse(resolution);
+  if (!validated.success) return null;
+  const changes = { ...validated.data, resolved_at: now() };
+  let item: ApprovalItem;
   try {
     const client = clientProvider();
     if (client) {
-      const { error } = await client
+      // The returned row is the authority, even with an empty process cache.
+      // Compare-and-set makes concurrent approve/reject requests single-winner.
+      const { data, error } = await client
         .from("approval_item")
-        .update({
-          status: item.status,
-          resolved_by: item.resolved_by,
-          resolved_at: item.resolved_at,
-        })
-        .eq("approval_id", approvalId);
-      if (error) logMiss(error.message);
+        .update(changes)
+        .eq("approval_id", approvalId)
+        .eq("status", "PENDING")
+        .select("*")
+        .maybeSingle();
+      if (error || !data) {
+        if (error) logMiss(error.message);
+        return null;
+      }
+      item = parseStoredItem(data);
+      if (item.approval_id !== approvalId || item.status !== changes.status ||
+          item.resolved_by !== changes.resolved_by || !item.resolved_at) return null;
     } else {
       logMiss("no database configured");
+      // Local fallback is intentionally process-only, not a durable file ledger.
+      const pending = queue.find(i => i.approval_id === approvalId);
+      if (!pending || pending.status !== "PENDING") return null;
+      item = { ...pending, ...changes };
     }
   } catch (err) {
     logMiss(err instanceof Error ? err.message : String(err));
+    // No success or downstream execution on an unconfirmed database write.
+    return null;
   }
+
+  const cached = queue.findIndex(i => i.approval_id === approvalId);
+  if (cached >= 0) queue[cached] = item;
+  else queue.push(item);
 
   // The decision is an audit event, not a silent overwrite (spec §5).
   try {
     await runtimeStore().appendAudit({
-      at: item.resolved_at,
+      at: item.resolved_at!,
       action: `approval.${resolution.status.toLowerCase()}`,
       target: approvalId,
       detail: `agent ${item.agent_id}, run ${item.run_id}, by ${resolution.resolved_by}`,

@@ -1,2 +1,7 @@
-// The template's canonical path and the trial's /problems path serve one asset.
-export { GET } from "../problems/ac-blowing-warm-air/route";
+import { canonicalAlias } from "@/platform/pages/route-retirement";
+
+export function GET(request: Request): Response {
+  return canonicalAlias(request, "/problems/ac-blowing-warm-air");
+}
+
+export const HEAD = GET;

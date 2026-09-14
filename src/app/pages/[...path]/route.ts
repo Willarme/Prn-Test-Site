@@ -3,6 +3,11 @@ import { join } from "node:path";
 import { wirePreviewFeedback } from "@/platform/pages/preview-feedback";
 import { rewriteInterPageLinks } from "@/platform/pages/inter-page-links";
 import { addPreviewChrome } from "@/platform/pages/preview-chrome";
+import { featureHref, readFeatureSnapshot, stateIn } from "@/platform/features/state";
+import { productFeatureForPath } from "@/platform/features/registry";
+import { addFeatureInterestPrompt, featureVisitorCookie } from "@/platform/features/interest";
+
+export const dynamic = "force-dynamic";
 
 /**
  * MELISSA'S PRODUCT PREVIEW PAGES, SERVED VERBATIM.
@@ -52,7 +57,7 @@ function notFound(): Response {
 }
 
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ path: string[] }> }
 ): Promise<Response> {
   const { path } = await params;
@@ -69,17 +74,30 @@ export async function GET(
   if (segments.length === 1) {
     const file = PAGES[segments[0]!];
     if (!file) return notFound();
+    const snapshot = await readFeatureSnapshot();
+    const route = `/pages/${segments[0]}`;
+    if (!featureHref(snapshot, route)) return notFound();
     let html: string;
     try {
       html = await readFile(join(ROOT, file), "utf-8");
     } catch {
       return notFound();
     }
-    const wired = rewriteInterPageLinks(wirePreviewFeedback(html, file.replace(/\.dc\.html$/, "")));
-    return new Response(addPreviewChrome(wired, segments[0]!), {
+    const wired = rewriteInterPageLinks(wirePreviewFeedback(html, file.replace(/\.dc\.html$/, "")), snapshot);
+    let output = addPreviewChrome(wired, segments[0]!, snapshot);
+    let visitorCookie: string | null = null;
+    const product = productFeatureForPath(route);
+    if (product && stateIn(snapshot, product.id) === "PREVIEW") {
+      try {
+        visitorCookie = featureVisitorCookie(request);
+        output = addFeatureInterestPrompt(output, snapshot.rows.get(product.id)!, route);
+      } catch { /* A missing signing configuration cannot create a working collector. */ }
+    }
+    return new Response(output, {
       headers: {
         "Content-Type": "text/html; charset=utf-8",
         "Cache-Control": "no-store",
+        ...(visitorCookie ? { "Set-Cookie": visitorCookie } : {}),
       },
     });
   }

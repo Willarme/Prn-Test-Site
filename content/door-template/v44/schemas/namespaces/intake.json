@@ -1,0 +1,299 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://schemas.propertyresponsenetwork.com/doorspec/namespaces/intake.json",
+  "title": "Door v44 intake",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "heading": {
+      "$ref": "https://schemas.propertyresponsenetwork.com/doorspec/namespaces/richtext.json"
+    },
+    "lede": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500,
+      "pattern": "^(?!\\s)(?![\\s\\S]*\\s{2})(?![\\s\\S]*[<>\\u0000-\\u001f\\u007f])(?![\\s\\S]*\\s$)[\\s\\S]+$"
+    },
+    "field_label": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100,
+      "pattern": "^(?!\\s)(?![\\s\\S]*\\s{2})(?![\\s\\S]*[<>\\u0000-\\u001f\\u007f])(?![\\s\\S]*\\s$)[\\s\\S]+$"
+    },
+    "placeholder": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 250,
+      "pattern": "^(?!\\s)(?![\\s\\S]*\\s{2})(?![\\s\\S]*[<>\\u0000-\\u001f\\u007f])(?![\\s\\S]*\\s$)[\\s\\S]+$"
+    },
+    "help": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500,
+      "pattern": "^(?!\\s)(?![\\s\\S]*\\s{2})(?![\\s\\S]*[<>\\u0000-\\u001f\\u007f])(?![\\s\\S]*\\s$)[\\s\\S]+$"
+    },
+    "prompts": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^(?!(?:__proto__|prototype|constructor)$)[A-Za-z0-9][A-Za-z0-9._:-]*$"
+            },
+            "kind": {
+              "const": "known_reading",
+              "type": "string",
+              "minLength": 13,
+              "maxLength": 13
+            },
+            "evidence_type": {
+              "type": "string",
+              "enum": [
+                "reading"
+              ],
+              "minLength": 7,
+              "maxLength": 7
+            },
+            "text": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 250,
+              "pattern": "^(?!\\s)(?![\\s\\S]*\\s{2})(?![\\s\\S]*[<>\\u0000-\\u001f\\u007f])(?![\\s\\S]*\\s$)[\\s\\S]+$"
+            }
+          },
+          "required": [
+            "id",
+            "kind",
+            "evidence_type",
+            "text"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^(?!(?:__proto__|prototype|constructor)$)[A-Za-z0-9][A-Za-z0-9._:-]*$"
+            },
+            "kind": {
+              "const": "photograph_label",
+              "type": "string",
+              "minLength": 16,
+              "maxLength": 16
+            },
+            "evidence_type": {
+              "type": "string",
+              "enum": [
+                "nameplate",
+                "location_material"
+              ],
+              "minLength": 9,
+              "maxLength": 17
+            },
+            "text": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 250,
+              "pattern": "^(?!\\s)(?![\\s\\S]*\\s{2})(?![\\s\\S]*[<>\\u0000-\\u001f\\u007f])(?![\\s\\S]*\\s$)[\\s\\S]+$"
+            }
+          },
+          "required": [
+            "id",
+            "kind",
+            "evidence_type",
+            "text"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^(?!(?:__proto__|prototype|constructor)$)[A-Za-z0-9][A-Za-z0-9._:-]*$"
+            },
+            "kind": {
+              "const": "know_nothing",
+              "type": "string",
+              "minLength": 12,
+              "maxLength": 12
+            },
+            "evidence_type": {
+              "type": "string",
+              "enum": [
+                "description"
+              ],
+              "minLength": 11,
+              "maxLength": 11
+            },
+            "text": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 250,
+              "pattern": "^(?!\\s)(?![\\s\\S]*\\s{2})(?![\\s\\S]*[<>\\u0000-\\u001f\\u007f])(?![\\s\\S]*\\s$)[\\s\\S]+$"
+            }
+          },
+          "required": [
+            "id",
+            "kind",
+            "evidence_type",
+            "text"
+          ]
+        }
+      ],
+      "additionalItems": false
+    },
+    "so_far_label": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100,
+      "pattern": "^(?!\\s)(?![\\s\\S]*\\s{2})(?![\\s\\S]*[<>\\u0000-\\u001f\\u007f])(?![\\s\\S]*\\s$)[\\s\\S]+$"
+    },
+    "so_far_items": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 200,
+        "pattern": "^(?!\\s)(?![\\s\\S]*\\s{2})(?![\\s\\S]*[<>\\u0000-\\u001f\\u007f])(?![\\s\\S]*\\s$)[\\s\\S]+$"
+      },
+      "minItems": 3,
+      "maxItems": 3
+    },
+    "submit_action": {
+      "const": "hero_start",
+      "type": "string",
+      "minLength": 10,
+      "maxLength": 10
+    },
+    "disclosure": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^(?!(?:__proto__|prototype|constructor)$)[A-Za-z0-9][A-Za-z0-9._:-]*$"
+        },
+        "content_hash": {
+          "type": "string",
+          "minLength": 8,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_-]+$"
+        },
+        "purpose": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 250,
+          "pattern": "^(?!\\s)(?![\\s\\S]*\\s{2})(?![\\s\\S]*[<>\\u0000-\\u001f\\u007f])(?![\\s\\S]*\\s$)[\\s\\S]+$"
+        }
+      },
+      "required": [
+        "id",
+        "content_hash",
+        "purpose"
+      ]
+    },
+    "attribution": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "page_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^(?!(?:__proto__|prototype|constructor)$)[A-Za-z0-9][A-Za-z0-9._:-]*$"
+        },
+        "intent_cluster_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^(?!(?:__proto__|prototype|constructor)$)[A-Za-z0-9][A-Za-z0-9._:-]*$"
+        },
+        "search_opportunity_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^(?!(?:__proto__|prototype|constructor)$)[A-Za-z0-9][A-Za-z0-9._:-]*$"
+        },
+        "problem_family_hint": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^(?!(?:__proto__|prototype|constructor)$)[A-Za-z0-9][A-Za-z0-9._:-]*$"
+        },
+        "landing_path": {
+          "type": "string",
+          "maxLength": 200,
+          "pattern": "^/[a-z0-9]+(?:[/-][a-z0-9]+)*$",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "page_id",
+        "intent_cluster_id",
+        "search_opportunity_id",
+        "problem_family_hint",
+        "landing_path"
+      ]
+    },
+    "media_controls": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "photo",
+              "video",
+              "audio"
+            ],
+            "minLength": 5,
+            "maxLength": 5
+          },
+          "capability_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^(?!(?:__proto__|prototype|constructor)$)[A-Za-z0-9][A-Za-z0-9._:-]*$"
+          }
+        },
+        "required": [
+          "kind",
+          "capability_id"
+        ]
+      },
+      "minItems": 0,
+      "maxItems": 3
+    }
+  },
+  "required": [
+    "heading",
+    "lede",
+    "field_label",
+    "placeholder",
+    "help",
+    "prompts",
+    "so_far_label",
+    "so_far_items",
+    "submit_action",
+    "disclosure",
+    "attribution",
+    "media_controls"
+  ]
+}

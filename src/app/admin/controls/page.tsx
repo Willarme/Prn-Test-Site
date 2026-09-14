@@ -1,6 +1,7 @@
 import { adminGate } from "@/components/admin/AdminGate";
 import { policyStore } from "@/platform/admin/data";
 import { PolicyForm } from "@/components/admin/PolicyForm";
+import { AdminPageHeader } from "@/components/admin/AdminUI";
 
 export const dynamic = "force-dynamic";
 
@@ -14,13 +15,8 @@ export default async function ControlsPage() {
 
   return (
     <div>
-      <div className="eyebrow">Configuration over code · policy v{p.version}</div>
-      <h1 className="d2">Page-creator controls</h1>
-      <p className="lede" style={{ margin: "12px 0 24px" }}>
-        These settings drive A04 research and A05 page building. Changes take effect on the next
-        scheduled run without a deploy; every change is versioned and validated — settings that would
-        break trial rules (like turning off your publish approval) are refused with the reason.
-      </p>
+      <AdminPageHeader eyebrow={`Growth / Policy version ${p.version}`} title="Set the boundaries. Keep the intent."
+        description="These settings govern A04 research and A05 page building when those workflows run. Saving a version does not schedule or activate a run. Server validation preserves the trial's release and budget rules." />
       <PolicyForm
         canEdit={canEdit}
         disabledReason={disabledReason}

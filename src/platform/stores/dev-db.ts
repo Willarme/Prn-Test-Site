@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { withFileLock, writeFileAtomic } from "@/platform/stores/atomic-file";
+import type { FeatureInterestInput, FeatureStateRow } from "@/domain/features/types";
 import type {
   DerivationRecord,
   EvidenceObject,
@@ -30,6 +31,14 @@ import type {
  * production; contains only local fixture/test journeys.
  */
 export interface DevDb {
+  door_page_runs: import("@/domain/search/door-v44/page-run").DoorPageRun[];
+  door_page_evidence: import("@/domain/search/door-v44/release-evidence").DoorEvidenceReceipt[];
+  door_page_selection_sets: import("@/domain/search/door-v44/page-selection").DoorPageSelectionSet[];
+  door_page_selection_guards: import("@/domain/search/door-v44/page-selection").DoorPageSelectionGuard[];
+  door_page_version_inputs: import("@/domain/search/door-v44/page-version-input").DoorPageVersionInputWire[];
+  door_page_version_catalog: import("@/domain/search/door-v44/page-version").DoorPageVersionCatalog[];
+  feature_states: FeatureStateRow[];
+  feature_interest: FeatureInterestInput[];
   intake_sessions: Array<IntakeSession & { request_id: string }>;
   consent_events: ConsentEvent[];
   problems: ProblemRecord[];
@@ -126,6 +135,14 @@ export interface DevDb {
  */
 function emptyDb(): DevDb {
   return {
+    door_page_runs: [],
+    door_page_evidence: [],
+    door_page_selection_sets: [],
+    door_page_selection_guards: [],
+    door_page_version_inputs: [],
+    door_page_version_catalog: [],
+    feature_states: [],
+    feature_interest: [],
     intake_sessions: [],
     consent_events: [],
     problems: [],
@@ -222,5 +239,16 @@ export function updateDevDb(mutate: (db: DevDb) => void): DevDb {
     mutate(db);
     persist(path, db);
     return db;
+  });
+}
+
+/** Return a transaction result only after the locked, atomic replacement succeeds. */
+export function updateDevDbAtomic<T>(mutate: (db: DevDb) => T): T {
+  const path = dbPath();
+  return withFileLock(path, () => {
+    const db = readDevDb();
+    const result = mutate(db);
+    persist(path, db);
+    return result;
   });
 }

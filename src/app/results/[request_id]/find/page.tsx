@@ -1,3 +1,4 @@
+import { requireFeaturePage } from "@/platform/features/route-guard";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -20,6 +21,7 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function FindPage({ params, searchParams }: { params: Promise<{ request_id: string }>; searchParams?: Promise<{ k?: string }> }) {
+  await requireFeaturePage("/results/held/find");
   if (!flagEnabled("intake_shell_enabled")) notFound();
   const { request_id } = await params;
   const k = (await searchParams)?.k;

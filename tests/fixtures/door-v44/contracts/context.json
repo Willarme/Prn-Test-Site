@@ -1,0 +1,420 @@
+{
+  "schema_bundle": [],
+  "mode": "fixture",
+  "tenant_id": "fixture.tenant",
+  "content_baseline_id": "ac-v43",
+  "versions": {
+    "template": "door-v44.0.0",
+    "schema": "doorspec/2.0.0",
+    "theme": "door-v44-t01@1.0.0",
+    "taxonomy": "subject-taxonomy/1.0.0",
+    "source_bundle": "fixture.sources.v1"
+  },
+  "origin": "https://fixture.example",
+  "index_policy": "staged_noindex",
+  "approved_content_at": null,
+  "evaluated_at": "2026-09-13T12:00:00.000Z",
+  "disclosure": {
+    "id": "fixture.disclosure.v1",
+    "content_hash": "fixture_disclosure_hash_v1",
+    "purpose": "Synthetic intake contract validation"
+  },
+  "subjects": [
+    {
+      "subject_id": "fixture.subject.dishwasher",
+      "display_label": "dishwasher",
+      "short_label": "dishwasher",
+      "cta_label": "DISHWASHER",
+      "second_person_label": "your dishwasher",
+      "possessive_label": "your dishwasher's",
+      "plural_label": "dishwashers",
+      "subject_kind": "appliance",
+      "allowed_pattern_ids": [
+        "START_KNOWN_OBJECT",
+        "WALK_KNOWN_OBJECT",
+        "BUILD_KNOWN_OBJECT_PACKET"
+      ],
+      "allowed_family_ids": [
+        "F04"
+      ]
+    },
+    {
+      "subject_id": "fixture.subject.ceiling-stain",
+      "display_label": "ceiling stain",
+      "short_label": "stain",
+      "cta_label": "THIS PROBLEM",
+      "second_person_label": "your ceiling stain",
+      "possessive_label": "your ceiling stain's",
+      "plural_label": "ceiling stains",
+      "subject_kind": "current_problem",
+      "allowed_pattern_ids": [
+        "START_CURRENT_PROBLEM",
+        "WALK_CURRENT_PROBLEM",
+        "BUILD_CURRENT_PROBLEM_PACKET"
+      ],
+      "allowed_family_ids": [
+        "F08"
+      ]
+    }
+  ],
+  "action_patterns": [
+    {
+      "pattern_id": "START_KNOWN_OBJECT",
+      "target": "#intake",
+      "subject_kinds": [
+        "equipment",
+        "appliance",
+        "fixture",
+        "object"
+      ]
+    },
+    {
+      "pattern_id": "START_CURRENT_PROBLEM",
+      "target": "#intake",
+      "subject_kinds": [
+        "current_problem"
+      ]
+    },
+    {
+      "pattern_id": "WALK_KNOWN_OBJECT",
+      "target": "#intake",
+      "subject_kinds": [
+        "equipment",
+        "appliance",
+        "fixture",
+        "object"
+      ]
+    },
+    {
+      "pattern_id": "WALK_CURRENT_PROBLEM",
+      "target": "#intake",
+      "subject_kinds": [
+        "current_problem"
+      ]
+    },
+    {
+      "pattern_id": "BUILD_KNOWN_OBJECT_PACKET",
+      "target": "#intake",
+      "subject_kinds": [
+        "equipment",
+        "appliance",
+        "fixture",
+        "object"
+      ]
+    },
+    {
+      "pattern_id": "BUILD_CURRENT_PROBLEM_PACKET",
+      "target": "#intake",
+      "subject_kinds": [
+        "current_problem"
+      ]
+    }
+  ],
+  "sources": [
+    {
+      "source_id": "fixture.source.manual",
+      "content_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "reviewed": true,
+      "expires_at": "2027-01-01T00:00:00.000Z",
+      "claim_ids": [
+        "fixture.claim.observation"
+      ]
+    }
+  ],
+  "claims": [
+    {
+      "claim_id": "fixture.claim.observation",
+      "source_ids": [
+        "fixture.source.manual"
+      ],
+      "content_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    }
+  ],
+  "pages": [
+    {
+      "page_id": "fixture.f04",
+      "tenant_id": "fixture.tenant",
+      "canonical_path": "/problems/dishwasher-not-draining",
+      "family_id": "F04",
+      "live": false,
+      "redirect_to": null
+    },
+    {
+      "page_id": "fixture.family.f04",
+      "tenant_id": "fixture.tenant",
+      "canonical_path": "/problems/f04",
+      "family_id": "F04",
+      "live": true,
+      "redirect_to": null
+    },
+    {
+      "page_id": "fixture.f08",
+      "tenant_id": "fixture.tenant",
+      "canonical_path": "/problems/ceiling-stain-after-rain",
+      "family_id": "F08",
+      "live": false,
+      "redirect_to": null
+    },
+    {
+      "page_id": "fixture.family.f08",
+      "tenant_id": "fixture.tenant",
+      "canonical_path": "/problems/f08",
+      "family_id": "F08",
+      "live": true,
+      "redirect_to": null
+    }
+  ],
+  "families": [
+    {
+      "family_id": "F04",
+      "source_family_id": "appliance_dishwasher",
+      "reviewed": true,
+      "protocol_ids": [
+        "fixture.protocol.f04"
+      ],
+      "hazard_ids": [
+        "fixture.hazard.f04"
+      ],
+      "eval_receipt_ids": [
+        "fixture.eval.f04"
+      ],
+      "protocol_check_ids": [
+        "fixture.check.f04"
+      ]
+    },
+    {
+      "family_id": "F08",
+      "source_family_id": "roofing_ceiling",
+      "reviewed": true,
+      "protocol_ids": [
+        "fixture.protocol.f08"
+      ],
+      "hazard_ids": [
+        "fixture.hazard.f08"
+      ],
+      "eval_receipt_ids": [
+        "fixture.eval.f08"
+      ],
+      "protocol_check_ids": [
+        "fixture.check.f08"
+      ]
+    }
+  ],
+  "capabilities": [
+    {
+      "capability_id": "fixture.capability.0",
+      "live_status": "VERIFIED_LIVE",
+      "production_receipt": "fixture_capability_0_v1",
+      "verified_at": "2026-09-12T12:00:00.000Z",
+      "expires_at": "2026-10-01T12:00:00.000Z",
+      "media_kinds": []
+    },
+    {
+      "capability_id": "fixture.capability.1",
+      "live_status": "VERIFIED_LIVE",
+      "production_receipt": "fixture_capability_1_v1",
+      "verified_at": "2026-09-12T12:00:00.000Z",
+      "expires_at": "2026-10-01T12:00:00.000Z",
+      "media_kinds": []
+    },
+    {
+      "capability_id": "fixture.capability.2",
+      "live_status": "VERIFIED_LIVE",
+      "production_receipt": "fixture_capability_2_v1",
+      "verified_at": "2026-09-12T12:00:00.000Z",
+      "expires_at": "2026-10-01T12:00:00.000Z",
+      "media_kinds": []
+    },
+    {
+      "capability_id": "fixture.capability.3",
+      "live_status": "VERIFIED_LIVE",
+      "production_receipt": "fixture_capability_3_v1",
+      "verified_at": "2026-09-12T12:00:00.000Z",
+      "expires_at": "2026-10-01T12:00:00.000Z",
+      "media_kinds": []
+    },
+    {
+      "capability_id": "fixture.capability.4",
+      "live_status": "UNVERIFIED",
+      "production_receipt": null,
+      "verified_at": null,
+      "expires_at": null,
+      "media_kinds": []
+    }
+  ],
+  "input_hashes": {
+    "template_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "theme_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "taxonomy_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "source_bundle_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "prompts_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "reference_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  "eligibilities": [
+    {
+      "receipt_id": "fixture.eligibility.f04",
+      "tenant_id": "fixture.tenant",
+      "page_id": "fixture.f04",
+      "opportunity_id": "fixture.opportunity.f04",
+      "canonical_intent_id": "fixture.intent.f04",
+      "intent_cluster_id": "fixture.cluster.f04",
+      "family_id": "F04",
+      "primary_decision": "What changes the next step for a dishwasher not draining?",
+      "primary_query": "dishwasher not draining"
+    },
+    {
+      "receipt_id": "fixture.eligibility.f08",
+      "tenant_id": "fixture.tenant",
+      "page_id": "fixture.f08",
+      "opportunity_id": "fixture.opportunity.f08",
+      "canonical_intent_id": "fixture.intent.f08",
+      "intent_cluster_id": "fixture.cluster.f08",
+      "family_id": "F08",
+      "primary_decision": "What changes the next step for a ceiling stain after rain?",
+      "primary_query": "ceiling stain after rain"
+    }
+  ],
+  "prompt_identities": [
+    {
+      "capability": "fixture.copy",
+      "name": "fixture",
+      "version": "v1",
+      "hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    }
+  ],
+  "visual_assets": [
+    {
+      "id": "f04.visual.0",
+      "asset_id": "fixture.asset.f04.0",
+      "role": "decision_observation",
+      "claim_ids": [
+        "fixture.claim.observation"
+      ],
+      "title": "Synthetic observation diagram 1",
+      "description": "This synthetic diagram describes an observation without supplying homeowner instructions. It distinguishes the visible surface from areas requiring a qualified inspection and records where evidence remains missing. Labels describe the location of an observation, the material involved, and the question an evaluator would ask next. Every mark belongs to a controlled test asset. The caption identifies its purpose while the alternative text describes its meaningful content. This fixture supports contract validation only and must never be published as reviewed practical guidance for a real household problem.",
+      "caption": [
+        {
+          "type": "text",
+          "value": "A synthetic diagram of the evidence boundary."
+        }
+      ],
+      "alt": "Synthetic observation diagram 1",
+      "inline_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "raster_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "width": 1200,
+      "height": 800,
+      "mime": "image/png",
+      "authored_status": "fixture",
+      "review_receipt": null,
+      "plate_class": "plate-1",
+      "tenant_id": "fixture.tenant"
+    },
+    {
+      "id": "f04.visual.1",
+      "asset_id": "fixture.asset.f04.1",
+      "role": "safe_vs_sealed",
+      "claim_ids": [
+        "fixture.claim.observation"
+      ],
+      "title": "Synthetic observation diagram 2",
+      "description": "This synthetic diagram describes an observation without supplying homeowner instructions. It distinguishes the visible surface from areas requiring a qualified inspection and records where evidence remains missing. Labels describe the location of an observation, the material involved, and the question an evaluator would ask next. Every mark belongs to a controlled test asset. The caption identifies its purpose while the alternative text describes its meaningful content. This fixture supports contract validation only and must never be published as reviewed practical guidance for a real household problem.",
+      "caption": [
+        {
+          "type": "text",
+          "value": "A synthetic diagram of the evidence boundary."
+        }
+      ],
+      "alt": "Synthetic observation diagram 2",
+      "inline_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "raster_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "width": 1200,
+      "height": 800,
+      "mime": "image/png",
+      "authored_status": "fixture",
+      "review_receipt": null,
+      "plate_class": "plate-2",
+      "tenant_id": "fixture.tenant"
+    },
+    {
+      "id": "f08.visual.0",
+      "asset_id": "fixture.asset.f08.0",
+      "role": "decision_observation",
+      "claim_ids": [
+        "fixture.claim.observation"
+      ],
+      "title": "Synthetic observation diagram 1",
+      "description": "This synthetic diagram describes an observation without supplying homeowner instructions. It distinguishes the visible surface from areas requiring a qualified inspection and records where evidence remains missing. Labels describe the location of an observation, the material involved, and the question an evaluator would ask next. Every mark belongs to a controlled test asset. The caption identifies its purpose while the alternative text describes its meaningful content. This fixture supports contract validation only and must never be published as reviewed practical guidance for a real household problem.",
+      "caption": [
+        {
+          "type": "text",
+          "value": "A synthetic diagram of the evidence boundary."
+        }
+      ],
+      "alt": "Synthetic observation diagram 1",
+      "inline_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "raster_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "width": 1200,
+      "height": 800,
+      "mime": "image/png",
+      "authored_status": "fixture",
+      "review_receipt": null,
+      "plate_class": "plate-1",
+      "tenant_id": "fixture.tenant"
+    },
+    {
+      "id": "f08.visual.1",
+      "asset_id": "fixture.asset.f08.1",
+      "role": "safe_vs_sealed",
+      "claim_ids": [
+        "fixture.claim.observation"
+      ],
+      "title": "Synthetic observation diagram 2",
+      "description": "This synthetic diagram describes an observation without supplying homeowner instructions. It distinguishes the visible surface from areas requiring a qualified inspection and records where evidence remains missing. Labels describe the location of an observation, the material involved, and the question an evaluator would ask next. Every mark belongs to a controlled test asset. The caption identifies its purpose while the alternative text describes its meaningful content. This fixture supports contract validation only and must never be published as reviewed practical guidance for a real household problem.",
+      "caption": [
+        {
+          "type": "text",
+          "value": "A synthetic diagram of the evidence boundary."
+        }
+      ],
+      "alt": "Synthetic observation diagram 2",
+      "inline_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "raster_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "width": 1200,
+      "height": 800,
+      "mime": "image/png",
+      "authored_status": "fixture",
+      "review_receipt": null,
+      "plate_class": "plate-2",
+      "tenant_id": "fixture.tenant"
+    },
+    {
+      "id": "f08.visual.2",
+      "asset_id": "fixture.asset.f08.2",
+      "role": "extent",
+      "claim_ids": [
+        "fixture.claim.observation"
+      ],
+      "title": "Synthetic observation diagram 3",
+      "description": "This synthetic diagram describes an observation without supplying homeowner instructions. It distinguishes the visible surface from areas requiring a qualified inspection and records where evidence remains missing. Labels describe the location of an observation, the material involved, and the question an evaluator would ask next. Every mark belongs to a controlled test asset. The caption identifies its purpose while the alternative text describes its meaningful content. This fixture supports contract validation only and must never be published as reviewed practical guidance for a real household problem.",
+      "caption": [
+        {
+          "type": "text",
+          "value": "A synthetic diagram of the evidence boundary."
+        }
+      ],
+      "alt": "Synthetic observation diagram 3",
+      "inline_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "raster_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "width": 1200,
+      "height": 800,
+      "mime": "image/png",
+      "authored_status": "fixture",
+      "review_receipt": null,
+      "plate_class": "plate-3",
+      "tenant_id": "fixture.tenant"
+    }
+  ],
+  "icon_ids": [
+    "fixture.icon.evidence"
+  ]
+}

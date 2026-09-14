@@ -1,0 +1,179 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://schemas.propertyresponsenetwork.com/doorspec/namespaces/capability.json",
+  "title": "Door v44 capability",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "heading": {
+      "$ref": "https://schemas.propertyresponsenetwork.com/doorspec/namespaces/richtext.json"
+    },
+    "columns": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100,
+            "pattern": "^(?!\\s)(?![\\s\\S]*\\s{2})(?![\\s\\S]*[<>\\u0000-\\u001f\\u007f])(?![\\s\\S]*\\s$)[\\s\\S]+$"
+          },
+          "mw_class": {
+            "type": "string",
+            "enum": [
+              "mw125",
+              "mw145",
+              "mw150",
+              "mw165",
+              "mw210",
+              "mw240",
+              "mw250",
+              "mw270",
+              "mw300",
+              "mw310",
+              "mw340"
+            ],
+            "minLength": 5,
+            "maxLength": 5
+          }
+        },
+        "required": [
+          "label",
+          "mw_class"
+        ]
+      },
+      "minItems": 3,
+      "maxItems": 3
+    },
+    "rows": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^(?!(?:__proto__|prototype|constructor)$)[A-Za-z0-9][A-Za-z0-9._:-]*$"
+          },
+          "capability_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^(?!(?:__proto__|prototype|constructor)$)[A-Za-z0-9][A-Za-z0-9._:-]*$"
+          },
+          "ask": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "pattern": "^(?=[\\s\\S]*\\b(?:my|your)\\b)(?![\\s\\S]*[<>\\u0000-\\u001f\\u007f])(?![\\s\\S]*\\s{2})[^\\s][\\s\\S]*\\?$"
+          },
+          "tells": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 700,
+            "pattern": "^(?!\\s)(?![\\s\\S]*\\s{2})(?![\\s\\S]*[<>\\u0000-\\u001f\\u007f])(?![\\s\\S]*\\s$)[\\s\\S]+$"
+          },
+          "chip_class": {
+            "type": "string",
+            "enum": [
+              "chip-green",
+              "chip-blue",
+              "chip-pink"
+            ],
+            "minLength": 9,
+            "maxLength": 10
+          },
+          "chip_label": {
+            "type": "string",
+            "enum": [
+              "CAN ANSWER",
+              "CAN OFTEN ANSWER",
+              "CAN ANSWER WHAT IT CHANGES",
+              "CAN NARROW",
+              "STILL NEEDS TESTING"
+            ],
+            "minLength": 10,
+            "maxLength": 26
+          }
+        },
+        "required": [
+          "id",
+          "capability_id",
+          "ask",
+          "tells",
+          "chip_class",
+          "chip_label"
+        ]
+      },
+      "minItems": 5,
+      "maxItems": 10,
+      "contains": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^(?!(?:__proto__|prototype|constructor)$)[A-Za-z0-9][A-Za-z0-9._:-]*$"
+          },
+          "capability_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^(?!(?:__proto__|prototype|constructor)$)[A-Za-z0-9][A-Za-z0-9._:-]*$"
+          },
+          "ask": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "pattern": "^(?=[\\s\\S]*\\b(?:my|your)\\b)(?![\\s\\S]*[<>\\u0000-\\u001f\\u007f])(?![\\s\\S]*\\s{2})[^\\s][\\s\\S]*\\?$"
+          },
+          "tells": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 700,
+            "pattern": "^(?!\\s)(?![\\s\\S]*\\s{2})(?![\\s\\S]*[<>\\u0000-\\u001f\\u007f])(?![\\s\\S]*\\s$)[\\s\\S]+$"
+          },
+          "chip_class": {
+            "type": "string",
+            "enum": [
+              "chip-green",
+              "chip-blue",
+              "chip-pink"
+            ],
+            "minLength": 9,
+            "maxLength": 10
+          },
+          "chip_label": {
+            "const": "STILL NEEDS TESTING",
+            "type": "string",
+            "minLength": 19,
+            "maxLength": 19
+          }
+        },
+        "required": [
+          "id",
+          "capability_id",
+          "ask",
+          "tells",
+          "chip_class",
+          "chip_label"
+        ]
+      }
+    },
+    "band_hook": {
+      "$ref": "https://schemas.propertyresponsenetwork.com/doorspec/namespaces/richtext.json"
+    }
+  },
+  "required": [
+    "heading",
+    "columns",
+    "rows",
+    "band_hook"
+  ]
+}

@@ -1,0 +1,28 @@
+.inspection { display: grid; grid-template-columns: minmax(0, 1fr); gap: 22px; min-width: 0; }
+.inspection > *, .columns > * { min-width: 0; }
+.inspection h2 { font-size: 1.15rem; letter-spacing: -.015em; margin: 0 0 10px; }
+.inspection h3 { font-size: .88rem; margin: 24px 0 9px; }
+.inspection p, .inspection li { line-height: 1.65; overflow-wrap: anywhere; }
+.inspection ul { padding-left: 20px; }
+.columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+.facts { display: grid; grid-template-columns: minmax(95px, .7fr) minmax(0, 1.6fr); gap: 12px 20px; font-size: .86rem; }
+.facts dt { color: var(--on-dark-mute); }
+.facts dd { margin: 0; overflow-wrap: anywhere; }
+.answers { margin: 0; }
+.answers > div { padding: 12px 0; border-top: 1px solid var(--line-d); }
+.answers dt { font-size: .8rem; font-weight: 700; margin-bottom: 5px; }
+.answers dd { margin: 0; overflow-wrap: anywhere; }
+.answers span { display: block; margin-top: 4px; }
+.preserve { white-space: pre-wrap; }
+.warning { padding: 22px; background: color-mix(in srgb, var(--amber) 8%, transparent); border: 1px solid color-mix(in srgb, var(--amber) 35%, transparent); border-left: 3px solid var(--amber); border-radius: 8px; }
+.packetLead { font-size: 1.15rem; max-width: 78ch; }
+.evidenceGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: 12px; }
+.evidenceGrid details { padding: 14px; border: 1px solid var(--line-d); border-radius: 6px; min-width: 0; }
+.evidenceGrid summary { cursor: pointer; min-height: 44px; font-weight: 600; }
+.evidenceGrid summary span { display: block; font-weight: 400; margin-top: 5px; }
+.tableScroll { overflow-x: auto; }
+.timeline { list-style: none; padding: 0; margin: 22px 0 0; }
+.timeline li { display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 18px; padding: 16px 0; border-top: 1px solid var(--line-d); }
+.timeline time { font-size: .76rem; color: var(--on-dark-mute); }
+.timeline p { margin: 3px 0 0; font-size: .8rem; color: var(--on-dark-mute); }
+@media (max-width: 860px) { .columns { grid-template-columns: 1fr; } .timeline li { grid-template-columns: 1fr; gap: 5px; } }

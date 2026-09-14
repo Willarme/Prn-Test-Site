@@ -41,6 +41,11 @@ export interface DataForSeoConfig {
   nowIso?: () => string;
 }
 
+/** Presence only: does not initialize a client, verify access, or issue a paid call. */
+export function dataForSeoConfigured(): boolean {
+  return Boolean(process.env.DATAFORSEO_LOGIN && process.env.DATAFORSEO_PASSWORD);
+}
+
 interface DfsTask {
   status_code?: number;
   status_message?: string;

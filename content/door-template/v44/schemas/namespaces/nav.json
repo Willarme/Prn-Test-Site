@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://schemas.propertyresponsenetwork.com/doorspec/namespaces/nav.json",
+  "title": "Door v44 nav",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "category_page_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^(?!(?:__proto__|prototype|constructor)$)[A-Za-z0-9][A-Za-z0-9._:-]*$"
+    },
+    "category_label": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80,
+      "pattern": "^(?!\\s)(?![\\s\\S]*\\s{2})(?![\\s\\S]*[<>\\u0000-\\u001f\\u007f])(?![\\s\\S]*\\s$)[\\s\\S]+$"
+    },
+    "cta_action": {
+      "const": "hero_start",
+      "type": "string",
+      "minLength": 10,
+      "maxLength": 10
+    }
+  },
+  "required": [
+    "category_page_id",
+    "category_label",
+    "cta_action"
+  ]
+}

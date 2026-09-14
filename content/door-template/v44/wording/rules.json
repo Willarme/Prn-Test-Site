@@ -1,0 +1,74 @@
+{
+  "version": "wording-mechanical/1.0.0",
+  "approved_names": [
+    "LIVE Walkthrough Tool",
+    "Home Memory",
+    "HouseKeep",
+    "Trust Network",
+    "Job Packet",
+    "Powered by CHI\u2122"
+  ],
+  "patterns": {
+    "r01_auto": "(,\\s*(not|rather than|instead of)\\b)|(\\bno\\s+\\w+,\\s*no\\s+\\w+)|(\\b(it\\x27?s|this|that|we\\x27?re|we|prn)\\s+(is\\s+|are\\s+)?(not|never|no)\\b)|(\\b\\w+-free\\b)|(\\b(isn\\x27?t|aren\\x27?t|won\\x27?t|don\\x27?t|doesn\\x27?t|can\\x27?t)\\b)",
+    "r01_negation": "\\b(not|never|no|without|nothing|nobody)\\b",
+    "r16_leaks": "\\b(problem states?|branch(es|ing|ed)?|footprint|circulation|clearance|sensible|anonymiz\\w*|machine[sd]?|moves with|node[s]?|schema|payload|toggle|config\\w*|parameter[s]?|threshold[s]?|ingest\\w*|render\\w*|instrument\\w*|telemetry|utiliz\\w*|leverag\\w*|optimiz\\w*|remediat\\w*|unit[s]?|asset[s]?|component[s]?|solution[s]?)\\b",
+    "r16_backstage": "\\b(implementation guide|spec(ification)?s?|gate[sd]?|phase \\d|wave \\d|v\\d+(\\.\\d+)?|TODO|TBD|placeholder|lorem|stub|MVP|backlog|sprint|ticket|acceptance criteria|feature flag|rollout|consented|opt-?in flag|per the (doc|spec)|see (the )?(guide|doc))\\b",
+    "r17_meta": "\\b(one|two|three|four|five|six)\\s+(things?|moments?|reasons?|steps?|parts?|points?|questions?|ways?|pieces?|ideas?)\\b|\\b(that|this|it)\\x27?s\\s+(the\\s+)?(whole|entire|complete|point|product|idea|deal)\\b|\\badd\\s+(it|them|that)\\s+up\\b|\\ball\\s+(at once|in one)\\b|\\b(here\\x27?s what|what follows|below you\\x27?ll|in short|to sum)\\b",
+    "r18_virtue": "\\b(honest(ly|y)?|transparen(t|cy|tly)|candid(ly)?|truthful(ly)?|frankly|genuinely|authentic(ally)?|unbiased|impartial|real talk|straight talk|truth be told|in all honesty|no (fluff|gimmicks|BS|games|catch|hidden agenda)|to be (clear|blunt|honest|frank|fair)|let (us|me|\\x27?s) be clear|the (reality|truth|fact) is|trust us|we promise)\\b",
+    "r25_absolute": "\\b(will|always|never|every|all|guarantee[ds]?|ensures?|eliminat(e|es)|prevents?|stops|includes?|saves?|means|gets you)\\b",
+    "r25_hedge": "\\b(may|might|can|could|often|usually|generally|typically|likely|helps?|tends to|in most cases|increases? (the chance|your)|some|most)\\b",
+    "r25_third_party": "\\b(dealer|dealers|provider|providers|contractor|contractors|compan(y|ies)|installer|technician|inspector|city|county|municipality|HOA|manufacturer|utility)s?\\b",
+    "r36_number_word": "\\b(zero|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred|thousand|first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth|dozen|twice|couple|handful|several|few|half)\\b",
+    "r36_idiom": "\\b(no one|one of|one-time|one call away|second opinion|second look|first time)\\b",
+    "r39_paraphrase": "live walkthrough|shared lead|\\blead\\b|quote request|trusted (pros|partners|network)|home.?memory|house.?keep|walkthrough tool",
+    "r50_candidate": "\\b(you (did|made|got|survived|finished|nailed)|nice work|well done|good job|the hard part|that(\\x27| i)s over|worst of it|no more (questions|forms)|homework|assignment)\\b",
+    "r51_money": "\\$\\s?[0-9][0-9,.]*(\\s*[-\\u2013\\u2014]\\s*\\$?[0-9][0-9,.]*)?|\\b[0-9]+\\s*(dollars|per hour|an hour|/hr)\\b"
+  },
+  "source_rules": [
+    {
+      "rule": 1,
+      "start_line": 104,
+      "end_line": 145
+    },
+    {
+      "rule": 16,
+      "start_line": 675,
+      "end_line": 724
+    },
+    {
+      "rule": 17,
+      "start_line": 725,
+      "end_line": 758
+    },
+    {
+      "rule": 18,
+      "start_line": 759,
+      "end_line": 792
+    },
+    {
+      "rule": 25,
+      "start_line": 1014,
+      "end_line": 1066
+    },
+    {
+      "rule": 36,
+      "start_line": 1448,
+      "end_line": 1481
+    },
+    {
+      "rule": 39,
+      "start_line": 1571,
+      "end_line": 1625
+    },
+    {
+      "rule": 50,
+      "start_line": 2006,
+      "end_line": 2061
+    },
+    {
+      "rule": 51,
+      "start_line": 2062,
+      "end_line": 2435
+    }
+  ]
+}

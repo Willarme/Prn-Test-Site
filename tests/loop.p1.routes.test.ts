@@ -1,3 +1,5 @@
+import { DEFAULT_TENANT_ID } from "@/domain/problem/contracts";
+import { invalidateFeatureStates } from "@/platform/features/state";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -37,6 +39,11 @@ beforeAll(async () => {
   process.env.LINK_SIGNING_SECRET = "p1-test-secret-not-real-0123456789";
   runtime = await import("@/platform/stores/runtime");
   runtime.resetRuntimeStore();
+  // This historical suite exercises restored capabilities; D5 launch coverage is separate.
+  await runtime.runtimeStore().setFeatureStates({ tenant_id: DEFAULT_TENANT_ID,
+    changes: ["intake", "walkthrough", "job_packet", "keep", "ask", "shared_links", "pdf_keep_qr", "pdf_ask_qr"].map(feature_id => ({ feature_id, state: "LIVE" as const, expected_version: 0 })),
+    actor: "synthetic-test", reason: "Exercise restored packet links", decision_ref: "D5-restoration-test", at: "2026-09-13T12:00:00Z" });
+  invalidateFeatureStates();
   tokens = await import("@/platform/links/tokens");
   tokens.__resetLinkSecretForTests();
   pdfMod = await import("@/domain/packet/pdf");
@@ -229,5 +236,5 @@ describe("P1 · GET /packet/[request_id]/pdf", () => {
     const events = (await import("@/platform/stores/dev-db")).readDevDb().events.filter((e) => e.event_name === "packet.downloaded" && e.context.request_id === id);
     expect(events).toHaveLength(1);
     expect(events[0].context.surface).toBe("pdf");
-  }, 60_000);
+  }, 20_000);
 });

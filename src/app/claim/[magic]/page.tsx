@@ -1,3 +1,4 @@
+import { requireFeaturePage } from "@/platform/features/route-guard";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { LinkOff, linkOffReason } from "@/components/links/LinkOff";
@@ -33,6 +34,7 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function ClaimPage({ params }: { params: Promise<{ magic: string }> }) {
+  await requireFeaturePage("/claim/held");
   const { magic } = await params;
   const link = await verifyLink(magic, "magic");
   if (!link.ok) return <LinkOff reason={linkOffReason(link.reason)} />;

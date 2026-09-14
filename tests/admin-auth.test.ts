@@ -67,9 +67,9 @@ describe("owner admin auth", () => {
   it("expires a session server-side even if the browser keeps the cookie", async () => {
     process.env.ADMIN_PASSWORD = PASSWORD;
     const stale = sessionCookie(PASSWORD);
-    const [, mac] = stale.value.split(".");
+    const mac = stale.value.split(".").at(-1);
     const thirteenHoursAgo = Date.now() - 13 * 60 * 60 * 1000;
-    cookieStore.value = `${thirteenHoursAgo}.${mac}`;
+    cookieStore.value = `v3.owner.${thirteenHoursAgo}.${mac}`;
     expect(await isAdminUnlocked()).toBe(false);
   });
 

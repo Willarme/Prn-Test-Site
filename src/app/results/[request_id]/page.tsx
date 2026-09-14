@@ -1,3 +1,4 @@
+import { readFeatureSnapshot, featureIsLive, stateIn } from "@/platform/features/state";
 import { cookies } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import { journeySafetyRule } from "@/domain/problem/journey-safety";
@@ -69,6 +70,16 @@ export default async function ResultsPage({
   const k = query?.k;
   if (!(await ownerAllowed(request_id, k))) notFound();
   const store = runtimeStore();
+  const features = await readFeatureSnapshot({ store });
+  const visibility = {
+    keep: featureIsLive(features, "keep"), ask: featureIsLive(features, "ask"),
+    send: featureIsLive(features, "send") && featureIsLive(features, "shared_links"),
+    find: featureIsLive(features, "find"),
+    product_dashboard: stateIn(features, "product_dashboard") !== "HIDDEN",
+    product_trust_network: stateIn(features, "product_trust_network") !== "HIDDEN",
+    product_smartquote: stateIn(features, "product_smartquote") !== "HIDDEN",
+    product_home_memory: stateIn(features, "product_home_memory") !== "HIDDEN",
+  };
   const journey = await store.getJourney(request_id);
   const safety = journey ? journeySafetyRule(journey.problem) : null;
   if (safety && !safety.intake_may_continue) redirect(`/safety/${encodeURIComponent(safety.safety_rule_id)}`);
@@ -108,7 +119,7 @@ export default async function ResultsPage({
   if (!exists) notFound();
 
   let kept = false;
-  if (query?.kept === "1") {
+  if (visibility.keep && query?.kept === "1") {
     try {
       const claim = await store.getKeepClaim(request_id);
       const confirmation = (await readKeepState(request_id));
@@ -120,7 +131,7 @@ export default async function ResultsPage({
 
   let askAnswers: AskAnswer[] = [];
   try {
-    askAnswers = await store.listAskAnswers(request_id);
+    if (visibility.ask) askAnswers = await store.listAskAnswers(request_id);
   } catch {
     // A missing answers read costs one optional block, never the page.
   }
@@ -145,7 +156,8 @@ export default async function ResultsPage({
       : {}),
   });
 
-  const keepHref = `/keep/${(await issueLink({ scope: "keep", request_id })).token}`;
+  const keepHref = visibility.keep ? `/keep/${(await issueLink({ scope: "keep", request_id })).token}` : "";
+  const askHref = visibility.ask ? `/ask/${(await issueLink({ scope: "ask", request_id })).token}` : "";
   const eligible = journey ? await feedbackEligible(request_id) : false;
   return <>
     {kept && eligible && <FeedbackSuccess requestId={request_id} />}
@@ -153,11 +165,12 @@ export default async function ResultsPage({
       Saved to Home Memory. <a href={keepHref}>Open your saved record</a>
     </div>}
     <ResultsTemplate
+      visibility={visibility}
       requestId={request_id}
       ownerKey={k}
       feedbackEligible={eligible}
       keepHref={keepHref}
-      askHref={`/ask/${(await issueLink({ scope: "ask", request_id })).token}`}
+      askHref={askHref}
       askAnswers={askAnswers}
     />
   </>;

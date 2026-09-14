@@ -1,0 +1,63 @@
+{
+  "taxonomy_version": "subject-taxonomy/1.0.0",
+  "scope": "Guide §11.1 governed semantic actions",
+  "rows": [
+    {
+      "pattern_id": "START_KNOWN_OBJECT",
+      "target": "#intake",
+      "subject_kinds": [
+        "equipment",
+        "appliance",
+        "fixture",
+        "object"
+      ],
+      "pattern": "Start with MY {subject.cta_label}"
+    },
+    {
+      "pattern_id": "START_CURRENT_PROBLEM",
+      "target": "#intake",
+      "subject_kinds": [
+        "current_problem"
+      ],
+      "pattern": "Start with THIS PROBLEM"
+    },
+    {
+      "pattern_id": "WALK_KNOWN_OBJECT",
+      "target": "#intake",
+      "subject_kinds": [
+        "equipment",
+        "appliance",
+        "fixture",
+        "object"
+      ],
+      "pattern": "Walk me through MY {subject.cta_label} instead"
+    },
+    {
+      "pattern_id": "WALK_CURRENT_PROBLEM",
+      "target": "#intake",
+      "subject_kinds": [
+        "current_problem"
+      ],
+      "pattern": "Walk me through THIS PROBLEM instead"
+    },
+    {
+      "pattern_id": "BUILD_KNOWN_OBJECT_PACKET",
+      "target": "#intake",
+      "subject_kinds": [
+        "equipment",
+        "appliance",
+        "fixture",
+        "object"
+      ],
+      "pattern": "Build the packet for MY {subject.cta_label}"
+    },
+    {
+      "pattern_id": "BUILD_CURRENT_PROBLEM_PACKET",
+      "target": "#intake",
+      "subject_kinds": [
+        "current_problem"
+      ],
+      "pattern": "Build the packet for THIS PROBLEM"
+    }
+  ]
+}

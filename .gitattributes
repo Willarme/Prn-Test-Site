@@ -1,0 +1,2 @@
+# Approved D5 baselines are hashed as bytes; checkout line endings must not alter them.
+tests/fixtures/d5-approved/*.txt -text whitespace=cr-at-eol

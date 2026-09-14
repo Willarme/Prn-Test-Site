@@ -24,10 +24,9 @@ import { runPageQaSync } from "@/domain/search/qa";
  * extends the same scan to everything A06 introduced, and widens it from the
  * homepage to EVERY unauthenticated route.
  *
- * WHAT REMAINS PUBLIC, unchanged: h1, canonical_path and the QA STATE pill.
- * Those were public before this build and this build did not move them. Whether
- * they belong there at all is Josh's separate call (pre-answer 12, adjacent to
- * T0-02) and is deliberately NOT decided here.
+ * T6-29:R1 subsequently retired the homepage navigator entirely. Its staged
+ * headlines, paths and QA pills are absent too. The original A06 internals
+ * checks remain in force on every listed customer surface.
  */
 
 const ROOT = process.cwd();
@@ -83,13 +82,11 @@ describe("nothing A06 produces reaches an unauthenticated route", () => {
     });
   }
 
-  it("the public homepage still shows exactly h1, path and the QA STATE pill — no more, no less", () => {
-    const homepage = readFileSync(join(ROOT, "src/app/page.tsx"), "utf-8");
-    expect(homepage).toMatch(/\{s\.h1\}/);
-    expect(homepage).toMatch(/s\.canonical_path\.replace/);
-    expect(homepage).toMatch(/\{s\.qa\.state\}/);
-    // The pill reads the STATE and nothing adjacent to it.
-    expect(code("src/app/page.tsx")).not.toMatch(/s\.qa\.(?!state)/);
+  it("the homepage has meaningful customer content and no retired staged navigator or QA pill", () => {
+    const homepage = code("src/app/page.tsx");
+    expect(homepage).toContain("Something happened in your home.");
+    expect(homepage).toContain("One Job Packet");
+    expect(homepage).not.toMatch(/allStagedSpecs|canonical_path|\.qa\.|Staged door pages|className="pill/);
   });
 
   it("the door template renders the page's own copy and the intake, never a verdict", () => {
@@ -180,7 +177,7 @@ describe("the verdicts themselves stay behind the admin gate", () => {
     // None of which appears on any public surface, per the scans above.
   });
 
-  it("the committed portfolio's public pill values are unchanged by this build", () => {
+  it("the retired portfolio retains its historical QA values without public pills", () => {
     for (const spec of loadStaged().specs as PageSpec[]) {
       expect(spec.qa.state).toBe("PASS");
     }

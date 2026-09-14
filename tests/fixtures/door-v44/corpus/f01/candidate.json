@@ -1,0 +1,1232 @@
+{
+  "$schema": "https://schemas.propertyresponsenetwork.com/doorspec/2.0.0.json",
+  "schema_version": "doorspec/2.0.0",
+  "identity": {
+    "tenant_id": "fixture.tenant",
+    "page_id": "fixture.f01",
+    "page_version": 1,
+    "opportunity_id": "fixture.opportunity.f01",
+    "canonical_intent_id": "fixture.intent.f01",
+    "intent_cluster_id": "fixture.cluster.f01",
+    "family_id": "F01",
+    "locale": "en-US",
+    "geography_scope": "national",
+    "slug": "ac-blowing-warm-air",
+    "canonical_path": "/problems/ac-blowing-warm-air"
+  },
+  "versions": {
+    "template": "door-v44.0.0",
+    "theme": "door-v44-t01@1.0.0",
+    "taxonomy": "subject-taxonomy/1.0.0",
+    "prompt_identities": [],
+    "source_bundle": "f01.frozen-source-unreviewed.v1"
+  },
+  "intent": {
+    "primary_decision": "What changes the next step for AC blowing warm air?",
+    "primary_query": "AC blowing warm air",
+    "query_aliases": [],
+    "sub_intents": [
+      "Urgency",
+      "Evidence to collect",
+      "Limits of remote advice"
+    ],
+    "problem_state": "symptom",
+    "page_eligibility_receipt": "unresolved.f01.eligibility"
+  },
+  "subject": {
+    "subject_id": "fixture.subject.ac",
+    "display_label": "AC",
+    "short_label": "AC",
+    "cta_label": "AC",
+    "second_person_label": "your AC",
+    "possessive_label": "your AC's",
+    "plural_label": "AC systems",
+    "subject_kind": "equipment"
+  },
+  "layout": {
+    "order_profile_id": "order-b",
+    "conditional_sections": {
+      "related": false,
+      "nameplate_help": true,
+      "media_controls": false,
+      "prices": true,
+      "local_stats": false,
+      "founders_offer": false
+    }
+  },
+  "head": {
+    "page": {
+      "title": "AC running but blowing warm air? Get a LIVE walkthrough for YOUR system",
+      "meta_description": "AC running but blowing warm air? Start with the thermostat, filter, outdoor unit and ice. Then get a LIVE walkthrough of YOUR actual AC and a provider-ready Job Packet. Free.",
+      "og_description": "Not a general article. A LIVE walkthrough of your actual AC, and a Job Packet you can hand to any company."
+    },
+    "site": {
+      "name_token": "{{site.name}}",
+      "origin": "https://fixture.example"
+    },
+    "brand": {
+      "a": "#2D5C68",
+      "b": "#FF2E7E",
+      "warn": "#9A6A1F",
+      "theme": "door-v44-t01@1.0.0"
+    },
+    "nav": {
+      "category_page_id": "fixture.family.f01",
+      "category_label": "Cooling problems",
+      "cta_action": "hero_start"
+    },
+    "crumb": {
+      "family_page_id": "fixture.family.f01",
+      "family_label": "Cooling",
+      "problem_label": "AC blowing warm air"
+    },
+    "accents": {
+      "map": [
+        {
+          "text": "numbers",
+          "color_class": "blue"
+        },
+        {
+          "text": "warm air",
+          "color_class": "blue"
+        },
+        {
+          "text": "runs",
+          "color_class": "blue"
+        },
+        {
+          "text": "warm",
+          "color_class": "blue"
+        }
+      ]
+    }
+  },
+  "actions": {
+    "hero_start": {
+      "pattern_id": "START_KNOWN_OBJECT",
+      "target": "#intake"
+    },
+    "packet_start": {
+      "pattern_id": "BUILD_KNOWN_OBJECT_PACKET",
+      "target": "#intake"
+    },
+    "walkthrough_start": {
+      "pattern_id": "WALK_KNOWN_OBJECT",
+      "target": "#intake"
+    }
+  },
+  "intake": {
+    "heading": [
+      {
+        "type": "text",
+        "value": "Tell us what your AC is doing."
+      }
+    ],
+    "lede": "Not a generic checklist. We work from your actual thermostat, your filter, your outdoor unit, so you can go live your life.",
+    "field_label": "What is your AC doing right now?",
+    "placeholder": "The air is coming out, but it isn't cold. Started yesterday afternoon. Thermostat says 78 even though I set it to 70...",
+    "help": "What you see, hear and smell, when it started, and anything that changes it.",
+    "prompts": [
+      {
+        "id": "fixture.f01.prompt.1",
+        "kind": "known_reading",
+        "evidence_type": "reading",
+        "text": "Know your thermostat reading? Say it."
+      },
+      {
+        "id": "fixture.f01.prompt.2",
+        "kind": "photograph_label",
+        "evidence_type": "nameplate",
+        "text": "Can you photograph the label on the unit? We read the model for you, no typing."
+      },
+      {
+        "id": "fixture.f01.prompt.3",
+        "kind": "know_nothing",
+        "evidence_type": "description",
+        "text": "Only know \"it stopped being cold\"? Start there. We will take it from the top."
+      }
+    ],
+    "so_far_label": "What you have given us about your AC so far",
+    "so_far_items": [
+      "The problem, in your words",
+      "Photos or video of your unit",
+      "Your equipment label, read for you"
+    ],
+    "submit_action": "hero_start",
+    "disclosure": {
+      "id": "unresolved.active_disclosure",
+      "content_hash": "UNRESOLVED",
+      "purpose": "Unresolved controlled intake disclosure; no consent supplied."
+    },
+    "attribution": {
+      "page_id": "fixture.f01",
+      "intent_cluster_id": "fixture.cluster.f01",
+      "search_opportunity_id": "fixture.opportunity.f01",
+      "problem_family_hint": "F01",
+      "landing_path": "/problems/ac-blowing-warm-air"
+    },
+    "media_controls": []
+  },
+  "claims": [
+    {
+      "claim_id": "unreviewed.f01.stats.1",
+      "source_ids": [
+        "f01.source.1",
+        "f01.source.2",
+        "f01.source.3",
+        "f01.source.4"
+      ],
+      "content_hash": "f2d83b4d1c54194e97ef7fad3522618ae05cd1b53a449b1bcf0966dc681bdef9"
+    },
+    {
+      "claim_id": "unreviewed.f01.stats.2",
+      "source_ids": [
+        "f01.source.5"
+      ],
+      "content_hash": "cbcee8138aa6df4c27733ce09e7a85d55d6e765f6ba30039d79d97228eb92588"
+    },
+    {
+      "claim_id": "unreviewed.f01.stats.3",
+      "source_ids": [
+        "f01.source.6",
+        "f01.source.7"
+      ],
+      "content_hash": "eb245129245eb65fac649a90b11c7d8a841639bbb19a697bfbd04e41b368ba07"
+    },
+    {
+      "claim_id": "unreviewed.f01.common_causes.4",
+      "source_ids": [
+        "f01.source.11"
+      ],
+      "content_hash": "32131ed2bf353bbc56acf2e76eeb617c7e48e36a268b38e0d4c34ecf1aca6485"
+    },
+    {
+      "claim_id": "unreviewed.f01.common_causes.5",
+      "source_ids": [
+        "f01.source.8"
+      ],
+      "content_hash": "0f3e1f1bb88dce5bd2d1ca9a730b5bd699b7edd2b5cc9643629254ff0a8e5939"
+    },
+    {
+      "claim_id": "unreviewed.f01.common_causes.6",
+      "source_ids": [
+        "f01.source.10"
+      ],
+      "content_hash": "ece9d99982a8aac77dc6ec6cd9dee89cab39e4b36043583ba3845400732aea71"
+    },
+    {
+      "claim_id": "unreviewed.f01.common_causes.7",
+      "source_ids": [
+        "f01.source.9"
+      ],
+      "content_hash": "879a5442b334cf231d16c774250539ef5b1e4a7bdea897d0d09ff27bc86a4f62"
+    }
+  ],
+  "sources": [
+    {
+      "source_id": "f01.source.1",
+      "cite": true,
+      "claim_ids": [
+        "unreviewed.f01.stats.1"
+      ],
+      "note": "Company byline, no named author. Published May 22, 2026. Verified Sept. 1, 2026. Supports the field-report range, scoped by the company to its own calls in Santa Clarita, California."
+    },
+    {
+      "source_id": "f01.source.2",
+      "cite": true,
+      "claim_ids": [
+        "unreviewed.f01.stats.1"
+      ],
+      "note": "Company byline, no named author. Published June 30, 2026. The page cites unattributed industry data for its 40 to 50% figure rather than its own records. Verified Sept. 1, 2026. Supports the field-report range, Central Florida."
+    },
+    {
+      "source_id": "f01.source.3",
+      "cite": true,
+      "claim_ids": [
+        "unreviewed.f01.stats.1"
+      ],
+      "note": "No byline and no publication date shown on the page. Verified Sept. 1, 2026. Supports the field-report range, scoped by the company to its own calls in Utah."
+    },
+    {
+      "source_id": "f01.source.4",
+      "cite": true,
+      "claim_ids": [
+        "unreviewed.f01.stats.1"
+      ],
+      "note": "No named author and no publication date shown on the page. Verified Sept. 1, 2026. Supports the field-report range, South Florida."
+    },
+    {
+      "source_id": "f01.source.5",
+      "cite": true,
+      "claim_ids": [
+        "unreviewed.f01.stats.2"
+      ],
+      "note": "Travis Baugh; expert review by Michelle Notaro, Product Manager for Residential Air Conditioners at Carrier Corporation. The figure appears in the page’s FAQ. No publication or update date is displayed. Verified Sept. 1, 2026. Supports the $200 to $1,500 published repair range."
+    },
+    {
+      "source_id": "f01.source.6",
+      "cite": true,
+      "claim_ids": [
+        "unreviewed.f01.stats.3"
+      ],
+      "note": "Ryan Mayes; expert review by Michelle Notaro, Product Manager, Air Conditioners. No publication or review date is displayed; the site carries a general copyright line only. Verified Sept. 1, 2026. Supports switching cooling off immediately with the fan left running, and the compressor damage warning."
+    },
+    {
+      "source_id": "f01.source.7",
+      "cite": true,
+      "claim_ids": [
+        "unreviewed.f01.stats.3"
+      ],
+      "note": "No publication date is displayed. Trane also warns not to chip away at the ice, which can damage the coil. Verified Sept. 1, 2026. Supports switching the thermostat from COOL to OFF, and the major-damage warning."
+    },
+    {
+      "source_id": "f01.source.8",
+      "cite": false,
+      "claim_ids": [
+        "unreviewed.f01.common_causes.5"
+      ],
+      "note": "Travis Baugh; expert review by Michelle Notaro. No publication date displayed. Carrier gives $100 to $400 covering part and professional installation; we publish the narrower $150 to $400 because Carrier’s own figure of $75 to $150 per hour for technician time makes the $100 floor an edge case. Verified Sept. 1, 2026. Supports the $150 to $400 capacitor replacement range."
+    },
+    {
+      "source_id": "f01.source.9",
+      "cite": false,
+      "claim_ids": [
+        "unreviewed.f01.common_causes.7"
+      ],
+      "note": "Travis Baugh; no expert reviewer listed. The figure appears in the page FAQ and Carrier footnotes it to Angi. No publication date displayed. The range stays open ended because a leak in the evaporator coil can cost more than the top of it. Verified Sept. 1, 2026. Supports the $250 to $1,600+ leak repair range."
+    },
+    {
+      "source_id": "f01.source.10",
+      "cite": false,
+      "claim_ids": [
+        "unreviewed.f01.common_causes.6"
+      ],
+      "note": "Staff writer, reviewed by HomeAdvisor editor Ryan Noonan. Page displays Updated Jun 20, 2026. A cost aggregator that also sells contractor leads, so treated as a market reference rather than an authority. The low end is a cleaning bundled into an annual tune up; the high end is an acid wash deep clean. Verified Sept. 1, 2026. Supports the $75 to $350 condenser coil cleaning range."
+    },
+    {
+      "source_id": "f01.source.11",
+      "cite": false,
+      "claim_ids": [
+        "unreviewed.f01.common_causes.4"
+      ],
+      "note": "Alexis Carthan; expert review by Richard Trethewey. Updated 03/16/2026. A cost guide carrying an advertiser disclosure, with figures compiled from Angi and Home Depot estimates rather than first party data. A frozen coil caused by a dirty filter resolves at service call money; one caused by a damaged coil runs to the top of the range. Verified Sept. 1, 2026. Supports the $150 to $2,500 spread for a frozen evaporator coil, which depends entirely on the underlying cause."
+    }
+  ],
+  "capabilities": [
+    {
+      "capability_id": "cap.ac_warm_air.narrow_why_still_warm",
+      "live_status": "UNVERIFIED",
+      "production_receipt": null
+    },
+    {
+      "capability_id": "cap.ac_warm_air.thermostat_or_fan_setting",
+      "live_status": "UNVERIFIED",
+      "production_receipt": null
+    },
+    {
+      "capability_id": "cap.ac_warm_air.filter_relevance",
+      "live_status": "UNVERIFIED",
+      "production_receipt": null
+    },
+    {
+      "capability_id": "cap.ac_warm_air.ice_on_line_next_step",
+      "live_status": "UNVERIFIED",
+      "production_receipt": null
+    },
+    {
+      "capability_id": "cap.ac_warm_air.outdoor_unit_involved",
+      "live_status": "UNVERIFIED",
+      "production_receipt": null
+    },
+    {
+      "capability_id": "cap.ac_warm_air.read_model_from_label_photo",
+      "live_status": "UNVERIFIED",
+      "production_receipt": null
+    },
+    {
+      "capability_id": "cap.ac_warm_air.capacitor_confirmation",
+      "live_status": "UNVERIFIED",
+      "production_receipt": null
+    },
+    {
+      "capability_id": "cap.ac_warm_air.refrigerant_charge_confirmation",
+      "live_status": "UNVERIFIED",
+      "production_receipt": null
+    },
+    {
+      "capability_id": "cap.ac_warm_air.job_packet_for_provider",
+      "live_status": "UNVERIFIED",
+      "production_receipt": null
+    }
+  ],
+  "visuals": [
+    {
+      "id": "fixture.f01.visual.1",
+      "asset_id": "fixture.f01.asset.1",
+      "role": "decision_observation",
+      "claim_ids": [],
+      "title": "How to tell an iced refrigerant line from a normal one, and what to do about each",
+      "description": "Two side by side views of the copper refrigerant lines where they enter the house. On the left, the larger insulated suction line is coated in white frost and ice, with droplets forming below it, and the label says to switch cooling off at the thermostat while leaving the fan running so the coil can thaw. On the right, the same line is clean and dry with intact black foam insulation, and the label says cooling may keep running while a visit is arranged. Both views show the smaller uninsulated liquid line beneath, which stays clear in each case.",
+      "caption": [
+        {
+          "type": "text",
+          "value": "Ice or clear. The one observation that changes what you should do right now."
+        }
+      ],
+      "alt": "How to tell an iced refrigerant line from a normal one, and what to do about each",
+      "inline_hash": "d1150ca96b6927bf2d83a216cb5fb1d2b97a8917e4826c4fd2da1d9eaf5c650c",
+      "raster_hash": "965d46e0c22105b693ffe6672e7995a3084245850152b230a9f85ae0e147f535",
+      "width": 1200,
+      "height": 409,
+      "mime": "image/png",
+      "authored_status": "fixture",
+      "review_receipt": null,
+      "plate_class": "plate-1"
+    },
+    {
+      "id": "fixture.f01.visual.2",
+      "asset_id": "fixture.f01.asset.2",
+      "role": "safe_vs_sealed",
+      "claim_ids": [],
+      "title": "Where to look on a central air conditioning system, and what is safe to touch",
+      "description": "A house cross-section. Inside: a thermostat on the wall at check one, a return grille and filter at check two, and the indoor air handler cabinet with its coil and blower. Outside: the condenser unit with its top fan at check three. Two insulated refrigerant lines run between them, with the larger line marked as the one to inspect for ice at check four. Green markers show what a homeowner can safely look at and photograph. Red markers show the sealed electrical and refrigerant areas that only a licensed technician may open.",
+      "caption": [
+        {
+          "type": "text",
+          "value": "Your 4 safe checks, and the 2 red zones. Green is yours. Red is licensed work."
+        }
+      ],
+      "alt": "Where to look on a central air conditioning system, and what is safe to touch",
+      "inline_hash": "8644db26f0b9018b3f4f1ea9fb583b2e96f14383c1a49b9e741848d4b75cd771",
+      "raster_hash": "f90f2d5352e0cd6e6d796a7cfe57a8940532dc0bcc1b5d7ce8944cc0ee9af391",
+      "width": 1200,
+      "height": 627,
+      "mime": "image/png",
+      "authored_status": "fixture",
+      "review_receipt": null,
+      "plate_class": "plate-2"
+    },
+    {
+      "id": "fixture.f01.visual.3",
+      "asset_id": "fixture.f01.asset.3",
+      "role": "why_not_diy",
+      "claim_ids": [],
+      "title": "Inside a condenser unit: the parts that fail, and why the panel stays closed",
+      "description": "A technical cutaway line drawing of an outdoor air conditioning condenser. The top fan draws air upward through the cabinet. Around the inside walls sits the condenser coil with its fins. In the electrical compartment on the right are the run capacitor, drawn as a cylinder, and the contactor beside it. The compressor sits in the base of the cabinet as a heavy cylindrical shape. Numbered leader lines identify the fan, the coil and fins, the service disconnect on the wall, the capacitor and the contactor, and the compressor. The electrical compartment is marked as sealed and licensed work only.",
+      "caption": [
+        {
+          "type": "text",
+          "value": "Behind the panel. Why \"just swap the capacitor\" is bad advice even when the part is cheap."
+        }
+      ],
+      "alt": "Inside a condenser unit: the parts that fail, and why the panel stays closed",
+      "inline_hash": "0bdf2e3d30045bd9c955a45f6ea8c87da4aeee6eaf41191b5d5e0955d40e0a4a",
+      "raster_hash": "dce3de077486dec9e701ef7c0afbfcd42fcd1239dd1f5ef2a4931bd57c9127c5",
+      "width": 1200,
+      "height": 518,
+      "mime": "image/png",
+      "authored_status": "fixture",
+      "review_receipt": null,
+      "plate_class": "plate-3"
+    }
+  ],
+  "sections": {
+    "hero": {
+      "badge_problem": "AC problem guide",
+      "badge_tail": "Written by people who have been in a hot house",
+      "h1": [
+        {
+          "type": "text",
+          "value": "AC running but blowing warm air?"
+        }
+      ],
+      "answer": [
+        {
+          "type": "text",
+          "value": "Check 4 things: thermostat mode and fan setting, the filter, whether the outdoor unit is running, and ice on the copper line. Ice means switch cooling off and leave the fan on first. If those look normal, it is something you cannot confirm by eye: an outdoor electrical or start issue, a coil or airflow problem, or refrigerant. Those need measurements at the equipment."
+        }
+      ],
+      "cap_last": [
+        {
+          "type": "text",
+          "value": "Start with what your AC is actually doing."
+        }
+      ],
+      "value_heading": "This is not another AC troubleshooting article.",
+      "value_claim": "Articles list every possible cause. We use our tool to walk your actual system LIVE.",
+      "value_rows": [
+        {
+          "id": "fixture.f01.value.1",
+          "generic": "An article lists eight causes for no particular house.",
+          "ours": [
+            {
+              "type": "text",
+              "value": "We rule causes out using your thermostat reading and your filter."
+            }
+          ]
+        },
+        {
+          "id": "fixture.f01.value.2",
+          "generic": "A video is somebody else's unit, filmed once, in good light.",
+          "ours": [
+            {
+              "type": "text",
+              "value": "We look at yours, in whatever state it is in at 9pm tonight."
+            }
+          ]
+        },
+        {
+          "id": "fixture.f01.value.3",
+          "generic": "A forum reply says just swap the capacitor.",
+          "ours": [
+            {
+              "type": "text",
+              "value": "We tell you which parts hold a charge after the power is off, so you don't fry yourself."
+            }
+          ]
+        },
+        {
+          "id": "fixture.f01.value.4",
+          "generic": "An AI summary cannot see your equipment.",
+          "ours": [
+            {
+              "type": "text",
+              "value": "We read your model from a photo and narrow it from there."
+            }
+          ]
+        },
+        {
+          "id": "fixture.f01.value.5",
+          "generic": "Calling around means explaining it four times.",
+          "ours": [
+            {
+              "type": "text",
+              "value": "You leave with a packet that arrives before the technician does."
+            }
+          ]
+        }
+      ],
+      "value_foot": [
+        {
+          "type": "text",
+          "value": "Two houses with the same symptom often need different next steps. We build from your equipment, your observations and what you have already ruled out, not from an average of everyone else's AC."
+        }
+      ]
+    },
+    "stats": {
+      "heading": [
+        {
+          "type": "text",
+          "value": "3 numbers worth knowing about warm air"
+        }
+      ],
+      "cards": [
+        {
+          "id": "fixture.f01.stat.1",
+          "icon_id": "fixture.f01.icon.stat.1",
+          "icon_class": "ico-green",
+          "value": [
+            {
+              "type": "text",
+              "value": "≈ 1 in 21–4"
+            }
+          ],
+          "statement": "warm-air calls may trace to something simple you can check first.",
+          "note": "HVAC companies in four U.S. markets report 40 to 50% of warm-air calls resolving on simple checks.",
+          "source_class": "Practitioner field reports · 4 U.S. markets",
+          "claim_id": "unreviewed.f01.stats.1",
+          "question_type": "simple",
+          "metric_family": "fixture.f01.metric.1"
+        },
+        {
+          "id": "fixture.f01.stat.2",
+          "icon_id": "fixture.f01.icon.stat.2",
+          "icon_class": "ico-blue",
+          "value": [
+            {
+              "type": "text",
+              "value": "$200–$1,5005"
+            }
+          ],
+          "statement": "is Carrier’s published repair range for an AC blowing hot or warm air, depending on the cause.",
+          "note": "Carrier puts thermostat replacements at the low end, compressor and leak repairs at the high end.",
+          "source_class": "Manufacturer guidance · Carrier",
+          "claim_id": "unreviewed.f01.stats.2",
+          "question_type": "cost",
+          "metric_family": "fixture.f01.metric.2"
+        },
+        {
+          "id": "fixture.f01.stat.3",
+          "icon_id": "fixture.f01.icon.stat.3",
+          "icon_class": "ico-pink",
+          "value": [
+            {
+              "type": "text",
+              "value": "0 min6"
+            }
+          ],
+          "statement": "of extra cooling run time after you confirm the coil is frozen.",
+          "note": "Carrier and Trane both say switch cooling to OFF and leave the fan running. Running a frozen coil can lead to severe compressor damage.",
+          "source_class": "Manufacturer guidance · Carrier, Trane",
+          "claim_id": "unreviewed.f01.stats.3",
+          "question_type": "urgent",
+          "metric_family": "fixture.f01.metric.3"
+        }
+      ],
+      "source_note": [
+        {
+          "type": "text",
+          "value": "Sources: multi-market HVAC field reports · Carrier and Trane expert-reviewed guidance."
+        }
+      ],
+      "band": [
+        {
+          "type": "text",
+          "value": "Forty articles were written for somebody else's house. Yours has a model number, a filter, and a thing it is doing right now."
+        }
+      ]
+    },
+    "observations": {
+      "heading": [
+        {
+          "type": "text",
+          "value": "4 things you can see that can narrow the list fast"
+        }
+      ],
+      "columns": [
+        {
+          "label": "What you look at",
+          "mw_class": "mw210"
+        },
+        {
+          "label": "What it rules out for you",
+          "mw_class": "mw340"
+        }
+      ],
+      "rows": [
+        {
+          "id": "fixture.f01.observation.1",
+          "look": "Your thermostat, as it reads",
+          "rules_out": "Fan on ON instead of AUTO can explain air that is warm between cooling cycles. One photo settles mode, set point, room temperature and fan.",
+          "protocol_check_id": "unresolved.f01.observation.1"
+        },
+        {
+          "id": "fixture.f01.observation.2",
+          "look": "Ice on the larger copper line",
+          "rules_out": "Changes what you should do in the next 5 minutes, and moves airflow and refrigerant to the front.",
+          "protocol_check_id": "unresolved.f01.observation.2"
+        },
+        {
+          "id": "fixture.f01.observation.3",
+          "look": "Whether the outdoor fan turns",
+          "rules_out": "A still fan with a hum points somewhere very different from a fan spinning normally.",
+          "protocol_check_id": "unresolved.f01.observation.3"
+        },
+        {
+          "id": "fixture.f01.observation.4",
+          "look": "Every room, or one end of the house",
+          "rules_out": "Whole-house and one-room problems have almost no causes in common.",
+          "protocol_check_id": "unresolved.f01.observation.4"
+        }
+      ]
+    },
+    "common_causes": {
+      "heading": [
+        {
+          "type": "text",
+          "value": "7 common possibilities when YOUR AC runs but the air is warm"
+        }
+      ],
+      "columns": [
+        {
+          "label": "Cause",
+          "mw_class": "mw165"
+        },
+        {
+          "label": "What you would notice",
+          "mw_class": "mw250"
+        },
+        {
+          "label": "Yours to fix?",
+          "mw_class": "mw125"
+        },
+        {
+          "label": "Typical range",
+          "mw_class": "mw145"
+        }
+      ],
+      "rows": [
+        {
+          "id": "fixture.f01.cause.1",
+          "cause": "Fan set to ON, not AUTO",
+          "notice": "Air always moving, cold only sometimes. Between cycles it pushes room-temperature air.",
+          "fix_class": "yes",
+          "fix_label": "Yes",
+          "range": [
+            {
+              "type": "text",
+              "value": "Free"
+            }
+          ],
+          "omission_reason": null,
+          "claim_ids": []
+        },
+        {
+          "id": "fixture.f01.cause.2",
+          "cause": "Clogged air filter",
+          "notice": "Weak airflow, runs constantly, sometimes ice on the copper line.",
+          "fix_class": "yes",
+          "fix_label": "Yes",
+          "range": [
+            {
+              "type": "text",
+              "value": "$15 to $40"
+            }
+          ],
+          "omission_reason": null,
+          "claim_ids": []
+        },
+        {
+          "id": "fixture.f01.cause.3",
+          "cause": "Outdoor unit has no power",
+          "notice": "Indoor fan runs, outdoor unit silent. Often a tripped breaker or pulled disconnect.",
+          "fix_class": "care",
+          "fix_label": "Reset once only",
+          "range": [
+            {
+              "type": "text",
+              "value": "Free, or a service call"
+            }
+          ],
+          "omission_reason": null,
+          "claim_ids": []
+        },
+        {
+          "id": "fixture.f01.cause.4",
+          "cause": "Frozen evaporator coil",
+          "notice": "Visible ice. Usually a symptom of airflow or refrigerant, not the cause itself, so the cost follows the cause.",
+          "fix_class": "care",
+          "fix_label": "Thaw, then call",
+          "range": [
+            {
+              "type": "text",
+              "value": "$150 to $2,50011"
+            }
+          ],
+          "omission_reason": null,
+          "claim_ids": [
+            "unreviewed.f01.common_causes.4"
+          ]
+        },
+        {
+          "id": "fixture.f01.cause.5",
+          "cause": "Failed capacitor",
+          "notice": "A hum outdoors with the fan not turning, or an outdoor unit that starts inconsistently.",
+          "fix_class": "never",
+          "fix_label": "Never",
+          "range": [
+            {
+              "type": "text",
+              "value": "$150 to $4008"
+            }
+          ],
+          "omission_reason": null,
+          "claim_ids": [
+            "unreviewed.f01.common_causes.5"
+          ]
+        },
+        {
+          "id": "fixture.f01.cause.6",
+          "cause": "Dirty condenser coil",
+          "notice": "Outdoor unit packed with clippings or cottonwood. Struggles on the hottest days.",
+          "fix_class": "care",
+          "fix_label": "Clear loose exterior debris only; deeper cleaning may need service.",
+          "range": [
+            {
+              "type": "text",
+              "value": "$75 to $35010"
+            }
+          ],
+          "omission_reason": null,
+          "claim_ids": [
+            "unreviewed.f01.common_causes.6"
+          ]
+        },
+        {
+          "id": "fixture.f01.cause.7",
+          "cause": "Low refrigerant or a leak",
+          "notice": "Cooling fading over weeks, ice, sometimes a hiss. Refrigerant does not get used up.",
+          "fix_class": "never",
+          "fix_label": "Never",
+          "range": [
+            {
+              "type": "text",
+              "value": "$250 to $1,600+9"
+            }
+          ],
+          "omission_reason": null,
+          "claim_ids": [
+            "unreviewed.f01.common_causes.7"
+          ]
+        }
+      ]
+    },
+    "safe_observations": {
+      "heading": [
+        {
+          "type": "text",
+          "value": "5 things to check now that could save you a service call"
+        }
+      ],
+      "lede": "On their own, a thermostat reading and a photo of your filter are just notes. The LIVE walkthrough asks the follow-ups, structures what you saw, and hands you a packet you can send to whoever comes next.",
+      "checks": [
+        {
+          "id": "fixture.f01.check.1",
+          "heading": "Your thermostat, exactly as it reads",
+          "body": "Mode, set point, room temperature, any code. Check the fan is on AUTO, not ON. A photo answers all of it.",
+          "protocol_check_id": "unresolved.f01.check.1"
+        },
+        {
+          "id": "fixture.f01.check.2",
+          "heading": "Your air filter",
+          "body": "If it looks dirty, show us the filter and its label. We read the size off it and name the replacement.",
+          "protocol_check_id": "unresolved.f01.check.2"
+        },
+        {
+          "id": "fixture.f01.check.3",
+          "heading": "Your outdoor unit, from a distance",
+          "body": "Is the top fan spinning? Is it buried in clippings? One wide photo from a few feet back. Do not open it.",
+          "protocol_check_id": "unresolved.f01.check.3"
+        },
+        {
+          "id": "fixture.f01.check.4",
+          "heading": "Your refrigerant lines",
+          "body": "Ice on the larger insulated pipe means switch cooling off, leave the fan running, let it thaw before anyone tests anything.",
+          "protocol_check_id": "unresolved.f01.check.4"
+        },
+        {
+          "id": "fixture.f01.check.5",
+          "heading": "Your vents, room by room",
+          "body": "Whole house or one end? Any registers closed or blocked? The answer splits the causes in two.",
+          "protocol_check_id": "unresolved.f01.check.5"
+        }
+      ],
+      "never_items": [
+        {
+          "id": "fixture.f01.never.1",
+          "text": "Open an electrical compartment or test a live circuit",
+          "hazard_id": "unresolved.f01.hazard"
+        },
+        {
+          "id": "fixture.f01.never.2",
+          "text": "Touch a capacitor. They hold a charge with the power off",
+          "hazard_id": "unresolved.f01.hazard"
+        },
+        {
+          "id": "fixture.f01.never.3",
+          "text": "Add refrigerant or open any sealed part",
+          "hazard_id": "unresolved.f01.hazard"
+        },
+        {
+          "id": "fixture.f01.never.4",
+          "text": "Take a panel off the indoor or outdoor unit",
+          "hazard_id": "unresolved.f01.hazard"
+        }
+      ],
+      "stop_items": [
+        {
+          "id": "fixture.f01.stop.1",
+          "text": "You smell burning, see smoke or see sparking. Cut power at the breaker first",
+          "hazard_id": "unresolved.f01.hazard"
+        },
+        {
+          "id": "fixture.f01.stop.2",
+          "text": "The breaker trips again after you reset it once",
+          "hazard_id": "unresolved.f01.hazard"
+        },
+        {
+          "id": "fixture.f01.stop.3",
+          "text": "Water is pooling near anything electrical",
+          "hazard_id": "unresolved.f01.hazard"
+        },
+        {
+          "id": "fixture.f01.stop.4",
+          "text": "The heat is dangerous for an infant, an older adult, or someone unwell",
+          "hazard_id": "unresolved.f01.hazard"
+        }
+      ],
+      "cta_action": "walkthrough_start",
+      "protocol_id": "unresolved.f01.protocol",
+      "hazard_ids": [
+        "unresolved.f01.hazard"
+      ],
+      "eval_receipt_ids": []
+    },
+    "visuals": {
+      "heading": [
+        {
+          "type": "text",
+          "value": "Where to look, and what never to open"
+        }
+      ]
+    },
+    "flip": {
+      "heading": [
+        {
+          "type": "text",
+          "value": "Why should fixing your AC start with a search?"
+        }
+      ],
+      "columns": [
+        {
+          "id": "fixture.f01.flip.1",
+          "heading": "Read nine tabs, guess which one is your AC.",
+          "body": "A blog for a different unit. A Reddit thread from 2019. A video of somebody else's basement. None of them can see what yours is doing."
+        },
+        {
+          "id": "fixture.f01.flip.2",
+          "heading": "Start with your thermostat, your filter, your unit.",
+          "body": "The evidence you already have narrows it faster than any general list can, because it rules things out instead of adding to them."
+        },
+        {
+          "id": "fixture.f01.flip.3",
+          "heading": "A LIVE walkthrough of your actual system.",
+          "body": "We ask the next question based on what you just showed us, and end with a packet you can hand to any company."
+        }
+      ]
+    },
+    "general_vs_yours": {
+      "heading": [
+        {
+          "type": "text",
+          "value": "A search result cannot see your AC. We can."
+        }
+      ],
+      "columns": [
+        {
+          "label": "Where people go",
+          "mw_class": "mw150"
+        },
+        {
+          "label": "What it gives you",
+          "mw_class": "mw270"
+        },
+        {
+          "label": "What a LIVE walkthrough of your AC gives you",
+          "mw_class": "mw300"
+        }
+      ],
+      "rows": [
+        {
+          "id": "fixture.f01.comparison.1",
+          "where": "A blog article",
+          "gives": "Eight causes, no particular house, and a gazillion ads",
+          "ours": "The causes that survive after your thermostat reading, your filter and your outdoor unit are accounted for"
+        },
+        {
+          "id": "fixture.f01.comparison.2",
+          "where": "A Reddit thread",
+          "gives": "One stranger's fix for a unit that is not yours",
+          "ours": "Questions that change based on what you just showed us, not what worked in someone else's basement"
+        },
+        {
+          "id": "fixture.f01.comparison.3",
+          "where": "A YouTube video",
+          "gives": "A confident stranger opening a panel you should not, in a basement that is not yours",
+          "ours": "We tell you which parts still hold a charge with the power off, so you finish the evening with all ten fingers"
+        },
+        {
+          "id": "fixture.f01.comparison.4",
+          "where": "Guessing and buying a part",
+          "gives": "A capacitor that was never the problem, and the house is still warm",
+          "ours": "What is actually still open on your system, and what has to be measured before anyone spends money"
+        },
+        {
+          "id": "fixture.f01.comparison.5",
+          "where": "An AI summary",
+          "gives": "A fluent answer with no access to your equipment",
+          "ours": "Your model read from a photo, and which causes are still possible on a unit like yours"
+        },
+        {
+          "id": "fixture.f01.comparison.6",
+          "where": "Calling around",
+          "gives": "Explaining it four times, then paying for the hour it takes them to catch up",
+          "ours": "One packet that arrives before they do, so the billable hour starts further along"
+        }
+      ]
+    },
+    "capability": {
+      "heading": [
+        {
+          "type": "text",
+          "value": "What we can settle about your AC right now"
+        }
+      ],
+      "columns": [
+        {
+          "label": "You ask",
+          "mw_class": "mw240"
+        },
+        {
+          "label": "What your system tells us",
+          "mw_class": "mw310"
+        },
+        {
+          "label": "How far we get",
+          "mw_class": "mw165"
+        }
+      ],
+      "rows": [
+        {
+          "id": "fixture.f01.capability.1",
+          "capability_id": "cap.ac_warm_air.narrow_why_still_warm",
+          "ask": "Why is my AC running but still blowing warm?",
+          "tells": "Your thermostat, airflow, outdoor unit, ice and timing rule branches out one by one.",
+          "chip_class": "chip-blue",
+          "chip_label": "CAN NARROW"
+        },
+        {
+          "id": "fixture.f01.capability.2",
+          "capability_id": "cap.ac_warm_air.thermostat_or_fan_setting",
+          "ask": "Is it just my thermostat or fan setting?",
+          "tells": "One photo of your display settles mode, set point, room temperature and fan.",
+          "chip_class": "chip-green",
+          "chip_label": "CAN OFTEN ANSWER"
+        },
+        {
+          "id": "fixture.f01.capability.3",
+          "capability_id": "cap.ac_warm_air.filter_relevance",
+          "ask": "Does my filter actually matter here?",
+          "tells": "Weighed against your airflow and ice, instead of blamed by default.",
+          "chip_class": "chip-blue",
+          "chip_label": "CAN NARROW"
+        },
+        {
+          "id": "fixture.f01.capability.4",
+          "capability_id": "cap.ac_warm_air.ice_on_line_next_step",
+          "ask": "There is ice on my line. What now?",
+          "tells": "Ice changes your immediate next step, and we tell you that step first.",
+          "chip_class": "chip-green",
+          "chip_label": "CAN ANSWER WHAT IT CHANGES"
+        },
+        {
+          "id": "fixture.f01.capability.5",
+          "capability_id": "cap.ac_warm_air.outdoor_unit_involved",
+          "ask": "Is my outdoor unit part of this?",
+          "tells": "A safe photo or short video shows whether your fan is turning, and how it sounds.",
+          "chip_class": "chip-blue",
+          "chip_label": "CAN NARROW"
+        },
+        {
+          "id": "fixture.f01.capability.6",
+          "capability_id": "cap.ac_warm_air.read_model_from_label_photo",
+          "ask": "Can you read my model from a photo?",
+          "tells": "Yes. Your label fills in make, model and capacity without typing.",
+          "chip_class": "chip-green",
+          "chip_label": "CAN OFTEN ANSWER"
+        },
+        {
+          "id": "fixture.f01.capability.7",
+          "capability_id": "cap.ac_warm_air.capacitor_confirmation",
+          "ask": "Is my capacitor definitely bad?",
+          "tells": "Your evidence changes how likely it is. Confirming it needs an electrical measurement.",
+          "chip_class": "chip-pink",
+          "chip_label": "STILL NEEDS TESTING"
+        },
+        {
+          "id": "fixture.f01.capability.8",
+          "capability_id": "cap.ac_warm_air.refrigerant_charge_confirmation",
+          "ask": "Is my refrigerant charge right?",
+          "tells": "We organise the clues. Pressures cannot be measured down a phone line.",
+          "chip_class": "chip-pink",
+          "chip_label": "STILL NEEDS TESTING"
+        },
+        {
+          "id": "fixture.f01.capability.9",
+          "capability_id": "cap.ac_warm_air.job_packet_for_provider",
+          "ask": "What do I send a provider before they come?",
+          "tells": "Your packet: the problem, your equipment, your photos, what is ruled out, what is left.",
+          "chip_class": "chip-green",
+          "chip_label": "CAN ANSWER"
+        }
+      ],
+      "band_hook": [
+        {
+          "type": "text",
+          "value": "A few minutes on your actual system can be more useful than hours of generic troubleshooting."
+        }
+      ]
+    },
+    "job_packet": {
+      "heading": [
+        {
+          "type": "text",
+          "value": "A packet that can help the provider start further ahead."
+        }
+      ],
+      "cta_action": "packet_start",
+      "example_rows": [
+        {
+          "id": "fixture.f01.packet.1",
+          "key": "problem",
+          "value": "Runs constantly, air not cold. Began 8/18."
+        },
+        {
+          "id": "fixture.f01.packet.2",
+          "key": "context",
+          "value": "78°F, set 70°F, cool, fan AUTO"
+        },
+        {
+          "id": "fixture.f01.packet.3",
+          "key": "equipment",
+          "value": "Read from your label photo"
+        },
+        {
+          "id": "fixture.f01.packet.4",
+          "key": "ruled_out",
+          "value": "Thermostat setting, power at the disconnect"
+        },
+        {
+          "id": "fixture.f01.packet.5",
+          "key": "still_to_test",
+          "value": "Capacitor, contactor, charge, airflow"
+        }
+      ],
+      "band_hook": "The internet can explain an AC. We walk you through yours, LIVE."
+    },
+    "repair_record": {
+      "heading": [
+        {
+          "type": "text",
+          "value": "Every walkthrough makes the next one sharper"
+        }
+      ],
+      "cards": [
+        {
+          "id": "fixture.f01.record.1",
+          "color_class": "pink",
+          "icon_id": "fixture.f01.icon.record.1",
+          "scope_chip": "National first",
+          "kicker": "Matching reports",
+          "value": "Building the repair record",
+          "copy": "As records accumulate, this card becomes a real count for the most specific geography with a trustworthy sample.",
+          "public_fact_id": null
+        },
+        {
+          "id": "fixture.f01.record.2",
+          "color_class": "green",
+          "icon_id": "fixture.f01.icon.record.2",
+          "scope_chip": "Best available scope",
+          "kicker": "Companion pattern",
+          "value": "Building the repair record",
+          "copy": "This becomes the most useful symptom or observation that repeatedly appears with this problem, always with its sample size.",
+          "public_fact_id": null
+        },
+        {
+          "id": "fixture.f01.record.3",
+          "color_class": "blue",
+          "icon_id": "fixture.f01.icon.record.3",
+          "scope_chip": "Where labels are available",
+          "kicker": "Equipment context",
+          "value": "Building the repair record",
+          "copy": "When enough readable equipment labels exist, this can show age, capacity or another equipment pattern that actually changes the decision.",
+          "public_fact_id": null
+        },
+        {
+          "id": "fixture.f01.record.4",
+          "color_class": "amber",
+          "icon_id": "fixture.f01.icon.record.4",
+          "scope_chip": "Local as density grows",
+          "kicker": "Near-you signal",
+          "value": "Building the repair record",
+          "copy": "National evidence can appear first. State, metro or county evidence automatically replaces or joins it when the local sample is large enough to be more useful.",
+          "public_fact_id": null
+        }
+      ]
+    },
+    "faq": {
+      "heading": [
+        {
+          "type": "text",
+          "value": "What are people asking us at 9pm with a warm house"
+        }
+      ],
+      "questions": [
+        {
+          "id": "fixture.f01.faq.1",
+          "kind": "other",
+          "question": "Why is my AC running but not cooling?",
+          "answer": [
+            {
+              "type": "text",
+              "value": "It is moving air but not moving heat. That happens when airflow is choked, when the fan is set to ON so it blows between cycles, when the outdoor unit has lost power, or when the refrigerant circuit cannot do its job. The first 3 you can check yourself in 10 minutes, and we will walk you through them."
+            }
+          ]
+        },
+        {
+          "id": "fixture.f01.faq.2",
+          "kind": "urgent",
+          "question": "Should I turn my AC off while it is blowing warm?",
+          "answer": [
+            {
+              "type": "text",
+              "value": "If there is ice on the lines, yes. Shut cooling off and leave the fan running. Running a frozen system can flood the compressor and turn a few-hundred-dollar repair into a few-thousand-dollar one. No ice and nothing smelling wrong, running it while you arrange a visit is usually fine."
+            }
+          ]
+        },
+        {
+          "id": "fixture.f01.faq.3",
+          "kind": "diy",
+          "question": "Can I change my AC capacitor myself?",
+          "answer": [
+            {
+              "type": "text",
+              "value": "No. A run capacitor holds a charge after the power is off, and discharging one safely takes the right tool and the knowledge to use it. The part is cheap, which is exactly why this gets recommended online and why people get hurt. Identify the symptom, then hand it to somebody licensed."
+            }
+          ]
+        },
+        {
+          "id": "fixture.f01.faq.4",
+          "kind": "cost",
+          "question": "How much should a repair on my AC cost?",
+          "answer": [
+            {
+              "type": "text",
+              "value": "Repair cost depends on the actual failure, equipment, market, access and the diagnostic work required. As verified quote and outcome records mature, the Repair Record is designed to publish comparable ranges with geography and sample size attached."
+            }
+          ]
+        },
+        {
+          "id": "fixture.f01.faq.5",
+          "kind": "lead_privacy",
+          "question": "Is five companies about to call me?",
+          "answer": [
+            {
+              "type": "text",
+              "value": "No. Your request is never sold as a lead. If you choose to involve a provider it goes to one at a time, and nobody sees your details until you send them."
+            }
+          ]
+        }
+      ]
+    },
+    "closer": {
+      "heading": [
+        {
+          "type": "text",
+          "value": "Start with what happened to your AC."
+        }
+      ],
+      "body": "We walk you through your own equipment step by step, help you narrow it down, let you fix the easy things yourself, and write the rest into a packet that may reduce the time a provider spends catching up on what you already checked.",
+      "cta_action": "hero_start"
+    },
+    "sources": {
+      "intro_tail": "Sources 1 to 4 are individual HVAC companies describing their own service calls in their own markets, not national research.",
+      "note_lead": "The air filter price is a retail part cost, not a repair, and carries no citation because no source we would stand behind publishes a national figure for it."
+    }
+  },
+  "related_page_ids": [],
+  "release": {
+    "index_policy": "staged_noindex",
+    "approved_content_at": null
+  }
+}

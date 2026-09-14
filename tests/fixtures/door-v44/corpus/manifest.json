@@ -1,0 +1,341 @@
+{
+  "version": "door-v44-synthetic-corpus/1.0.0",
+  "source_locator": "Page Creator Guide sections 18-21, fixture table F01-F11 and expected corpus behavior",
+  "template": "door-v44.0.0",
+  "schema": "doorspec/2.0.0",
+  "presentation": "Unstyled compiler document; t01-t10 themed acceptance not run",
+  "release_ready": false,
+  "h01_h18_status": "NOT_EVALUATED",
+  "second_host_status": "NOT_RUN",
+  "fixtures": [
+    {
+      "id": "F01",
+      "intent": "AC blowing warm air",
+      "status": "BLOCKED_CONTROL_DERIVATIVE",
+      "owner": "route_shell",
+      "scope": "Source-mapped candidate and exact differences are in f01/. Frozen metadata, evidence, capability and inline fidelity blockers remain explicit; no exact-control or compiler PASS."
+    },
+    {
+      "id": "F02",
+      "intent": "furnace blowing cold air",
+      "status": "SYNTHETIC_COMPILE_ONLY",
+      "provenance": "Invented nonpublic case and synthetic reviewed-record fields; no production review or homeowner guidance.",
+      "subject_kind": "equipment",
+      "nameplate_equipment": true,
+      "media": "photo",
+      "related": true,
+      "count_vector": [
+        3,
+        3,
+        3,
+        5,
+        3
+      ],
+      "figure_roles": [
+        "decision_observation",
+        "safe_vs_sealed",
+        "why_not_diy"
+      ],
+      "hazards": [
+        "combustion",
+        "carbon_monoxide"
+      ],
+      "source_ids": [
+        "fixture.source.f02"
+      ],
+      "case_hash": "b656e65982b74d9e07070170622805e0ebfa675bae8cdeff0d31aabe829f57b6"
+    },
+    {
+      "id": "F03",
+      "intent": "heater will not turn on",
+      "status": "SYNTHETIC_COMPILE_ONLY",
+      "provenance": "Invented nonpublic case and synthetic reviewed-record fields; no production review or homeowner guidance.",
+      "subject_kind": "equipment",
+      "nameplate_equipment": true,
+      "media": null,
+      "related": false,
+      "count_vector": [
+        4,
+        2,
+        2,
+        6,
+        2
+      ],
+      "figure_roles": [
+        "decision_observation",
+        "safe_vs_sealed"
+      ],
+      "hazards": [
+        "unknown_energy",
+        "electrical"
+      ],
+      "source_ids": [
+        "fixture.source.f03"
+      ],
+      "case_hash": "4b19ed08e60d9ca73cc037055ff8014422d00f95fc2ded5adccdba5e2c461dea"
+    },
+    {
+      "id": "F04",
+      "intent": "dishwasher not draining",
+      "status": "SYNTHETIC_COMPILE_ONLY",
+      "provenance": "Invented nonpublic case and synthetic reviewed-record fields; no production review or homeowner guidance.",
+      "subject_kind": "appliance",
+      "nameplate_equipment": false,
+      "media": "photo",
+      "related": true,
+      "count_vector": [
+        3,
+        4,
+        2,
+        4,
+        3
+      ],
+      "figure_roles": [
+        "decision_observation",
+        "safe_vs_sealed",
+        "elapsed_time"
+      ],
+      "hazards": [
+        "water",
+        "electrical"
+      ],
+      "source_ids": [
+        "fixture.source.f04"
+      ],
+      "case_hash": "d1d627319c925f7b093e32a0314fe84d7a28e12379eec0db2dee0fc04ed9f038"
+    },
+    {
+      "id": "F05",
+      "intent": "refrigerator not cooling",
+      "status": "SYNTHETIC_COMPILE_ONLY",
+      "provenance": "Invented nonpublic case and synthetic reviewed-record fields; no production review or homeowner guidance.",
+      "subject_kind": "appliance",
+      "nameplate_equipment": true,
+      "media": null,
+      "related": false,
+      "count_vector": [
+        5,
+        3,
+        3,
+        6,
+        4
+      ],
+      "figure_roles": [
+        "decision_observation",
+        "safe_vs_sealed",
+        "elapsed_time",
+        "extent"
+      ],
+      "hazards": [
+        "food_safety",
+        "electrical"
+      ],
+      "source_ids": [
+        "fixture.source.f05"
+      ],
+      "case_hash": "b39ebbb9570ffdd413de9a0afe351adc517847eafb0d6d961a20d46489cdc520"
+    },
+    {
+      "id": "F06",
+      "intent": "water heater leaking",
+      "status": "SYNTHETIC_COMPILE_ONLY",
+      "provenance": "Invented nonpublic case and synthetic reviewed-record fields; no production review or homeowner guidance.",
+      "subject_kind": "equipment",
+      "nameplate_equipment": true,
+      "media": "photo",
+      "related": false,
+      "count_vector": [
+        4,
+        4,
+        1,
+        5,
+        3
+      ],
+      "figure_roles": [
+        "decision_observation",
+        "safe_vs_sealed",
+        "extent"
+      ],
+      "hazards": [
+        "water",
+        "energy",
+        "scalding"
+      ],
+      "source_ids": [
+        "fixture.source.f06"
+      ],
+      "case_hash": "54160e6dad9e0b38bce0a59088a3fb7a3f5a07e74da6f07cf6f730537ec3d5fd"
+    },
+    {
+      "id": "F07",
+      "intent": "toilet keeps running",
+      "status": "SYNTHETIC_COMPILE_ONLY",
+      "provenance": "Invented nonpublic case and synthetic reviewed-record fields; no production review or homeowner guidance.",
+      "subject_kind": "fixture",
+      "nameplate_equipment": false,
+      "media": null,
+      "related": false,
+      "count_vector": [
+        2,
+        1,
+        2,
+        4,
+        2
+      ],
+      "figure_roles": [
+        "decision_observation",
+        "safe_vs_sealed"
+      ],
+      "hazards": [
+        "water_overflow"
+      ],
+      "source_ids": [
+        "fixture.source.f07"
+      ],
+      "case_hash": "b2a0a2cbb817502afb1bb5163e0aedae592feda74368ca1f21cb47b95e372bfb"
+    },
+    {
+      "id": "F08",
+      "intent": "ceiling stain after rain",
+      "status": "SYNTHETIC_COMPILE_ONLY",
+      "provenance": "Invented nonpublic case and synthetic reviewed-record fields; no production review or homeowner guidance.",
+      "subject_kind": "current_problem",
+      "nameplate_equipment": false,
+      "media": "photo",
+      "related": true,
+      "count_vector": [
+        3,
+        2,
+        2,
+        5,
+        4
+      ],
+      "figure_roles": [
+        "decision_observation",
+        "safe_vs_sealed",
+        "extent",
+        "elapsed_time"
+      ],
+      "hazards": [
+        "overhead_material",
+        "concealed_electrical"
+      ],
+      "source_ids": [
+        "fixture.source.f08"
+      ],
+      "case_hash": "38be97627a0451ed91128c8cc65350a32c69d2ec673f15a0ce14a98113511a68"
+    },
+    {
+      "id": "F09",
+      "intent": "sewage smell in basement",
+      "status": "SYNTHETIC_COMPILE_ONLY",
+      "provenance": "Invented nonpublic case and synthetic reviewed-record fields; no production review or homeowner guidance.",
+      "subject_kind": "current_problem",
+      "nameplate_equipment": false,
+      "media": null,
+      "related": false,
+      "count_vector": [
+        4,
+        3,
+        1,
+        6,
+        3
+      ],
+      "figure_roles": [
+        "decision_observation",
+        "safe_vs_sealed",
+        "extent"
+      ],
+      "hazards": [
+        "biohazard",
+        "air_quality"
+      ],
+      "source_ids": [
+        "fixture.source.f09"
+      ],
+      "case_hash": "56d3c8151c35d25fbc0e8b3d5ce3eba569ecc905f036133f28db85fad8e50c06"
+    },
+    {
+      "id": "F10",
+      "intent": "outlet feels hot",
+      "status": "SYNTHETIC_COMPILE_ONLY",
+      "provenance": "Invented nonpublic case and synthetic reviewed-record fields; no production review or homeowner guidance.",
+      "subject_kind": "object",
+      "nameplate_equipment": false,
+      "media": null,
+      "related": false,
+      "count_vector": [
+        2,
+        2,
+        1,
+        4,
+        2
+      ],
+      "figure_roles": [
+        "decision_observation",
+        "safe_vs_sealed"
+      ],
+      "hazards": [
+        "electrical_heat",
+        "fire"
+      ],
+      "source_ids": [
+        "fixture.source.f10"
+      ],
+      "case_hash": "8291d03ed75280cb8258fc96625d7520093e2f2d008914b429ac26cf42675fcf"
+    },
+    {
+      "id": "F11",
+      "intent": "branch on roof after storm",
+      "status": "SYNTHETIC_COMPILE_ONLY",
+      "provenance": "Invented nonpublic case and synthetic reviewed-record fields; no production review or homeowner guidance.",
+      "subject_kind": "current_problem",
+      "nameplate_equipment": false,
+      "media": null,
+      "related": true,
+      "count_vector": [
+        5,
+        4,
+        1,
+        5,
+        3
+      ],
+      "figure_roles": [
+        "decision_observation",
+        "safe_vs_sealed",
+        "extent"
+      ],
+      "hazards": [
+        "weather",
+        "structural",
+        "downed_line"
+      ],
+      "source_ids": [
+        "fixture.source.f11"
+      ],
+      "case_hash": "b234c7a0f8b2fa428670beaa825d86b644e7f4f2997ada2cc028d101bf24a7c1"
+    }
+  ],
+  "coverage": {
+    "nameplate_equipment_omitted": 6,
+    "media_omitted": 6,
+    "related_present": 4,
+    "related_absent": 6,
+    "unique_count_vectors": 10,
+    "missing_module_pairs": [
+      "F02 hazard",
+      "F03 protocol",
+      "F09 source",
+      "F11 hazard",
+      "F06 evaluation"
+    ]
+  },
+  "limitations": [
+    "F01 owned separately; current manifest records pending conversion.",
+    "Only known order-b is accepted; F10 stop-first proposal is rejected until separately approved.",
+    "All raster images are tiny synthetic factory bytes, not design-fidelity diagrams.",
+    "Counts plus actual rendered class profiles are unique; this is not an anti-doorway similarity verdict.",
+    "Synthetic source and capability status fields simulate reviewed records; they are not real review, factual approval or production receipts.",
+    "No paid calls, server, browser, hosted access, full H acceptance or publication."
+  ]
+}

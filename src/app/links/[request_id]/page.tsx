@@ -1,3 +1,4 @@
+import { requireFeaturePage } from "@/platform/features/route-guard";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { listIssuedLinks, type IssuedLink } from "@/platform/links/ledger";
@@ -54,6 +55,7 @@ export default async function LinksPage({
   params: Promise<{ request_id: string }>;
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  await requireFeaturePage("/links/held");
   const { request_id } = await params;
   const query = await searchParams;
   const k = typeof query.k === "string" ? query.k : undefined;

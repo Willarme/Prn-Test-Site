@@ -74,10 +74,8 @@ describe("issue 16 — the public staged listing, hidden by owner ruling", () =>
     expect(flag.decision_ref).not.toBeNull();
   });
 
-  it("the homepage consults it — both the query and the render", () => {
-    expect(homepage).toMatch(/flagEnabled\("staged_listing_public"\)/);
-    expect(homepage).toMatch(/showStagedListing \? await allStagedSpecs\(\) : \[\]/);
-    expect(homepage).toMatch(/\{showStagedListing && \(/);
+  it("T6-29 removes the query and render from the customer homepage", () => {
+    expect(homepage).not.toMatch(/allStagedSpecs|showStagedListing|staged_listing_public/);
   });
 
   /**
@@ -122,10 +120,8 @@ describe("issue 16 — the public staged listing, hidden by owner ruling", () =>
     }
   });
 
-  it("the listing still shows exactly what it showed before: h1, path, QA state", () => {
-    expect(homepage).toMatch(/\{s\.h1\}/);
-    expect(homepage).toMatch(/s\.canonical_path\.replace/);
-    expect(homepage).toMatch(/\{s\.qa\.state\}/);
+  it("T6-29 removes all staged listing fields from the public home", () => {
+    expect(homepage).not.toMatch(/\{s\.h1\}|s\.canonical_path\.replace|\{s\.qa\.state\}/);
   });
 
   it("/staged/[slug] still hardcodes robots noindex — layer one of the two-layer model", () => {
@@ -161,7 +157,7 @@ describe("issue 16 — the public staged listing, hidden by owner ruling", () =>
     // Comments stripped, same as the homepage scan above: the route's header
     // records what was removed, and naming it is not doing it.
     const code = publish.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
-    expect(code).toMatch(/isAdminUnlocked\(\)/);
+    expect(code).toMatch(/guardAdminMutation\(request\)/);
     expect(code).toMatch(/!decision\.release_eligible/);
     expect(code).toMatch(/status: 409/);
     // The old gate is GONE, not living beside the new one.

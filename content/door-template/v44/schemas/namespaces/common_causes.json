@@ -1,0 +1,287 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://schemas.propertyresponsenetwork.com/doorspec/namespaces/common_causes.json",
+  "title": "Door v44 common_causes",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "heading": {
+      "$ref": "https://schemas.propertyresponsenetwork.com/doorspec/namespaces/richtext.json"
+    },
+    "columns": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100,
+            "pattern": "^(?!\\s)(?![\\s\\S]*\\s{2})(?![\\s\\S]*[<>\\u0000-\\u001f\\u007f])(?![\\s\\S]*\\s$)[\\s\\S]+$"
+          },
+          "mw_class": {
+            "type": "string",
+            "enum": [
+              "mw125",
+              "mw145",
+              "mw150",
+              "mw165",
+              "mw210",
+              "mw240",
+              "mw250",
+              "mw270",
+              "mw300",
+              "mw310",
+              "mw340"
+            ],
+            "minLength": 5,
+            "maxLength": 5
+          }
+        },
+        "required": [
+          "label",
+          "mw_class"
+        ]
+      },
+      "minItems": 4,
+      "maxItems": 4
+    },
+    "rows": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^(?!(?:__proto__|prototype|constructor)$)[A-Za-z0-9][A-Za-z0-9._:-]*$"
+          },
+          "cause": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 250,
+            "pattern": "^(?!\\s)(?![\\s\\S]*\\s{2})(?![\\s\\S]*[<>\\u0000-\\u001f\\u007f])(?![\\s\\S]*\\s$)[\\s\\S]+$"
+          },
+          "notice": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500,
+            "pattern": "^(?!\\s)(?![\\s\\S]*\\s{2})(?![\\s\\S]*[<>\\u0000-\\u001f\\u007f])(?![\\s\\S]*\\s$)[\\s\\S]+$"
+          },
+          "fix_class": {
+            "type": "string",
+            "enum": [
+              "yes",
+              "care",
+              "never"
+            ],
+            "minLength": 3,
+            "maxLength": 5
+          },
+          "fix_label": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80,
+            "pattern": "^(?!\\s)(?![\\s\\S]*\\s{2})(?![\\s\\S]*[<>\\u0000-\\u001f\\u007f])(?![\\s\\S]*\\s$)[\\s\\S]+$"
+          },
+          "range": {
+            "anyOf": [
+              {
+                "$ref": "https://schemas.propertyresponsenetwork.com/doorspec/namespaces/richtext.json"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "omission_reason": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500,
+                "pattern": "^(?!\\s)(?![\\s\\S]*\\s{2})(?![\\s\\S]*[<>\\u0000-\\u001f\\u007f])(?![\\s\\S]*\\s$)[\\s\\S]+$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "claim_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^(?!(?:__proto__|prototype|constructor)$)[A-Za-z0-9][A-Za-z0-9._:-]*$"
+            },
+            "minItems": 0,
+            "maxItems": 30,
+            "uniqueItems": true
+          }
+        },
+        "required": [
+          "id",
+          "cause",
+          "notice",
+          "fix_class",
+          "fix_label",
+          "range",
+          "omission_reason",
+          "claim_ids"
+        ],
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128,
+                "pattern": "^(?!(?:__proto__|prototype|constructor)$)[A-Za-z0-9][A-Za-z0-9._:-]*$"
+              },
+              "cause": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 250,
+                "pattern": "^(?!\\s)(?![\\s\\S]*\\s{2})(?![\\s\\S]*[<>\\u0000-\\u001f\\u007f])(?![\\s\\S]*\\s$)[\\s\\S]+$"
+              },
+              "notice": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500,
+                "pattern": "^(?!\\s)(?![\\s\\S]*\\s{2})(?![\\s\\S]*[<>\\u0000-\\u001f\\u007f])(?![\\s\\S]*\\s$)[\\s\\S]+$"
+              },
+              "fix_class": {
+                "type": "string",
+                "enum": [
+                  "yes",
+                  "care",
+                  "never"
+                ],
+                "minLength": 3,
+                "maxLength": 5
+              },
+              "fix_label": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80,
+                "pattern": "^(?!\\s)(?![\\s\\S]*\\s{2})(?![\\s\\S]*[<>\\u0000-\\u001f\\u007f])(?![\\s\\S]*\\s$)[\\s\\S]+$"
+              },
+              "range": {
+                "type": "null"
+              },
+              "omission_reason": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500,
+                "pattern": "^(?!\\s)(?![\\s\\S]*\\s{2})(?![\\s\\S]*[<>\\u0000-\\u001f\\u007f])(?![\\s\\S]*\\s$)[\\s\\S]+$"
+              },
+              "claim_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^(?!(?:__proto__|prototype|constructor)$)[A-Za-z0-9][A-Za-z0-9._:-]*$"
+                },
+                "minItems": 0,
+                "maxItems": 30,
+                "uniqueItems": true
+              }
+            },
+            "required": [
+              "id",
+              "cause",
+              "notice",
+              "fix_class",
+              "fix_label",
+              "range",
+              "omission_reason",
+              "claim_ids"
+            ]
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128,
+                "pattern": "^(?!(?:__proto__|prototype|constructor)$)[A-Za-z0-9][A-Za-z0-9._:-]*$"
+              },
+              "cause": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 250,
+                "pattern": "^(?!\\s)(?![\\s\\S]*\\s{2})(?![\\s\\S]*[<>\\u0000-\\u001f\\u007f])(?![\\s\\S]*\\s$)[\\s\\S]+$"
+              },
+              "notice": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500,
+                "pattern": "^(?!\\s)(?![\\s\\S]*\\s{2})(?![\\s\\S]*[<>\\u0000-\\u001f\\u007f])(?![\\s\\S]*\\s$)[\\s\\S]+$"
+              },
+              "fix_class": {
+                "type": "string",
+                "enum": [
+                  "yes",
+                  "care",
+                  "never"
+                ],
+                "minLength": 3,
+                "maxLength": 5
+              },
+              "fix_label": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80,
+                "pattern": "^(?!\\s)(?![\\s\\S]*\\s{2})(?![\\s\\S]*[<>\\u0000-\\u001f\\u007f])(?![\\s\\S]*\\s$)[\\s\\S]+$"
+              },
+              "range": {
+                "$ref": "https://schemas.propertyresponsenetwork.com/doorspec/namespaces/richtext.json"
+              },
+              "omission_reason": {
+                "type": "null"
+              },
+              "claim_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^(?!(?:__proto__|prototype|constructor)$)[A-Za-z0-9][A-Za-z0-9._:-]*$"
+                },
+                "minItems": 1,
+                "maxItems": 30,
+                "uniqueItems": true
+              }
+            },
+            "required": [
+              "id",
+              "cause",
+              "notice",
+              "fix_class",
+              "fix_label",
+              "range",
+              "omission_reason",
+              "claim_ids"
+            ]
+          }
+        ]
+      },
+      "minItems": 1,
+      "maxItems": 20
+    }
+  },
+  "required": [
+    "heading",
+    "columns",
+    "rows"
+  ]
+}

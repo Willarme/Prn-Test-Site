@@ -2,56 +2,20 @@ import type { ReactNode } from "react";
 import { adminMode } from "@/platform/admin/auth";
 import { LoginForm } from "@/components/admin/LoginForm";
 
-/**
- * READ gate for every /admin page. The admin surface shows real customer
- * journeys, so nothing renders — and no customer data is loaded — until the
- * owner has an unlocked session. Call it as the FIRST thing in each admin
- * page and return its result when non-null, BEFORE any data fetching.
- */
+/** Always call before protected server reads. The shell never replaces this gate. */
 export async function adminGate(): Promise<ReactNode | null> {
   const mode = await adminMode();
   if (mode === "unlocked") return null;
-
-  if (mode === "preview") {
-    return (
-      <div className="wrap-narrow">
-        <div className="eyebrow">Owner admin</div>
-        <h1 className="d2" style={{ marginBottom: 16 }}>
-          Set an owner password to open this dashboard
-        </h1>
-        <div className="cell">
-          <p style={{ marginBottom: 12 }}>
-            This dashboard shows real customer requests, so it stays closed until an owner
-            password exists. Nothing here is visible — not even to you — until then.
-          </p>
-          <p style={{ marginBottom: 12 }}>
-            Add an environment variable named <code>ADMIN_PASSWORD</code> (8+ characters):
-          </p>
-          <ul style={{ paddingLeft: 20, color: "var(--on-dark-mute)" }}>
-            <li>
-              locally: a line in <code>.env.local</code>, then restart the dev server
-            </li>
-            <li>
-              on the live site: Vercel → prn-trial-claude → Settings → Environment Variables,
-              then Redeploy
-            </li>
-          </ul>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="wrap-narrow">
-      <div className="eyebrow">Owner admin</div>
-      <h1 className="d2" style={{ marginBottom: 8 }}>
-        Sign in
-      </h1>
-      <p className="lede" style={{ marginBottom: 22 }}>
-        This dashboard shows real customer requests. Sign in with your owner password to
-        continue.
-      </p>
-      <LoginForm />
-    </div>
-  );
+  if (mode === "preview") return <div className="adm-login">
+    <p className="adm-kicker">Company OS / Private workspace</p>
+    <h1 className="adm-title">Set up owner access.</h1>
+    <p className="adm-description">This workspace contains customer records and operating controls. It stays closed until an owner password is configured.</p>
+    <div className="cell"><h2 className="d3">Configure the server</h2><p>Add <code>ADMIN_PASSWORD</code> with at least eight characters to this environment, then restart or redeploy it.</p><p className="adm-small">For local development, set it in <code>.env.local</code>. On the approved hosting environment, use its environment settings. Keep the password out of project files and shared notes.</p></div>
+  </div>;
+  return <div className="adm-login">
+    <p className="adm-kicker">Company OS / Owner access</p>
+    <h1 className="adm-title">Your company.<br />A clearer view.</h1>
+    <p className="adm-description">Open the private workspace for requests, decisions, growth and system operations.</p>
+    <LoginForm />
+  </div>;
 }

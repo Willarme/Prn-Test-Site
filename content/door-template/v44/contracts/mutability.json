@@ -1,0 +1,1192 @@
+{
+  "contract_version": "mutability/1.0.0",
+  "classes": [
+    "FROZEN_REFERENCE",
+    "TEMPLATE_CONSTANT",
+    "TAXONOMY_TOKEN",
+    "INTENT_CONTENT",
+    "CONDITIONAL_MODULE",
+    "PRESENTATION_THEME"
+  ],
+  "frozen_reference": "content/door-template/v43/reference/approved-v43.html",
+  "fields": [
+    {
+      "pointer": "/$schema",
+      "class": "TEMPLATE_CONSTANT"
+    },
+    {
+      "pointer": "/actions",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/actions/hero_start",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/actions/hero_start/pattern_id",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/actions/hero_start/target",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/actions/packet_start",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/actions/packet_start/pattern_id",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/actions/packet_start/target",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/actions/walkthrough_start",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/actions/walkthrough_start/pattern_id",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/actions/walkthrough_start/target",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/capabilities",
+      "class": "CONDITIONAL_MODULE"
+    },
+    {
+      "pointer": "/capabilities/*/capability_id",
+      "class": "CONDITIONAL_MODULE"
+    },
+    {
+      "pointer": "/capabilities/*/live_status",
+      "class": "CONDITIONAL_MODULE"
+    },
+    {
+      "pointer": "/capabilities/*/production_receipt",
+      "class": "CONDITIONAL_MODULE"
+    },
+    {
+      "pointer": "/claims",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/claims/*/claim_id",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/claims/*/content_hash",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/claims/*/source_ids",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/head",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/head/accents",
+      "class": "PRESENTATION_THEME"
+    },
+    {
+      "pointer": "/head/accents/map",
+      "class": "PRESENTATION_THEME"
+    },
+    {
+      "pointer": "/head/accents/map/*/color_class",
+      "class": "PRESENTATION_THEME"
+    },
+    {
+      "pointer": "/head/accents/map/*/text",
+      "class": "PRESENTATION_THEME"
+    },
+    {
+      "pointer": "/head/brand",
+      "class": "PRESENTATION_THEME"
+    },
+    {
+      "pointer": "/head/brand/a",
+      "class": "PRESENTATION_THEME"
+    },
+    {
+      "pointer": "/head/brand/b",
+      "class": "PRESENTATION_THEME"
+    },
+    {
+      "pointer": "/head/brand/theme",
+      "class": "PRESENTATION_THEME"
+    },
+    {
+      "pointer": "/head/brand/warn",
+      "class": "PRESENTATION_THEME"
+    },
+    {
+      "pointer": "/head/crumb",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/head/crumb/family_label",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/head/crumb/family_page_id",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/head/crumb/problem_label",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/head/nav",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/head/nav/category_label",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/head/nav/category_page_id",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/head/nav/cta_action",
+      "class": "TEMPLATE_CONSTANT"
+    },
+    {
+      "pointer": "/head/page",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/head/page/meta_description",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/head/page/og_description",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/head/page/title",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/head/site",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/head/site/name_token",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/head/site/origin",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/identity",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/identity/canonical_intent_id",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/identity/canonical_path",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/identity/family_id",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/identity/geography_scope",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/identity/intent_cluster_id",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/identity/locale",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/identity/opportunity_id",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/identity/page_id",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/identity/page_version",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/identity/slug",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/identity/tenant_id",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/intake",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/intake/attribution",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/intake/attribution/intent_cluster_id",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/intake/attribution/landing_path",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/intake/attribution/page_id",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/intake/attribution/problem_family_hint",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/intake/attribution/search_opportunity_id",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/intake/disclosure",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/intake/disclosure/content_hash",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/intake/disclosure/id",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/intake/disclosure/purpose",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/intake/field_label",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/intake/heading",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/intake/help",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/intake/lede",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/intake/media_controls",
+      "class": "CONDITIONAL_MODULE"
+    },
+    {
+      "pointer": "/intake/media_controls/*/capability_id",
+      "class": "CONDITIONAL_MODULE"
+    },
+    {
+      "pointer": "/intake/media_controls/*/kind",
+      "class": "CONDITIONAL_MODULE"
+    },
+    {
+      "pointer": "/intake/placeholder",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/intake/prompts",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/intake/prompts/0/evidence_type",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/intake/prompts/0/id",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/intake/prompts/0/kind",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/intake/prompts/0/text",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/intake/prompts/1/evidence_type",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/intake/prompts/1/id",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/intake/prompts/1/kind",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/intake/prompts/1/text",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/intake/prompts/2/evidence_type",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/intake/prompts/2/id",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/intake/prompts/2/kind",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/intake/prompts/2/text",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/intake/so_far_items",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/intake/so_far_label",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/intake/submit_action",
+      "class": "TEMPLATE_CONSTANT"
+    },
+    {
+      "pointer": "/intent",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/intent/page_eligibility_receipt",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/intent/primary_decision",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/intent/primary_query",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/intent/problem_state",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/intent/query_aliases",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/intent/sub_intents",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/layout",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/layout/conditional_sections",
+      "class": "CONDITIONAL_MODULE"
+    },
+    {
+      "pointer": "/layout/conditional_sections/founders_offer",
+      "class": "CONDITIONAL_MODULE"
+    },
+    {
+      "pointer": "/layout/conditional_sections/local_stats",
+      "class": "CONDITIONAL_MODULE"
+    },
+    {
+      "pointer": "/layout/conditional_sections/media_controls",
+      "class": "CONDITIONAL_MODULE"
+    },
+    {
+      "pointer": "/layout/conditional_sections/nameplate_help",
+      "class": "CONDITIONAL_MODULE"
+    },
+    {
+      "pointer": "/layout/conditional_sections/prices",
+      "class": "CONDITIONAL_MODULE"
+    },
+    {
+      "pointer": "/layout/conditional_sections/related",
+      "class": "CONDITIONAL_MODULE"
+    },
+    {
+      "pointer": "/layout/order_profile_id",
+      "class": "TEMPLATE_CONSTANT"
+    },
+    {
+      "pointer": "/related_page_ids",
+      "class": "CONDITIONAL_MODULE"
+    },
+    {
+      "pointer": "/release",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/release/approved_content_at",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/release/index_policy",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/schema_version",
+      "class": "TEMPLATE_CONSTANT"
+    },
+    {
+      "pointer": "/sections",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/capability",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/capability/band_hook",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/capability/columns",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/capability/columns/*/label",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/capability/columns/*/mw_class",
+      "class": "PRESENTATION_THEME"
+    },
+    {
+      "pointer": "/sections/capability/heading",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/capability/rows",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/capability/rows/*/ask",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/capability/rows/*/capability_id",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/sections/capability/rows/*/chip_class",
+      "class": "PRESENTATION_THEME"
+    },
+    {
+      "pointer": "/sections/capability/rows/*/chip_label",
+      "class": "TEMPLATE_CONSTANT"
+    },
+    {
+      "pointer": "/sections/capability/rows/*/id",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/capability/rows/*/tells",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/closer",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/closer/body",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/closer/cta_action",
+      "class": "TEMPLATE_CONSTANT"
+    },
+    {
+      "pointer": "/sections/closer/heading",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/common_causes",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/common_causes/columns",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/common_causes/columns/*/label",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/common_causes/columns/*/mw_class",
+      "class": "PRESENTATION_THEME"
+    },
+    {
+      "pointer": "/sections/common_causes/heading",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/common_causes/rows",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/common_causes/rows/*/cause",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/common_causes/rows/*/claim_ids",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/sections/common_causes/rows/*/fix_class",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/sections/common_causes/rows/*/fix_label",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/common_causes/rows/*/id",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/common_causes/rows/*/notice",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/common_causes/rows/*/omission_reason",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/common_causes/rows/*/range",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/faq",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/faq/heading",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/faq/questions",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/faq/questions/*/answer",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/faq/questions/*/id",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/faq/questions/*/kind",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/sections/faq/questions/*/question",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/flip",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/flip/columns",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/flip/columns/*/body",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/flip/columns/*/heading",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/flip/columns/*/id",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/flip/heading",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/general_vs_yours",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/general_vs_yours/columns",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/general_vs_yours/columns/*/label",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/general_vs_yours/columns/*/mw_class",
+      "class": "PRESENTATION_THEME"
+    },
+    {
+      "pointer": "/sections/general_vs_yours/heading",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/general_vs_yours/rows",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/general_vs_yours/rows/*/gives",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/general_vs_yours/rows/*/id",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/general_vs_yours/rows/*/ours",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/general_vs_yours/rows/*/where",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/hero",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/hero/answer",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/hero/badge_problem",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/hero/badge_tail",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/hero/cap_last",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/hero/h1",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/hero/value_claim",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/hero/value_foot",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/hero/value_heading",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/hero/value_rows",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/hero/value_rows/*/generic",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/hero/value_rows/*/id",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/hero/value_rows/*/ours",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/job_packet",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/job_packet/band_hook",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/job_packet/cta_action",
+      "class": "TEMPLATE_CONSTANT"
+    },
+    {
+      "pointer": "/sections/job_packet/example_rows",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/job_packet/example_rows/*/id",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/job_packet/example_rows/*/key",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/sections/job_packet/example_rows/*/value",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/job_packet/heading",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/observations",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/observations/columns",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/observations/columns/*/label",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/observations/columns/*/mw_class",
+      "class": "PRESENTATION_THEME"
+    },
+    {
+      "pointer": "/sections/observations/heading",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/observations/rows",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/observations/rows/*/id",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/observations/rows/*/look",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/observations/rows/*/protocol_check_id",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/sections/observations/rows/*/rules_out",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/related",
+      "class": "CONDITIONAL_MODULE"
+    },
+    {
+      "pointer": "/sections/related/links",
+      "class": "CONDITIONAL_MODULE"
+    },
+    {
+      "pointer": "/sections/related/links/*/label",
+      "class": "CONDITIONAL_MODULE"
+    },
+    {
+      "pointer": "/sections/related/links/*/page_id",
+      "class": "CONDITIONAL_MODULE"
+    },
+    {
+      "pointer": "/sections/repair_record",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/repair_record/cards",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/repair_record/cards/*/color_class",
+      "class": "PRESENTATION_THEME"
+    },
+    {
+      "pointer": "/sections/repair_record/cards/*/copy",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/repair_record/cards/*/icon_id",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/sections/repair_record/cards/*/id",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/repair_record/cards/*/kicker",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/repair_record/cards/*/public_fact_id",
+      "class": "TEMPLATE_CONSTANT"
+    },
+    {
+      "pointer": "/sections/repair_record/cards/*/scope_chip",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/repair_record/cards/*/value",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/repair_record/heading",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/safe_observations",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/safe_observations/checks",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/safe_observations/checks/*/body",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/safe_observations/checks/*/heading",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/safe_observations/checks/*/id",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/safe_observations/checks/*/protocol_check_id",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/sections/safe_observations/cta_action",
+      "class": "TEMPLATE_CONSTANT"
+    },
+    {
+      "pointer": "/sections/safe_observations/eval_receipt_ids",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/sections/safe_observations/hazard_ids",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/sections/safe_observations/heading",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/safe_observations/lede",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/safe_observations/never_items",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/safe_observations/never_items/*/hazard_id",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/sections/safe_observations/never_items/*/id",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/safe_observations/never_items/*/text",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/safe_observations/protocol_id",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/sections/safe_observations/stop_items",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/safe_observations/stop_items/*/hazard_id",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/sections/safe_observations/stop_items/*/id",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/safe_observations/stop_items/*/text",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/sources",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/sources/intro_tail",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/sources/note_lead",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/stats",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/stats/band",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/stats/cards",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/stats/cards/*/claim_id",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/sections/stats/cards/*/icon_class",
+      "class": "PRESENTATION_THEME"
+    },
+    {
+      "pointer": "/sections/stats/cards/*/icon_id",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/sections/stats/cards/*/id",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/stats/cards/*/metric_family",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/stats/cards/*/note",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/stats/cards/*/question_type",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/stats/cards/*/source_class",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/stats/cards/*/statement",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/stats/cards/*/value",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/stats/heading",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/stats/source_note",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/visuals",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sections/visuals/heading",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sources",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sources/*/cite",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sources/*/claim_ids",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/sources/*/note",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/sources/*/source_id",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/subject",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/subject/cta_label",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/subject/display_label",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/subject/plural_label",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/subject/possessive_label",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/subject/second_person_label",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/subject/short_label",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/subject/subject_id",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/subject/subject_kind",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/versions",
+      "class": "TEMPLATE_CONSTANT"
+    },
+    {
+      "pointer": "/versions/prompt_identities",
+      "class": "TEMPLATE_CONSTANT"
+    },
+    {
+      "pointer": "/versions/prompt_identities/*/capability",
+      "class": "TEMPLATE_CONSTANT"
+    },
+    {
+      "pointer": "/versions/prompt_identities/*/hash",
+      "class": "TEMPLATE_CONSTANT"
+    },
+    {
+      "pointer": "/versions/prompt_identities/*/name",
+      "class": "TEMPLATE_CONSTANT"
+    },
+    {
+      "pointer": "/versions/prompt_identities/*/version",
+      "class": "TEMPLATE_CONSTANT"
+    },
+    {
+      "pointer": "/versions/source_bundle",
+      "class": "TEMPLATE_CONSTANT"
+    },
+    {
+      "pointer": "/versions/taxonomy",
+      "class": "TEMPLATE_CONSTANT"
+    },
+    {
+      "pointer": "/versions/template",
+      "class": "TEMPLATE_CONSTANT"
+    },
+    {
+      "pointer": "/versions/theme",
+      "class": "TEMPLATE_CONSTANT"
+    },
+    {
+      "pointer": "/visuals",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/visuals/*/alt",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/visuals/*/asset_id",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/visuals/*/authored_status",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/visuals/*/caption",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/visuals/*/claim_ids",
+      "class": "TAXONOMY_TOKEN"
+    },
+    {
+      "pointer": "/visuals/*/description",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/visuals/*/height",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/visuals/*/id",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/visuals/*/inline_hash",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/visuals/*/mime",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/visuals/*/plate_class",
+      "class": "PRESENTATION_THEME"
+    },
+    {
+      "pointer": "/visuals/*/raster_hash",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/visuals/*/review_receipt",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/visuals/*/role",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/visuals/*/title",
+      "class": "INTENT_CONTENT"
+    },
+    {
+      "pointer": "/visuals/*/width",
+      "class": "INTENT_CONTENT"
+    }
+  ],
+  "richtext_nodes": "AST children inherit containing field class, except node type TEMPLATE_CONSTANT and reference IDs TAXONOMY_TOKEN.",
+  "environment_fields": "/head/site, /release, /intake/disclosure are controlled environment values, represented as TAXONOMY_TOKEN and stamped from trusted context."
+}

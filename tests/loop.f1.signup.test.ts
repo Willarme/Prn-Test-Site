@@ -1,7 +1,13 @@
 import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
+import { FEATURES } from "@/platform/features/registry";
+import { invalidateFeatureStates } from "@/platform/features/state";
+
+vi.mock("@/platform/db/client", async importOriginal => ({
+  ...await importOriginal<typeof import("@/platform/db/client")>(), serviceConfigured: () => false,
+}));
 
 /**
  * THE VOTE COLLECTOR.
@@ -12,6 +18,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
  */
 let signupPost: (req: Request) => Promise<Response>;
 let cwd: string;
+let runtime: typeof import("@/platform/stores/runtime");
 const realCwd = process.cwd();
 
 beforeAll(async () => {
@@ -19,18 +26,32 @@ beforeAll(async () => {
   // at a scratch directory so a test never writes into the developer's runtime.
   cwd = mkdtempSync(join(tmpdir(), "prn-signup-"));
   process.chdir(cwd);
+  vi.stubEnv("PRN_DEV_DB_PATH", join(cwd, "data", "runtime", "dev-db.json"));
+  vi.stubEnv("VERCEL", "");
+  vi.stubEnv("PRN_ADMIN_ORIGIN", "");
+  runtime = await import("@/platform/stores/runtime");
+  runtime.resetRuntimeStore();
+  await runtime.runtimeStore().setFeatureStates({
+    tenant_id: "prn", actor: "test", reason: "Explicit approved product PREVIEW fixture",
+    decision_ref: "test-only", at: new Date().toISOString(),
+    changes: FEATURES.map(feature => ({ feature_id: feature.id, state: feature.launch_state, expected_version: 0 })),
+  });
+  invalidateFeatureStates();
   ({ POST: signupPost } = await import("@/app/api/signup/route"));
 });
 
 afterAll(() => {
   process.chdir(realCwd);
+  vi.unstubAllEnvs();
+  runtime.resetRuntimeStore();
+  invalidateFeatureStates();
   rmSync(cwd, { recursive: true, force: true });
 });
 
 function vote(body: unknown): Request {
   return new Request("http://localhost/api/signup", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", Origin: "http://localhost" },
     body: JSON.stringify(body),
   });
 }
@@ -98,5 +119,39 @@ describe("POST /api/signup", () => {
       const res = await signupPost(vote(bad));
       expect(res.status).toBe(400);
     }
+  });
+
+  it("reports a failed write and persists the retry before acknowledging success", async () => {
+    const store = runtime.runtimeStore();
+    const save = vi.spyOn(store, "saveSignup").mockRejectedValueOnce(new Error("synthetic write failure"));
+    try {
+      const payload = { vote: "yes", page: "Dashboard v3", id: "retry-browser" };
+      const failed = await signupPost(vote(payload));
+      expect(failed.status).toBe(503);
+      expect((await failed.json()).ok).toBe(false);
+      expect(rows().some(row => row.vote_id === "retry-browser")).toBe(false);
+      const saved = await signupPost(vote(payload));
+      expect(saved.status).toBe(200);
+      expect(await saved.json()).toMatchObject({ ok: true, recorded: "file" });
+      expect(rows().filter(row => row.vote_id === "retry-browser")).toHaveLength(1);
+      expect(save).toHaveBeenCalledTimes(2);
+    } finally { save.mockRestore(); }
+  });
+
+  it("rejects an unknown or retired Feature Lab page without adding a vote", async () => {
+    const before = rows().length;
+    for (const page of ["future/smartquote", "DIY Packet", "unknown"]) {
+      const response = await signupPost(vote({ vote: "yes", page }));
+      expect(response.status).toBe(404);
+    }
+    expect(rows()).toHaveLength(before);
+  });
+
+  it("rejects a cross-origin vote before persistence", async () => {
+    const before = rows().length;
+    const request = vote({ vote: "yes", page: "Dashboard v3" });
+    request.headers.set("origin", "https://elsewhere.example");
+    expect((await signupPost(request)).status).toBe(403);
+    expect(rows()).toHaveLength(before);
   });
 });

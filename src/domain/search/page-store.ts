@@ -1,5 +1,6 @@
 import type { PageSpec } from "@/domain/search/pages";
 import { allStagedSpecs, publishedPageIds } from "@/platform/admin/data";
+import { isRetiredLegacySpec } from "@/platform/pages/route-retirement";
 
 /**
  * Staged/published PageSpec lookup for rendering.
@@ -32,14 +33,14 @@ export function newestByVersion(specs: PageSpec[]): PageSpec | null {
 
 export async function findStagedByPath(canonicalPath: string): Promise<PageSpec | null> {
   const specs = await listStagedSpecs();
-  return newestByVersion(specs.filter((s) => s.canonical_path === canonicalPath));
+  return newestByVersion(specs.filter((s) => s.canonical_path === canonicalPath && !isRetiredLegacySpec(s)));
 }
 
 export async function findPublishedByPath(canonicalPath: string): Promise<PageSpec | null> {
   const [specs, published] = await Promise.all([listStagedSpecs(), publishedPageIds()]);
   return newestByVersion(
     specs.filter(
-      (s) => s.canonical_path === canonicalPath && published.has(s.page_id) && s.qa.state === "PASS"
+      (s) => s.canonical_path === canonicalPath && !isRetiredLegacySpec(s) && published.has(s.page_id) && s.qa.state === "PASS"
     )
   );
 }

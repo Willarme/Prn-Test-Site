@@ -1,0 +1,53 @@
+{
+  "contract_version": "classes/1.0.0",
+  "authority": "Guide §3, §5.2",
+  "values": {
+    "icon_class": [
+      "ico-green",
+      "ico-blue",
+      "ico-pink",
+      "ico-amber",
+      "ico-ink"
+    ],
+    "chip_class": [
+      "chip-green",
+      "chip-blue",
+      "chip-pink"
+    ],
+    "fix_class": [
+      "yes",
+      "care",
+      "never"
+    ],
+    "color_class": [
+      "pink",
+      "green",
+      "blue",
+      "amber"
+    ],
+    "mw_class": [
+      "mw125",
+      "mw145",
+      "mw150",
+      "mw165",
+      "mw210",
+      "mw240",
+      "mw250",
+      "mw270",
+      "mw300",
+      "mw310",
+      "mw340"
+    ],
+    "plate_class": [
+      "plate-1",
+      "plate-2",
+      "plate-3",
+      "plate-4"
+    ]
+  },
+  "notes": [
+    "No leading/trailing whitespace in class tokens.",
+    "source_class is human source-category text, not CSS.",
+    "Themes must cover every token; plate-2/3/4 are explicit v44 additions awaiting renderer evidence."
+  ]
+}

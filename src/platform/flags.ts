@@ -96,7 +96,7 @@ export const DEFAULT_FLAGS: readonly FeatureFlag[] = [
   { flag_key: "staged_listing_public", enabled: false, description: "List staged door pages + QA pill on the public homepage (trial navigator) — OFF by owner ruling, Josh 2026-08-25", decision_ref: "D-20" },
   { flag_key: "intake_shell_enabled", enabled: true, description: "Shared StartRequestForm + /start + intake API (fixture engine)", decision_ref: "D-20" },
   { flag_key: "results_shell_enabled", enabled: true, description: "Results page shell (fixture JobPacket)", decision_ref: "D-20" },
-  { flag_key: "feature_lab_enabled", enabled: true, description: "Future Feature Lab concept pages + interest capture", decision_ref: "D-20" },
+  { flag_key: "feature_lab_enabled", enabled: false, description: "Retired Future Feature Lab; product previews use the feature-state registry", decision_ref: "T6-29:R2:c6ff9a" },
   { flag_key: "trust_enabled", enabled: false, description: "Trust Network V1 flows", decision_ref: null },
   { flag_key: "monetization_enabled", enabled: false, description: "Public-page ad/sponsor slots (#23 §5); never on private routes", decision_ref: null },
   { flag_key: "mcp_enabled", enabled: false, description: "Safe/internal MCP V1 (allowlisted test clients only)", decision_ref: null },
@@ -105,4 +105,21 @@ export const DEFAULT_FLAGS: readonly FeatureFlag[] = [
 
 export function flagEnabled(key: string): boolean {
   return DEFAULT_FLAGS.find((f) => f.flag_key === key)?.enabled ?? false;
+}
+
+/** Legacy names for administrative compatibility. Functional surfaces read the
+ * persisted registry; unrelated money/integration switches retain their gates. */
+export async function getFeatureFlags(): Promise<FeatureFlag[]> {
+  const { readFeatureSnapshot, stateIn } = await import("@/platform/features/state");
+  const snapshot = await readFeatureSnapshot();
+  const surfaceIds: Record<string, string> = {
+    seo_doors_enabled: "door_pages", intake_shell_enabled: "intake",
+    results_shell_enabled: "job_packet", feature_lab_enabled: "feature_lab",
+    staged_listing_public: "staged_listing", trust_enabled: "trust_network",
+  };
+  return DEFAULT_FLAGS.map(flag => {
+    const featureId = surfaceIds[flag.flag_key];
+    return featureId ? { ...flag, enabled: stateIn(snapshot, featureId) === "LIVE",
+      decision_ref: snapshot.rows.get(featureId)?.decision_ref ?? "Feature state unavailable; hidden" } : { ...flag };
+  });
 }

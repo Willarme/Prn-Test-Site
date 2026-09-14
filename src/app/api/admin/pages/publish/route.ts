@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { isAdminUnlocked } from "@/platform/admin/auth";
+import { readAdminJson } from "@/platform/admin/body";
+import { adminBoundary, guardAdminMutation } from "@/platform/admin/request";
 import { publishGate, resolvePagePublishApproval } from "@/platform/search/page-qa-gate";
 import { emitPagePublished } from "@/platform/search/page-qa-events";
 import { runtimeStore } from "@/platform/stores/runtime";
@@ -44,7 +45,7 @@ import { runtimeStore } from "@/platform/stores/runtime";
  * cost a publish.
  */
 const Body = z.object({
-  page_spec_id: z.string().min(1),
+  page_spec_id: z.string().min(1).max(200),
   action: z.enum(["publish", "unpublish"]),
   /**
    * OWNER TIME ON THIS DECISION, in milliseconds — measured in the browser from
@@ -62,61 +63,62 @@ const Body = z.object({
    * negative, or longer than four hours is dropped rather than stored, and the
    * action proceeds either way; absent means "not measured", never 0.
    */
-  owner_ms: z.number().int().positive().max(4 * 60 * 60 * 1000).optional(),
+  owner_ms: z.number().int().safe().positive().max(4 * 60 * 60 * 1000).optional(),
 });
 
 export async function POST(request: Request): Promise<NextResponse> {
-  if (!(await isAdminUnlocked())) {
-    return NextResponse.json({ error: "Owner sign-in required" }, { status: 403 });
-  }
-  const parsed = Body.safeParse(await request.json().catch(() => null));
-  if (!parsed.success) return NextResponse.json({ error: "invalid" }, { status: 400 });
+  return adminBoundary(async () => {
+    const refusal = await guardAdminMutation(request);
+    if (refusal) return refusal;
+    const parsed = await readAdminJson(request, Body);
+    if (!parsed.ok) return parsed.response;
 
-  const gate = await publishGate({ page_spec_id: parsed.data.page_spec_id });
-  if (!gate) return NextResponse.json({ error: "unknown page" }, { status: 404 });
-  const { spec, decision } = gate;
+    const gate = await publishGate({ page_spec_id: parsed.data.page_spec_id });
+    if (!gate) return NextResponse.json({ error: "unknown page" }, { status: 404 });
+    const { spec, decision } = gate;
 
-  // THE ONE SERVER-SIDE RELEASE CONDITION.
-  if (parsed.data.action === "publish" && !decision.release_eligible) {
-    return NextResponse.json({ error: "QA must PASS before publishing" }, { status: 409 });
-  }
+    // THE ONE SERVER-SIDE RELEASE CONDITION.
+    if (parsed.data.action === "publish" && !decision.release_eligible) {
+      return NextResponse.json({ error: "QA must PASS before publishing" }, { status: 409 });
+    }
 
-  const now = new Date().toISOString().replace(/\.\d+Z$/, "Z");
-  const store = runtimeStore();
-  try {
-    await store.setPublished(spec, parsed.data.action === "publish");
-    await store.appendAudit({
-      at: now,
-      action: `page.${parsed.data.action}`,
-      target: spec.page_id,
-      detail: spec.canonical_path,
-      duration_ms: parsed.data.owner_ms ?? null,
-    });
-  } catch (err) {
-    return NextResponse.json(
-      { error: `Could not save: ${err instanceof Error ? err.message : String(err)}` },
-      { status: 500 }
-    );
-  }
+    const now = new Date().toISOString().replace(/\.\d+Z$/, "Z");
+    const store = runtimeStore();
+    try {
+      await store.setPublished(spec, parsed.data.action === "publish");
+      await store.appendAudit({
+        at: now,
+        action: `page.${parsed.data.action}`,
+        target: spec.page_id,
+        detail: spec.canonical_path,
+        duration_ms: parsed.data.owner_ms ?? null,
+      });
+    } catch {
+      return NextResponse.json(
+        { error: "The admin action could not be saved. Try again later." },
+        { status: 500 }
+      );
+    }
 
-  if (parsed.data.action === "publish") {
-    /**
-     * The Approval Center item A06's QA run filed is the RECORD of the ask; the
-     * route is the ACT. Closing it here is bookkeeping, never authorization —
-     * nothing above consulted it, and nothing below waits on it.
-     */
-    await resolvePagePublishApproval(spec.page_spec_id, "owner");
-    await emitPagePublished({
-      page_id: spec.page_id,
-      page_spec_id: spec.page_spec_id,
-      canonical_path: spec.canonical_path,
-      search_opportunity_id: spec.search_opportunity_id ?? "",
-      // The envelope types actor as an agent; the ACT was a human's, so it is
-      // recorded here rather than silently lost.
-      published_by: "owner",
-      rule_set_version: decision.qa.rule_set_version,
-    });
-  }
+    if (parsed.data.action === "publish") {
+      /**
+       * The Approval Center item A06's QA run filed is the RECORD of the ask; the
+       * route is the ACT. Closing it here is bookkeeping, never authorization —
+       * nothing above consulted it, and nothing below waits on it.
+       */
+      await resolvePagePublishApproval(spec.page_spec_id, "owner");
+      await emitPagePublished({
+        page_id: spec.page_id,
+        page_spec_id: spec.page_spec_id,
+        canonical_path: spec.canonical_path,
+        search_opportunity_id: spec.search_opportunity_id ?? "",
+        // The envelope types actor as an agent; the ACT was a human's, so it is
+        // recorded here rather than silently lost.
+        published_by: "owner",
+        rule_set_version: decision.qa.rule_set_version,
+      });
+    }
 
-  return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true });
+  });
 }

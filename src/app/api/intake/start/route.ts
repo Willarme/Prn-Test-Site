@@ -111,12 +111,16 @@ export async function POST(request: Request): Promise<NextResponse> {
     landing_path: door,
   });
 
-  const outcome = await startIntake({
+  let outcome: Awaited<ReturnType<typeof startIntake>>;
+  try { outcome = await startIntake({
     description: values.problem_description ?? "",
     attribution,
     disclosure_content_hash: values.disclosure_content_hash ?? "",
     source: "door_form",
-  });
+  }); } catch {
+    console.error("[intake] unhandled failure");
+    return redirect(`${door}?error=try_again#intake`);
+  }
 
   if (outcome.kind === "safety_halt") {
     // No ProblemRecord, no packet, no request id. The hazard screen carries the

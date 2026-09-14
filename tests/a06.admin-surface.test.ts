@@ -1,7 +1,25 @@
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import { QaVerdictPanel } from "@/components/admin/QaVerdict";
+import type { PageQAResult } from "@/domain/search/qa";
 import { publishQueueSnapshot } from "@/platform/search/page-qa-gate";
+import { SAMPLE_PAGE_SPEC } from "@/domain/search/fixtures/sample-page-spec";
+import { PageSpec } from "@/domain/search/pages";
+import { TRIAL_DEFAULT_SEO_FACTORY_POLICY } from "@/domain/search/policy";
+import { isRetiredLegacySpec } from "@/platform/pages/route-retirement";
+import staged from "../data/factory/staged-specs.json";
+
+const legacyPortfolio = [SAMPLE_PAGE_SPEC, ...staged.specs.map(spec => PageSpec.parse(spec))];
+let portfolio = legacyPortfolio;
+const getPolicy = vi.fn(async () => TRIAL_DEFAULT_SEO_FACTORY_POLICY);
+vi.mock("@/platform/admin/data", () => ({
+  allStagedSpecs: async () => portfolio,
+  policyStore: () => ({ getActive: getPolicy }),
+}));
+beforeEach(() => { portfolio = legacyPortfolio; getPolicy.mockClear(); });
 
 /**
  * A06 STEP 10 — THE ADMIN SURFACE.
@@ -18,16 +36,20 @@ import { publishQueueSnapshot } from "@/platform/search/page-qa-gate";
 
 const ROOT = process.cwd();
 
-describe("no new top-level admin page", () => {
-  it("the admin route set is the owned set — A06 added none; the 2026-08-26 owner directive added exactly two (agents + system), registry mirrors with no customer data", () => {
+describe("owned top-level admin pages", () => {
+  it("A06 stays on Pages; the owner-authorized Company OS rebuild adds private activity, connections and system map", () => {
     const routes = readdirSync(join(ROOT, "src/app/admin")).filter((entry) =>
       statSync(join(ROOT, "src/app/admin", entry)).isDirectory()
     );
     expect(routes.sort()).toEqual([
       "agents",
       "approvals",
+      "audit",
+      "connections",
       "controls",
+      "features",
       "login",
+      "map",
       "opportunities",
       "pages",
       "requests",
@@ -70,14 +92,30 @@ describe("the queue shows the decision the server will make", () => {
     expect(list).toMatch(/decision\.qa\.overall/);
   });
 
-  it("the snapshot computes one decision per staged page, policy read once", async () => {
+  it("retired history remains in the queue but cannot be published", async () => {
     const queue = await publishQueueSnapshot(() => null);
+    expect(queue).toHaveLength(legacyPortfolio.length);
     expect(queue.length).toBeGreaterThan(4);
+    expect(getPolicy).toHaveBeenCalledOnce();
     for (const row of queue) {
+      expect(isRetiredLegacySpec(row.spec)).toBe(true);
       expect(row.decision.qa.page_spec_id).toBe(row.spec.page_spec_id);
-      expect(row.decision.reasons.length).toBeGreaterThan(0);
+      expect(row.decision.release_eligible).toBe(false);
+      expect(row.decision.reasons[0]).toContain("T6-29:R3:c6ff9a");
     }
-    // The committed four are eligible; the PENDING handcrafted door is not.
+  });
+
+  it("computes real QA eligibility for nonretired fixtures with one policy read", async () => {
+    const replacements = new Map(legacyPortfolio.map(spec => [spec.canonical_path, spec.canonical_path.replace("/problems/", "/problems/qa-fixture-")]));
+    portfolio = legacyPortfolio.map(spec => PageSpec.parse(JSON.parse(
+      [...replacements].reduce((json, [from, to]) => json.replaceAll(from, to), JSON.stringify(spec))
+    )));
+    expect(portfolio.every(spec => !isRetiredLegacySpec(spec))).toBe(true);
+    const queue = await publishQueueSnapshot(() => null);
+    expect(queue).toHaveLength(portfolio.length);
+    expect(getPolicy).toHaveBeenCalledOnce();
+    for (const row of queue) expect(row.decision.qa.page_spec_id).toBe(row.spec.page_spec_id);
+    // The copied PASS fixtures still pass real QA; the PENDING fixture cannot.
     expect(queue.filter((r) => r.decision.release_eligible)).toHaveLength(4);
   });
 });
@@ -85,9 +123,21 @@ describe("the queue shows the decision the server will make", () => {
 describe("the verdict panel is honest about the parts that are not green", () => {
   const panel = readFileSync(join(ROOT, "src/components/admin/QaVerdict.tsx"), "utf-8");
 
-  it("it renders the critic status, and says plainly what a skipped critic means", () => {
-    expect(panel).toMatch(/AI critic/);
-    expect(panel).toMatch(/Nothing has read this page for meaning/);
+  it("distinguishes a real failed review from a review that was not completed", () => {
+    // Only the fields consumed by this presentation are relevant to the fixture.
+    const render = (status: "FAIL" | "SKIPPED") => renderToStaticMarkup(createElement(QaVerdictPanel, {
+      qa: {
+        overall: "FAIL", rule_set_version: "test", user_value_score: null,
+        heuristic_score: null, blockers: [],
+        ai_critic: { status, reason: "test receipt" },
+        deterministic: { state: "PASS", findings: [], checks_skipped: [], unknown_required_checks: [], checks_run: [] },
+      } as unknown as PageQAResult,
+      eligible: false, reasons: [],
+    }));
+    expect(render("FAIL")).toContain("The AI critic reviewed this page and rejected it.");
+    expect(render("FAIL")).not.toContain("A completed AI review is not available.");
+    expect(render("SKIPPED")).toContain("A completed AI review is not available.");
+    expect(render("SKIPPED")).not.toContain("reviewed this page and rejected it");
   });
 
   it("it renders the NOT-MEASURABLE checks as not-run, not as passes", () => {

@@ -1,5 +1,6 @@
 "use server";
 
+import { refuseFeatureRoute } from "@/platform/features/route-guard";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
@@ -36,6 +37,7 @@ async function requestOrigin(): Promise<string> {
 }
 
 export async function makeShareLink(_prev: ShareState, formData: FormData): Promise<ShareState> {
+  if (await refuseFeatureRoute("/results/held/send", true)) return { status: "error", error: SHARE_UNAVAILABLE };
   if (!flagEnabled("results_shell_enabled")) return { status: "error", error: SHARE_UNAVAILABLE };
   const parsed = Input.safeParse({
     request_id: formData.get("request_id"),

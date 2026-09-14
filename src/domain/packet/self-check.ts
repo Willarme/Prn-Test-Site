@@ -109,6 +109,7 @@ function count(hay: string, needle: string): number {
 
 export interface ComputedForCheck {
   owner_actions?: boolean;
+  qr_visibility?: { keep: boolean; ask: boolean };
   packet_id: string;
   version: string;
   generated_at_display: string;
@@ -137,13 +138,14 @@ export function checkConsistency(html: string, c: ComputedForCheck): string[] {
   const idInText = count(text, c.packet_id);
   const keepLinks = hrefs.filter((h) => h === c.home_memory_url).length;
   const askLinks = hrefs.filter((h) => h === c.trust_network_url).length;
-  const chipsWithId = c.owner_actions === false ? 0 : [c.home_memory_url, c.trust_network_url].filter((u) => u.includes(c.packet_id)).length;
+  const keepExpected = c.owner_actions !== false && c.qr_visibility?.keep !== false ? 1 : 0;
+  const askExpected = c.owner_actions !== false && c.qr_visibility?.ask !== false ? 1 : 0;
+  const chipsWithId = [keepExpected ? c.home_memory_url : "", askExpected ? c.trust_network_url : ""].filter((u) => u.includes(c.packet_id)).length;
   const expectedInText = (c.halted ? 0 : 1) + chipsWithId;
   if (idInText !== expectedInText) {
     failures.push(`constraint 1: packet.id "${c.packet_id}" appears ${idInText} times in text, expected ${expectedInText}`);
   }
-  const ownerLinks = c.owner_actions === false ? 0 : 1;
-  if (keepLinks !== ownerLinks || askLinks !== ownerLinks) failures.push(`constraint 1: expected ${ownerLinks} Home Memory and Trust Network links, found ${keepLinks}/${askLinks}`);
+  if (keepLinks !== keepExpected || askLinks !== askExpected) failures.push(`constraint 1: expected ${keepExpected}/${askExpected} Home Memory and Trust Network links, found ${keepLinks}/${askLinks}`);
 
   if (!c.halted) {
     // 2. version: meta block, page 2 footer, page 3 footer.

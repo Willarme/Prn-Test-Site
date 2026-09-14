@@ -38,12 +38,16 @@ export async function POST(request: Request): Promise<NextResponse> {
     );
   }
 
-  const outcome = await startIntake({
+  let outcome: Awaited<ReturnType<typeof startIntake>>;
+  try { outcome = await startIntake({
     description: parsed.data.description,
     attribution: parsed.data.attribution,
     disclosure_content_hash: parsed.data.disclosure_content_hash,
     source: "json",
-  });
+  }); } catch {
+    console.error("[intake] unhandled failure");
+    return NextResponse.json({ error: "Something went wrong — your text is still here, try again." }, { status: 500 });
+  }
 
   if (outcome.kind === "error") {
     return NextResponse.json(

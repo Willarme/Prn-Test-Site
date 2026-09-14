@@ -35,8 +35,10 @@ describe("the hosted prepared sample has no runtime prerequisite", () => {
     expect(rendered.html).not.toMatch(/\/keep\/eyJ|\/ask\/eyJ|api\/intake/);
   });
 
-  it("keeps the original approved results text while isolating every request action href", () => {
-    const props = { requestId: "rq_public_example", keepHref: "/demo/sample/keep", askHref: "/demo/sample/ask" };
+  it("keeps restored approved results text while isolating every synthetic request action href", () => {
+    // Explicit rendering fixture for saved design fidelity, not runtime activation.
+    const props = { requestId: "rq_public_example", keepHref: "/demo/sample/keep", askHref: "/demo/sample/ask",
+      visibility: { keep: true, ask: true, send: true, find: true, product_dashboard: true, product_trust_network: true, product_smartquote: true, product_home_memory: true } };
     const original = renderToStaticMarkup(createElement(ResultsTemplate, props));
     const hosted = renderToStaticMarkup(createElement(ResultsTemplate, { ...props, navigation: { packet: "/demo/sample/packet", email: "/demo/sample/email", send: "/demo/sample/send", find: "/demo/sample/find" } }));
     const text = (html: string) => html.replace(/<[^>]*>/g, "");
@@ -44,6 +46,15 @@ describe("the hosted prepared sample has no runtime prerequisite", () => {
     for (const target of ["packet", "email", "send", "find", "keep", "ask"]) expect(hosted).toContain(`href="/demo/sample/${target}"`);
     expect(hosted).not.toContain("/results/rq_");
     expect(hosted).not.toContain("/packet/rq_");
+  });
+
+  it("the actual sample results page keeps hidden actions absent by default", async () => {
+    const SampleResultsPage = (await import("@/app/demo/sample/results/page")).default;
+    const html = renderToStaticMarkup(createElement(SampleResultsPage));
+    for (const target of ["send", "find", "keep", "ask"]) expect(html).not.toContain(`href="/demo/sample/${target}"`);
+    for (const label of ["Save this to my home", "Ask my people", "I already have someone", "Find someone for me"]) expect(html).not.toContain(label);
+    for (const target of ["packet", "email"]) expect(html).toContain(`href="/demo/sample/${target}"`);
+    expect(html).not.toMatch(/href="\/(?:results|packet)\/rq_/);
   });
 
   it("rejects origins with embedded credentials or paths before forming packet links", () => {

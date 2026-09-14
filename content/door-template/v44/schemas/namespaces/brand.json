@@ -1,0 +1,39 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://schemas.propertyresponsenetwork.com/doorspec/namespaces/brand.json",
+  "title": "Door v44 brand",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "a": {
+      "type": "string",
+      "pattern": "^#[a-fA-F0-9]{6}$",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "b": {
+      "type": "string",
+      "pattern": "^#[a-fA-F0-9]{6}$",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "warn": {
+      "type": "string",
+      "pattern": "^#[a-fA-F0-9]{6}$",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "theme": {
+      "type": "string",
+      "pattern": "^door-v44-t(?:0[1-9]|10)@[0-9]+\\.[0-9]+\\.[0-9]+$",
+      "minLength": 1,
+      "maxLength": 128
+    }
+  },
+  "required": [
+    "a",
+    "b",
+    "warn",
+    "theme"
+  ]
+}

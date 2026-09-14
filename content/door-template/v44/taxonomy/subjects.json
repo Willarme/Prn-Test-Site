@@ -1,0 +1,42 @@
+{
+  "taxonomy_version": "subject-taxonomy/1.0.0",
+  "scope": "synthetic_fixture_only",
+  "rows": [
+    {
+      "subject_id": "fixture.subject.dishwasher",
+      "display_label": "dishwasher",
+      "short_label": "dishwasher",
+      "cta_label": "DISHWASHER",
+      "second_person_label": "your dishwasher",
+      "possessive_label": "your dishwasher's",
+      "plural_label": "dishwashers",
+      "subject_kind": "appliance",
+      "allowed_pattern_ids": [
+        "START_KNOWN_OBJECT",
+        "WALK_KNOWN_OBJECT",
+        "BUILD_KNOWN_OBJECT_PACKET"
+      ],
+      "allowed_family_ids": [
+        "F04"
+      ]
+    },
+    {
+      "subject_id": "fixture.subject.ceiling-stain",
+      "display_label": "ceiling stain",
+      "short_label": "stain",
+      "cta_label": "THIS PROBLEM",
+      "second_person_label": "your ceiling stain",
+      "possessive_label": "your ceiling stain's",
+      "plural_label": "ceiling stains",
+      "subject_kind": "current_problem",
+      "allowed_pattern_ids": [
+        "START_CURRENT_PROBLEM",
+        "WALK_CURRENT_PROBLEM",
+        "BUILD_CURRENT_PROBLEM_PACKET"
+      ],
+      "allowed_family_ids": [
+        "F08"
+      ]
+    }
+  ]
+}

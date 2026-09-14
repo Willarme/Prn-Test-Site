@@ -20,7 +20,7 @@ export default function DemoHome() {
         <h1>One problem.<br />A clearer <em>next step.</em></h1>
         <p className={styles.intro}>Start with an AC that is running but blowing warm air. Follow the observations into one organized Job Packet, ready for the next conversation.</p>
         <div className={styles.actions}>
-          {localSample ? <Link className={styles.primary} href="/ac-blowing-warm-air">Try the AC walkthrough <span aria-hidden>↗</span></Link> : <form action="/demo/start" method="post"><input type="hidden" name="intent" value="guided" /><button className={styles.primary} type="submit">Try the sample walkthrough <span aria-hidden>↗</span></button></form>}
+          {localSample ? <Link className={styles.primary} href="/problems/ac-blowing-warm-air">Try the AC walkthrough <span aria-hidden>↗</span></Link> : <form action="/demo/start" method="post"><input type="hidden" name="intent" value="guided" /><button className={styles.primary} type="submit">Try the sample walkthrough <span aria-hidden>↗</span></button></form>}
           <form action="/demo/start" method="post"><input type="hidden" name="intent" value="results" /><button className={styles.secondary} type="submit">Open a sample result <span aria-hidden>→</span></button></form>
         </div>
         <p className={styles.small}>Explore with example details. No account needed. This is a demonstration, not a service request.</p>
@@ -35,7 +35,7 @@ export default function DemoHome() {
     <section className={styles.journey} aria-labelledby="demo-journey">
       <div className={styles.sectionHeading}><p className={styles.kicker}>{localSample ? "The working journey" : "The sample journey"}</p><h2 id="demo-journey">Follow one problem through.</h2><p>Each step has a job. Your observations carry forward.</p></div>
       <ol className={styles.steps}>
-        <li><span className={styles.number}>01</span><h3>Describe it</h3><p>{localSample ? "Use plain words, or attach a photo of the equipment. Start on the AC guide." : "Explore the complete AC guide, then follow an example home through the prepared walkthrough."}</p><Link href="/ac-blowing-warm-air">Explore the AC guide <span aria-hidden>→</span></Link></li>
+        <li><span className={styles.number}>01</span><h3>Describe it</h3><p>{localSample ? "Use plain words, or attach a photo of the equipment. Start on the AC guide." : "Explore the complete AC guide, then follow an example home through the prepared walkthrough."}</p><Link href="/problems/ac-blowing-warm-air">Explore the AC guide <span aria-hidden>→</span></Link></li>
         <li><span className={styles.number}>02</span><h3>Work through it</h3><p>Answer the relevant questions. Keep track of what was checked, skipped or still unknown.</p><form action="/demo/start" method="post"><input type="hidden" name="intent" value="guided" /><button type="submit">Try a sample walkthrough <span aria-hidden>→</span></button></form></li>
         <li><span className={styles.number}>03</span><h3>Take the record</h3><p>{localSample ? "Read the result, open the Job Packet and download its PDF. Keep and share controls work on your sample." : "Open the result and its prepared Job Packet, download the sample PDF and explore the keep, share and email previews."}</p><form action="/demo/start" method="post"><input type="hidden" name="intent" value="results" /><button type="submit">See a sample result <span aria-hidden>→</span></button></form></li>
       </ol>

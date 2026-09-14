@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import { adminAction, adminActionMessage } from "./action";
 
 export function LoginForm() {
   const router = useRouter();
@@ -9,62 +10,39 @@ export function LoginForm() {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  async function submit() {
-    setBusy(true);
-    setError(null);
-    const res = await fetch("/api/admin/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ password }),
-    });
-    setBusy(false);
-    if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
-      setError(data.error ?? "Sign-in failed");
-      return;
-    }
-    router.refresh();
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (busy || !password) return;
+    setBusy(true); setError(null);
+    try {
+      await adminAction("/api/admin/login", { body: { password } });
+      setPassword("");
+      router.refresh();
+    } catch (error) { setError(adminActionMessage(error)); }
+    finally { setBusy(false); }
   }
 
-  return (
-    <div className="card-light" style={{ maxWidth: 420 }}>
-      <div className="field">
-        <label className="field-label" htmlFor="admin-password">
-          Owner password
-        </label>
-        <input
-          id="admin-password"
-          type="password"
-          className="inp"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && submit()}
-          autoComplete="current-password"
-        />
-      </div>
-      {error && (
-        <p role="alert" style={{ color: "var(--pink-ink)", marginBottom: 12 }}>
-          {error}
-        </p>
-      )}
-      <button className="btn btn-pink" disabled={busy || password.length === 0} onClick={submit}>
-        {busy ? "Checking…" : "Sign in"}
-      </button>
+  return <form className="adm-login-form" method="post" action="/api/admin/login" onSubmit={submit} aria-busy={busy}>
+    <div className="field">
+      <label className="field-label" htmlFor="admin-password">Owner password</label>
+      <input id="admin-password" name="password" type="password" className="inp" value={password} onChange={e => setPassword(e.target.value)} autoComplete="current-password" required disabled={busy} aria-describedby={error ? "admin-login-error" : undefined} />
     </div>
-  );
+    {error && <p id="admin-login-error" className="adm-action-message adm-action-message--error" role="alert">{error}</p>}
+    <button type="submit" className="btn" disabled={busy || !password}>{busy ? "Signing in…" : "Open Company OS"}<span aria-hidden> ↗</span></button>
+    <p className="adm-login-foot">Private owner workspace. Your session expires after 12 hours.</p>
+  </form>;
 }
 
 export function SignOutButton() {
   const router = useRouter();
-  return (
-    <button
-      className="btn btn-ghost btn-sm"
-      onClick={async () => {
-        await fetch("/api/admin/login", { method: "DELETE" });
-        router.refresh();
-      }}
-    >
-      Sign out
-    </button>
-  );
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  async function signOut() {
+    if (busy) return;
+    setBusy(true); setError(null);
+    try { await adminAction("/api/admin/login", { method: "DELETE" }); router.refresh(); }
+    catch (error) { setError(adminActionMessage(error)); }
+    finally { setBusy(false); }
+  }
+  return <span><button type="button" className="adm-signout" disabled={busy} onClick={signOut}>{busy ? "Signing out…" : "Sign out"}</button>{error && <span className="adm-signout-result" role="alert">{error}</span>}</span>;
 }

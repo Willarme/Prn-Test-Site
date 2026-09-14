@@ -1,0 +1,138 @@
+/* INTENT PAGE VALIDATOR — enforces PRN_AI_SEO_LIVE_RELEASE_FINAL_CLAUDE_SPEC.md
+ *   node _validate-intent-page.js "AC Problem Page LIVE.html"
+ * Deterministic gates only (spec 29). Exit 1 on any blocker so A06 / CI can gate on it.
+ * Design, copy length and section order are NOT checked here. */
+const fs = require("fs");
+
+const file = process.argv[2];
+if (!file) { console.error("usage: node _validate-intent-page.js <page.html>"); process.exit(2); }
+const s = fs.readFileSync(file, "utf8");
+
+const commentless = s.replace(/<!--[\s\S]*?-->/g, "");
+const stripped = commentless.replace(/<script[\s\S]*?<\/script>/g, "").replace(/<style[\s\S]*?<\/style>/g, "");
+const prose = stripped.replace(/<svg[\s\S]*?<\/svg>/g, " ").replace(/<[^>]+>/g, " ").replace(/&[a-z]+;|&#\d+;/g, " ").replace(/\s+/g, " ");
+const withSvg = stripped.replace(/<[^>]+>/g, " ").replace(/&[a-z]+;|&#\d+;/g, " ").replace(/\s+/g, " ");
+
+const R = [];
+const gate = (n, pass, d) => R.push({ n, pass: !!pass, d: d == null ? "" : String(d), blocker: true });
+const info = (n, d) => R.push({ n, pass: true, d: String(d), blocker: false });
+
+/* ===== 23. PRODUCTION BLOCKERS ===== */
+gate("no .dc.html links", !/\.dc\.html/.test(s), (s.match(/\.dc\.html/g) || []).length);
+gate('no href="#" placeholders', !/href="#"/.test(s), (s.match(/href="#"/g) || []).length);
+gate("no dc-runtime template syntax", !/sc-if|sc-for|x-dc/.test(s));
+gate("single H1", (s.match(/<h1[\b\s>]/g) || []).length === 1, (s.match(/<h1[\b\s>]/g) || []).length);
+gate("canonical present", /rel="canonical"/.test(s));
+
+/* ===== 20. NO FALSE LOCALITY ON A NATIONAL PAGE ===== */
+gate("no geo.region / geo.placename", !/name="geo\.(region|placename)"/.test(s));
+gate("no LocalBusiness / PostalAddress in schema", !/"LocalBusiness"|"PostalAddress"/.test(s));
+const localWords = (prose.match(/Fort Wayne|Allen County/g) || []).length;
+info("locality words in prose", localWords + (localWords ? "  (allowed only inside a geo-scoped evidence card)" : ""));
+
+/* ===== 21. BRAND CENTRALISED ===== */
+gate("no literal brand in source", !/Property Response Network/.test(s));
+info("brand token present", /\{\{site\.name\}\}/.test(s) ? "{{site.name}}" : "none found");
+
+/* ===== 19. STRUCTURED DATA — SIMPLIFIED ===== */
+let types = [], schemaOk = true;
+[...s.matchAll(/<script[^>]*application\/ld\+json[^>]*>([\s\S]*?)<\/script>/g)].forEach(b => {
+  try { const j = JSON.parse(b[1]); (j["@graph"] || [j]).forEach(x => types.push(x["@type"])); }
+  catch (e) { schemaOk = false; }
+});
+gate("JSON-LD parses", schemaOk && types.length > 0);
+gate("schema: WebPage", types.indexOf("WebPage") > -1);
+gate("schema: BreadcrumbList", types.indexOf("BreadcrumbList") > -1);
+gate("schema: WebApplication for the live tool", types.indexOf("WebApplication") > -1);
+gate("FAQPage removed (spec 19)", types.indexOf("FAQPage") < 0);
+gate("HowTo removed (spec 19)", types.indexOf("HowTo") < 0);
+gate("Service/LocalBusiness removed (spec 19)", types.indexOf("Service") < 0);
+gate("speakable removed (spec 19)", !/"speakable"/.test(s));
+
+/* ===== 22. AGENT-READABLE FORM ===== */
+gate("real <form> element", /<form[\s>]/.test(s));
+gate("form posts to the canonical intake", /action="\/api\/intake\/start"/.test(s));
+gate("form declares its capability id", /data-capability-id="home_problem_analyzer"/.test(s));
+gate("textarea is named and labelled", /<textarea[^>]*name="problem_description"/.test(s) && /<label for="problem-description"/.test(s));
+gate("submit button, not a div", /<button type="submit"/.test(s));
+const fileInputs = (s.match(/<input type="file"/g) || []).length;
+gate("real file inputs for media", fileInputs >= 2, fileInputs);
+
+/* ===== 5 + 6. THE TWO NEW REQUIRED MODULES ===== */
+gate("general-vs-yours module present", /id="general-vs-yours"/.test(s));
+const gvRows = (() => { const i = s.indexOf('id="general-vs-yours"'); if (i < 0) return 0;
+  const seg = s.slice(i, s.indexOf("</section>", i)); const tb = seg.match(/<tbody>([\s\S]*?)<\/tbody>/);
+  return tb ? (tb[1].match(/<tr>/g) || []).length : 0; })();
+gate("general-vs-yours has 4 to 6 rows", gvRows >= 4 && gvRows <= 6, gvRows);
+
+gate("capability-questions module present", /id="what-this-tool-can-answer"/.test(s));
+const cqRows = (() => { const i = s.indexOf('id="what-this-tool-can-answer"'); if (i < 0) return 0;
+  const seg = s.slice(i, s.indexOf("</section>", i)); const tb = seg.match(/<tbody>([\s\S]*?)<\/tbody>/);
+  return tb ? (tb[1].match(/<tr>/g) || []).length : 0; })();
+gate("capability questions 5 to 10 (spec 6)", cqRows >= 5 && cqRows <= 10, cqRows);
+const BOUNDARIES = ["CAN ANSWER", "CAN OFTEN ANSWER", "CAN ANSWER WHAT IT CHANGES", "CAN NARROW", "STILL NEEDS TESTING", "NOT SAFE TO DETERMINE REMOTELY"];
+const used = BOUNDARIES.filter(b => new RegExp(">" + b + "<").test(s));
+gate("boundary labels used, and from the enum", used.length >= 3, used.join(" / "));
+gate("at least one STILL NEEDS TESTING boundary", /STILL NEEDS TESTING/.test(s));
+
+/* ===== 4. NUMERIC HEADINGS DERIVED FROM THE ARRAYS ===== */
+function headingCountMatchesArray(headingRe, tag) {
+  const m = s.match(headingRe); if (!m) return null;
+  const stated = parseInt(m[1], 10);
+  const i = s.indexOf(m[0]);
+  const seg = s.slice(i, s.indexOf("</section>", i));
+  let actual;
+  if (tag === "tr") { const tb = seg.match(/<tbody>([\s\S]*?)<\/tbody>/); actual = tb ? (tb[1].match(/<tr>/g) || []).length : 0; }
+  else actual = (seg.match(new RegExp("<" + tag, "g")) || []).length;
+  return { stated, actual };
+}
+const cp = headingCountMatchesArray(/(\d+) common possibilities/, "tr");
+if (cp) gate("possibilities heading matches the table", cp.stated === cp.actual, "heading " + cp.stated + " / rows " + cp.actual);
+const ob = headingCountMatchesArray(/(\d+) observations worth gathering/, "h3");
+if (ob) gate("observations heading matches the cards", ob.stated === ob.actual, "heading " + ob.stated + " / cards " + ob.actual);
+gate("numerals not words in counting headings", !/\b(Four|Five|Six|Seven|Eight|Nine) (common possibilities|observations)/.test(prose));
+
+/* ===== 12. IMAGES ===== */
+const svgFigures = (s.match(/<svg[\s\S]*?<\/svg>/g) || []).filter(v => v.length > 1200);
+info("inline SVG explainers", svgFigures.length);
+let aiStrong = 0, floorOk = true;
+svgFigures.forEach((v, i) => {
+  const shapes = (v.match(/<path|<rect|<circle|<line|<polygon|<ellipse/g) || []).length;
+  const labels = (v.match(/<text/g) || []).length;
+  const dw = ((v.match(/<desc[^>]*>([\s\S]*?)<\/desc>/) || [])[1] || "").split(/\s+/).filter(Boolean).length;
+  const meta = /<title/.test(v) && /role="img"/.test(v) && /aria-labelledby/.test(v);
+  gate("visual " + (i + 1) + ": 25+ shapes, 8+ labels, 80-100w desc, a11y", shapes >= 25 && labels >= 8 && dw >= 80 && dw <= 100 && meta,
+       shapes + " shapes / " + labels + " labels / " + dw + "w");
+  let ai = Math.min(40, Math.round(labels / 8 * 40)) + (dw >= 80 && dw <= 100 ? 20 : 0)
+    + (/<title[^>]*>[^<]*\?|<title[^>]*>(How|What|Where|Which|Why)/.test(v) ? 20 : 0)
+    + (labels / Math.max(shapes, 1) >= 0.25 ? 20 : 0);
+  if (ai >= 70) aiStrong++;
+  if (!meta || dw < 80 || labels < 8) floorOk = false;
+});
+if (svgFigures.length) {
+  gate("2 or more visuals score AI-strength 70+", aiStrong >= 2, aiStrong + " of " + svgFigures.length);
+  gate("every visual clears the machine-readable floor", floorOk);
+}
+const pictures = (s.match(/<picture[\s>]/g) || []).length;
+info("production <picture> assets", pictures + (pictures ? "" : "  (AVIF/WebP pipeline is an agent task, spec 12)"));
+
+/* ===== misc quality ===== */
+gate("causes use real table markup", /<table>[\s\S]*<thead>[\s\S]*<th scope="col"/.test(s));
+gate("font preloaded", /rel="preload"[^>]*as="style"/.test(s));
+const secIds = (s.match(/<section[^>]*id="/g) || []).length;
+gate("sections carry anchor ids", secIds >= 6, secIds);
+gate("no gendered pronouns for trades", !/\b(his|him)\b/i.test(prose), (prose.match(/\b(his|him)\b/gi) || []).join(","));
+gate("no em dashes in prose", !/—/.test(prose), (prose.match(/—/g) || []).length);
+gate("no internal agent language on the page", !/\bA0[1-9]\b|PageSpec|FactBundle|builder placeholder/.test(prose));
+gate("no fabricated stat without denominator", !/\d+%(?![^<]{0,90}(of|n\s*=|records))/.test(prose));
+info("body prose words", prose.split(" ").filter(Boolean).length);
+info("indexable words inside SVGs", withSvg.split(" ").filter(Boolean).length - prose.split(" ").filter(Boolean).length);
+
+/* ===== report ===== */
+const failed = R.filter(r => !r.pass);
+const pad = Math.max(...R.map(r => r.n.length)) + 2;
+console.log("\n  INTENT PAGE VALIDATION (live-release spec)  " + file + "\n");
+R.forEach(r => console.log((r.pass ? (r.blocker ? "  ok  " : "  ..  ") : "  !!  ") + r.n.padEnd(pad) + r.d));
+console.log("\n  " + (R.length - failed.length) + "/" + R.length +
+  (failed.length ? "  FAILING: " + failed.map(f => f.n).join(", ") : "  - all deterministic gates pass") + "\n");
+process.exit(failed.length ? 1 : 0);

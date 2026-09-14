@@ -1,0 +1,139 @@
+{
+  "observed_date": "2026-09-13",
+  "source_commit": "a238596fe330f4b44e8a9d32483e45b76f4bd8c9",
+  "runtime": {
+    "node_exact": "v24.14.1",
+    "declared_package_range": "^22.17.0 || >=24.0.0",
+    "compatibility": "Exact observed Node is required for this receipt. Other supported versions need their own evidence; no cross-host execution was performed."
+  },
+  "packages": {
+    "ajv": {
+      "version": "6.15.0",
+      "integrity": "sha512-fgFx7Hfoq60ytK2c7DhnF8jIvzYgOMxfugjLOSMHjLIPgenqa7S7oaagATUq99mV6IYvN2tRmC0wnTYX6iPbMw=="
+    },
+    "next": {
+      "version": "15.5.25",
+      "integrity": "sha512-OMWNulIIqKM2ykvC2qMjIt0IoavB4UB2SCs4iXJ6z6847FvyH8jBmBWcvrF5iuhTu8Przh20Fo/aoszIdqx4PA=="
+    },
+    "@sparticuz/chromium": {
+      "version": "149.0.0",
+      "integrity": "sha512-2NECBVKlUA9xIUXb4fT8OoGKdAJs+I2tNYscO8FwcxCKCWA7FmpPI0fdVxGJoIJglrFZYn+4YEJqChq4rdrxQg=="
+    },
+    "puppeteer-core": {
+      "version": "25.1.0",
+      "integrity": "sha512-jKzy5y4WG6uNuFbTWgW1D7mqoT9o0nllc/6a1DGF775T1mPmgw3scdFEtEq67yVFikavQmbYq6NLfbTfxHSlqQ=="
+    },
+    "sharp": {
+      "version": "0.35.4",
+      "integrity": "sha512-n++8XWcj+jCOr2IOl7h8LbKnGBDY4aPbmprMONBNFdn0ImXqpGVv5zliDs0V9HbmbCQLpbuo2ej9rAoOQTvMDA=="
+    },
+    "tsx": {
+      "version": "4.23.12",
+      "integrity": "sha512-FDf4L4sYzKtzWYhU/Xm0AQFdTjdIxNo9ElTf2mxXM6k8YMHXzYUe4yODVaXP4V9uMFbVg8c0qyBccK2OOxb45Q=="
+    },
+    "typescript": {
+      "version": "5.9.3",
+      "integrity": "sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw=="
+    }
+  },
+  "browser": {
+    "chrome_observed_file_version": "152.0.7977.83",
+    "edge_observed_file_version": "154.0.4258.12",
+    "method": "Read installed executable metadata only; no browser launch or render.",
+    "approved_v44_engine": "unavailable",
+    "second_host": "unavailable"
+  },
+  "fonts": {
+    "declarations": [
+      "Archivo latin, variable --font-display, axis wdth",
+      "Public Sans latin, variable --font-body, weights 400/500/600",
+      "JetBrains Mono latin, variable --font-mono, weights 400/500/700"
+    ],
+    "source": "src/app/layout.tsx",
+    "existing_build_bundles": [
+      {
+        "bundle_file": "2a8fe189f1a8dd0c-s.woff2",
+        "bytes": 85856,
+        "sha256": "a75c792f980dc1dbe0e85efb721808267e32d2e7ef6c4a99d525c842d8712a08"
+      },
+      {
+        "bundle_file": "558ca1a6aa3cb55e-s.p.woff2",
+        "bytes": 31340,
+        "sha256": "2c32b9b3ee358c119e210f6f5195f9bd34894d78a785ff2e95d60e718e400af4"
+      },
+      {
+        "bundle_file": "64d784ea54a4acde-s.woff2",
+        "bytes": 6800,
+        "sha256": "49c3da6c9a2b279b0f1f860f5cfb1f5dc38d88a5c7be9c9b1837bbc4e3db6111"
+      },
+      {
+        "bundle_file": "6d831b18ae5b01dc-s.woff2",
+        "bytes": 11596,
+        "sha256": "9c38cb2d0d2d93c1ee6e21fa78db76f13ea7e15e15cc64214c7ca89b6aaa35c4"
+      },
+      {
+        "bundle_file": "8a053b136321ec99-s.woff2",
+        "bytes": 34364,
+        "sha256": "e65711486b93fdc7683ea3c64e713fa0224a93e444ec97e323917e61ebd17772"
+      },
+      {
+        "bundle_file": "8bf7b2ceda89477b-s.p.woff2",
+        "bytes": 26636,
+        "sha256": "c1b6da516e0062e9c2f341b3a51dd2d621d946da72f06c6cfe05fd9d2dd8622d"
+      },
+      {
+        "bundle_file": "98baa4a7809fbf72-s.woff2",
+        "bytes": 18372,
+        "sha256": "1c8a26c0ed4312dacc36670714794c9f4b4a0972ccb45f2936646bd8d444d5f8"
+      },
+      {
+        "bundle_file": "ac0e76ddaeeb7981-s.woff2",
+        "bytes": 8892,
+        "sha256": "4995a9a43ac659ec32fcd8b463755cd6a07b31a6e6b3894a6a153b661cf490e2"
+      },
+      {
+        "bundle_file": "c214ffb7f5362987-s.p.woff2",
+        "bytes": 90096,
+        "sha256": "4c98b9d490d1698ec95f2ff17a6c7d0e72691864c0c5d7bc2a2c161b45afe5ad"
+      },
+      {
+        "bundle_file": "edc640959b0c7826-s.woff2",
+        "bytes": 1664,
+        "sha256": "9343de2ca5d9549f792e7962375af8efb0f320c7643bfd36c884b5a30e5c396f"
+      },
+      {
+        "bundle_file": "f7650dfaa438c37c-s.woff2",
+        "bytes": 7576,
+        "sha256": "e43b193880fdb1d6adf494192bcdf77b008cafe910b0cb07d44d46a564d1cdae"
+      },
+      {
+        "bundle_file": "ff71da380fbe67dd-s.woff2",
+        "bytes": 5872,
+        "sha256": "d44eb1936043a56038eb02dd70b243f379bef65783f94ec12f277550720411f1"
+      }
+    ],
+    "status": "Observed existing build only; family mapping, font versions, v44 rendering and second-host parity are unverified. These ephemeral bundles are evidence metadata, not portable required source inputs."
+  },
+  "reference_identity": {
+    "raw_worktree": "cfb4a1b532f06a50040459a6de173e33e96aee8913c3d02884f4a8b85b69044a",
+    "lf_semantic": "756fb95907fd3fb21f7bc9a86e854d0e90f8ef35455776b83a17b4935f8d8843",
+    "normalization": "Replace CRLF with LF only; lone CR, BOM and all other bytes are retained."
+  },
+  "wording_controls": {
+    "status": "Quarantined immutable evidence; not a valid mechanical wording input.",
+    "occurrences": [
+      {
+        "line": 2034,
+        "code": "U+0008",
+        "count": 2
+      },
+      {
+        "line": 2094,
+        "code": "U+0008",
+        "count": 2
+      }
+    ],
+    "meaning": "Actual backspace bytes occur where prose shows regex word boundaries; no silent repair or owner approval inferred."
+  },
+  "scope": "Input pins only. No H01-H18 gate is passed wholesale; compiler, rendering, hosted routes, factual/owner review and release are outside this receipt."
+}

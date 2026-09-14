@@ -54,6 +54,8 @@ const ADAPTER = "platform/adapters/dataforseo.ts";
  * copy all legitimately identify which vendor was used.
  */
 const NAME_MENTION_BASELINE: Record<string, string> = {
+  "src/platform/adapters/seo-provider.ts":
+    "Provider composition seam imports the current implementation and exposes only neutral readiness. Credential names, endpoints, and response fields remain forbidden here by the unchanged VENDOR_INTERNALS check.",
   "src/domain/search/contracts.ts":
     "OpportunitySource enum value — PROVENANCE. 96 committed records carry source: 'dataforseo'; deleting it destroys the record of where they came from.",
   "src/domain/search/discovery.ts":

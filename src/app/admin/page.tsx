@@ -1,366 +1,99 @@
-import { adminGate } from "@/components/admin/AdminGate";
-import { ReconciliationRun } from "@/components/admin/ReconciliationRun";
 import Link from "next/link";
-import { loadOpportunities, allStagedSpecs, publishedPageIds } from "@/platform/admin/data";
-import { runtimeStore } from "@/platform/stores/runtime";
-import { DEFAULT_FLAGS } from "@/platform/flags";
-import { TRIAL_AGENT_REGISTRY } from "@/platform/agents/registry";
-import { aiPolicyStore } from "@/platform/ai/policy-store";
-import {
-  exceptionQueue,
-  qualityFilteredJourneyTotals,
-  qualityKpiSnapshot,
-} from "@/platform/quality/kpi";
+import { adminGate } from "@/components/admin/AdminGate";
+import { AdminPageHeader, AdminStatus } from "@/components/admin/AdminUI";
+import { ReconciliationRun } from "@/components/admin/ReconciliationRun";
+import { readConsoleSnapshot, consoleAttention, formatObservationTime } from "@/platform/admin/console-data";
+import "./console.css";
 
 export const dynamic = "force-dynamic";
-
-function Stat({ label, value, hint }: { label: string; value: string | number; hint?: string }) {
-  return (
-    <div className="stat-card">
-      <span className="stat-label">{label}</span>
-      <div className="stat-value">{value}</div>
-      {hint && <p className="stat-hint">{hint}</p>}
-    </div>
-  );
-}
-
-/**
- * CANON 14A §17 — the Company OS Lite area map. Every admin area the build
- * guide names, and where it lives today. A name with no trial surface yet
- * says so ("later wave") rather than linking to something that does not
- * exist: the admin never pretends.
- */
-const COVERAGE: Array<{ area: string; href?: string; note?: string }> = [
-  { area: "Requests", href: "/admin/requests" },
-  { area: "Search / Opportunities", href: "/admin/opportunities" },
-  { area: "Pages", href: "/admin/pages" },
-  { area: "Controls", href: "/admin/controls", note: "page-creator policy" },
-  { area: "Approvals", href: "/admin/approvals" },
-  { area: "Agents", href: "/admin/agents" },
-  { area: "Kill switches + flags + AI", href: "/admin/system" },
-  { area: "Data + Metrics · A09", href: "/admin", note: "cockpit section" },
-  { area: "Trust", note: "later wave" },
-  { area: "Customers / Homes", note: "later wave" },
-  { area: "Provider Match Review", note: "later wave" },
-  { area: "Providers Lite", note: "later wave" },
-  { area: "Templates + Prompts", note: "later wave" },
-  { area: "Consent / Disclosures", note: "later wave" },
-  { area: "Provenance / Rights", note: "later wave" },
-  { area: "Public Derivation", note: "later wave" },
-  { area: "AI Readiness · A36", note: "later wave" },
-  { area: "Transition Watch · A25", note: "later wave" },
-  { area: "Idea Vault / Lean · A10", note: "later wave" },
-  { area: "External Agents", note: "later wave" },
-  { area: "Actions", note: "later wave" },
-];
 
 export default async function AdminOverview() {
   const gate = await adminGate();
   if (gate) return gate;
+  const data = await readConsoleSnapshot();
+  const attention = consoleAttention(data);
+  const critical = attention.some(a => a.severity === "danger");
+  const warning = attention.some(a => a.severity === "warning");
+  const quality = data.quality.value;
+  const ready = data.releases.value?.filter(row => row.decision.release_eligible).length;
+  const held = data.releases.value?.filter(row => !row.decision.release_eligible).length;
+  const policy = data.policy.value;
+  const spend = data.spend.value;
+  const progress = policy && spend && policy.global_daily_budget_usd > 0 ? Math.min(100, (spend.total_usd / policy.global_daily_budget_usd) * 100) : null;
+  const activeRuns = data.runs.value?.rows ?? [];
+  const legacyVersions = data.releases.value?.filter(row => !row.spec.door_template).length ?? 0;
 
-  const opps = loadOpportunities();
-  const store = runtimeStore();
-  const [staged, published, totals, safetyTriggers, quality, queue, aiPolicy] = await Promise.all([
-    allStagedSpecs(),
-    publishedPageIds(),
-    // A09: the journey counts honour quarantine — a record A09 contained stops
-    // contributing to the owner's numbers the moment the marker exists. That is
-    // the difference between quarantine and a cosmetic flag.
-    qualityFilteredJourneyTotals(),
-    store.countEvents("safety.triggered"),
-    qualityKpiSnapshot(),
-    exceptionQueue(8),
-    aiPolicyStore().getActive(),
-  ]);
-  const qaPass = staged.filter((s) => s.qa.state === "PASS").length;
-  const qaFail = staged.filter((s) => s.qa.state === "FAIL").length;
-  const doorsFlag = DEFAULT_FLAGS.find((f) => f.flag_key === "seo_doors_enabled")?.enabled ?? false;
-  const liveAgents = TRIAL_AGENT_REGISTRY.filter((a) => ["A04", "A05", "A06"].includes(a.agent_id));
+  return <div className="console-overview">
+    <AdminPageHeader eyebrow="Company / Operating brief" title="A clear view. A deliberate next move."
+      description="The work, the exceptions and the evidence behind them."
+      meta={"Observed " + formatObservationTime(data.observed_at) + " · " + (data.storage === "file" ? "Local demonstration" : data.storage === "supabase" ? "Configured database" : "Storage unavailable")}
+      actions={<Link className="btn btn-teal" href="/demo">Open demo <span aria-hidden>↗</span></Link>} />
 
-  return (
-    <div>
-      <div className="adm-topline">
-        <div>
-          <div className="eyebrow">Company OS Lite · trial cockpit</div>
-          <h1 className="d2" style={{ marginBottom: 6 }}>
-            Where the machine stands
-          </h1>
-          <p className="hint" style={{ color: "var(--on-dark-mute)" }}>
-            {store.kind === "supabase" ? (
-              <span className="pill pill-green">Supabase database — permanent</span>
-            ) : (
-              <span className="pill pill-amber">local file — temporary until the database is connected</span>
-            )}
-          </p>
-        </div>
+    <section className="console-brief" aria-labelledby="brief-title">
+      <div className="console-brief-copy">
+        <div className="console-kicker"><span className={"console-signal " + (critical ? "is-danger" : warning ? "is-warning" : "")} aria-hidden /> CURRENT OPERATING PICTURE</div>
+        <h2 id="brief-title">{critical ? "An exception needs attention." : warning ? "A closer look is needed." : "The trial is taking shape."}</h2>
+        <p>{attention[0].detail}</p>
+        <Link href={attention[0].href}>{attention[0].title} <span aria-hidden>→</span></Link>
       </div>
-
-      <div className="grid3" style={{ marginBottom: 26 }}>
-        <Stat
-          label="Search opportunities"
-          value={opps.summary.total}
-          hint={`${opps.summary.by_recommendation.NEW ?? 0} NEW · ${opps.summary.by_recommendation.WATCH ?? 0} WATCH · ${opps.summary.by_recommendation.MERGE ?? 0} MERGE · your decisions in Search opportunities`}
-        />
-        <Stat
-          label="Pages staged"
-          value={staged.length}
-          hint={`${qaPass} QA PASS (publish queue) · ${qaFail} QA FAIL`}
-        />
-        <Stat
-          label="Pages published"
-          value={published.size}
-          hint={doorsFlag ? "public serving ON" : "public serving switch OFF until launch"}
-        />
-        <Stat
-          label="Journeys recorded"
-          value={totals.journeys}
-          hint={`${totals.packets} packets · ${totals.consents} consent events${
-            totals.excluded_by_quarantine > 0
-              ? ` · ${totals.excluded_by_quarantine} withheld by data quality`
-              : ""
-          }${
-            // The journey count is real; whether any of it SHOULD have been
-            // withheld is what could not be established.
-            totals.read_failed ? " · quarantine filter could not run" : ""
-          }`}
-        />
-        <Stat label="Safety triggers" value={safetyTriggers} hint="deterministic gate, before analysis" />
-        <Stat
-          label="Needs vendor enrichment"
-          value={opps.summary.needs_enrichment}
-          hint="metrics unknown until discovery runs"
-        />
+      <div className="console-brief-aside">
+        <span className="console-kicker">OPERATING BOUNDARY</span>
+        <strong>{data.storage === "file" ? "Local working demo" : data.storage === "supabase" ? "Database-backed runtime" : "Storage not verified"}</strong>
+        <p>{data.storage === "file" ? "Example journeys and saved run receipts. These counts are not production customers." : "Storage configuration is shown separately from observed connectivity and schema readiness."}</p>
+        <span className="console-tag">Trial · indexing held</span>
       </div>
+    </section>
 
-      {/*
-        A09 DATA QUALITY — inside the cockpit, NOT a second screen. Canon is
-        explicit that A09's findings surface in A07's Company Health view and
-        that A09 does not get its own dashboard, so this is a section on the
-        page that already exists rather than a new top-level admin route.
+    <section className="console-metrics" aria-label="Measured operating summaries">
+      <Link className="console-metric" href="/admin/requests"><span>Requests in view</span><strong>{data.requests.value?.included ?? "—"}</strong>
+        <small>{data.requests.value ? data.requests.value.scope + " · " + data.requests.value.withheld + " withheld by A09 · latest 100 maximum" : "Records or quarantine could not be read"}</small></Link>
+      <Link className="console-metric" href="/admin/pages"><span>Queue eligible</span><strong>{ready ?? "—"}<em> / {data.releases.value?.length ?? "—"}</em></strong><small>{held === undefined ? "Release evidence unavailable" : legacyVersions ? `${legacyVersions} legacy versions · inspect AI and launch evidence` : held + (held === 1 ? " version held" : " versions held") + " · current A06 check"}</small></Link>
+      <Link className="console-metric" href="/admin/system#ai-policy"><span>Recorded AI spend</span><strong>{spend ? "$" + spend.total_usd.toFixed(6) : "—"}</strong><small>{spend ? spend.calls + " recorded calls · today UTC · TEST accounting" : "Spend ledger could not be read"}</small></Link>
+      <a className="console-metric" href="#data-quality"><span>Open data findings</span><strong>{quality && !quality.read_failed ? quality.unresolved_total : "—"}</strong><small>{quality?.could_not_verify ? "Incomplete verification · inspect below" : "A09 observed findings · not a health score"}</small></a>
+    </section>
 
-        IDS AND COUNTS ONLY. Every cell below is a number, a rule id, an entity
-        id or a severity word. Nothing here can render a homeowner's words, a
-        photo reference or consent text — the finding shapes cannot carry them
-        (platform/quality/types.ts), so this surface could not leak them even if
-        it tried.
-      */}
-      <div className="adm-card" style={{ marginBottom: 26 }}>
-        <div className="adm-card-head">
-          <span className="stat-label">Data quality · A09</span>
-          {/*
-            THE TRIGGER (T1-03 clause 3, second half). `runReconciliation()`
-            had no caller anywhere outside tests, so the reconciliation sweeps
-            had never run against real data. This button is that caller, and it
-            lives HERE rather than on a new screen for the same reason the rest
-            of this section does: canon says A09's findings surface in the
-            cockpit and A09 gets no dashboard of its own.
-
-            IT IS A BUTTON, NOT A CADENCE, and the difference is not cosmetic.
-            Nothing schedules this pass; an owner runs it. "Nightly" remains
-            genuinely outstanding and eval row T1-03.3 still says so.
-          */}
-          <ReconciliationRun />
+    <div className="console-columns">
+      <section className="console-sheet" aria-labelledby="attention-title">
+        <div className="console-section-head"><div><span className="console-kicker">01 / NEXT MOVES</span><h2 id="attention-title">What needs attention</h2></div><span className="console-count">{attention.length}</span></div>
+        <ol className="console-attention">{attention.map((item, i) => <li key={item.id}>
+          <span className={"console-order " + item.severity}>{String(i + 1).padStart(2, "0")}</span>
+          <Link href={item.href}><strong>{item.title}</strong><span>{item.detail}</span></Link><span aria-hidden>↗</span>
+        </li>)}</ol>
+        <p className="console-footnote">Routine work belongs to the system. A review item preserves its actual action boundary; it does not imply a new owner decision.</p>
+      </section>
+      <section className="console-sheet" aria-labelledby="flow-title">
+        <div className="console-section-head"><div><span className="console-kicker">02 / THE WORKING LOOP</span><h2 id="flow-title">From signal to service</h2></div></div>
+        <div className="console-flow">
+          <Link href="/admin/requests"><span>01</span><div><strong>Understand the problem</strong><small>Intake, evidence and safety records</small></div><b>{data.requests.value?.included ?? "—"}</b></Link>
+          <Link href="/admin/requests"><span>02</span><div><strong>Keep the useful context</strong><small>Current packets in the same request sample</small></div><b>{data.requests.value?.packets ?? "—"}</b></Link>
+          <Link href="/admin/opportunities"><span>03</span><div><strong>Learn what people ask</strong><small>Research workbook · {formatObservationTime(data.research.generated_at)}</small></div><b>{data.research.count}</b></Link>
+          <Link href="/admin/pages"><span>04</span><div><strong>Build with evidence</strong><small>Staged versions, independently checked</small></div><b>{data.releases.value?.length ?? "—"}</b></Link>
         </div>
-        {quality.could_not_verify ? (
-          <p style={{ margin: "8px 0" }}>
-            <span className="pill pill-amber">COULD NOT VERIFY</span>{" "}
-            <span style={{ color: "var(--on-dark-mute)" }}>
-              {/*
-                The two causes read differently and must not be conflated. A lost
-                WRITE leaves partial numbers; a failed READ leaves no numbers at
-                all, and saying "lost 0 writes" would be the wrong reason.
-              */}
-              {quality.read_failed ? (
-                <>
-                  The A09 records could not be read back, so nothing below was verified. This is
-                  not a clean bill of health — it is no reading at all. Apply
-                  supabase/migrations/00010_data_quality.sql, or check that the database is
-                  reachable.{" "}
-                </>
-              ) : null}
-              {quality.findings_write_failed + quality.quarantines_write_failed > 0 ? (
-                <>
-                  A09 lost {quality.findings_write_failed} finding write(s) and{" "}
-                  {quality.quarantines_write_failed} quarantine write(s) this process. The numbers
-                  below are incomplete — read them as &quot;unknown&quot;, not as &quot;clean&quot;.
-                </>
-              ) : null}
-            </span>
-          </p>
-        ) : null}
-        {/*
-          A dash, never a zero, when the read failed. "0 critical open" and
-          "we could not look" are opposite facts and must not render alike.
-        */}
-        <div className="grid3" style={{ marginTop: 8 }}>
-          <Stat
-            label="Critical open"
-            value={quality.read_failed ? "—" : quality.critical_open}
-            hint={
-              quality.read_failed
-                ? "could not be read"
-                : `${quality.critical_open_7d} in 7d · ${quality.critical_open_30d} in 30d`
-            }
-          />
-          <Stat
-            label="Unresolved"
-            value={quality.read_failed ? "—" : quality.unresolved_total}
-            hint={
-              quality.read_failed
-                ? "could not be read"
-                : `${quality.unresolved_mismatches} of ${quality.mismatches_total} reconciliation mismatches`
-            }
-          />
-          <Stat
-            label="Quarantined"
-            value={quality.read_failed ? "—" : quality.quarantined_active}
-            hint={
-              quality.read_failed
-                ? "could not be read"
-                : "held out of KPI counts · nothing deleted · still served to the customer"
-            }
-          />
-        </div>
-        {queue.length === 0 ? (
-          <p className="stat-hint" style={{ marginTop: 12 }}>
-            {quality.could_not_verify
-              ? "No findings could be read back."
-              : "No unresolved data-quality findings."}
-          </p>
-        ) : (
-          <div style={{ overflowX: "auto", marginTop: 12 }}>
-            <table className="adm-table">
-              <thead>
-                <tr>
-                  <th>Severity</th>
-                  <th>Rule</th>
-                  <th>Entity</th>
-                  <th>Code</th>
-                  <th>Suspected owner</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {queue.map((f) => (
-                  <tr key={f.issue_id}>
-                    <td>
-                      <span
-                        className={`pill ${
-                          f.severity === "critical" || f.severity === "high"
-                            ? "pill-amber"
-                            : "pill-green"
-                        }`}
-                      >
-                        {f.severity}
-                      </span>
-                    </td>
-                    <td className="mono">{f.rule_id}</td>
-                    <td className="mono">
-                      {f.entity_type}:{f.entity_id}
-                    </td>
-                    <td className="mono">{f.detail_code}</td>
-                    <td className="mono">
-                      {/* Never a guess: null means the ledger did not support naming one. */}
-                      {f.root_hypothesis.suspected_owner ?? "unattributed"}
-                    </td>
-                    <td className="mono">{f.status}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            <p className="stat-hint" style={{ marginTop: 8 }}>
-              Repairs a human must decide on appear in{" "}
-              <Link href="/admin/approvals">the Approval Center</Link>.
-            </p>
-          </div>
-        )}
-      </div>
-
-      <div className="grid2" style={{ marginBottom: 26 }}>
-        <div className="adm-card">
-          <div className="adm-card-head">
-            <span className="stat-label">Door machine agents</span>
-            <Link href="/admin/agents" className="hint" style={{ color: "var(--pink)" }}>
-              Full roster →
-            </Link>
-          </div>
-          {liveAgents.map((a) => (
-            <p key={a.agent_id} style={{ marginBottom: 10 }}>
-              <span className="health-dot hd-green" aria-hidden />
-              <strong>
-                {a.agent_id} {a.name}
-              </strong>{" "}
-              {/* A00 migration: the registry's old `stage` field is now `status`
-                  (same values) — this renders the identical string as before. */}
-              <span className="pill pill-green">Registry: {a.status}</span>
-              <br />
-              <span style={{ color: "var(--on-dark-mute)", fontSize: ".9rem" }}>{a.mandate}</span>
-            </p>
-          ))}
-        </div>
-        <div className="adm-card">
-          <div className="adm-card-head">
-            <span className="stat-label">Runtime controls and remaining setup</span>
-            <Link href="/admin/system" className="hint" style={{ color: "var(--pink)" }}>
-              Switches →
-            </Link>
-          </div>
-          <ul style={{ paddingLeft: 20, color: "var(--on-dark-mute)", fontSize: ".9rem", lineHeight: 1.7 }}>
-            <li>
-              Live discovery — awaiting owner credentials for the discovery vendor (research shown
-              is your seed workbook, scored by A04)
-            </li>
-            <li>
-              AI engine — master {aiPolicy.enabled ? "ON" : "OFF"}; {Object.values(aiPolicy.capabilities).filter(c => c.enabled).length} of {Object.keys(aiPolicy.capabilities).length} capability switches on.
-              Model calls require both switches and the gateway checks to pass.
-            </li>
-            <li>Trust Network, provider recommendation, Customer Lite — later waves (code not yet built)</li>
-          </ul>
-        </div>
-      </div>
-
-      <div className="adm-card" style={{ marginBottom: 26 }}>
-        <div className="adm-card-head">
-          <span className="stat-label">Company OS coverage · canon 14A §17</span>
-          <span className="stat-hint">every named admin area — and where it lives today</span>
-        </div>
-        <div className="cover-grid">
-          {COVERAGE.map((c) =>
-            c.href ? (
-              <Link key={c.area} href={c.href} className="cover-item">
-                <span>
-                  {c.area}
-                  {c.note ? <span style={{ color: "var(--on-dark-faint)" }}> · {c.note}</span> : null}
-                </span>
-                <span className="cover-live">LIVE</span>
-              </Link>
-            ) : (
-              <div key={c.area} className="cover-item" style={{ opacity: 0.62 }}>
-                <span>{c.area}</span>
-                <span className="cover-later">{c.note?.toUpperCase() ?? "LATER WAVE"}</span>
-              </div>
-            )
-          )}
-        </div>
-      </div>
-
-      <div className="grid3">
-        <Link href="/admin/opportunities" className="stat-card" style={{ textDecoration: "none" }}>
-          <span className="stat-label">Next →</span>
-          <strong style={{ color: "var(--on-dark)" }}>Review search opportunities</strong>
-          <p className="stat-hint">What A04 found and how it scored it.</p>
-        </Link>
-        <Link href="/admin/pages" className="stat-card" style={{ textDecoration: "none" }}>
-          <span className="stat-label">Next →</span>
-          <strong style={{ color: "var(--on-dark)" }}>Approve pages</strong>
-          <p className="stat-hint">Preview staged doors, see QA, publish.</p>
-        </Link>
-        <Link href="/admin/system" className="stat-card" style={{ textDecoration: "none" }}>
-          <span className="stat-label">Next →</span>
-          <strong style={{ color: "var(--on-dark)" }}>System &amp; safety</strong>
-          <p className="stat-hint">Flags, AI policy, kill switches, spend.</p>
-        </Link>
-      </div>
+        <p className="console-footnote">Distinct record sets, not a conversion funnel. Provider outcomes and resolution rates are not measured here yet.</p>
+      </section>
     </div>
-  );
+
+    <section className="console-sheet" id="data-quality" aria-labelledby="quality-title">
+      <div className="console-section-head"><div><span className="console-kicker">03 / EVIDENCE INTEGRITY</span><h2 id="quality-title">Data quality, kept in view</h2></div><ReconciliationRun /></div>
+      {quality?.could_not_verify || !quality ? <div className="console-notice" role="status">Some quality evidence could not be verified. Missing reads or lost writes are not a clean bill of health.</div> : null}
+      <div className="console-quality-line">
+        <div><strong>{quality && !quality.read_failed ? quality.critical_open : "—"}</strong><span>critical open</span></div>
+        <div><strong>{quality && !quality.read_failed ? quality.quarantined_active : "—"}</strong><span>active quarantine markers</span></div>
+        <div><strong>{quality?.data_completeness_sample ? Math.round(quality.data_completeness_pass_rate * 100) + "%" : "—"}</strong><span>{quality?.data_completeness_sample ? quality.data_completeness_sample + " ingest checks · this process" : "no ingest sample in this process"}</span></div>
+      </div>
+      {data.findings.value?.length ? <div className="console-table-scroll" tabIndex={0} role="region" aria-label="Data quality findings, scroll horizontally"><table className="adm-table"><thead><tr><th scope="col">Severity</th><th scope="col">Rule / finding</th><th scope="col">Record</th><th scope="col">Status</th></tr></thead><tbody>{data.findings.value.map(f => <tr key={f.issue_id}><td><AdminStatus tone={f.severity === "critical" ? "danger" : "warning"}>{f.severity}</AdminStatus></td><td><strong>{f.rule_id}</strong><br /><span className="mono">{f.detail_code}</span></td><td className="mono">{f.entity_type}<br />{f.entity_id}</td><td>{f.status}</td></tr>)}</tbody></table></div> : <p className="console-footnote">{data.findings.state === "unavailable" || !quality || quality.could_not_verify ? "No complete findings reading is available." : "No unresolved data findings in the available A09 records."}</p>}
+    </section>
+
+    <div className="console-columns">
+      <section className="console-sheet" aria-labelledby="changes-title"><div className="console-section-head"><div><span className="console-kicker">04 / THE RECORD</span><h2 id="changes-title">Material changes</h2></div><Link href="/admin/audit">Full audit <span aria-hidden>↗</span></Link></div>
+        {data.audit.value?.length ? <ol className="console-timeline">{data.audit.value.slice(0, 6).map((entry, i) => <li key={entry.at + i}><time dateTime={entry.at}>{formatObservationTime(entry.at)}</time><div><strong>{entry.action.replaceAll(".", " / ")}</strong><span className="mono">{entry.target}</span></div></li>)}</ol> : <p className="console-footnote">{data.audit.state === "unavailable" ? "The action audit could not be read." : "No owner actions have been recorded yet. Completed actions will appear here."}</p>}
+      </section>
+      <section className="console-sheet" aria-labelledby="machine-title"><div className="console-section-head"><div><span className="console-kicker">05 / MACHINE ACTIVITY</span><h2 id="machine-title">Runs with receipts</h2></div><Link href="/admin/agents">Inspect <span aria-hidden>↗</span></Link></div>
+        <div className="console-budget"><div><span>AI master policy</span><AdminStatus tone={policy?.enabled ? "good" : "neutral"}>{policy ? policy.enabled ? "Enabled" : "Off" : "Unknown"}</AdminStatus></div><p>{policy ? "$" + policy.global_daily_budget_usd.toFixed(2) + " daily TEST ceiling · shared across model capabilities" : "Policy could not be read"}</p>{progress !== null ? <progress aria-label="Recorded AI budget usage" value={progress} max={100} /> : null}</div>
+        {activeRuns.length ? <ul className="console-run-list">{activeRuns.slice(0, 4).map(run => <li key={run.run_id}><span className="console-agent-id">{run.agent_id}</span><div><strong>{run.trigger.replaceAll("_", " ")}</strong><small>{formatObservationTime(run.created_at)}</small></div><AdminStatus tone={run.error_count ? "warning" : "neutral"}>{run.error_count ? run.error_count + " errors" : "Recorded"}</AdminStatus></li>)}</ul> : <p className="console-footnote">{data.runs.value?.state === "unavailable" || !data.runs.value ? "Run history could not be read." : "No run receipts in this environment yet."}</p>}
+        <p className="console-footnote">{data.runs.value?.source ?? "Unknown source"} · latest {data.runs.value?.limit ?? 80} · {data.runs.value?.state ?? "unavailable"}. A receipt proves a run, not a deployed service.</p>
+      </section>
+    </div>
+    <section className="console-next"><div><span className="console-kicker">THE LARGER SYSTEM</span><h2>Build depth as the evidence grows.</h2><p>Trust, Home Memory, provider operations and company-health synthesis remain at their actual implementation stage.</p></div><Link href="/admin/map">Explore the system map <span aria-hidden>→</span></Link></section>
+  </div>;
 }

@@ -4,6 +4,8 @@ import { join } from "node:path";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { ACTIVE_DISCLOSURE } from "@/domain/privacy/disclosures";
 import type { DoorAttribution } from "@/domain/intake/contracts";
+import { FEATURES } from "@/platform/features/registry";
+import { invalidateFeatureStates } from "@/platform/features/state";
 
 /**
  * TRACK P3 — the scoped-link handlers, called directly on a temp file store.
@@ -53,6 +55,16 @@ beforeAll(async () => {
   vi.stubGlobal("fetch", () => { throw new Error("Network forbidden in isolated P3 handler tests"); });
   runtime = await import("@/platform/stores/runtime");
   runtime.resetRuntimeStore();
+  // These cases verify preserved functionality after an explicit restoration,
+  // not the launch cut (which is covered by features.route-boundaries).
+  await runtime.runtimeStore().setFeatureStates({
+    tenant_id: "prn", actor: "test", reason: "Restored LIVE P3 fixture",
+    decision_ref: "test-only", at: new Date().toISOString(),
+    changes: FEATURES.filter(feature => feature.group !== "Retired").map(feature => ({
+      feature_id: feature.id, state: "LIVE", expected_version: 0,
+    })),
+  });
+  invalidateFeatureStates();
   media = await import("@/platform/intake/media");
   tokens = await import("@/platform/links/tokens");
   ledger = await import("@/platform/links/ledger");

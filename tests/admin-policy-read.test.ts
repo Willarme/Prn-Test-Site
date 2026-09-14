@@ -6,12 +6,12 @@ import { GET } from "@/app/api/admin/policy/route";
 beforeEach(() => { vi.clearAllMocks(); });
 it("refuses anonymous policy reads before touching the store", async () => {
   unlocked.mockResolvedValue(false);
-  const response = await GET();
+  const response = await GET(new Request("http://localhost/api/admin/policy"));
   expect(response.status).toBe(403);
   expect(read).not.toHaveBeenCalled();
 });
 it("allows an authenticated owner to read the active policy", async () => {
   unlocked.mockResolvedValue(true); read.mockResolvedValue({ version: 17 });
-  const response = await GET();
+  const response = await GET(new Request("http://localhost/api/admin/policy"));
   expect(response.status).toBe(200); expect(await response.json()).toEqual({ version: 17 });
 });

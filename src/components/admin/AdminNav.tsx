@@ -3,34 +3,34 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-/**
- * The admin sidebar's links. Client-side only because the active state needs
- * the live pathname; everything else about the shell stays on the server.
- * Groups mirror canon 14A §17 "Admin / Company OS Lite" — OPERATE is the
- * day-to-day decisions, GROW is the door machine, MACHINE is the agent
- * platform watching itself.
- */
+/** Task groups follow Company OS's company, growth and operations work. */
 const GROUPS: Array<{ label: string; items: Array<[string, string]> }> = [
   {
-    label: "Operate",
+    label: "Company",
     items: [
-      ["/admin", "Overview"],
+      ["/admin", "Cockpit"],
       ["/admin/requests", "Requests"],
-      ["/admin/approvals", "Approvals"],
+      ["/admin/approvals", "Decisions"],
     ],
   },
   {
-    label: "Grow",
+    label: "Growth",
     items: [
-      ["/admin/opportunities", "Search opportunities"],
+      ["/admin/opportunities", "Opportunities"],
+      ["/admin/page-creator", "Page Creator"],
+      ["/admin/templates", "Templates"],
       ["/admin/pages", "Pages"],
       ["/admin/controls", "Page controls"],
     ],
   },
   {
-    label: "Machine",
+    label: "Operations",
     items: [
+      ["/admin/features", "Features"],
       ["/admin/agents", "Agents"],
+      ["/admin/connections", "Connections"],
+      ["/admin/map", "System map"],
+      ["/admin/audit", "Activity"],
       ["/admin/system", "System & safety"],
     ],
   },
@@ -39,20 +39,22 @@ const GROUPS: Array<{ label: string; items: Array<[string, string]> }> = [
 export function AdminNav() {
   const pathname = usePathname();
   return (
-    <nav className="adm-nav" aria-label="Admin sections">
-      {GROUPS.map((group) => (
-        <div key={group.label}>
-          <div className="adm-nav-label">{group.label}</div>
-          {group.items.map(([href, label]) => (
+    <nav className="adm-nav" aria-label="Company OS sections">
+      {GROUPS.map((group, index) => (
+        <div key={group.label} className="adm-nav-group">
+          <div className="adm-nav-label"><span>{group.label}</span><span>0{index + 1}</span></div>
+          {group.items.map(([href, label]) => {
+            const active = pathname === href || (href !== "/admin" && pathname.startsWith(`${href}/`));
+            return (
             <Link
               key={href}
               href={href}
-              className={pathname === href ? "active" : undefined}
-              aria-current={pathname === href ? "page" : undefined}
+              className={active ? "active" : undefined}
+              aria-current={active ? "page" : undefined}
             >
-              {label}
+              <span>{label}</span><span className="adm-nav-arrow" aria-hidden>↗</span>
             </Link>
-          ))}
+          );})}
         </div>
       ))}
     </nav>

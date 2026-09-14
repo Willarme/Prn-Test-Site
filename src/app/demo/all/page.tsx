@@ -9,7 +9,7 @@ export const metadata: Metadata = { title: "Full demo directory", robots: { inde
 type Destination = { name: string; detail: string; href?: string; intent?: "results" | "guided"; status: string };
 const groups: { title: string; detail: string; entries: Destination[] }[] = [
   { title: "01 / The homeowner journey", detail: "Run the full AC flow or open a fresh sample. A sample creates its own private demonstration record, with access kept in this browser.", entries: [
-    { name: "AC Problem Page · LIVE v43", detail: "The complete 15-section guide with its connected intake, observations and equipment diagrams.", href: "/ac-blowing-warm-air", status: "Working guide + intake" },
+    { name: "AC Problem Page · LIVE v43", detail: "The complete 15-section guide with its connected intake, observations and equipment diagrams.", href: "/problems/ac-blowing-warm-air", status: "Working guide + intake" },
     { name: "Guided AC walkthrough", detail: "Start a synthetic example partway into the process, then answer the guided checks yourself.", intent: "guided", status: "Working flow · synthetic example" },
     { name: "Results, Job Packet and PDF", detail: "A prepared sample result. From there, open the actual packet, download the PDF, keep it, add details or try its share controls.", intent: "results", status: "Working flow · synthetic example" },
     { name: "General problem intake", detail: "Describe a different example. The dedicated guided demo is AC; other problems have a more limited path.", href: "/start", status: "Working intake" },
@@ -20,7 +20,6 @@ const groups: { title: string; detail: string; entries: Destination[] }[] = [
     { name: "Trust Network", detail: "How people and recommendations could connect around a home problem.", href: "/pages/trust-network", status: "Interactive concept" },
     { name: "Home Memory", detail: "The developing record of equipment, work and the home itself.", href: "/pages/home-memory", status: "Interactive concept" },
     { name: "SmartQuote", detail: "The quote-comparison experience and its example analysis.", href: "/pages/smartquote", status: "Interactive concept" },
-    { name: "Provider OS", detail: "A preview of the provider side of the process.", href: "/pages/provider-os", status: "Interactive concept" },
   ] },
   { title: "03 / Supporting pages", detail: "The navigation and explanation around the main journey.", entries: [
     { name: "Home", detail: "The original trial home page and intake entrance.", href: "/", status: "Working navigation" },
@@ -30,12 +29,6 @@ const groups: { title: string; detail: string; entries: Destination[] }[] = [
     { name: "No hot water", detail: "Another problem entrance. Its copy identifies the narrower scope of this trial.", href: "/no-hot-water", status: "General intake entrance" },
     { name: "Terms", detail: "The current terms page.", href: "/terms", status: "Information" },
     { name: "Privacy", detail: "The current privacy notice.", href: "/privacy", status: "Information" },
-  ] },
-  { title: "04 / Earlier feature-lab explorations", detail: "Smaller earlier concepts retained for comparison. These are separate from the six current product previews above.", entries: [
-    { name: "DIY Packet", detail: "An earlier take on the DIY support concept.", href: "/future/diy-packet", status: "Earlier concept" },
-    { name: "SmartQuote lab", detail: "The earlier quote concept and feedback surface.", href: "/future/smartquote", status: "Earlier concept" },
-    { name: "Provider tracking", detail: "An earlier provider-progress concept.", href: "/future/provider-tracking", status: "Earlier concept" },
-    { name: "Property dashboard lab", detail: "The earlier home dashboard concept.", href: "/future/property-dashboard", status: "Earlier concept" },
   ] },
 ];
 
@@ -49,7 +42,7 @@ export default function DemoDirectory() {
       ...entry,
       detail: entry.intent === "guided" ? "Follow the optional AC check logic using a fixed synthetic scenario. Your choices stay in the sample walkthrough." : "The actual results and packet presentation for an invented home, with a real prepared PDF and labelled keep, share and email previews.",
       status: "Prepared interactive sample",
-    } : entry.href === "/ac-blowing-warm-air" ? { ...entry, detail: "Explore the complete 15-section guide and equipment diagrams. Use the prepared walkthrough below for this presentation.", status: "Guide preview" } : entry.href === "/start" || entry.href === "/no-hot-water" ? { ...entry, detail: "Preview the intake entrance. Custom requests are not enabled in this presentation; use the prepared AC sample above.", status: "Intake preview" } : entry),
+    } : entry.href === "/problems/ac-blowing-warm-air" ? { ...entry, detail: "Explore the complete 15-section guide and equipment diagrams. Use the prepared walkthrough below for this presentation.", status: "Guide preview" } : entry.href === "/start" || entry.href === "/no-hot-water" ? { ...entry, detail: "Preview the intake entrance. Custom requests are not enabled in this presentation; use the prepared AC sample above.", status: "Intake preview" } : entry),
   }));
   return <main className={`${styles.demo} ${styles.catalog}`}>
     <div className={styles.catalogHead}><p className={styles.kicker}>Property Response Network / Demo directory</p><Link href="/demo">← Demo entrance</Link></div>

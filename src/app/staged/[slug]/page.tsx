@@ -2,13 +2,15 @@ import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { IntentPageView } from "@/components/door/IntentPageView";
 import { findStagedByPath } from "@/domain/search/page-store";
+import { isAdminUnlocked } from "@/platform/admin/auth";
 
-export async function generateMetadata({
-  params,
-}: {
+export const dynamic = "force-dynamic";
+
+export async function generateMetadata(context: {
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
-  const { slug } = await params;
+  if (!(await isAdminUnlocked().catch(() => false))) notFound();
+  const { slug } = await context.params;
   const spec = await findStagedByPath(`/problems/${slug}`);
   if (!spec) return { title: "Not found" };
   return {
@@ -18,12 +20,11 @@ export async function generateMetadata({
   };
 }
 
-export default async function StagedDoorPage({
-  params,
-}: {
+export default async function StagedDoorPage(context: {
   params: Promise<{ slug: string }>;
 }) {
-  const { slug } = await params;
+  if (!(await isAdminUnlocked().catch(() => false))) notFound();
+  const { slug } = await context.params;
   const spec = await findStagedByPath(`/problems/${slug}`);
   if (!spec) notFound();
   if (spec.door_template) redirect(`/staged-template/${encodeURIComponent(spec.page_spec_id)}`);

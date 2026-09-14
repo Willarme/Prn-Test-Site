@@ -87,6 +87,7 @@ const ASK = "/ask/eyJ2IjoxfQ.asktoken";
 function render(props: Partial<Parameters<typeof ResultsTemplate>[0]> = {}): string {
   return renderToStaticMarkup(
     createElement(ResultsTemplate, {
+      visibility: { keep: true, ask: true, send: true, find: true, product_dashboard: true, product_trust_network: true, product_smartquote: true, product_home_memory: true },
       requestId: REQUEST_ID,
       keepHref: KEEP,
       askHref: ASK,

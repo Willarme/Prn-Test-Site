@@ -159,6 +159,8 @@ describe("the reserved tenant is populated on the real write path", () => {
      */
     const offenders: string[] = [];
     const reviewedLinkFilters: string[] = [];
+    const reviewedFeatureFilters: string[] = [];
+    const featureReadScope = 'const rows = new Map(records.filter(row => row.tenant_id === tenant_id && featureDefinition(row.feature_id)).map(row => [row.feature_id, row]));';
     const linkReadScopes = new Map([
       ['.eq("tenant_id", context.tenantId).order("created_at").order("link_id").range(offset, offset + pageSize - 1);',
         'const page = await db.from("issued_request_links").select("*").eq("request_id", context.requestId)'],
@@ -193,13 +195,20 @@ describe("the reserved tenant is populated on the real write path", () => {
           linkReadScopes.has(line.trim()) && linkReadScopes.get(line.trim()) === lines[i - 1]?.trim();
         const reviewedMedia = file.path === "src/platform/intake/media-budget.ts" &&
           line.trim() === 'if (held.request_id !== input.request_id || held.tenant_id !== input.tenant_id || held.problem_id !== journey.problem.problem_id) throw new Error("Media ledger identity mismatch");';
+        // Stage 13 must discard foreign feature rows even if an adapter returns
+        // them. This exact requested-tenant integrity filter is covered by
+        // features.admin-state's "isolates tenant and store caches" test; it
+        // cannot choose product behavior by a hard-coded tenant name.
+        const reviewedFeature = file.path === "src/platform/features/state.ts" && line.trim() === featureReadScope;
         if (reviewedLink) reviewedLinkFilters.push(line.trim());
-        if (((namedTenant && !reviewedScope) || crossRecord || filtered) && !reviewedEffort && !reviewedCompletion && !reviewedLink && !reviewedMedia) {
+        if (reviewedFeature) reviewedFeatureFilters.push(line.trim());
+        if (((namedTenant && !reviewedScope) || crossRecord || filtered) && !reviewedEffort && !reviewedCompletion && !reviewedLink && !reviewedMedia && !reviewedFeature) {
           offenders.push(`${file.path}:${i + 1}  ${line.trim()}`);
         }
       }
     }
     expect(offenders, offenders.join("\n")).toEqual([]);
     expect(reviewedLinkFilters).toEqual([...linkReadScopes.keys()]);
+    expect(reviewedFeatureFilters).toEqual([featureReadScope]);
   });
 });

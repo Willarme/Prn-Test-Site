@@ -63,7 +63,7 @@ function committed(id: string): SearchOpportunity {
 function generateRequest(body: unknown): Request {
   return new Request("http://localhost/api/admin/pages/generate", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { Origin: "http://localhost", "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
 }

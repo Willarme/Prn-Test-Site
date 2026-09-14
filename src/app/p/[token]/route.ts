@@ -1,3 +1,4 @@
+import { refuseFeatureRoute } from "@/platform/features/route-guard";
 import { verifyLinkForRoute as verifyLink } from "@/platform/links/tokens";
 
 /**
@@ -19,6 +20,8 @@ export async function GET(
   _request: Request,
   { params }: { params: Promise<{ token: string }> }
 ): Promise<Response> {
+  const refusal = await refuseFeatureRoute("/p/held", true);
+  if (refusal) return refusal;
   const { token } = await params;
   const link = await verifyLink(token, "packet");
   const headers = { "Cache-Control": "private, no-store", "Referrer-Policy": "no-referrer" };

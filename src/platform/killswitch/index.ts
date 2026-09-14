@@ -229,6 +229,39 @@ export function listKillSwitches(): ReadonlyMap<string, KillSwitchState> {
   return cache;
 }
 
+/** Await a fresh administrative observation without presenting the synchronous cache as durable health. */
+export async function readKillSwitchSnapshot(
+  clientProvider: PlatformClientProvider = serviceClientProvider
+): Promise<{
+  states: Array<KillSwitchState & { key: string }>;
+  source: "database" | "this process";
+  verified: boolean;
+}> {
+  const cached = () => Array.from(cache, ([key, state]) => ({ key, ...state }));
+  try {
+    const client = clientProvider();
+    if (!client) return { states: cached(), source: "this process", verified: true };
+    const { data, error } = await client.from("kill_switch").select("*");
+    if (error || !Array.isArray(data)) return { states: cached(), source: "database", verified: false };
+    const states: Array<KillSwitchState & { key: string }> = [];
+    const seen = new Set<string>();
+    for (const row of data) {
+      if (!row || typeof row !== "object") return { states: cached(), source: "database", verified: false };
+      const clean = Object.fromEntries(Object.entries(row).filter(([, value]) => value !== null));
+      const parsed = KillSwitchState.safeParse(clean);
+      if (!parsed.success || typeof row.switch_key !== "string" || seen.has(row.switch_key)) return { states: cached(), source: "database", verified: false };
+      const state = parsed.data;
+      const matchesKey = state.scope === "GLOBAL"
+        ? row.switch_key === GLOBAL_KEY && !state.scope_ref
+        : state.scope === "AGENT" && /^A\d{2}$/.test(state.scope_ref ?? "") && row.switch_key === agentKey(state.scope_ref!);
+      if (!matchesKey || (state.engaged_at && !Number.isFinite(Date.parse(state.engaged_at)))) return { states: cached(), source: "database", verified: false };
+      seen.add(row.switch_key);
+      states.push({ key: row.switch_key, ...parsed.data });
+    }
+    return { states, source: "database", verified: true };
+  } catch { return { states: cached(), source: "database", verified: false }; }
+}
+
 /** Test seam. */
 export function resetKillSwitchForTests(): void {
   cache.clear();
